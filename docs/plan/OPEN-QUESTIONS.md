@@ -1,20 +1,19 @@
 # Açık sorular
 
-## Bu 57 soruluk bir backlog değil, **1 soruluk bir karar listesi**
+## Bloke edici soru kalmadı
 
 56 sorunun makul bir varsayılanı var ve varsayılanla ilerlenebilir.
 Bunları tek tek çözmeye çalışmak iki gün kod yazmamak demek.
 
-**Geriye tek bloke edici soru kaldı: S50 (sanat yönü).**
-O da projenin 6 hafta mı 6 ay mı olduğunu belirliyor.
-
 | Durum | Sayı |
 |---|---|
-| ☑ Kapandı | 5 (S25, S26, S27, S56, S59) |
+| ☑ Kapandı | 6 (S25, S26, S27, S50, S56, S59) |
 | ☐ Varsayılanla geçilebilir | 56 |
-| **⛔ Bloke edici** | **1 (S50)** |
+| **⛔ Bloke edici** | **0** |
 
-### Kapanan beş soru
+**Kod yazmaya başlamak için beklenen hiçbir şey yok.**
+
+### Kapanan altı soru
 
 | # | Nasıl kapandı |
 |---|---|
@@ -23,6 +22,7 @@ O da projenin 6 hafta mı 6 ay mı olduğunu belirliyor.
 | **S27** | Düştü — `aktiflikOranı` hiç hesaplanmıyor; simülasyon gerçek aktifliği zaten yaşıyor |
 | **S56** | **Kritik vuruş v1'den çıkarıldı.** Mekanik hiç tanımlı değildi; eklemek varyans getirip karşılığında hiçbir şey vermiyordu. Hasar rengi iki renk (`GAME-DESIGN.md` §3) |
 | **S59** | Eşikler verildi: 20 can → ★★★, 15-19 → ★★, ≤14 → ★ (`GAME-DESIGN.md` §9) |
+| **S50** | **Özgün silüet** seçildi. Birimler koyu mürekkep silüet + tek vurgu + altın kontur; tezhip yalnız çerçeve ve arka planda. Hazır varlık paketi kullanılmıyor. M6 takvimi **3-4 hafta** (`GAME-DESIGN.md` §2 "Üretim seviyesi") |
 
 **S26/S27 neden "cevap" değil de "düştü":** Kısıt B birim testi olmaya
 uygun değildi. Kısıt A statik veriden hesaplanabiliyor; Kısıt B'nin
@@ -157,11 +157,24 @@ Hangi soruların **ne zaman** cevaplanması gerektiği:
 
 | Ne zaman | Sorular |
 |---|---|
-| **Bugün** | **S50** — sanat yönü. Takvimin tek değişkeni; M0-M5 boyunca beklemek gerekmiyor ama erken bilmek planlamayı düzeltiyor |
 | M0 başlamadan | S02 (fizik — imza değiştiriyor), S08 (test ortamı) |
 | M1 başlamadan | S11, S12 (harita koordinatları — yoksa ölçüm anlamsız) |
 | M7 başlamadan | S57 (harita 2-3 koordinatları) |
 | Sırası gelince | Kalan 52 soru; hepsinin makul bir varsayılanı var |
 
-**M0-M5 hiçbir bloke edici soruya bağlı değil.** S50 yalnız M6'yı bekletiyor,
-ve o da 5 taş sonra. Kod yazmaya bugün başlanabilir.
+İkisi de (S02, S08) varsayılanla geçilebilir; erken cevaplanırsa `M0-T04`'ün
+imzası ve test şekli bir kez yazılır, sonra dönülmez.
+
+## Takvim
+
+S50 kapandığına göre toplam artık tahmin edilebilir:
+
+| Aşama | Takvim |
+|---|---|
+| M0-M5 (kod) | ~15,5 gün → **3 hafta** |
+| M6 (sanat + juice + ses) | **3-4 hafta** |
+| M7 (harita 2-3, denge, yayın) | ~6 gün → **1-1,5 hafta** |
+| **Toplam** | **7-9 hafta** kesintisiz çalışmayla |
+
+`ROADMAP.md`'nin "gerçekçi 10-14 hafta" notu yarı zamanlı çalışmayı
+varsayıyor. İkisi çelişmiyor — biri odaklanmış hafta, diğeri takvim haftası.

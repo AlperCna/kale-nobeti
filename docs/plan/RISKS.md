@@ -44,13 +44,19 @@ Tezhipli el yazması estetiğinin bilinen tek kişilik örneği yok. Pentiment
 **zirvede ~13 kişilik** ekiple üretildi. Kale Nöbeti'nin varlık listesi
 ~60-80 özgün varlık, çoğu animasyonlu.
 
-**Erken uyarı:** `M6-T06` (sprite'lar) bir günü aşıyor.
+**S50 kapandı — özgün silüet seçildi.** Risk **azaldı ama bitmedi**:
+3-4 hafta hâlâ projenin en uzun tek bloğu.
+
+**Erken uyarı:** `M6-P03` veya `M6-P04` (silüetler) 4 günü aşıyor — o an
+detay kaçağı var demektir; silüet kuralı (`GAME-DESIGN.md` §2: iç detay yok)
+ihlal ediliyordur.
 
 **Azaltma:** (a) M2'den itibaren greybox katmanı — oyun M5 sonunda
-greybox'la tamamen oynanabilir; (b) `M6` öncelik sırası: HUD + arka plan →
-juice → ses → kule → düşman; (c) `research/06` §5'teki üç seçenekten biri
-seçilir (**S50**). Öneri: A ile yayına çık, B'ye kademeli geç.
-**Taş:** M2 (greybox), M6 (karar ve üretim).
+greybox'la tamamen oynanabilir, M6 kesilebilir; (b) öncelik sırası
+`P02` → `P01` → juice → ses → `P03` → `P04`; düşman silüetleri en sonda,
+çünkü 20 px'te detay zaten görünmüyor; (c) silüet kuralına sadık kal —
+işleme başlarsa 3-4 hafta 3 aya döner.
+**Taş:** M2 (greybox), M6 (üretim).
 
 ### R3 · Takvim
 
@@ -60,14 +66,13 @@ seçilir (**S50**). Öneri: A ile yayına çık, B'ye kademeli geç.
 | **Etki** | Orta |
 | **Kaynak** | `ROADMAP.md` süre notu · `research/06` §1 |
 
-Ortada **üç sayı** var ve hiçbiri ölçüme dayanmıyor: görev toplamı ~54 saat,
-ROADMAP 27,5 gün, ROADMAP'in kendi notu "gerçekçi 10-14 hafta". 4-6 kat
-sapma bir tahmin hatası değil, **kapsam belirsizliği**.
+Ortada **üç sayı** vardı ve hiçbiri ölçüme dayanmıyordu: görev toplamı
+~54 saat, ROADMAP 27,5 gün, ROADMAP'in kendi notu "gerçekçi 10-14 hafta".
+4-6 kat sapma bir tahmin hatası değil, **kapsam belirsizliğiydi**.
 
-**Sapmanın M6 ve M7'de patlamasının tek sebebi S50.** Sanat yönü kararı
-takvimi 1 hafta ile 3 ay arasında salındırıyor (`research/06` §5).
-Bu tek soru projenin 6 hafta mı 6 ay mı olduğunu belirliyor —
-**R2 ile aynı kök.**
+**S50 kapandıktan sonra toplam tahmin edilebilir hale geldi:
+7-9 hafta kesintisiz** (`OPEN-QUESTIONS.md` Takvim). Belirsizlik bitmedi
+ama artık 1 hafta-3 ay aralığı değil.
 
 M0'ın tahmininin tutması (0,8×) bunu doğruluyor: tahmin yöntemi kod için
 çalışıyor, kod olmayan iş için hiç kurulmamış. `TASK-TEMPLATE.md` artık

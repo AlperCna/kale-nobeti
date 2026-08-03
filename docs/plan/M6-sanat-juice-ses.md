@@ -4,39 +4,37 @@
 |---|---|
 | **ROADMAP** | `docs/ROADMAP.md` M6 |
 | **Görev** | 12 kod görevi + 4 üretim bloğu |
-| **Takvim bütçesi** | **S50'ye bağlı — 1 hafta ile 3 ay arası** |
-| **Durum** | ☐ bekliyor · **S50 karar bekliyor** |
+| **Kod yazma süresi** | ~8 sa — **takvim değil** |
+| **Takvim bütçesi** | **3-4 hafta** (S50 = özgün silüet) |
+| **Durum** | ☐ bekliyor |
 
 > ## ⚠️ Bu taşa dakika tahmini verilmiyor
 >
 > Kod görevlerinin (`T`) süreleri yalnız **kod yazma** süresidir ve toplamı
 > ~8 saattir. Ama bu taşın işinin çoğu kod değil: sanat üretimi, ses
-> derleme, cila. Denetim ölçtü — M6 kod süresiyle ROADMAP takvimi arasında
-> **6 kat** fark var, çünkü ikisi farklı şey ölçüyor.
+> derleme, cila. Denetim ölçtü — M6 kod süresiyle takvim arasında **6 kat**
+> fark var, çünkü ikisi farklı şey ölçüyor.
 >
-> **Takvimin tek değişkeni S50.** `research/06` §5'teki üç seçenek:
->
-> | Seçenek | Süre | Kimlik |
-> |---|---|---|
-> | (a) Kenney tabanı + özgün UI | ~1 hafta | %60 |
-> | (b) Özgün silüet | 3-4 hafta | %90 |
-> | (c) Tam tezhip | 2-3 ay | %100 |
->
-> **S50 cevaplanmadan M6 planlanamaz** — üretim bloklarının girdisi tanımsız,
-> takvim 1 hafta ile 3 ay arasında salınıyor. Bu, projenin 6 hafta mı 6 ay
-> mı olduğunu belirleyen tek soru.
+> **S50 kapandı: özgün silüet** (`GAME-DESIGN.md` §2 "Üretim seviyesi").
+> Birimler koyu mürekkep silüet + tek vurgu + altın kontur; tezhip detayı
+> yalnız çerçevede ve arka planda. Hazır varlık paketi kullanılmıyor.
+> Takvim bu karara göre **3-4 hafta**.
 
 ## Kod dışı üretim blokları
 
 `TASK-TEMPLATE.md`'nin 30-45 dk kuralı bunlara **geçerli değil**.
 Süreleri gün cinsinden; kabul kriterleri bir kod görevinin girdisi olabilmesi.
 
-| Kimlik | Çıktı | Süre (S50=b varsayımıyla) | Tüketen görev |
+| Kimlik | Çıktı | Süre | Tüketen görev |
 |---|---|---|---|
 | `M6-P01` | 3 harita arka planı, hedef boyutta | 3-5 gün | `M6-T03` |
 | `M6-P02` | HUD tezhip çerçevesi, kartuş, menzil çemberi | 2-3 gün | `M6-T04` |
-| `M6-P03` | 16 kule kademesi sprite'ı | 3-4 gün | `M6-T02`, `M6-T06` |
-| `M6-P04` | 9 düşman sprite'ı + ölüm karesi | 3-4 gün | `M6-T02`, `M6-T06` |
+| `M6-P03` | 16 kule kademesi silüeti | 3-4 gün | `M6-T02`, `M6-T06` |
+| `M6-P04` | 9 düşman silüeti + ölüm karesi | 3-4 gün | `M6-T02`, `M6-T06` |
+
+**Silüet kuralı** (`GAME-DESIGN.md` §2): iç detay yok, ayırt edilebilirlik
+siluetten gelir. `P03` ve `P04` bu yüzden 3-4 günde bitebiliyor — işleme
+yapılsaydı haftalar sürerdi.
 
 **Denetim bulgusu:** `M6-T03` ve `M6-T06` daha önce girdisizdi — varlıkları
 üreten görev yoktu. Bu dört blok o boşluğu kapatıyor.
