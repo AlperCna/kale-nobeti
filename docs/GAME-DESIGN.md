@@ -226,21 +226,41 @@ ayrık yollu haritalarda ilerleme yüzdesi karşılaştırılabilir değildir.
 | Harpi | 70 | 75 | 0 | 0 | 9 | 3 | **Uçar** — yolu takip etmez, engellenemez |
 | Kurt Binicisi | 60 | 110 | 1 | 0 | 9 | 3 | Çok hızlı |
 | Şaman | 130 | 42 | 0 | 0.40 | 15 | 5 | Yakındaki düşmanlara 8 HP/sn iyileştirme |
-| Trol | 400 | 30 | 4 | 0 | 24 | 8 | 6 HP/sn yenilenme |
+| Trol | **400** ⚠️ | 30 | 4 | 0 | 24 | 8 | 6 HP/sn yenilenme |
 | Örümcek Ana | 150 | 50 | 0 | 0.20 | 18 | 6 | Ölünce 3× yavru (HP 30, hız 90) |
-| **Ogre Şef** (boss) | **700** | 28 | 10 | 0.25 | 60 | 25 | Kışla askerlerini tek vuruşta öldürür |
+| **Ogre Şef** (boss) | **700** ⚠️ | 28 | 10 | 0.25 | 60 | 25 | Kışla askerlerini tek vuruşta öldürür |
 
 Sızma cezası: normal 1 can, Trol/Örümcek Ana 2 can, boss 10 can.
 
+### ⚠️ Ogre Şef (700) ve Trol (400) GEÇİCİ değerlerdir
+
+Bu iki sayı **kule başına ~300 px kapsanan yol** varsayımıyla türetildi.
+O varsayım şu an çözülmemiş bir çelişkinin içinde:
+`docs/research/01-denge-matematigi.md` §4 → 300 px,
+`docs/research/03-mekanik-tasarim.md` §3 → ≥ 450 px.
+
+450 px doğruysa T2 tavanı 899 değil **1350**; boss 700 hedeflenen %78 yerine
+tavanın **%52'sine** düşer ve yolun yarısında ölür. Trol de "dengeli"den
+"rahat"a kayar (tavanı 1200 → 1800, efektif HP'si 760'ta sabit).
+
+**Kapsanan yol ölçülmeden bu iki sayı türetilemez.** M1'de `util/coverage.ts`
+yazılıp Harita 1 çizildiğinde ölçüm çıkacak; ikisi o zaman bir kez, doğru
+girdiyle yeniden hesaplanacak. Diğer düşmanlar etkilenmiyor — tavanları
+zaten HP'lerinin 3-8 katı, kapsama değişimi sıralamalarını bozmuyor.
+
 ### Boss HP'si neden 2200 değil 700
 
-Eski 2200 değeri **matematiksel olarak öldürülemezdi.** Tek bir düşmana
-verilebilecek toplam hasar, kule yerleşiminden bağımsız olarak
-`Σ (DPS × kapsananYol) / hız` ile sınırlı. Harita 1'de 8 yapı noktasının
-hepsi Tier 3 olsa ve Meteor iki kez kullanılsa bile mutlak tavan **2131**.
-Gerçekçi bir Tier 2 tahtasında tavan **899**.
+Eski 2200 değeri, gerçekçi bir Tier 2 tahtasına karşı **geçilemezdi.**
+Tek bir düşmana verilebilecek toplam hasar, kule yerleşiminden bağımsız
+olarak `Σ (DPS × kapsananYol) / hız` ile sınırlı; T2 tavanı 300 px'te 899,
+450 px'te 1350 — ikisi de 2200'ün çok altında.
 
-700 değeri o tavanın %78'i — zorlayıcı ama geçilebilir.
+> Dokümanın önceki hali "8 nokta Tier 3 olsa bile mutlak tavan 2131, boss
+> hiçbir durumda öldürülemez" diyordu. **Bu iddia 300 px varsayımına bağlı
+> ve 450 px'te düşüyor** (tavan ~3020 çıkıyor). İndirme kararı yine de
+> doğru; yalnız "mutlak imkânsız" gerekçesi geçerli değil.
+
+700 değeri 300 px tavanının %78'i — ölçüm gelene kadar geçici.
 Tam hesap: `docs/research/01-denge-matematigi.md` §4.
 
 ### Altın oranı
@@ -447,6 +467,11 @@ ediyor; tek kulede **%44 toplam hasar farkı**. Yani haritaların yapı noktası
 **Kabul kriteri:** yapı noktası başına ortalama kapsanan yol **≥ 450 px**
 (T1 menzil 150'nin 3 katı). Altındaysa harita fazla düz demektir ve boss
 dalgası çalışmaz.
+
+> ⚠️ Bu 450 px türetilmemiş bir sayıdır ve §5'teki boss/Trol değerlerinin
+> dayandığı 300 px varsayımıyla çelişir. M1'de ölçüm yapılana kadar
+> **bağlayıcı değil.** Bkz. `docs/research/01-denge-matematigi.md` §4
+> "Çözülmemiş varsayım".
 
 Harita verisi:
 ```ts

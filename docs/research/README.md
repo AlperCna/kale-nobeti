@@ -42,6 +42,22 @@ Meteor iki kez kullanılsa bile mutlak tavan **2131** — hâlâ 2200'ün altın
 Yani boss **hiçbir oyun durumunda** öldürülemiyor.
 
 Bu bir denge sorunu değil, tanım hatası.
+
+> ## ⚠️ Bu bulgu çözülmemiş bir varsayıma bağlı
+>
+> Yukarıdaki 900 ve 2131 sayıları `kapsama = 2 × menzil` = **300 px**
+> varsayımıyla hesaplandı. `03-mekanik-tasarim.md` §3 ise harita kriteri
+> olarak **≥ 450 px** koyuyor. İkisi çelişiyor.
+>
+> 450 px'te: gerçekçi T2 tavanı 900 değil **1350**, mutlak tavan 2131 değil
+> **~3020**. Yani **"hiçbir oyun durumunda öldürülemiyor" iddiası düşüyor** —
+> tam T3 tahtasıyla öldürülebilirdi. Zayıf hali ayakta kalıyor: T2 tahtası
+> 450 px'te bile 1350 < 2200, yani 2200 fazla tanktı.
+>
+> Aynı sebeple §2'deki "tam 6 kat" da 450 px'te **4 kat** olur.
+>
+> Tam analiz ve çözülme noktası (M1):
+> [`01-denge-matematigi.md` §4](01-denge-matematigi.md) ve §12.
 Ayrıntı ve düzeltme seçenekleri: `01-denge-matematigi.md` §4.
 
 ### 2. `GAME-DESIGN.md` §6'daki sızıntı formülü savunmayı 6 kat abartıyor **[H]**

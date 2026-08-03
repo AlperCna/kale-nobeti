@@ -110,6 +110,55 @@ hepsini yanlış onaylar.
 
 ## 4. Mevcut sayılara uygulama — Ogre Şef
 
+> ## ⚠️ ÇÖZÜLMEMİŞ VARSAYIM — kapsanan yol
+>
+> **Bu bölümün ve §5'in tüm sayıları `~300 px/kule` kapsama varsayımına
+> dayanıyor. Bu varsayım `03-mekanik-tasarim.md` §3 ile çelişiyor.**
+>
+> | Dosya | Değer | Nerede |
+> |---|---|---|
+> | `01` (bu dosya) | `kapsama ≈ 2 × menzil` = **300 px** | §3, §4 girdi tablosu, §5 |
+> | `03-mekanik-tasarim.md` §3 | ortalama **≥ 450 px** harita kabul kriteri | "Kapsanan yol uzunluğu bir harita özelliği olmalı" |
+>
+> İkisi aynı harita için aynı anda doğru olamaz.
+>
+> ### Büyüklük
+>
+> ΣDPS = 84 (T2 tahtası, boss'a etkin), boss hızı 28 px/sn:
+>
+> | Kapsama | Menzilde süre | T2 tavanı | Boss 700 = tavanın |
+> |---|---|---|---|
+> | 300 px | 10.7 sn | **899** | %78 ← §4'ün hedefi |
+> | 450 px | 16.1 sn | **1350** | **%52** |
+>
+> ### Çelişkinin kökeni
+>
+> **450 px türetilmemiş.** `03`'te "T1 menzil 150'nin 3 katı" diye yazılmış;
+> hiçbir hesaptan gelmiyor. 300 px ise `2 × menzil` geometrisinden geliyor
+> ama **düz yol** varsayıyor — kıvrımlı yolda kapsama daha büyük.
+>
+> ### İki türev sonuç
+>
+> **a) Aşağıdaki "mutlak tavan 2131" iddiası 450 px'te tersine dönüyor.**
+> Kıvrımlılık çarpanı 1.5 olursa T3 kapsamaları da 1.5 katına çıkar:
+> Havan 690 px → 1263, Yıldırım 510 px → 861, Keskin Nişancı 780 px → 536,
+> Meteor +360 → **mutlak tavan 3020 > 2200**. Yani boss 2200 "hiçbir durumda
+> öldürülemez" değil, "tam T3 tahtasıyla öldürülebilirdi" olurdu.
+> Manşetin zayıf hali ayakta: gerçekçi T2 tahtası 450 px'te bile
+> 1350 < 2200, yani 2200 pratikte fazla tanktı ve indirilmesi doğruydu.
+>
+> **b) §3'teki "tam 6 kat abartıyor" rakamı da varsayıma bağlı.**
+> `HataÇarpanı = L / kapsananYol`; 300 px'te 6, **450 px'te 4**.
+> Eski formülün yanlış olduğu bulgusu etkilenmiyor, yalnız büyüklüğü.
+>
+> ### Çözülme noktası: M1
+>
+> `util/coverage.ts` yazılıp Harita 1 çizildiğinde kapsama **ölçülecek**.
+> Kule, ekonomi, dalga hiçbiri gerekmiyor — M3'ü beklemeye gerek yok.
+> Ölçüm çıkınca Ogre Şef ve Trol yeniden hesaplanır (bkz. §12).
+>
+> Bu not çözülene kadar aşağıdaki tüm sayılar **geçici**dir.
+
 ### Girdi
 
 | | |
@@ -431,3 +480,69 @@ bir referans tahta, dengeleme bu tahtaya karşı yapılır.
 Bu üç sağlama yazılırsa `ROADMAP.md` M6'daki denge geçişi elle deneme
 olmaktan çıkıp otomatik kontrole dönüşür. **Bunu M3'te yaz, M6'ya bırakma** —
 30 dalga elle yazıldıktan sonra hepsinin yanlış olduğunu öğrenmek pahalı.
+
+---
+
+## 12. Boss HP'si nasıl türetilmeli (öneri, uygulanmadı)
+
+§4'teki 700 elle yazılmış bir sayı ve §4'ün başındaki uyarıya bağlı.
+Aynı hatayı üçüncü kez yapmamak için kalıcı çözüm: **boss HP'si sabit
+olmasın, türetilsin.**
+
+### Öneri
+
+```ts
+// data/balance.ts
+export const BOSS_CEILING_RATIO = 0.80;
+
+export function deriveBossHp(
+  map: MapDef, board: ReferenceBoard, boss: EnemyBase
+): number {
+  return Math.round(BOSS_CEILING_RATIO * ceilingA(board, map.coverage, boss.speed));
+}
+```
+
+`enemies.ts` boss satırında sayı durmaz, `hp: 'derived'` işareti durur.
+Ekonomi veya harita geometrisi değişince değer kendini düzeltir.
+
+### Ama naif hali Kısıt A testini öldürüyor
+
+§11'deki Kısıt A testi `tavan > HP × 1.15` diyor. HP `0.80 × tavan` olarak
+tanımlanırsa test `tavan > 0.92 × tavan` olur — **her zaman geçer, hiçbir
+bilgi vermez.** Türetme kalacaksa boss için Kısıt A'nın yerine iki gerçek
+sağlama gerekiyor:
+
+1. **Karşılanabilirlik.** Dalga 10'a kadarki kümülatif altın,
+   `referenceBoard[10]`'un maliyetini karşılıyor mu? Türetmenin dayandığı
+   asıl varsayım bu ve totolojik değil.
+2. **Regresyon bandı.** Türetilen boss HP'si `balance.ts`'te ilan edilen
+   `[alt, üst]` bandının dışına çıkarsa test kırılır. Ekonomi veya harita
+   sessizce boss'u %40 tanklaştırırsa insan bakar.
+
+Kısıt A, elle yazılan tüm düşmanlar için aynen kalır — orada anlamlı.
+
+### Türetme yönü M1'de ters olmalı
+
+Üç bağlı büyüklük var — **harita kapsaması**, **tahta DPS'i**, **boss HP'si** —
+ve ancak ikisi sabitlenebilir. Dokümanlar şu an üçünü de bağımsız yazıyor;
+§4'teki çelişki bundan çıkıyor.
+
+- **M1'de, harita çizilirken:** boss HP + tahtayı sabitle, **gereken
+  kapsamayı türet.** Elinde kalem varken bilmek istediğin şey "yolu ne kadar
+  kıvırmalıyım". Uydurulmuş "≥ 450 px" yerine "boss yolun %80'inde ölsün
+  diye nokta başına N px lazım" çıktısı alırsın.
+- **Haritalar kilitlendikten sonra:** yukarıdaki `deriveBossHp`'ye geç.
+  Kapsama artık ölçülmüş bir gerçek.
+
+### Yalnız boss türetilir
+
+Her düşman tahtadan türetilirse "bu düşman duvar, bu chaff" yazarlığı
+kaybolur. Boss tek zorluk zirvesi olduğu için istisna. **Trol dahil
+diğerleri elle yazılı kalır**, M1'de bir kez yeniden kontrol edilir.
+
+### Uyarı: türetme tahmini yok etmiyor
+
+`referenceBoard` de bir tahmin. Türetme, tahmini boss HP'sinden referans
+tahtaya taşıyor — daha iyi bir yer, çünkü tahta tek sayı değil ve oynanınca
+doğrulanabiliyor. Ama "kendi kendini düzeltir" fazla iyimser: yanlış referans
+tahta yanlış boss üretir ve bunu sessizce yapar. Regresyon bandı bu yüzden var.

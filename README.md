@@ -17,7 +17,8 @@ Teknoloji planı: Phaser 3 + TypeScript (strict) + Vite.
 |---|---|
 | [CLAUDE.md](CLAUDE.md) | Proje kuralları — mimari, klasör yapısı, pazarlıksız kısıtlar |
 | [docs/GAME-DESIGN.md](docs/GAME-DESIGN.md) | Tasarım dokümanı — kuleler, düşmanlar, ekonomi, dalgalar, sanat yönü |
-| [docs/ROADMAP.md](docs/ROADMAP.md) | 6 kilometre taşlı yol haritası |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | 8 kilometre taşlı yol haritası |
+| [docs/plan/](docs/plan/README.md) | **Uygulama planı** — 82 görev, 8 taş dosyası, veri şemaları, test stratejisi, riskler, açık sorular |
 | [docs/research/](docs/research/README.md) | **Araştırma bulguları** — aşağıya bakınız |
 
 ## Araştırma
@@ -43,9 +44,14 @@ tutarlı. Neyin neden değiştiğinin kaydı
 
 **Ogre Şef öldürülemiyordu.** Tek bir düşmana verilebilecek toplam hasar,
 kule yerleşiminden bağımsız olarak `Σ (DPS × kapsananYol) / hız` ile sınırlı.
-Harita 1'de 8 yapı noktasının hepsi Tier 3 olsa ve Meteor iki kez kullanılsa
-bile mutlak tavan **2131**; boss'un HP'si **2200**'dü.
-→ Boss HP'si **700**'e indirildi.
+Gerçekçi bir Tier 2 tahtasına karşı tavan **899–1350** arası; boss'un HP'si
+**2200**'dü. → Boss HP'si **700**'e indirildi (⚠️ geçici, aşağıya bakınız).
+
+**⚠️ Kapsanan yol varsayımı hâlâ çözülmedi.** Araştırma dosyalarından biri
+`300 px/kule`, diğeri `≥ 450 px` kullanıyor ve tüm denge bu tek sayıya asılı.
+Boss (700) ve Trol (400) bu yüzden **geçici** işaretli. Ölçüm M1'de
+`util/coverage.ts` ile yapılacak. Bkz.
+[`01-denge-matematigi.md` §4](docs/research/01-denge-matematigi.md).
 
 **Sızıntı formülü savunmayı tam 6 kat abartıyordu.** Her kulenin yolun
 tamamını gördüğünü varsayıyordu; gerçek kapsama `2 × menzil`.
