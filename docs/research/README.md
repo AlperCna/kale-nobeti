@@ -90,22 +90,46 @@ Gerçekçi alternatifler: `06-sanat-yonu.md`.
 
 ---
 
-## Dokümanlara işlenmesi gereken değişiklikler
+## Dokümanlara işlenen değişiklikler
 
-Aşağıdakiler araştırma sonucu **kesinleşmiş** düzeltmeler. Henüz uygulanmadı.
+**Durum: hepsi uygulandı.** Tasarım dokümanları artık bu araştırmayla
+tutarlı. Aşağıdaki liste neyin neden değiştiğinin kaydı olarak duruyor.
 
-| # | Dosya | Değişiklik |
-|---|---|---|
-| 1 | `GAME-DESIGN.md` §6 | Sızıntı formülünü iki kısıtlı modelle değiştir |
-| 2 | `GAME-DESIGN.md` §5 | Ogre Şef HP'sini 2200 → ~700 (harita 1 tabanı) |
-| 3 | `GAME-DESIGN.md` §9 | `MapDef`'e `coverageByCoveredLength` alanı ekle |
-| 4 | `GAME-DESIGN.md` §4.4 | Kışlaya tam engelleme spesifikasyonu yaz |
-| 5 | `GAME-DESIGN.md` §5 | Uçan hattını oyuncuya göster (Defense Grid çözümü) |
-| 6 | `GAME-DESIGN.md` §6 | Erken başlatma bonusunu dalgayla ölçekle |
-| 7 | `CLAUDE.md` | Hasar sayıları `BitmapText`, `Text` yasak |
-| 8 | `CLAUDE.md` | Global `timeScale` sözleşmesi (4 ayrı özellik) |
-| 9 | `CLAUDE.md` | Arka planlar atlas dışı, WebP; ses `.webm`+`.m4a` |
-| 10 | `CLAUDE.md` | `localStorage` erişimi `try/catch` zorunlu |
-| 11 | `ROADMAP.md` | Kışla için ayrı kilometre taşı |
-| 12 | `ROADMAP.md` | M0'a hız değiştirme mimarisi, M1'e kapsama aracı |
-| 13 | `ROADMAP.md` | M5 sanat işini M2'den itibaren paralel kaba taslağa çevir |
+| # | Dosya | Değişiklik | Durum |
+|---|---|---|---|
+| 1 | `GAME-DESIGN.md` §6 | Sızıntı formülü iki kısıtlı modelle değişti | ✅ |
+| 2 | `GAME-DESIGN.md` §5 | Ogre Şef HP'si 2200 → **700** | ✅ |
+| 3 | `GAME-DESIGN.md` §9 | `MapDef`'e `coverage` alanı eklendi | ✅ |
+| 4 | `GAME-DESIGN.md` §4.4 | Kışlaya 9 maddelik engelleme spesifikasyonu | ✅ |
+| 5 | `GAME-DESIGN.md` §5 | Uçan hattı gösterimi + harita kabul kriteri | ✅ |
+| 6 | `GAME-DESIGN.md` §6 | Erken başlatma bonusu dalgayla ölçekleniyor | ✅ |
+| 7 | `CLAUDE.md` | TIER 1 kural 7: `BitmapText` zorunlu | ✅ |
+| 8 | `CLAUDE.md` | TIER 1 kural 8: `GameClock` + 4 `timeScale` özelliği | ✅ |
+| 9 | `CLAUDE.md` | Arka planlar atlas dışı WebP; ses **yalnız `.m4a`** | ✅ |
+| 10 | `CLAUDE.md` | TIER 1 kural 10: `localStorage` `try/catch` zorunlu | ✅ |
+| 11 | `ROADMAP.md` | Kışla kendi taşına ayrıldı (M5) | ✅ |
+| 12 | `ROADMAP.md` | M0'a `GameClock`, M1'e kapsama aracı | ✅ |
+| 13 | `ROADMAP.md` | Sanat M2'den itibaren greybox olarak paralelleşti | ✅ |
+
+> #9 hakkında not: ilk taslakta `.webm` + `.m4a` çifti yazılmıştı.
+> `04-varlik-paket-boyut.md` §2'deki incelemenin sonucu **yalnız `.m4a`** —
+> hedef tarayıcıların hepsinde AAC var, ikinci format paketi gereksiz büyütüyor.
+
+### Birlikte uygulanan bağlı değişiklikler
+
+13 maddenin bazıları tek başına dokümanları tutarsız bırakıyordu; şunlar da
+uygulandı:
+
+| Alan | Değişiklik |
+|---|---|
+| Ekonomi | Başlangıç altını 200 → **280**; dalga bonusu `20+2n` → **`30+5n`** |
+| Ödüller | Tüm düşmanlarda `altın = 3 × puan` (oran 1.33–4.80 arası savruluyordu) |
+| Harita | `goldMultiplier` = `hpMultiplier`; harita başına `startGold` |
+| Dalga | Nefes dalgaları (4, 7) bütçe × 0.85; tempo dalga boyundan türetiliyor |
+| Kadro | Düşmanlar haritalara dağıtıldı — harita 1'de 4 tip + boss |
+| Kule | Barut Fıçısı uçana vurabiliyor (%50 hasar) |
+| Hedefleme | 5 modun tanımı netleşti, `weakest` eklendi |
+| Geri bildirim | Hasar sayıları 3 renkli (zırh emmesi gri + kalkan) |
+| Palet | Menzil çemberine mürekkep kontur; lapis efektlerde açık varyant |
+| UI | Bilgi paneli (§11) — "seçili düşmana karşı etkin DPS" dahil |
+| Kontrol | 2× hız ve ESC/boşluk duraklatma tasarıma girdi |
