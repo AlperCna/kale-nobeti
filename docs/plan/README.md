@@ -15,18 +15,26 @@ görevler.
 
 ## Taşlar
 
-| Taş | Dosya | Görev | Durum |
-|---|---|---|---|
-| M0 — İskelet, saat, aşamalı yükleme | [M0-iskelet-saat-yukleme.md](M0-iskelet-saat-yukleme.md) | 10 | ☐ |
-| M1 — Yol, düşman hareketi, kapsama aracı | [M1-yol-dusman-kapsama.md](M1-yol-dusman-kapsama.md) | 9 | ☐ |
-| M2 — Kule, mermi, hedefleme | [M2-kule-mermi-hedefleme.md](M2-kule-mermi-hedefleme.md) | 9 | ☐ |
-| M3 — Ekonomi, dalgalar, denge sağlamaları | [M3-ekonomi-dalga-denge.md](M3-ekonomi-dalga-denge.md) | 11 | ☐ |
-| M4 — Tam kule/düşman seti, yükseltme, bilgi paneli | [M4-tam-set-yukseltme-panel.md](M4-tam-set-yukseltme-panel.md) | 11 | ☐ |
-| M5 — Kışla, askerler, yetenekler | [M5-kisla-asker-yetenek.md](M5-kisla-asker-yetenek.md) | 9 | ☐ |
-| M6 — Sanat, juice, ses | [M6-sanat-juice-ses.md](M6-sanat-juice-ses.md) | 12 | ☐ |
-| M7 — Harita 2-3, denge geçişi, yayın | [M7-harita23-denge-yayin.md](M7-harita23-denge-yayin.md) | 11 | ☐ |
+| Taş | Dosya | Kod görevi | Üretim bloğu | Takvim | Durum |
+|---|---|---|---|---|---|
+| M0 — İskelet, saat, aşamalı yükleme | [M0-iskelet-saat-yukleme.md](M0-iskelet-saat-yukleme.md) | 10 | — | 1 gün | ☐ |
+| M1 — Yol, düşman hareketi, kapsama aracı | [M1-yol-dusman-kapsama.md](M1-yol-dusman-kapsama.md) | 9 | — | 2 gün | ☐ |
+| M2 — Kule, mermi, hedefleme | [M2-kule-mermi-hedefleme.md](M2-kule-mermi-hedefleme.md) | 9 | — | 2-3 gün | ☐ |
+| M3 — Ekonomi, dalgalar, denge sağlamaları | [M3-ekonomi-dalga-denge.md](M3-ekonomi-dalga-denge.md) | 11 | — | 3 gün | ☐ |
+| M4 — Tam kule/düşman seti, yükseltme, bilgi paneli | [M4-tam-set-yukseltme-panel.md](M4-tam-set-yukseltme-panel.md) | 11 | — | 4 gün | ☐ |
+| M5 — Kışla, askerler, yetenekler | [M5-kisla-asker-yetenek.md](M5-kisla-asker-yetenek.md) | 9 | — | 3 gün | ☐ |
+| M6 — Sanat, juice, ses | [M6-sanat-juice-ses.md](M6-sanat-juice-ses.md) | 12 | 4 | **S50'ye bağlı** | ☐ |
+| M7 — Harita 2-3, denge geçişi, yayın | [M7-harita23-denge-yayin.md](M7-harita23-denge-yayin.md) | 11 | 2 | 5-7 gün | ☐ |
 
-Toplam **82 görev**.
+**82 kod görevi + 6 üretim bloğu.**
+
+> **Görev süreleri ≠ takvim.** Görev dakikaları yalnız **kod yazma**
+> süresidir; takvim `ROADMAP.md`'den okunur. İkisi arasında ölçülen fark
+> 4-6 kat ve bu bir hata değil, birim farkı — ayrıntı
+> [`TASK-TEMPLATE.md`](TASK-TEMPLATE.md) "Süre birimi".
+>
+> **M6'nın takvimi belirsiz** çünkü `S50` (sanat yönü) cevaplanmadı:
+> 1 hafta ile 3 ay arası. Projenin toplam süresinin tek değişkeni bu.
 
 ---
 

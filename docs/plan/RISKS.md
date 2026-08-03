@@ -60,15 +60,26 @@ seçilir (**S50**). Öneri: A ile yayına çık, B'ye kademeli geç.
 | **Etki** | Orta |
 | **Kaynak** | `ROADMAP.md` süre notu · `research/06` §1 |
 
-ROADMAP ideal 30 gün diyor, gerçekçi tahmin **10-14 hafta**. Görev
-tahminlerinin toplamı (~54 saat) ROADMAP'in gün tahminleriyle **4 kat**
-uyuşmuyor — ayrıntı: `OPEN-QUESTIONS.md` denetim notu.
+Ortada **üç sayı** var ve hiçbiri ölçüme dayanmıyor: görev toplamı ~54 saat,
+ROADMAP 27,5 gün, ROADMAP'in kendi notu "gerçekçi 10-14 hafta". 4-6 kat
+sapma bir tahmin hatası değil, **kapsam belirsizliği**.
+
+**Sapmanın M6 ve M7'de patlamasının tek sebebi S50.** Sanat yönü kararı
+takvimi 1 hafta ile 3 ay arasında salındırıyor (`research/06` §5).
+Bu tek soru projenin 6 hafta mı 6 ay mı olduğunu belirliyor —
+**R2 ile aynı kök.**
+
+M0'ın tahmininin tutması (0,8×) bunu doğruluyor: tahmin yöntemi kod için
+çalışıyor, kod olmayan iş için hiç kurulmamış. `TASK-TEMPLATE.md` artık
+ikisini ayırıyor (görev süresi = kod; taş süresi = takvim) ve M6/M7'ye
+`P` ön ekli üretim blokları eklendi.
 
 **Erken uyarı:** ilk taş (M0) tahmin edilen 6 sa 20 dk yerine iki günü alıyor.
 
-**Azaltma:** her taş sonunda **gerçek süre ölçülüp** ROADMAP'e düzeltme
-önerilir. İlk iki taş sonraki altının kalibrasyonunu verir.
-**Taş:** her taş sonu.
+**Azaltma:** (a) **S50'yi bugün cevapla**; (b) her taş sonunda gerçek süre
+ölçülüp ROADMAP'e düzeltme önerilir — ilk iki taş kalanların kalibrasyonunu
+verir.
+**Taş:** S50 hemen; ölçüm her taş sonu.
 
 ---
 
@@ -223,16 +234,17 @@ geçişinin %30 kazanç verdiğini gösteriyor.
 **Azaltma:** render modu kararı ölçümden sonra (`research/02` §4);
 havuzlama ve atlas zaten zorunlu. **Taş:** M6 (ölçüm), M7 (`E17`).
 
-### R14 · Kritik vuruş mekaniği tanımsız
+### R14 · Kritik vuruş mekaniği tanımsız — ☑ **KAPANDI**
 
-**Olasılık** Orta · **Etki** Düşük · **Kaynak** `GAME-DESIGN.md` §3, §10
+**Kaynak** `GAME-DESIGN.md` §3, §10
 
-§3 ve §10 "kritik" hasar sayısından bahsediyor (altın renk, %140 boyut) ama
-kritik şansı veya çarpanı **hiçbir yerde tanımlı değil**.
+Doküman iki yerde "kritik" hasar sayısından bahsediyordu ama kritik şansı
+veya çarpanı hiçbir yerde tanımlı değildi.
 
-**Erken uyarı:** `M6-T10` yazılırken kritik dalı boş kalıyor.
-**Azaltma:** **S56**. Karar verilene kadar kritik yolu ölü kod olarak durur.
-**Taş:** M6.
+**Çözüm:** kritik vuruş **v1'den çıkarıldı** (S56). Eklemek bir istatistik,
+bir rastgele atış ve denge varyansı getiriyordu; karşılığında neredeyse
+hiçbir şey vermiyordu — Keskin Nişancı'nın kimliği zaten menzil ve zırh
+delme. Hasar rengi üç renkten **ikiye** indi.
 
 ---
 

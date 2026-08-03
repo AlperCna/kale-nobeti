@@ -4,7 +4,8 @@
 |---|---|
 | **ROADMAP** | `docs/ROADMAP.md` M2 |
 | **Görev** | 9 (`M2-T01` … `M2-T09`) |
-| **Süre** | ~6 sa 5 dk (ROADMAP tahmini: 2-3 gün) |
+| **Kod yazma süresi** | ~6 sa 5 dk — **takvim değil** |
+| **Takvim bütçesi** | 2-3 gün (`ROADMAP.md`) |
 | **Durum** | ☐ bekliyor |
 
 ## 0. Oturum başlangıcı
@@ -387,9 +388,9 @@ listesini tarıyorsa (bekleme süresindeyken de).
   `+ - . %` içeren **yer tutucu** bitmap font üretilir
   (SnowB BMF, `research/02` §1'de linkli).
 - Havuz ön ayırma **60** (`research/02` §7).
-- Üç renk (`GAME-DESIGN.md` §3):
+- **İki renk** (`GAME-DESIGN.md` §3):
   `floored === true` → gri + küçük kalkan ikonu, %80 boyut;
-  normal → parşömen; kritik/zayıflık → altın, %140 boyut.
+  normal → parşömen, %100. **Kritik yok** — v1'den çıkarıldı (§3).
 - Yukarı süzülme + sönümlenme; süre `scaledDelta` ile (2× hızda da doğru).
 
 **Kabul kriteri**
@@ -399,7 +400,7 @@ npm run guard
 Beklenen: `4/4 ✓` — kontrol 4 (değişen `Text`) temiz.
 gözle: Okçu ile Ork Savaşçı'ya (zırh 2) vurunca parşömen `4`;
 Top ile vurunca parşömen `20`; zırhı hasardan büyük bir kurgu düşmana
-vurunca **gri** sayı + kalkan ikonu.
+vurunca **gri** sayı + kalkan ikonu. Üçüncü bir renk **yok**.
 
 **Bitmedi sayılır eğer:** hasar sayısı `Text` ile çiziliyorsa.
 

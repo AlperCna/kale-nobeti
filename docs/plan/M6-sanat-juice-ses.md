@@ -3,9 +3,47 @@
 | | |
 |---|---|
 | **ROADMAP** | `docs/ROADMAP.md` M6 |
-| **Görev** | 12 (`M6-T01` … `M6-T12`) |
-| **Süre** | ~8 sa (ROADMAP tahmini: 5-7 gün) |
-| **Durum** | ☐ bekliyor |
+| **Görev** | 12 kod görevi + 4 üretim bloğu |
+| **Takvim bütçesi** | **S50'ye bağlı — 1 hafta ile 3 ay arası** |
+| **Durum** | ☐ bekliyor · **S50 karar bekliyor** |
+
+> ## ⚠️ Bu taşa dakika tahmini verilmiyor
+>
+> Kod görevlerinin (`T`) süreleri yalnız **kod yazma** süresidir ve toplamı
+> ~8 saattir. Ama bu taşın işinin çoğu kod değil: sanat üretimi, ses
+> derleme, cila. Denetim ölçtü — M6 kod süresiyle ROADMAP takvimi arasında
+> **6 kat** fark var, çünkü ikisi farklı şey ölçüyor.
+>
+> **Takvimin tek değişkeni S50.** `research/06` §5'teki üç seçenek:
+>
+> | Seçenek | Süre | Kimlik |
+> |---|---|---|
+> | (a) Kenney tabanı + özgün UI | ~1 hafta | %60 |
+> | (b) Özgün silüet | 3-4 hafta | %90 |
+> | (c) Tam tezhip | 2-3 ay | %100 |
+>
+> **S50 cevaplanmadan M6 planlanamaz** — üretim bloklarının girdisi tanımsız,
+> takvim 1 hafta ile 3 ay arasında salınıyor. Bu, projenin 6 hafta mı 6 ay
+> mı olduğunu belirleyen tek soru.
+
+## Kod dışı üretim blokları
+
+`TASK-TEMPLATE.md`'nin 30-45 dk kuralı bunlara **geçerli değil**.
+Süreleri gün cinsinden; kabul kriterleri bir kod görevinin girdisi olabilmesi.
+
+| Kimlik | Çıktı | Süre (S50=b varsayımıyla) | Tüketen görev |
+|---|---|---|---|
+| `M6-P01` | 3 harita arka planı, hedef boyutta | 3-5 gün | `M6-T03` |
+| `M6-P02` | HUD tezhip çerçevesi, kartuş, menzil çemberi | 2-3 gün | `M6-T04` |
+| `M6-P03` | 16 kule kademesi sprite'ı | 3-4 gün | `M6-T02`, `M6-T06` |
+| `M6-P04` | 9 düşman sprite'ı + ölüm karesi | 3-4 gün | `M6-T02`, `M6-T06` |
+
+**Denetim bulgusu:** `M6-T03` ve `M6-T06` daha önce girdisizdi — varlıkları
+üreten görev yoktu. Bu dört blok o boşluğu kapatıyor.
+
+Öncelik `ROADMAP.md` M6'daki sıra: `P02` → `P01` → juice → ses → `P03` → `P04`.
+Düşman sprite'ları en sonda; 40 px'te (Poki ölçeğinde 20 px) detay zaten
+görünmüyor (`research/06` §3).
 
 ## 0. Oturum başlangıcı
 
@@ -136,8 +174,13 @@ Beklenen: her arka plan **≤ 400 KB**; ilk indirme raporu ≤ 2 MB
 ```bash
 npm run dev
 ```
-gözle: HUD tezhip çerçeveli; tarayıcıyı 640×360'a küçültünce altın motifler
-**kaybolmuyor ve titremiyor**; menzil çemberi düşmanların üstünde okunuyor.
+gözle, üç ölçülebilir kontrol:
+1. Tarayıcıyı **640×360**'a küçült — altın motiflerin her çizgisi hâlâ
+   görünür (kaybolan veya titreyen çizgi **sıfır** olmalı).
+2. En yoğun dalgada menzil çemberini aç — çemberin **tamamı** düşman
+   siluetlerinin üstünde ayırt ediliyor (mürekkep konturu sayesinde).
+3. Ekran görüntüsünü **gri tonlamaya** çevir — parşömen şerit ile altın
+   motif arasındaki kontrast hâlâ ayırt edilebiliyor.
 
 **Bitmedi sayılır eğer:** çerçeve motifleri yarı ölçekte kayboluyorsa.
 
@@ -159,7 +202,12 @@ gözle: HUD tezhip çerçeveli; tarayıcıyı 640×360'a küçültünce altın m
 ```bash
 npm run dev
 ```
-gözle: menü tezhip diliyle tutarlı; 640×360'ta tüm metin okunur.
+gözle, üç ölçülebilir kontrol:
+1. Menüde kullanılan **her renk** `GAME-DESIGN.md` §2'deki 6 renklik
+   paletten (veya lapis açık varyantından) — palet dışı renk **sıfır**.
+2. **640×360**'ta her metin okunur; en küçük yazı 1280×720 ölçeğinde
+   **≥ 16 px**.
+3. "Oyna" butonunun tıklama alanı **≥ 44×44 px** (devtools ile ölç).
 
 **Bitmedi sayılır eğer:** menüde 16 px altında yazı varsa.
 
@@ -340,10 +388,11 @@ Gizli sekmede oyun **çöküyor mu** — çökmemeli.
 | S53 | Efekt yoğunluğu ayarının kademeleri | `M6-T09`, `M6-T12` |
 | S54 | `prefers-reduced-motion` hangi kademeye ayarlıyor? | `M6-T12` |
 | S55 | Ekran sarsıntısı 2× hızda kapanıyor mu? | `M6-T07`, `M6-T08` |
-| **S56** | **Kritik vuruş mekaniği tanımlı değil.** §10 "kritikte %140 boyut" diyor ama kritik şansı/çarpanı hiçbir yerde yok | `M6-T10`, geriye dönük `M2-T08` |
 
-S56 doküman boşluğu — hasar sayısı renk kodu (§3) "kritik/zayıflık → altın"
-diyor ama kritik diye bir mekanik tanımlanmamış.
+> **S56 kapandı — kritik vuruş v1'den çıkarıldı.** Doküman iki yerde
+> kritikten bahsediyordu ama mekanik hiç tanımlı değildi. Eklemek bir
+> istatistik, bir rastgele atış ve denge varyansı getirir; karşılığı yok.
+> `GAME-DESIGN.md` §3 hasar rengi artık **iki renk**.
 
 ## 4. Riskler
 

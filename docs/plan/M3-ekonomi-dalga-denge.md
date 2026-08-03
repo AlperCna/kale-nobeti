@@ -4,7 +4,8 @@
 |---|---|
 | **ROADMAP** | `docs/ROADMAP.md` M3 |
 | **Görev** | 11 (`M3-T01` … `M3-T11`) |
-| **Süre** | ~7 sa 30 dk (ROADMAP tahmini: 3 gün) |
+| **Kod yazma süresi** | ~7 sa 30 dk — **takvim değil** |
+| **Takvim bütçesi** | 3 gün (`ROADMAP.md`) |
 | **Durum** | ☐ bekliyor |
 
 ## 0. Oturum başlangıcı
@@ -317,8 +318,8 @@ bir kare + adet; dalga başlayınca telegraf sönümleniyor; dalga 4'te
 | **Kimlik** | `M3-T07` · **Durum** ☐ · **Süre** ~40 dk |
 | **Önkoşul** | `M3-T03` |
 | **TIER 1** | **kural 1** |
-| **Açık soru** | **S25** (bloke edici) |
-| **Doküman** | `research/01-denge-matematigi.md` §11, §12 · `CLAUDE.md` Klasör yapısı |
+| **Açık soru** | — (S25 kapandı: bu görev cevabı **türetiyor**) |
+| **Doküman** | `GAME-DESIGN.md` §6 (ekonomi tablosu) · `research/01` §6, §9, §11 |
 
 **Dosyalar**
 - `src/types/board.ts` — yeni — `ReferenceBoard`
@@ -335,22 +336,34 @@ export interface ReferenceBoard {
 ```
 
 **Yapılacak**
-- `research/01` §11: "Bunu tanımlamak gerekiyor — öneri: `referenceBoards.ts`
-  içinde dalga başına bir referans tahta, dengeleme bu tahtaya karşı yapılır."
-- **İçerik dokümanda yok — S25.** Dalga başına hangi kuleler, hangi kademe?
-  Bu üç denge testinin tamamını bloke ediyor.
-- Cevap gelene kadar: `research/01` §6'daki ekonomi hesabından türetilen
-  bir taslak tahta konur ve **tamamı `// GEÇİCİ — S25` işaretlenir.**
+
+Tahta **uydurulmaz, türetilir.** Kaynak `GAME-DESIGN.md` §6 ekonomi tablosu:
+
+1. Dalga N'e kadarki kümülatif altını hesapla (`M3-T10`'un `cumulativeGold`'u):
+   `startGold` + öldürme altını + `Σ(30 + 5n)` + erken bonus (0 varsay —
+   muhafazakâr taban).
+2. Harcama kuralı: **önce yapı noktalarını doldur, sonra yükselt.** §6:
+   "yükseltme yer kıtlığı yüzünden mantıklıdır" ve "8 nokta dalga 4-5'te
+   dolmalı". Makul oyuncu bu sırayı izler.
+3. Kule dağılımı §5 karşı-oyun tablosundan: kalabalığa Top, zırhlıya Büyü,
+   uçana Okçu. Harita 1 kadrosu (Goblin, Ork Savaşçı, Kurt Binicisi) için
+   Okçu/Top ağırlıklı.
+4. Kalan altınla en pahalı karşılanabilir yükseltmeyi al, tekrarla.
+
+Bu bir **algoritma**, elle yazılmış bir liste değil — `buildReferenceBoards()`
+fonksiyonu üretir, çıktı `referenceBoards.ts`'e yazılır.
 
 **Kabul kriteri**
 ```bash
 npm run test -- referenceBoards
 ```
-Beklenen: `≥ 3 passed` — her tahtanın `cumulativeCost`'u kule maliyetleri
-toplamına eşit; dalga N'in tahtası N-1'inkini **kapsıyor** (kule kaybolmuyor);
-hiçbir tahta 8 yapı noktasını aşmıyor.
+Beklenen: `≥ 5 passed` — her tahtanın `cumulativeCost`'u o dalgaya kadarki
+kümülatif altını **aşmıyor**; dalga N'in tahtası N-1'inkini **kapsıyor**
+(kule kaybolmuyor); hiçbir tahta 8 yapı noktasını aşmıyor; **dalga 5'te
+8 nokta dolu** (§6 şartı); dalga 10'da en az bir Tier 2 var.
 
-**Bitmedi sayılır eğer:** `cumulativeCost` elle yazılmışsa (hesaplanmalı).
+**Bitmedi sayılır eğer:** tahta elle yazılmışsa. Türetilmezse ekonomi
+değiştiğinde tahta eskiyor ve üç denge testi sessizce yanlış temele oturuyor.
 
 ---
 
@@ -361,7 +374,7 @@ hiçbir tahta 8 yapı noktasını aşmıyor.
 | **Kimlik** | `M3-T08` · **Durum** ☐ · **Süre** ~45 dk |
 | **Önkoşul** | `M1-T02`, `M2-T02`, `M3-T07` |
 | **TIER 1** | kural 5 |
-| **Açık soru** | S25 |
+| **Açık soru** | — (S25 `M3-T07`'de türetiliyor) |
 | **Doküman** | `GAME-DESIGN.md` §6 (Kısıt A) · `research/01` §2, §4, §11, §12 |
 
 **Dosyalar**
@@ -405,48 +418,72 @@ boss/Trol dışındaki düşmanlar için tavan HP'nin 3-8 katı çıkmıyorsa
 
 ---
 
-### M3-T09 — Kısıt B sağlaması
+### M3-T09 — Kısıt B: başsız simülasyon
 
 | | |
 |---|---|
 | **Kimlik** | `M3-T09` · **Durum** ☐ · **Süre** ~45 dk |
-| **Önkoşul** | `M3-T08` |
-| **TIER 1** | kural 5 |
-| **Açık soru** | **S26**, **S27** (ikisi de bloke edici) |
-| **Doküman** | `GAME-DESIGN.md` §6 (Kısıt B, aktiflik tablosu) · `research/01` §10 |
+| **Önkoşul** | `M3-T05`, `M3-T07` |
+| **TIER 1** | kural 5, **kural 8** |
+| **Açık soru** | — (S26 ve S27 **kapandı** — aşağıdaki gerekçe) |
+| **Doküman** | `GAME-DESIGN.md` §6 (Kısıt B) · `research/01` §10 · `CLAUDE.md` Mimari |
 
 **Dosyalar**
-- `src/systems/balanceChecks.ts` — değişiklik — `ceilingB`
+- `src/systems/waveSim.ts` — yeni — başsız dalga simülasyonu
+- `src/systems/waveSim.test.ts` — yeni
 
 **İmza**
 ```ts
-export function ceilingB(
-  board: ReferenceBoard, wave: Wave, coverage: /* ... */, map: MapDef
-): number;
+export interface SimResult {
+  readonly leakedHp: number;      // kaleye ulaşan toplam efektif HP
+  readonly leakedCount: number;
+  readonly durationSec: number;   // ÖLÇÜLDÜ, tanımlanmadı
+}
+export function simulateWave(
+  wave: Wave, board: ReferenceBoard, map: MapDef, stepMs?: number
+): SimResult;
 ```
 
+**Neden formül değil simülasyon**
+
+Kısıt B'nin iki girdisi — `dalgaSüresi` ve `aktiflikOranı` — **statik veriden
+hesaplanamaz.** İkisi de bir dalganın nasıl aktığına bağlı: kuleler ne zaman
+hedef buldu, düşmanlar ne zaman öldü, kalan sürede kim menzildeydi.
+Bunlara tanım uydurmak, uydurulmuş bir sayıyla test yeşile boyamak olurdu.
+
+Kısıt A statik kalabiliyor çünkü tek düşman için kapsama × hız yeterli
+(`research/01` §2: yerleşimden bağımsız). Kısıt B için aynı şey doğru değil.
+
+**Doğru çözüm:** dalgayı gerçekten çalıştır ve **sızan HP'yi ölç.**
+`CLAUDE.md` Mimari bunu zaten mümkün kılıyor — "Sahneler ince olur, oyun
+mantığı `systems/` içinde yaşar", yani `WaveManager`, `TowerSystem`,
+`ProjectileSystem` sahnesiz koşturulabilir.
+
 **Yapılacak**
-- Formül (§6):
-  `Σ_kule ( DPS × dalgaSüresi × aktiflikOranı ) × 0.75`.
-- `× 0.75` **odaklanma kaybı** — `first` varsayılanı tüm kuleleri aynı
-  hedefe yolluyor (`research/01` §10).
-- **`dalgaSüresi` tanımlı değil — S26.** İlk doğumdan son ölüme mi, yoksa
-  dalga penceresi mi?
-- **`aktiflikOranı` hesabı tanımlı değil — S27.** §6 tablosu "kapsanan düz
-  yol parçası sayısı"na göre oran veriyor ama parçayı sayan algoritma yok.
-- İkisi de cevaplanana kadar test **`it.todo` olarak yazılır** ve
-  `// BLOKE — S26, S27` işaretlenir. Sahte değerle geçen test yazma.
+- Sabit adımlı döngü (`stepMs` varsayılan 16.67), render yok, sahne yok.
+  `GameClock.tick(stepMs)` ile ilerlet — TIER 1 k.8 burada da geçerli.
+- Referans tahtayı kur, dalgayı doğur, son düşman ölene veya kaleye
+  varana kadar çalıştır.
+- `durationSec` **çıktı**, girdi değil. `aktiflikOranı` hiç hesaplanmıyor —
+  simülasyon zaten gerçek aktifliği yaşıyor. Odaklanma kaybı (`× 0.75`,
+  `research/01` §10) da doğal olarak ortaya çıkıyor, çarpan gerekmiyor.
+- Deterministik olmalı: rastgelelik yoksa aynı girdi aynı sonucu verir.
+  Perde kayması gibi görsel rastgelelikler simülasyonda devre dışı.
 
 **Kabul kriteri**
 ```bash
-npm run test -- balanceChecks
+npm run test -- waveSim
 ```
-Beklenen: `ceilingB` testleri `todo` durumunda listeleniyor (atlanmış değil,
-**todo**) ve çıktıda `S26, S27` gerekçesi görünüyor.
+Beklenen: `≥ 5 passed` — harita 1'in 10 dalgası için `leakedHp === 0`
+(referans tahtayla hiçbir dalga sızmıyor); aynı girdi iki kez aynı sonuç
+(determinizm); kulesiz tahtada `leakedHp > 0`; `stepMs` yarıya inince
+sonuç `< %2` değişiyor (yakınsama); simülasyon 10 dalga için `< 2 sn` sürüyor.
 
-**Bitmedi sayılır eğer:** `dalgaSüresi` veya `aktiflikOranı` için uydurulmuş
-bir sayıyla geçen test varsa. **Bu, projedeki en büyük riskin tam kalıbı**
-(`README.md`: "modelin eksik bilgiyi sayı uydurarak kapatması").
+**Bitmedi sayılır eğer:** simülasyon render veya `Phaser.Scene` gerektiriyorsa
+— o zaman test ortamında koşmaz ve CI'da çalışmaz.
+
+**Not:** bu yaklaşım M7'de bedava genişliyor — 3 harita × 10 dalga aynı
+fonksiyonla doğrulanıyor, ayrık yol dahil.
 
 ---
 
@@ -457,7 +494,7 @@ bir sayıyla geçen test varsa. **Bu, projedeki en büyük riskin tam kalıbı**
 | **Kimlik** | `M3-T10` · **Durum** ☐ · **Süre** ~35 dk |
 | **Önkoşul** | `M3-T07`, `M3-T03` |
 | **TIER 1** | kural 5 |
-| **Açık soru** | S25 |
+| **Açık soru** | — (S25 `M3-T07`'de türetiliyor) |
 | **Doküman** | `GAME-DESIGN.md` §6 (denge ilkesi, yükseltme gerekçesi) · `research/01` §6, §9 |
 
 **Dosyalar**
@@ -523,11 +560,13 @@ veya kuleleri duruyorsa.
 
 ## 3. AÇIK SORULAR
 
+> **Üçü kapandı.** `S25` `M3-T07`'de **türetiliyor** (ekonomi tablosundan
+> algoritmayla, elle yazılmadan). `S26` ve `S27` **düştü** — Kısıt B artık
+> formül değil, başsız simülasyon (`M3-T09`); `dalgaSüresi` ölçülüyor,
+> `aktiflikOranı` hiç hesaplanmıyor.
+
 | # | Özet | Bloke ettiği görev |
 |---|---|---|
-| **S25** | **`ReferenceBoard` içeriği:** dalga başına hangi kuleler, hangi kademe? Üç denge testinin tamamını bloke ediyor | `M3-T07`, `M3-T08`, `M3-T10` |
-| **S26** | **`dalgaSüresi` tanımı** — Kısıt B'nin ikinci çarpanı | `M3-T09` |
-| **S27** | **`aktiflikOranı` algoritması** — §6 tablosu var, parçayı sayan yöntem yok | `M3-T09` |
 | S28 | `SPAWN_K` ve `REST_K` sabitleri | `M3-T01`, `M3-T05` |
 | S29 | Dalga 1 otomatik mi başlıyor, oyuncu mu başlatıyor? | `M3-T04` |
 | S30 | 10 dalganın bütçeden üretilen kompozisyonunu kim rötuşlayacak? | `M3-T02` |
@@ -535,15 +574,16 @@ veya kuleleri duruyorsa.
 | S32 | 3 yıldız eşikleri (kalan cana göre) | `M3-T11`, M7 |
 | S33 | Boss dalgasında refakat var mı? §7 "refakatsiz gelir veya sonra gönderilir" diyor ama seçim yapılmamış | `M3-T02`, M4 |
 
-**S25, S26, S27 üçü birlikte `M3-T09`'u tamamen, `M3-T08`/`M3-T10`'u
-kısmen bloke ediyor.** Bu taşın en kritik çıktısı olan denge sağlamaları
-bu üç cevaba asılı.
+**Bu taşta bloke edici soru kalmadı.** Denge sağlamalarının üçü de
+çalıştırılabilir: Kısıt A statik hesap, Kısıt B simülasyon, ekonomi
+türetilmiş referans tahtaya karşı.
 
 ## 4. Riskler
 
 | Risk | Erken uyarı | Hafifletme |
 |---|---|---|
-| Kısıt B testi uydurulmuş sabitle "geçiyor" | Test yeşil ama kimse `dalgaSüresi`ni tanımlamadı | `M3-T09` kabulü `it.todo` şart koşuyor |
+| Simülasyon sahneye bağımlı yazılır | Test ortamında koşmuyor, `npm run test` kırılıyor | `M3-T09` "bitmedi sayılır eğer" |
+| Simülasyon deterministik değil | Aynı test bazen yeşil bazen kırmızı | Determinizm testi (`M3-T09`) |
 | M1'in kapsama ölçümü gelmemiş | `M3-T08` çalıştırılamıyor | Taş sırası zorunlu; M1 bitmeden M3 başlamaz |
 | Referans tahta gerçeği yansıtmıyor | Testler yeşil ama oyun elle oynanınca zor/kolay | `M3-T10` "8 nokta dalga 4-5'te dolsun" testi bunu yakalar |
 | Boss/Trol geçici HP'leri denge testine giriyor | Test sonucu ⚠️ işaretli sayılara dayanıyor | Boss M4'te; Trol harita 3'te — ikisi de M3'te devrede değil |
@@ -558,7 +598,9 @@ bu üç cevaba asılı.
 - [ ] Hazırlık sayacı, erken başlatma bonusu (dalga 4'ten itibaren), telegraf
 - [ ] Kule alınıp %70 iadeyle satılabiliyor
 - [ ] Kısıt A sağlaması yeşil, üç düşman tipi için de
-- [ ] Kısıt B testleri **`todo`** olarak listeleniyor (S26, S27 gerekçesiyle)
+- [ ] **Kısıt B simülasyonu** 10 dalga için `leakedHp === 0` veriyor
+- [ ] Simülasyon deterministik ve sahnesiz (test ortamında koşuyor)
+- [ ] `referenceBoards` **türetiliyor**, elle yazılmamış
 - [ ] Ekonomi sağlaması yeşil; 8 nokta hangi dalgada doluyor **raporlandı**
 - [ ] Altın, can, geri sayım hepsi `BitmapText`
 - [ ] `M1-T07`'nin geçici `SpawnSystem`'i silindi

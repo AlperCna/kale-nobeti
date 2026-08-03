@@ -4,7 +4,8 @@
 |---|---|
 | **ROADMAP** | `docs/ROADMAP.md` M0 |
 | **Görev** | 10 (`M0-T01` … `M0-T10`) |
-| **Süre** | ~6 sa 20 dk (ROADMAP tahmini: 1 gün) |
+| **Kod yazma süresi** | ~6 sa 20 dk — **takvim değil** |
+| **Takvim bütçesi** | 1 gün (`ROADMAP.md`). **Tahminin tuttuğu tek taş** — saf kod, varlık ve denge işi yok. |
 | **Durum** | ☐ bekliyor |
 
 ## 0. Oturum başlangıcı

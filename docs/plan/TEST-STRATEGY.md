@@ -113,21 +113,34 @@ ceilingA = Σ_kule ( etkinDPS_kule × kapsananYol_kule ) / hız_düşman
 Son iki satır kritik. Yerleşimden bağımsızlık formülün doğruluğunun kanıtı
 (`research/01` §2); ayrık yolda toplam DPS yanıltıcı (`GAME-DESIGN.md` §9).
 
-### 1.7 Kısıt B — M3 · **BLOKE**
+### 1.7 Kısıt B — M3 · **başsız simülasyon** (birim testi değil)
 
-```
-ceilingB = Σ_kule ( DPS × dalgaSüresi × aktiflikOranı ) × 0.75
+Kısıt B formülle doğrulanmıyor. İki girdisi — `dalgaSüresi` ve
+`aktiflikOranı` — **statik veriden hesaplanamıyor**; ikisi de bir dalganın
+nasıl aktığına bağlı. Tanım uydurmak, uydurulmuş sabitle test yeşile
+boyamak olurdu — projedeki en büyük riskin tam kalıbı.
+
+**Çözüm:** dalgayı gerçekten çalıştır, **sızan HP'yi ölç.**
+`CLAUDE.md` Mimari bunu mümkün kılıyor — oyun mantığı `systems/` içinde,
+sahneden bağımsız.
+
+```ts
+simulateWave(wave, board, map, stepMs) → { leakedHp, leakedCount, durationSec }
 ```
 
-| Eksik | Kimlik |
+| Senaryo | Beklenen |
 |---|---|
-| `dalgaSüresi` tanımı — ilk doğumdan son ölüme mi, dalga penceresi mi? | **S26** |
-| `aktiflikOranı` hesabı — §6 tablosu var, parçayı sayan algoritma yok | **S27** |
-| `ReferenceBoard` içeriği | **S25** |
+| Harita 1'in 10 dalgası, referans tahta | `leakedHp === 0` |
+| Aynı girdi iki kez | Aynı sonuç (determinizm) |
+| Kulesiz tahta | `leakedHp > 0` |
+| `stepMs` yarıya iniyor | Sonuç `< %2` değişiyor |
+| 10 dalga simülasyonu | `< 2 sn` (CI'da koşabilmeli) |
 
-**Bu testler `it.todo` olarak yazılır.** Uydurulmuş sabitle yeşile boyanmaz —
-bu, projedeki en büyük riskin tam kalıbı (`plan/README.md`: "modelin eksik
-bilgiyi sayı uydurarak kapatması"; bir kez oldu, 2200 HP'lik boss).
+`durationSec` **çıktı**, girdi değil. Odaklanma kaybı (`research/01` §10)
+doğal olarak ortaya çıkıyor — `× 0.75` çarpanı gerekmiyor.
+
+**Kritik şart:** simülasyon `Phaser.Scene` veya render gerektirmemeli;
+gerektirirse test ortamında koşmaz.
 
 ### 1.8 Ekonomi karşılanabilirliği — M3
 
