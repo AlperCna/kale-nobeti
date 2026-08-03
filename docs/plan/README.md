@@ -23,18 +23,19 @@ görevler.
 | M3 — Ekonomi, dalgalar, denge sağlamaları | [M3-ekonomi-dalga-denge.md](M3-ekonomi-dalga-denge.md) | 11 | — | 3 gün | ☐ |
 | M4 — Tam kule/düşman seti, yükseltme, bilgi paneli | [M4-tam-set-yukseltme-panel.md](M4-tam-set-yukseltme-panel.md) | 11 | — | 4 gün | ☐ |
 | M5 — Kışla, askerler, yetenekler | [M5-kisla-asker-yetenek.md](M5-kisla-asker-yetenek.md) | 9 | — | 3 gün | ☐ |
-| M6 — Sanat, juice, ses | [M6-sanat-juice-ses.md](M6-sanat-juice-ses.md) | 12 | 4 | **S50'ye bağlı** | ☐ |
+| M6 — Sanat, juice, ses | [M6-sanat-juice-ses.md](M6-sanat-juice-ses.md) | 12 | 4 | **3-4 hafta** | ☐ |
 | M7 — Harita 2-3, denge geçişi, yayın | [M7-harita23-denge-yayin.md](M7-harita23-denge-yayin.md) | 11 | 2 | 5-7 gün | ☐ |
 
-**82 kod görevi + 6 üretim bloğu.**
+**82 kod görevi + 6 üretim bloğu. Toplam takvim: 7-9 hafta** kesintisiz
+çalışmayla ([`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) Takvim).
 
 > **Görev süreleri ≠ takvim.** Görev dakikaları yalnız **kod yazma**
-> süresidir; takvim `ROADMAP.md`'den okunur. İkisi arasında ölçülen fark
+> süresidir; takvim yukarıdaki sütundan okunur. İkisi arasında ölçülen fark
 > 4-6 kat ve bu bir hata değil, birim farkı — ayrıntı
 > [`TASK-TEMPLATE.md`](TASK-TEMPLATE.md) "Süre birimi".
 >
-> **M6'nın takvimi belirsiz** çünkü `S50` (sanat yönü) cevaplanmadı:
-> 1 hafta ile 3 ay arası. Projenin toplam süresinin tek değişkeni bu.
+> **Bloke edici açık soru kalmadı.** `S50` (sanat yönü) **özgün silüet**
+> olarak kapandı; M6'nın 3-4 haftası buradan geliyor.
 
 ---
 

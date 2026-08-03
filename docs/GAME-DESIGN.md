@@ -74,6 +74,29 @@ her şey sakin durur.
 çemberde kesik ≥ 6 px / boşluk ≥ 4 px. Altın vurgu ince çizgiyle değil
 **dolgu alanıyla** yapılır — yarı ölçekte hayatta kalan tek şey kütledir.
 
+### Üretim seviyesi: özgün silüet
+
+Tüm varlıklar **özgün** çizilir, ama **tezhip detayı yalnız çerçevede ve
+arka planda** olur. Birimler (kule, düşman, asker, mermi) sade kalır:
+
+- Koyu mürekkep **silüet** + tek vurgu rengi + ince altın kontur.
+- İşleme, doku, iç detay yok. 40 px'lik bir sprite Poki'nin 640×360
+  ölçeğinde 20 px'e iniyor — oraya harcanan detay ekrana ulaşmıyor
+  (`docs/research/06-sanat-yonu.md` §3).
+- Ayırt edilebilirlik **silüetten** gelir, renkten değil. Gri tonlamalı
+  ekran görüntüsünde düşman tipleri hâlâ ayrılabilmeli (TIER 1 kural 6).
+
+**Kimliği çerçeve ve arka plan taşır.** Bu, el yazması mantığıyla da
+tutarlı — tezhip zaten kenar süslemesi demektir; sayfanın ortası düz metindir.
+
+Hazır varlık paketi (Kenney vb.) **kullanılmaz** — o paketler §2'nin
+reddettiği parlak çizgi film paletinde ve tint ile dönüştürülemez;
+stili yapan şey renk değil, çizgi karakteri.
+
+Üretim bütçesi: **3-4 hafta** (`docs/plan/M6-sanat-juice-ses.md` üretim
+blokları). Tam tezhip (2-3 ay) bilinçli olarak reddedildi — ilk oyun için
+projeyi bitirilemez yapma riski taşıyor.
+
 ## 3. Hasar modeli
 
 İki hasar tipi, iki savunma tipi. Bu, kule çeşitliliğinin tek kaynağıdır.
