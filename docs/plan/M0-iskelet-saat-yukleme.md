@@ -225,9 +225,9 @@ gör, geri al.)
 | **Durum** | ☐ bekliyor |
 | **Süre** | ~45 dk |
 | **Önkoşul** | `M0-T01` |
-| **TIER 1** | kural 5, **kural 8** |
-| **Açık soru** | S02, S08 |
-| **Doküman** | `CLAUDE.md` TIER 1 k.8 · `research/02-phaser-teknik.md` §3 |
+| **TIER 1** | kural 5, **kural 8**, **kural 11** |
+| **Açık soru** | — (S02, S08 kapandı) |
+| **Doküman** | `CLAUDE.md` TIER 1 k.8, k.11 · Teknoloji · `research/02` §3 |
 
 **Dosyalar**
 - `src/systems/GameClock.ts` — yeni — saat sözleşmesi
@@ -237,20 +237,32 @@ gör, geri al.)
 ```ts
 export type Speed = 1 | 2;
 
+/** setScale'in dokunduğu Phaser yüzeyi. Sahne bunu zaten sağlıyor;
+ *  testte sahte nesne aynı şekli taklit eder. TIER 1 k.11 gereği
+ *  burada Phaser'a çalışma zamanı bağımlılığı YOK. */
+export interface ClockTarget {
+  tweens: { timeScale: number };
+  time:   { timeScale: number };
+  anims:  { globalTimeScale: number };
+}
+
 export class GameClock {
   readonly scaledDelta: number;
   readonly scale: Speed;
-  setScale(s: Speed, scene: Phaser.Scene): void;
+  setScale(s: Speed, target: ClockTarget): void;
   tick(delta: number): void;
 }
 ```
 
 **Yapılacak**
 - `tick(delta)` ham `delta`yı ölçekle çarpıp `scaledDelta`ya yazar.
-- `setScale` dört Phaser özelliğini yazar (`CLAUDE.md` TIER 1 k.8):
-  `tweens.timeScale`, `physics.world.timeScale`, `time.timeScale`,
-  `anims.globalTimeScale`.
-- `physics.world.timeScale` **ters** alır: `1 / s` (`research/02` §3).
+- `setScale` **üç** özelliği yazar (`CLAUDE.md` TIER 1 k.8):
+  `tweens.timeScale`, `time.timeScale`, `anims.globalTimeScale`.
+- **`physics.world.timeScale` yok** — arcade fizik kullanılmıyor
+  (`CLAUDE.md` Teknoloji). Senkronda tutulacak zaman otoritesi dörtten
+  üçe indi.
+- `ClockTarget` arayüzü sayesinde dosya Phaser'ı çalışma zamanında
+  **hiç import etmiyor** (TIER 1 k.11) — test `node` ortamında koşuyor.
 - Ölçek yalnız `1` veya `2`. `0` yasak — duraklatma `scene.pause()` ile
   yapılır (`research/02` §3: sıfıra bölme riski).
 
@@ -259,13 +271,12 @@ export class GameClock {
 npm run test -- GameClock
 ```
 Beklenen: `4 passed` — `tick(16.67)` 1×'te `16.67`; 2×'te `33.34`;
-`setScale(2, sahteScene)` dört özelliği de yazar;
-`sahteScene.physics.world.timeScale === 0.5`.
+`setScale(2, sahteHedef)` üç özelliği de `2` yapar;
+`setScale(1, ...)` hepsini `1`'e döndürür.
 
-**Bitmedi sayılır eğer:** `setScale` dört özellikten üçünü yazıyorsa.
-
-**Risk:** `physics.world.timeScale` ters mantığı yanlış uygulanır.
-**Erken uyarı:** 2× seçince oyun **yavaşlar**. Test bunu açıkça yakalar.
+**Bitmedi sayılır eğer:** `GameClock.ts` içinde `import type` olmayan bir
+Phaser import'u varsa — o zaman test `node` ortamında `window` arayıp patlar
+(TIER 1 k.11).
 
 **Tuzak:** `scene.time.timeScale` yalnız zamanlayıcı olaylarını etkiler,
 `update`'teki `delta`yı **etkilemez** (`research/02` §3). `scaledDelta`nın
@@ -569,18 +580,21 @@ Tam liste ve varsayılan davranışlar: [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md)
 | # | Özet | Bloke ettiği görev |
 |---|---|---|
 | S01 | Font dosyaları nereden gelecek, alt kümelemeyi kim yapacak? | `M0-T05` |
-| S02 | Arcade fizik kullanılacak mı? | `M0-T04` |
 | S03 | Duraklatma ekranında ne olacak? | `M0-T09` |
 | S04 | 2× seçimi kalıcı mı? | `M0-T09` |
 | S05 | Menü M0'da ne kadar dolu? | `M0-T07` |
 | S06 | `EventBus` M0'da mı kurulsun, iki yeni olay onaylanıyor mu? | `M0-T03` |
 | S07 | Hız butonu etiketi TIER 1 k.7'yi nasıl karşılayacak? | `M0-T09` |
-| S08 | Vitest ortamı `node` mu `jsdom` mu? | `M0-T01`, `M0-T04` |
 | S09 | `prefers-reduced-motion` M0'da mı okunacak? | `M0-T09` |
 | S10 | "İlk indirme" tam olarak neyi kapsıyor? | `M0-T10` |
 
-**Hiçbirine karar verilmedi.** Hiçbiri denge sayısı içermiyor — onunu da
-mimari/süreç kararı.
+> **S02 ve S08 kapandı.** Arcade fizik **kullanılmıyor** (`CLAUDE.md`
+> Teknoloji); Vitest ortamı **`node`**, Phaser'a dokunan kısımlar sahte
+> nesneyle (`CLAUDE.md` Test). İkincisinin çalışma koşulu **TIER 1 kural 11**
+> olarak yazıldı: saf mantık dosyaları Phaser'ı yalnız `import type` ile alır.
+
+Kalan sekiz sorunun hepsinin makul bir varsayılanı var; hiçbiri denge
+sayısı içermiyor.
 
 ## 4. Riskler
 
