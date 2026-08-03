@@ -1,0 +1,20 @@
+# Bağımlılıklar
+node_modules/
+
+# Yapı çıktısı
+dist/
+.vite/
+
+# Ham arşivler (dokümanlar depoda zaten açık halde)
+*.zip
+files (1)/
+
+# Editör / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Ortam
+.env
+.env.local
