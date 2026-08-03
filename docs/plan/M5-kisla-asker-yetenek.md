@@ -4,7 +4,8 @@
 |---|---|
 | **ROADMAP** | `docs/ROADMAP.md` M5 |
 | **Görev** | 9 (`M5-T01` … `M5-T09`) |
-| **Süre** | ~5 sa 55 dk (ROADMAP tahmini: 3 gün) |
+| **Kod yazma süresi** | ~5 sa 55 dk — **takvim değil** |
+| **Takvim bütçesi** | 3 gün (`ROADMAP.md`). Fark: 9 engelleme kuralının kenar durumları. |
 | **Durum** | ☐ bekliyor |
 
 ## 0. Oturum başlangıcı
@@ -250,7 +251,10 @@ npm run test -- BarracksSystem
 ```
 Beklenen: sinerji testi — iki kışla aynı noktada, tek düşmana karşı toplam
 DPS iki takımın toplamı, kayıp tek kışlaya göre az.
-gözle: Trol'ü kışla ile tutup arkadaki kulelerle eritmek çalışıyor.
+gözle, ölçülebilir karşılaştırma: aynı Trol'ü **kışlasız** ve **kışlalı**
+tahtayla iki kez gönder. Kışlalı denemede Trol'ün kule menzilinde geçirdiği
+süre **en az %50 daha uzun** olmalı (geliştirme sayacıyla ölç). Kışlasız
+denemede Trol sızıyorsa, kışlalı denemede sızmamalı.
 
 **Bitmedi sayılır eğer:** sinerji için özel kod yazıldıysa (kural 3'ten
 çıkması gerekiyor — çıkmıyorsa kural 3 yanlış uygulanmış).

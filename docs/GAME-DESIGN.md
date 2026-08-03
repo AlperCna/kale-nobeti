@@ -102,7 +102,12 @@ gibi görünüyor (okçu, boss'a tekrar tekrar `1` yazıyor). Hasar sayıları
 |---|---|---|
 | Tabana düşmüş (zırh/direnç emdi) | Gri + küçük kalkan ikonu | %80 |
 | Normal | Parşömen | %100 |
-| Kritik / zayıflık | Altın | %140 |
+
+**Kritik vuruş yok.** Dokümanın önceki hali üçüncü bir renk (altın, %140)
+için "kritik" diyordu ama kritik diye bir mekanik hiçbir yerde tanımlı
+değildi. v1'e kritik eklemek bir istatistik, bir rastgele atış ve denge
+varyansı getirir; karşılığında neredeyse hiçbir şey vermez — Keskin
+Nişancı'nın kimliği zaten menzil ve zırh delme. İki renk yeterli.
 
 ## 4. Kuleler
 
@@ -457,6 +462,19 @@ geçiyordu.
 
 **Ayrık yol uyarısı:** harita 2 ve 3'te Kısıt A hesabı **her kol için ayrı**
 yapılır. Toplam DPS yanıltıcıdır — kolun yalnızca onu gören kuleleri sayılır.
+
+### Yıldız derecelendirmesi
+
+Harita bitince kalan cana göre:
+
+| Kalan can | Yıldız |
+|---|---|
+| 20 (hiç sızma yok) | ★★★ |
+| 15-19 | ★★ |
+| 14 ve altı | ★ |
+
+Başlangıç canı 20 (§6). Boss sızması tek başına 10 can götürüyor (§5), yani
+boss'u kaçırmak doğrudan tek yıldıza düşürüyor — bilinçli.
 
 ### Kapsanan yol — asıl denge kolu
 

@@ -4,7 +4,8 @@
 |---|---|
 | **ROADMAP** | `docs/ROADMAP.md` M4 |
 | **Görev** | 11 (`M4-T01` … `M4-T11`) |
-| **Süre** | ~7 sa 25 dk (ROADMAP tahmini: 4 gün) |
+| **Kod yazma süresi** | ~7 sa 25 dk — **takvim değil** |
+| **Takvim bütçesi** | 4 gün (`ROADMAP.md`). Fark: 9 düşman + 12 kademenin elle denenmesi. |
 | **Durum** | ☐ bekliyor |
 
 ## 0. Oturum başlangıcı

@@ -283,7 +283,7 @@ export interface MapDef {
 
 /** Dalga N'de oyuncunun makul olarak sahip olacağı tahta.
  *  Denge sağlamalarının girdisi. research/01 §11.
- *  İÇERİĞİ TANIMLI DEĞİL — AÇIK SORU S25. Bu üç testi de bloke ediyor. */
+ *  ELLE YAZILMAZ — buildReferenceBoards() ekonomi tablosundan türetir (M3-T07). */
 export interface ReferenceBoard {
   readonly waveIndex: number;
   readonly towers: readonly {
@@ -320,9 +320,11 @@ export const BALANCE = {
   focusLoss: 0.75,
   /** §6: her iki kısıt için pay. */
   safetyMargin: 1.15,
-  /** §6: kapsanan düz yol parçası sayısına göre aktiflik.
-   *  Parçayı SAYAN algoritma tanımlı değil — AÇIK SORU S27. */
+  /** §6 aktiflik tablosu. KULLANILMIYOR — Kısıt B artık formül değil,
+   *  başsız simülasyon (M3-T09). Referans olarak duruyor. */
   activityRatio: { 1: 0.60, 2: 0.80, 3: 0.95 },
+  /** Yıldız eşikleri, kalan cana göre. GAME-DESIGN §9. */
+  starThresholds: { three: 20, two: 15 },
   /** §7: nefes dalgaları, bütçe × 0.85. */
   breatherWaves: [4, 7],
   /** §7 tempo sabitleri — AÇIK SORU S28. */
@@ -355,7 +357,8 @@ export interface KeyValueStore {
 }
 
 /** Tek anahtar: 'kale-nobeti-save-v1'. CLAUDE.md Teknoloji.
- *  ŞEMA TANIMLI DEĞİL — AÇIK SORU S60. Yıldız eşikleri S59. */
+ *  ŞEMA TANIMLI DEĞİL — AÇIK SORU S60.
+ *  Yıldız eşikleri kapandı: 20 → 3, 15-19 → 2, ≤14 → 1 (GAME-DESIGN §9). */
 export interface SaveData {
   readonly version: 1;
   readonly unlockedMaps: readonly string[];
@@ -383,11 +386,12 @@ export interface SaveData {
 | §5 (9 düşman × 7 sütun) | `EnemyDef` | ⚠️ yavru satırı (S38), Şaman yarıçapı (S37) |
 | §5 sızma cezası | `leakDamage` | ✅ tam |
 | §6 (8 ekonomi sabiti) | `BALANCE` | ⚠️ `SPAWN_K`/`REST_K` (S28) |
-| §6 aktiflik tablosu | `activityRatio` | ⚠️ hesaplama algoritması (S27) |
+| §6 aktiflik tablosu | `activityRatio` | ✅ kullanım dışı — Kısıt B simülasyona çevrildi |
 | §7 (bütçe, nefes, şema) | `Wave`, `budget` | ✅ tam |
 | §8 (2 yetenek × 3 alan) | Yetenek tablosu | ✅ tam |
 | §9 (3 harita × 8 sütun) | `MapDef` | ⚠️ koordinatlar (S57) |
 | `CLAUDE.md` Teknoloji | `KeyValueStore` | ✅ tam |
-| ROADMAP M7 (3 yıldız) | `SaveData.stars` | ⚠️ eşikler (S59), şema (S60) |
+| §9 yıldız eşikleri | `starThresholds` | ✅ tam (20 / 15-19 / ≤14) |
+| ROADMAP M7 (3 yıldız) | `SaveData.stars` | ⚠️ şema (S60) |
 
 **Kaçak yok.** Eksik olan her hücre bir açık soru kimliğine bağlı.

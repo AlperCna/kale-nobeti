@@ -1,23 +1,41 @@
 # Açık sorular
 
-Tüm taş dosyalarındaki `AÇIK SORU`'ların tek listesi. **62 soru.**
+## Bu 57 soruluk bir backlog değil, **1 soruluk bir karar listesi**
+
+56 sorunun makul bir varsayılanı var ve varsayılanla ilerlenebilir.
+Bunları tek tek çözmeye çalışmak iki gün kod yazmamak demek.
+
+**Geriye tek bloke edici soru kaldı: S50 (sanat yönü).**
+O da projenin 6 hafta mı 6 ay mı olduğunu belirliyor.
+
+| Durum | Sayı |
+|---|---|
+| ☑ Kapandı | 5 (S25, S26, S27, S56, S59) |
+| ☐ Varsayılanla geçilebilir | 56 |
+| **⛔ Bloke edici** | **1 (S50)** |
+
+### Kapanan beş soru
+
+| # | Nasıl kapandı |
+|---|---|
+| **S25** | `ReferenceBoard` **türetiliyor**, uydurulmuyor — `M3-T07` ekonomi tablosundan algoritmayla üretiyor |
+| **S26** | Düştü — `dalgaSüresi` artık tanımlanmıyor, **ölçülüyor** (`M3-T09` başsız simülasyon) |
+| **S27** | Düştü — `aktiflikOranı` hiç hesaplanmıyor; simülasyon gerçek aktifliği zaten yaşıyor |
+| **S56** | **Kritik vuruş v1'den çıkarıldı.** Mekanik hiç tanımlı değildi; eklemek varyans getirip karşılığında hiçbir şey vermiyordu. Hasar rengi iki renk (`GAME-DESIGN.md` §3) |
+| **S59** | Eşikler verildi: 20 can → ★★★, 15-19 → ★★, ≤14 → ★ (`GAME-DESIGN.md` §9) |
+
+**S26/S27 neden "cevap" değil de "düştü":** Kısıt B birim testi olmaya
+uygun değildi. Kısıt A statik veriden hesaplanabiliyor; Kısıt B'nin
+girdileri simülasyon çıktısı. Tanım uydurmak yerine ölçmek hem daha doğru
+hem iki soruyu birden siliyor.
+
+---
 
 Her soru için: **neden önemli** · **hangi taşı bloke ediyor** ·
 **karar verilmezse varsayılan ne olur**.
 
-> Varsayılanların hepsi kodda `// GEÇİCİ — S<nn>` veya `// BLOKE — S<nn>`
-> olarak işaretlenir. Hiçbiri sessizce kararlaştırılmaz.
-
-## Durum
-
-| Durum | Sayı |
-|---|---|
-| ☐ Cevaplanmadı | 62 |
-| ☑ Cevaplandı | 0 |
-
-**Bloke edici 6 soru:** S25, S26, S27 (denge sağlamaları), S50 (sanat yönü),
-S56 (kritik mekaniği), S59 (yıldız eşikleri). Bunlar varsayılanla
-geçilemiyor — ya cevap gerekiyor ya iş `todo` kalıyor.
+> Varsayılanların hepsi kodda `// GEÇİCİ — S<nn>` olarak işaretlenir.
+> Hiçbiri sessizce kararlaştırılmaz.
 
 ---
 
@@ -64,9 +82,6 @@ geçilemiyor — ya cevap gerekiyor ya iş `todo` kalıyor.
 
 | # | Soru | Neden önemli | Bloke | Varsayılan |
 |---|---|---|---|---|
-| **S25** | **`ReferenceBoard` içeriği:** dalga başına hangi kuleler, hangi noktada, hangi kademe? | `research/01` §11 tanımlanmasını istiyor ama içeriğini vermiyor. **Üç denge testinin tamamının girdisi** | `M3-T07`, `M3-T08`, `M3-T10` | **Yok.** Ekonomi hesabından taslak türetilir, tamamı `// GEÇİCİ — S25` |
-| **S26** | **`dalgaSüresi` tanımı** — ilk doğumdan son ölüme mi, dalga penceresi mi? | Kısıt B'nin ikinci çarpanı; tanımsız çarpanla test yazılamaz | `M3-T09` | **Yok.** Test `it.todo` kalır |
-| **S27** | **`aktiflikOranı` algoritması** — "kapsanan düz yol parçası"nı sayan yöntem | `GAME-DESIGN.md` §6 oran tablosunu veriyor (%60/%80/%95) ama parçayı sayan algoritma yok | `M3-T09` | **Yok.** Test `it.todo` kalır |
 | S28 | `SPAWN_K` ve `REST_K` sabitleri | §7 tempo formülünün sayıları yok | `M3-T01`, `M3-T05` | Geçici değer, işaretli |
 | S29 | Dalga 1 otomatik mi başlıyor, oyuncu mu başlatıyor? | İlk izlenim ve öğretici akış | `M3-T04` | Oyuncu başlatır |
 | S30 | 10 dalganın bütçeden üretilen kompozisyonunu kim rötuşlayacak? | §7 "üretilir ve sonra elle rötuşlanır" diyor | `M3-T02` | Üretilen hali rötuşsuz kullanılır |
@@ -110,7 +125,6 @@ geçilemiyor — ya cevap gerekiyor ya iş `todo` kalıyor.
 | S53 | Efekt yoğunluğu ayarının kademeleri — kapalı/düşük/tam mı? | `prefers-reduced-motion` hangi kademeye ayarlayacağını belirliyor | `M6-T09`, `M6-T12` | Üç kademe |
 | S54 | `prefers-reduced-motion` hangi kademeye ayarlıyor? | §10 "varsayılanı düşük yapar" diyor, kademe belirtmiyor | `M6-T12` | "düşük" |
 | S55 | Ekran sarsıntısı 2× hızda kapanıyor mu? | §10 hit-stop için "2×'te kapalı" diyor, sarsıntı için demiyor | `M6-T07`, `M6-T08` | Açık kalır |
-| **S56** | **Kritik vuruş mekaniği tanımlı değil.** §3 ve §10 "kritik" hasar sayısından bahsediyor (altın renk, %140 boyut) ama kritik şansı/çarpanı hiçbir yerde yok | Hasar sayısı renk kodunun üçte biri tanımsız | `M6-T10`, geriye dönük `M2-T08` | **Yok.** Kritik yolu ölü kod olarak durur |
 
 ## M7 — Harita 2-3, denge geçişi, yayın
 
@@ -118,7 +132,6 @@ geçilemiyor — ya cevap gerekiyor ya iş `todo` kalıyor.
 |---|---|---|---|---|
 | S57 | Harita 2 ve 3'ün waypoint/yapı noktası koordinatları | S11/S12 ile aynı sorun, iki harita için daha | `M7-T01`, `M7-T02` | Geçici yerleşim |
 | S58 | Ayrık yolda hangi grup hangi kola gidiyor — rastgele mi, `spawnPoint` sabit mi, dönüşümlü mü? | Kısıt A kol başına hesaplanıyor; dağılım bilinmeden doğrulanamıyor | `M7-T01`, `M7-T02` | `spawnPoint` sabit, veride yazılı |
-| **S59** | **3 yıldız eşikleri** (kalan cana göre) | `ROADMAP.md` M7 istiyor, sayı yok | `M7-T07` | **Yok.** Tek yıldız (bitirme), test `it.todo` |
 | S60 | `SaveData` şeması | Sürüm alanı, göç stratejisi | `M7-T05` | `DATA-SCHEMAS.md` §9 taslağı |
 | S61 | Portal SDK entegrasyonu M7'de mi, sonra mı? | Poki `gameplayStart`/`gameplayStop` zorunlu kılıyor (`research/05` §1) | `M7-T10`, `M7-T11` | itch.io için gerekmez; portal başvurusunda eklenir |
 | S62 | Harita kilidi: yalnız bitirme mi, yıldız şartı var mı? | S59'a bağlı | `M7-T06` | Yalnız bitirme |
@@ -144,9 +157,11 @@ Hangi soruların **ne zaman** cevaplanması gerektiği:
 
 | Ne zaman | Sorular |
 |---|---|
-| **M0 başlamadan** | S02 (fizik — imza değiştiriyor), S08 (test ortamı) |
-| **M1 başlamadan** | S11, S12 (harita koordinatları — yoksa ölçüm anlamsız) |
-| **M3 başlamadan** | **S25, S26, S27** — üçü de denge testlerini bloke ediyor |
-| **M6 başlamadan** | **S50** — sanat yönü; M6'nın tamamını ve takvimi belirliyor |
-| **M7 başlamadan** | S57, S59 |
-| Sırası gelince | Kalan 51 soru; hepsinin makul bir varsayılanı var |
+| **Bugün** | **S50** — sanat yönü. Takvimin tek değişkeni; M0-M5 boyunca beklemek gerekmiyor ama erken bilmek planlamayı düzeltiyor |
+| M0 başlamadan | S02 (fizik — imza değiştiriyor), S08 (test ortamı) |
+| M1 başlamadan | S11, S12 (harita koordinatları — yoksa ölçüm anlamsız) |
+| M7 başlamadan | S57 (harita 2-3 koordinatları) |
+| Sırası gelince | Kalan 52 soru; hepsinin makul bir varsayılanı var |
+
+**M0-M5 hiçbir bloke edici soruya bağlı değil.** S50 yalnız M6'yı bekletiyor,
+ve o da 5 taş sonra. Kod yazmaya bugün başlanabilir.

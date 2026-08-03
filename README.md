@@ -18,7 +18,7 @@ Teknoloji planı: Phaser 3 + TypeScript (strict) + Vite.
 | [CLAUDE.md](CLAUDE.md) | Proje kuralları — mimari, klasör yapısı, pazarlıksız kısıtlar |
 | [docs/GAME-DESIGN.md](docs/GAME-DESIGN.md) | Tasarım dokümanı — kuleler, düşmanlar, ekonomi, dalgalar, sanat yönü |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | 8 kilometre taşlı yol haritası |
-| [docs/plan/](docs/plan/README.md) | **Uygulama planı** — 82 görev, 8 taş dosyası, veri şemaları, test stratejisi, riskler, açık sorular |
+| [docs/plan/](docs/plan/README.md) | **Uygulama planı** — 82 kod görevi + 6 üretim bloğu, 8 taş dosyası, veri şemaları, test stratejisi, riskler, açık sorular |
 | [docs/research/](docs/research/README.md) | **Araştırma bulguları** — aşağıya bakınız |
 
 ## Araştırma

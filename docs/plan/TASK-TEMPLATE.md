@@ -62,7 +62,7 @@ Beklenen: `4 passed`. Testler: `tick` 1×, `tick` 2×, `setScale` dört
 |---|---|
 | **Kimlik** | `M<taş>-T<sıra>`, sıra iki haneli: `M0-T01`, `M3-T12`. Kimlik hiç değişmez — görev silinirse numara boş kalır, yeniden kullanılmaz. |
 | **Durum** | `☐ bekliyor` · `▶ devam` · `☑ bitti` · `⊘ iptal` |
-| **Süre** | 30-45 dk. Daha büyükse böl, daha küçükse komşu görevle birleştir. |
+| **Süre** | **Kod yazma süresi.** 30-45 dk. Daha büyükse böl. Bkz. aşağıdaki birim uyarısı. |
 | **Önkoşul** | Görev kimlikleri. Normalde aynı taş içinden. **Önceki** taşlardan önkoşul serbesttir (M3 görevi M1'in çıktısını tüketebilir) ve `DEPENDENCIES.md`'de karşılığı olmalı. **Sonraki** taştan önkoşul varsa görev yanlış taşta. |
 | **TIER 1** | `CLAUDE.md` TIER 1 kural numaraları. Görev o kuralı **ihlal edebilecek** kod içeriyorsa yazılır — "ilgili olabilir" yetmez. |
 | **Açık soru** | `OPEN-QUESTIONS.md`'deki `S<nn>` kimlikleri. Görevin kapsamını veya imzasını değiştirebilecek cevaplanmamış karar. |
@@ -80,6 +80,53 @@ Beklenen: `4 passed`. Testler: `tick` 1×, `tick` 2×, `setScale` dört
 - **"Gerekirse şunu da yap" yok.** Kapsam kesin olmalı; belirsizlik açık soru.
 - **Kabul kriteri "çalışıyor olmalı" olamaz.** Komut ve çıktı gerekir.
 - **"UI'ı güzelleştir" gibi görev olmaz.** Ölçülemeyen iş görev değildir.
+- **Öznel sıfat kabul kriteri olamaz.** "tutarlı", "güzel", "tatmin edici",
+  "çalışıyor" — hiçbiri ölçülemez. Sayı, ikili karşılaştırma veya
+  "şunu yap, şunu gör" biçimi gerekir.
+
+---
+
+## ⚠️ Süre birimi — iki farklı şey ölçülüyor
+
+| Birim | Nerede | Neyi kapsıyor |
+|---|---|---|
+| **Görev süresi** (dk) | Görev bloklarında | **Yalnız kod yazma.** Belirtilen imzayı yazmak ve testini geçirmek. |
+| **Taş süresi** (gün) | `docs/ROADMAP.md` | Gerçek takvim: hata ayıklama, Phaser öğrenme, varlık üretimi, oynatarak ayarlama, geri dönüşler. |
+
+**İkisi aynı şey değil.** Denetim ölçtü: görev toplamı 54 saat, ROADMAP
+27,5 gün (~220 saat) — **4 kat fark.** Fark hata değil, birim farkı.
+
+M0 tuttu (0,8×) çünkü saf koddan ibaret. M6 ve M7 **6 kat** saptı çünkü
+çoğunlukla kod olmayan iş.
+
+**Takvim planlaması `ROADMAP.md`'den yapılır**, görev sürelerinin
+toplamından değil. Görev süresi yalnız "bu oturumda bitirebilir miyim"
+sorusuna cevap verir.
+
+---
+
+## Kod dışı görevler
+
+Sanat üretimi, seviye tasarımı ve denge ayarı 30-45 dakikaya sığmıyor ve
+kabul kriteri komutla doğrulanamıyor. Bunlar **`P` ön ekiyle** ayrı
+işaretlenir:
+
+````markdown
+### M6-P01 — Kule sprite'larının üretimi
+
+| | |
+|---|---|
+| **Kimlik** | `M6-P01` (**kod dışı** — 30-45 dk kuralı geçerli değil) |
+| **Süre** | 1-3 gün · S50'ye bağlı |
+| **Çıktı** | 16 kule kademesi için PNG, hedef boyutta |
+| **Kabul** | `M6-T02` atlasa paketleyebiliyor; 640×360'ta silüetten ayırt ediliyor |
+````
+
+Farkları: süre **gün** cinsinden, kabul kriteri bir sonraki kod görevinin
+girdisi olabilmesi, ve `npm run guard` kapsamı dışında.
+
+**Kural:** her `P` görevinin çıktısını tüketen bir `T` görevi olmalı.
+Tüketicisi olmayan üretim görevi yazılmaz.
 
 ---
 

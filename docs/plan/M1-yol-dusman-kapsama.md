@@ -4,7 +4,8 @@
 |---|---|
 | **ROADMAP** | `docs/ROADMAP.md` M1 |
 | **Görev** | 9 (`M1-T01` … `M1-T09`) |
-| **Süre** | ~5 sa 50 dk (ROADMAP tahmini: 2 gün — bkz. §4 sapma notu) |
+| **Kod yazma süresi** | ~5 sa 50 dk — **takvim değil** |
+| **Takvim bütçesi** | 2 gün (`ROADMAP.md`). Fark: harita çizimi, ölçüm turu, Phaser öğrenme. |
 | **Durum** | ☐ bekliyor |
 
 ## 0. Oturum başlangıcı

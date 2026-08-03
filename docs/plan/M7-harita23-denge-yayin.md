@@ -3,9 +3,28 @@
 | | |
 |---|---|
 | **ROADMAP** | `docs/ROADMAP.md` M7 |
-| **Görev** | 11 (`M7-T01` … `M7-T11`) |
-| **Süre** | ~7 sa 15 dk (ROADMAP tahmini: 5-7 gün) |
+| **Görev** | 11 kod görevi + 2 üretim bloğu |
+| **Takvim bütçesi** | 5-7 gün (`ROADMAP.md`) |
 | **Durum** | ☐ bekliyor |
+
+> ## ⚠️ Bu taşa da dakika tahmini verilmiyor
+>
+> Kod görevlerinin toplamı ~7 saat ama ROADMAP 5-7 gün diyor — **6,6 kat**
+> fark, denetimdeki en büyük sapma. Sebebi M6'nınkiyle aynı: işin çoğu kod
+> değil. Burada seviye tasarımı ve denge oturumları.
+>
+> `M7-T01`, `M7-T02` ve `M7-T08`'in dakika tahminleri **yalnız kodlama
+> kısmını** kapsıyor. Asıl iş aşağıdaki bloklarda.
+
+## Kod dışı üretim blokları
+
+| Kimlik | Çıktı | Süre | Tüketen görev |
+|---|---|---|---|
+| `M7-P01` | Harita 2 ve 3'ün yol/nokta/uçan hattı tasarımı | 1-2 gün | `M7-T01`, `M7-T02` |
+| `M7-P02` | Denge oturumları: 30 dalga elle oynanır, 3 kişiye oynatılır | 2-3 gün | `M7-T08` |
+
+`M7-P01` çıktısı S57'yi kapatıyor. `M7-P02` `ROADMAP.md` M7 denge kontrol
+listesinin dokuz elle maddesini işliyor.
 
 ## 0. Oturum başlangıcı
 
@@ -198,33 +217,35 @@ sayfa yenilenince durum korunuyor.
 ### M7-T07 — 3 yıldız derecelendirmesi
 
 `M7-T07` · ☐ · ~35 dk · Önkoşul `M7-T06`, `M3-T11` · TIER 1 k.1, k.7
-· Açık soru **S59** · Doküman `ROADMAP.md` M7
+· Açık soru — (S59 kapandı) · Doküman `GAME-DESIGN.md` §9 "Yıldız derecelendirmesi"
 
 **Yapılacak**
-- Kalan cana göre 3 yıldız (`ROADMAP.md` M7).
-- **Eşikler dokümanda yok — S59.** Uydurulmaz; cevap gelene kadar tek
-  yıldız (bitirme) verilir ve `// BLOKE — S59` işaretlenir.
+- Eşikler (`GAME-DESIGN.md` §9): **20 can → ★★★**, **15-19 → ★★**,
+  **14 ve altı → ★**.
+- Eşikler `src/data/balance.ts` içinde sabit olarak durur (TIER 1 k.1).
+- Boss sızması tek başına 10 can götürdüğü için (§5) boss'u kaçırmak
+  doğrudan tek yıldıza düşürüyor — bilinçli.
 
 **Kabul kriteri**
 ```bash
 npm run test -- SaveSystem
 ```
-Beklenen: yıldız hesabı testi **`it.todo`** olarak listeleniyor,
-gerekçe `S59`.
+Beklenen: `≥ 4 passed` — `20 → 3`; `19 → 2`; `15 → 2`; `14 → 1`; `1 → 1`.
 
-**Bitmedi sayılır eğer:** uydurulmuş eşiklerle geçen bir test varsa.
+**Bitmedi sayılır eğer:** eşikler `src/systems/` içine gömülmüşse (TIER 1 k.1).
 
 ---
 
 ### M7-T08 — 30 dalganın denge geçişi
 
-`M7-T08` · ☐ · ~45 dk · Önkoşul `M7-T03`, `M7-T04` · TIER 1 k.1 · Açık soru S25, S26, S27
+`M7-T08` · ☐ · ~45 dk kod + `M7-P02` (2-3 gün) · Önkoşul `M7-T03`, `M7-T04`
+· TIER 1 k.1 · Açık soru —
 · Doküman `GAME-DESIGN.md` §6 · `research/01` §11, §12 · `ROADMAP.md` M7 kontrol listesi
 
 **Yapılacak**
 - M3'teki üç sağlamayı **3 harita × 10 dalga** üzerinde çalıştır.
-- Kısıt B hâlâ **S26/S27**'ye bağlıysa `todo` kalır — sahte sabitle
-  yeşile boyanmaz.
+- Kısıt B `M3-T09`'un başsız simülasyonuyla koşar — 30 dalga için
+  `leakedHp === 0` beklenir. Ayrık yol simülasyonda doğal olarak destekli.
 - `M1-T09`'un ölçtüğü kapsamayla **boss ve Trol HP'si yeniden hesaplanır**
   (`GAME-DESIGN.md` §5 ⚠️ notunun çözümü). `research/01` §12'deki
   `deriveBossHp` önerisi burada uygulanabilir.
@@ -304,8 +325,12 @@ gözle: gizli sekmede açılıyor ve çökmüyor; alt klasörden servis edilince
   (`research/05` §1) — başvurudan önce 3 kişiye oynat.
 
 **Kabul kriteri**
-gözle: itch.io sayfasında oyun açılıyor ve baştan sona oynanıyor;
-mobilde yatay modda çalışıyor.
+gözle, dört ölçülebilir kontrol — **itch.io sayfasında**, yerel sunucuda değil:
+1. Sayfa açılışından oynanabilir ana kadar **< 5 sn** (kronometreyle).
+2. Harita 1'in 10 dalgası baştan sona oynanıyor, kazanma ekranı çıkıyor.
+3. Tarayıcı konsolu **tamamen sessiz** (hata ve uyarı sayısı sıfır).
+4. Mobil tarayıcıda yatay modda açılıyor ve yapı noktalarına dokunma
+   çalışıyor.
 
 **Bitmedi sayılır eğer:** itch.io'da oyun beyaz ekran veriyorsa
 (`base: './'` sorunu).
@@ -318,20 +343,22 @@ mobilde yatay modda çalışıyor.
 |---|---|---|
 | S57 | Harita 2 ve 3'ün waypoint/yapı noktası koordinatları | `M7-T01`, `M7-T02` |
 | S58 | Ayrık yolda hangi grup hangi kola gidiyor? Rastgele mi, `spawnPoint` sabit mi? | `M7-T01`, `M7-T02` |
-| **S59** | **3 yıldız eşikleri** (kalan cana göre) — dokümanda yok | `M7-T07` |
 | S60 | `SaveData` şeması | `M7-T05` |
 | S61 | Portal SDK entegrasyonu M7'de mi, sonra mı? | `M7-T10`, `M7-T11` |
 | S62 | Harita kilidi: yalnız bitirme mi, yıldız şartı var mı? | `M7-T06` |
 
-Devam eden: S10 (ilk indirme tanımı), S25/S26/S27 (denge sağlamaları),
-S39 (Trol yenilenmesi ölçekleniyor mu).
+Devam eden: S10 (ilk indirme tanımı), S39 (Trol yenilenmesi ölçekleniyor mu).
+
+> **S59 kapandı** — eşikler `GAME-DESIGN.md` §9'da: 20 → ★★★, 15-19 → ★★,
+> ≤14 → ★. **S25/S26/S27 de kapandı** — referans tahta M3'te türetiliyor,
+> Kısıt B başsız simülasyona çevrildi.
 
 ## 4. Riskler
 
 | Risk | Erken uyarı | Hafifletme |
 |---|---|---|
 | Ayrık yolda tek toplam DPS kullanılır | Harita 2 testte geçiyor ama oynanınca bir kol sızdırıyor | `M7-T03` kol başına hesap |
-| Kısıt B hâlâ `todo` | 30 dalganın yarısı doğrulanmamış | S26/S27 cevaplanmalı; **yayın öncesi** |
+| Simülasyon yavaş, 30 dalga CI'da zaman aşımına uğruyor | `npm run test` süresi dakikaları buluyor | `M3-T09` kabulü "10 dalga < 2 sn" şartı koyuyor |
 | Boss/Trol ⚠️ geçici kalır | Ölçüm var ama HP güncellenmemiş | `M7-T08` "bitmedi sayılır eğer" |
 | `base:'./'` unutulur | itch.io'da beyaz ekran | `M7-T10` alt klasör testi |
 | Gizli sekmede çöküyor | Poki reddediyor | `M7-T05` + `M7-T10` |
@@ -345,9 +372,9 @@ S39 (Trol yenilenmesi ölçekleniyor mu).
 - [ ] **Üç harita da bitirilebiliyor**
 - [ ] Kısıt A 3 harita × 9 düşman için yeşil; ayrık yolda kol başına
 - [ ] Ekonomi sağlaması 30 dalga için yeşil
-- [ ] Kısıt B ya yeşil ya gerekçeli `todo` — **sahte sabitle geçmiyor**
+- [ ] Kısıt B simülasyonu 30 dalga için `leakedHp === 0`
 - [ ] Boss ve Trol HP'si ölçülen kapsamayla yeniden hesaplandı, ⚠️ kalktı
-- [ ] Seviye seçim, 3 yıldız (veya S59 bekliyor notu), kayıt çalışıyor
+- [ ] Seviye seçim, 3 yıldız (20/15-19/≤14), kayıt çalışıyor
 - [ ] Gizli sekmede çökmüyor
 - [ ] `dist/` alt klasörden servis edilince çalışıyor
 - [ ] İlk yükleme < 3 sn, ilk indirme ≤ 5 MB, dosya sayısı ≤ 1500
