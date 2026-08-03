@@ -9,16 +9,35 @@ Hedef: 3 harita × 10 dalga, 4 kule ailesi, 2 aktif yetenek.
 1. **Denge verisi asla koda gömülmez.** Tüm sayısal değerler `src/data/*.ts`
    içindeki tipli sabitlerde durur. Bir kulenin hasarını değiştirmek için
    sistem dosyalarına dokunulmaz.
-2. **İlk yüklenen paket 8 MB'ı geçemez.** Poki limiti bu. Her yeni varlık
-   eklendiğinde `npm run build` çıktısının boyutu kontrol edilir.
+2. **İlk yüklenen paket 8 MB'ı geçemez.** Poki limiti bu. Aşamalı yükleme ile
+   hedef ~1.5 MB. Her `npm run build` sonrası boyut raporlanır;
+   5 MB uyarı, 8 MB hata.
 3. **Nesne havuzu zorunlu.** Mermi, düşman, hasar sayısı ve parçacıklar
    `Phaser.GameObjects.Group` ile havuzlanır. Oyun içinde asla `new` ile
-   mermi yaratılmaz — çok kule konunca takılma en sık görülen kullanıcı şikâyeti.
+   mermi yaratılmaz. Havuza dönen nesne **tüm durumunu sıfırlar**
+   (hedef referansı, tween, timer, tint) — sıfırlanmayan hedef referansı
+   ölü düşmanı canlı tutar.
 4. **Yol bulma dinamik değildir.** Yol sabit waypoint dizisidir. A* veya
    flow field eklenmez. Kuleler yolu değiştiremez.
 5. **`any` tipi kullanılmaz.** TypeScript strict modda çalışır.
 6. **Erişilebilirlik tabanı:** ekran sarsıntısı ve parçacık yoğunluğu
    ayarlardan kapatılabilir olmalı. `prefers-reduced-motion` saygı görür.
+   Düşman/dost ayrımı yalnız renge dayanmaz.
+7. **Değişen metin `BitmapText`'tir.** Hasar sayıları, altın, can, bekleme
+   süreleri, dalga sayacı. `Phaser.GameObjects.Text` yalnızca bir kez yazılıp
+   sonra değişmeyen metinlerde serbesttir. Gerekçe: `Text` içeriği her
+   değiştiğinde canvas yeniden üretilip GPU'ya yükleniyor — havuzlamak
+   bu cezayı kaldırmaz.
+8. **Ham `delta` yasak.** Tüm zaman bağımlı mantık `GameClock.scaledDelta`
+   üzerinden çalışır. `GameClock.setScale(1|2)` ayrıca dört Phaser özelliğini
+   de günceller: `tweens.timeScale`, `physics.world.timeScale`,
+   `time.timeScale`, `anims.globalTimeScale`. Bu sözleşme **M0'da** kurulur —
+   sonradan eklemek her sisteme dokunmak demektir.
+9. **Menzil ve mesafe kontrolleri karesel yapılır.** `Math.sqrt` çağrılmaz.
+   Kule, ateşe hazır olmadığı sürece hedef aramaz.
+10. **`localStorage` erişimi her zaman `try/catch` içinde.** Gizli sekmede
+    istisna fırlatıyor; sarılmazsa oyun açılışta çöker. Kayıt başarısızsa
+    oyuncuya bir kez bildirilir.
 
 ## TIER 2 — Çalışma düzeni
 
@@ -28,15 +47,46 @@ Hedef: 3 harita × 10 dalga, 4 kule ailesi, 2 aktif yetenek.
   sistem merge edilmez.
 - Bir sistem yazılmadan önce `docs/GAME-DESIGN.md` içindeki ilgili bölüm okunur.
 - Yeni bir sayı uydurma. Tasarım dokümanında yoksa sor.
+- Bir denge sayısı sorgulanıyorsa önce `docs/research/01-denge-matematigi.md`
+  okunur — çoğu sayının gerekçesi orada.
 
 ## Teknoloji
 
 - Phaser 3 + TypeScript (strict) + Vite
-- Mantıksal çözünürlük 1280×720, `Scale.FIT` + `CENTER_BOTH`, letterbox
+- Mantıksal çözünürlük 1280×720 (16:9), `Scale.FIT` + `CENTER_BOTH`, letterbox
 - Yalnızca yatay yönlendirme (mobilde çevirme uyarısı platform tarafından yapılır)
-- Ses: Phaser'ın kendi ses sistemi, `.m4a` + `.ogg` çifti
-- Kayıt: `localStorage`, tek anahtar `kale-nobeti-save-v1`
+- Ses: Phaser'ın kendi ses sistemi
+- Kayıt: `KeyValueStore` arayüzü arkasında `localStorage`,
+  tek anahtar `kale-nobeti-save-v1`
+- Fontlar `Boot` sahnesinde `FontFace` API ile yüklenir, `Preload`'dan önce
+  `await` edilir. Sayı fontu web fontu değil, **bitmap font**tur.
 - Harici bağımlılık eklemeden önce sor
+
+## Platform kısıtları (M0'dan itibaren geçerli)
+
+Ayrıntı: `docs/research/05-yayin-platformlari.md`
+
+- `vite.config.ts` içinde `base: './'` — mutlak yol yasak (CrazyGames).
+  Unutulursa oyun portalda hiç yüklenmez.
+- UI, 640×360'a küçültüldüğünde okunur kalmalı: minimum yazı **16 px**,
+  minimum dokunmatik hedef **44×44 px** (1280×720 ölçeğinde).
+- **ESC ve boşluk** duraklatmayı açar/kapatır (Poki zorunlu).
+- Sayfa CSS'inde `-webkit-user-select: none`.
+- Yayın yapısında konsol çıktısı, hata ayıklama tuşları ve FPS sayacı bulunmaz.
+
+## Varlık formatları
+
+Ayrıntı: `docs/research/04-varlik-paket-boyut.md`
+
+- Arka planlar: **WebP q80, atlas DIŞINDA**, ayrı dosya. (PNG-24 olarak
+  bırakılırsa üç arka plan tek başına paketi patlatır.)
+- Sprite/UI: tek `atlas.png`, PNG-8, maks 2048×2048.
+- Bitmap font: PNG-8 + `.xml`.
+- Ses efektleri: **yalnız `.m4a`** (AAC). `.ogg` kopyası üretilmez.
+- Müzik: `.m4a` 96 kbps mono, ilk dalgadan sonra yüklenir.
+- Web fontları: statik `woff2`, tek ağırlık, **`latin-ext`** alt kümesi
+  (Türkçe karakterler için zorunlu).
+- Toplam doku sayısı ≤ 16 (Phaser multi-texture batching sınırı).
 
 ## Klasör yapısı
 
@@ -44,14 +94,16 @@ Hedef: 3 harita × 10 dalga, 4 kule ailesi, 2 aktif yetenek.
 src/
   main.ts                 Phaser config, sahne kaydı
   scenes/                 Boot, Preload, Menu, LevelSelect, Game, Hud, GameOver
-  systems/                PathSystem, WaveManager, TowerSystem, TargetingSystem,
-                          ProjectileSystem, EconomySystem, AbilitySystem, SaveSystem
+  systems/                GameClock, PathSystem, WaveManager, TowerSystem,
+                          TargetingSystem, ProjectileSystem, BarracksSystem,
+                          EconomySystem, AbilitySystem, SaveSystem
   entities/               Enemy, Tower, Soldier, Projectile
   fx/                     ScreenShake, HitStop, Particles, DamageText
-  data/                   towers.ts, enemies.ts, waves.ts, maps.ts, balance.ts
+  data/                   towers.ts, enemies.ts, waves.ts, maps.ts, balance.ts,
+                          referenceBoards.ts
   types/                  ortak arayüzler
-  util/                   math, pool, easing
-public/assets/            atlas.png, atlas.json, audio/, fonts/
+  util/                   math, pool, easing, coverage
+public/assets/            atlas.png, atlas.json, bg/*.webp, audio/, fonts/
 ```
 
 ## Mimari kurallar
@@ -63,18 +115,27 @@ public/assets/            atlas.png, atlas.json, audio/, fonts/
   `life:lost`, `tower:placed`.
 - `Enemy` kendi hasarını hesaplamaz; `combat.ts` içindeki saf `applyDamage()`
   fonksiyonu kullanılır (test edilebilir olsun diye).
-- Harita verisi (`maps.ts`) waypoint koordinatları + yapı noktası koordinatları
-  içerir. Görsel arka plan tek PNG'dir, tilemap kullanılmaz.
+- Harita verisi (`maps.ts`) waypoint + yapı noktası koordinatları içerir.
+  `coverage` alanı **elle yazılmaz**, `util/coverage.ts` üretir.
+- Arka plan tek WebP dosyasıdır, tilemap kullanılmaz.
 
 ## Test
 
 - Saf mantık fonksiyonları için Vitest: `applyDamage`, dalga bütçesi üretici,
-  ekonomi hesapları, hedefleme seçicileri.
+  ekonomi hesapları, hedefleme seçicileri, `coveredLength`.
+- **Denge sağlamaları da test edilir** (M3'ten itibaren, M6'ya bırakılmaz):
+  Kısıt A (tek düşman), Kısıt B (dalga verimi), ekonomi karşılanabilirliği.
+  Üçü de `docs/GAME-DESIGN.md` §6'daki formülleri kullanır ve %15 pay arar.
 - Görsel/sahne testi yazılmaz.
 - Bir kilometre taşı bitince: `npm run typecheck && npm run test && npm run build`
 
 ## Görsel yön
 
-Tam açıklama `docs/GAME-DESIGN.md` → "Sanat yönü". Özet:
-tezhipli el yazması estetiği. Mürekkep mavisi zemin, parşömen UI, altın varak
-vurgular. Kingdom Rush'ın parlak çizgi film paletine kaçılmaz.
+Tam açıklama `docs/GAME-DESIGN.md` §2. Özet: tezhipli el yazması estetiği.
+Mürekkep mavisi zemin, parşömen UI, altın varak vurgular. Kingdom Rush'ın
+parlak çizgi film paletine kaçılmaz.
+
+**Üretim kuralı:** her varlığın önce GREYBOX hali yapılır (tek renk silüet).
+Oyun M4 sonunda greybox'la tamamen oynanabilir olmalı. Nihai çizim yalnızca
+oynanışta kanıtlanmış varlıklar için üretilir — gerekçe:
+`docs/research/06-sanat-yonu.md` §2.

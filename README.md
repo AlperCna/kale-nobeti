@@ -23,9 +23,10 @@ Teknoloji planı: Phaser 3 + TypeScript (strict) + Vite.
 ## Araştırma
 
 `docs/research/` altındaki dosyalar, tasarım dokümanlarındaki varsayımların
-birincil kaynaklarla sınanmasından çıktı. Bulgular **henüz tasarım
-dokümanlarına işlenmedi**; `docs/research/README.md` sonunda uygulanması
-gereken 13 düzeltmenin listesi var.
+birincil kaynaklarla sınanmasından çıktı. **Bulgular tasarım dokümanlarına
+işlendi** — `CLAUDE.md`, `GAME-DESIGN.md` ve `ROADMAP.md` bu araştırmayla
+tutarlı. Neyin neden değiştiğinin kaydı
+[docs/research/README.md](docs/research/README.md) sonunda.
 
 | Dosya | İçerik |
 |---|---|
@@ -38,20 +39,23 @@ gereken 13 düzeltmenin listesi var.
 | [06 — Sanat yönü](docs/research/06-sanat-yonu.md) | Tezhip estetiğinin üretim maliyeti, alternatifler |
 | [Kaynaklar](docs/research/KAYNAKLAR.md) | Tüm kaynaklar, birincil/ikincil ayrımıyla |
 
-### Öne çıkan bulgular
+### Öne çıkan bulgular ve sonuçları
 
-**Ogre Şef mevcut haliyle öldürülemiyor.** Tek bir düşmana verilebilecek
-toplam hasar, kule yerleşiminden bağımsız olarak
-`Σ (DPS × kapsananYol) / hız` ile sınırlı. Harita 1'de 8 yapı noktasının
-hepsi Tier 3 olsa ve Meteor iki kez kullanılsa bile mutlak tavan **2131**;
-boss'un HP'si **2200**.
+**Ogre Şef öldürülemiyordu.** Tek bir düşmana verilebilecek toplam hasar,
+kule yerleşiminden bağımsız olarak `Σ (DPS × kapsananYol) / hız` ile sınırlı.
+Harita 1'de 8 yapı noktasının hepsi Tier 3 olsa ve Meteor iki kez kullanılsa
+bile mutlak tavan **2131**; boss'un HP'si **2200**'dü.
+→ Boss HP'si **700**'e indirildi.
 
-**`GAME-DESIGN.md` §6'daki sızıntı formülü savunmayı tam 6 kat abartıyor.**
-Formül her kulenin yolun tamamını gördüğünü varsayıyor; gerçek kapsama
-`2 × menzil`.
+**Sızıntı formülü savunmayı tam 6 kat abartıyordu.** Her kulenin yolun
+tamamını gördüğünü varsayıyordu; gerçek kapsama `2 × menzil`.
+→ İki kısıtlı modelle değiştirildi ve Vitest sağlamalarına bağlandı.
 
-**Tier 3, harita 1'de hiç görülmüyor.** Ekonomi 8 noktayı doldurup yalnızca
-3-4 Tier 2 yükseltmeye yetiyor.
+**Tier 3 harita 1'de hiç görülmüyordu.** Ekonomi 8 noktayı doldurup yalnızca
+3-4 Tier 2 yükseltmeye yetiyordu.
+→ Başlangıç altını ve dalga bonusu artırıldı, ödül oranları normalleştirildi.
 
-Ayrıntılar ve düzeltme seçenekleri
-[docs/research/README.md](docs/research/README.md) içinde.
+**Yol geometrisi kule istatistiklerinden güçlü bir denge kolu.** Aynı kule
+düz hattın önünde 2 saniye, arkasında 8-12 saniye ateş ediyor — tek kulede
+%44 hasar farkı.
+→ Kapsanan yol uzunluğu `MapDef`'e girdi ve harita kabul kriteri oldu.
