@@ -179,6 +179,25 @@ Ve her harita için bir hedef: yapı noktası başına ortalama kapsanan yol
 **≥ 450 px** (T1 menzil 150'nin 3 katı). Bunun altındaysa harita düz demektir
 ve boss dalgası çalışmaz.
 
+> ## ⚠️ ÇÖZÜLMEMİŞ VARSAYIM — kapsanan yol
+>
+> **Yukarıdaki 450 px, `01-denge-matematigi.md` §4-§5 ile çelişiyor.**
+> O dosya bütün tavan hesaplarını `kapsama ≈ 2 × menzil` = **300 px** ile
+> yapıyor ve Ogre Şef HP'sini (700) o hesaptan türetiyor.
+>
+> | Kapsama | T2 tavanı (boss) | Boss 700 = tavanın |
+> |---|---|---|
+> | 300 px (`01` §4) | 899 | %78 ← hedeflenen |
+> | 450 px (bu bölüm) | **1350** | **%52** |
+>
+> 450 px doğruysa boss yolun yarısında ölür ve final dalgası olay olmaktan
+> çıkar. **Ayrıca 450 px'in kaynağı yok** — "T1 menzilinin 3 katı" bir
+> hesap değil, elle konmuş bir sayı. Çelişkinin kökeni bu.
+>
+> Bu kriter, ölçüm yapılana kadar **bağlayıcı değildir.**
+> Tam analiz: `01-denge-matematigi.md` §4 "Çözülmemiş varsayım".
+> Çözülme noktası: M1, `util/coverage.ts` ile ölçüm.
+
 ---
 
 ## 4. Yerleşim öğretimi — bedava derinlik

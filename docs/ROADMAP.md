@@ -55,7 +55,12 @@ bu taşta çiziliyor; yol yanlış çizilirse tüm denge yanlış oturuyor.
 
 **Kabul:** 20 düşman aynı anda yolda akıcı ilerliyor, 60 FPS, sızan düşman
 can düşürüyor. Geliştirme modunda her yapı noktasının kapsadığı piksel
-ekranda yazıyor ve ortalama **≥ 450 px**.
+ekranda yazıyor.
+
+> ⚠️ Eski kabul kriteri "ortalama ≥ 450 px" idi. **O sayı türetilmemiş ve
+> `docs/research/01-denge-matematigi.md` §4'ün 300 px varsayımıyla çelişiyor.**
+> M1'in gerçek çıktısı bir eşiği geçmek değil, **kapsamayı ölçmek**; ölçüm
+> çıkınca boss ve Trol HP'si yeniden hesaplanır. Bkz. `01` §4 ve §12.
 
 **Tuzak:** düşmanın kaleye kalan yol mesafesini sakla — `first`/`last`
 hedeflemesi buna bağlı olacak (yol *ilerlemesine* değil; ayrık yollu
