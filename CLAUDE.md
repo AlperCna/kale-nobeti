@@ -29,15 +29,23 @@ Hedef: 3 harita × 10 dalga, 4 kule ailesi, 2 aktif yetenek.
    değiştiğinde canvas yeniden üretilip GPU'ya yükleniyor — havuzlamak
    bu cezayı kaldırmaz.
 8. **Ham `delta` yasak.** Tüm zaman bağımlı mantık `GameClock.scaledDelta`
-   üzerinden çalışır. `GameClock.setScale(1|2)` ayrıca dört Phaser özelliğini
-   de günceller: `tweens.timeScale`, `physics.world.timeScale`,
-   `time.timeScale`, `anims.globalTimeScale`. Bu sözleşme **M0'da** kurulur —
-   sonradan eklemek her sisteme dokunmak demektir.
+   üzerinden çalışır. `GameClock.setScale(1|2)` ayrıca **üç** Phaser
+   özelliğini de günceller: `tweens.timeScale`, `time.timeScale`,
+   `anims.globalTimeScale`. Bu sözleşme **M0'da** kurulur — sonradan
+   eklemek her sisteme dokunmak demektir.
 9. **Menzil ve mesafe kontrolleri karesel yapılır.** `Math.sqrt` çağrılmaz.
    Kule, ateşe hazır olmadığı sürece hedef aramaz.
 10. **`localStorage` erişimi her zaman `try/catch` içinde.** Gizli sekmede
     istisna fırlatıyor; sarılmazsa oyun açılışta çöker. Kayıt başarısızsa
     oyuncuya bir kez bildirilir.
+11. **`systems/`, `util/`, `data/` ve `types/` Phaser'ı yalnız `import type`
+    ile alır.** Çalışma zamanında Phaser'a dokunan kod yalnız `scenes/` ve
+    `entities/` içinde yaşar. Gerekçe: testler `node` ortamında koşuyor;
+    saf mantık dosyası Phaser'ı çalışma zamanında yüklerse `window` arar ve
+    patlar. O noktada çare diye `jsdom`'a geçilir, testler yavaşlar ve
+    `simulateWave` için konan "10 dalga < 2 sn" şartı düşer. Bu kural,
+    "sahneler ince olur, mantık `systems/` içinde yaşar" mimari kuralının
+    derlenebilir hâlidir.
 
 ## TIER 2 — Çalışma düzeni
 
@@ -54,6 +62,14 @@ Hedef: 3 harita × 10 dalga, 4 kule ailesi, 2 aktif yetenek.
 
 - Phaser 3 + TypeScript (strict) + Vite
 - Mantıksal çözünürlük 1280×720 (16:9), `Scale.FIT` + `CENTER_BOTH`, letterbox
+- **Arcade fizik kullanılmıyor.** Mermiler elle hareket eder; tüm yakınlık
+  ve isabet kontrolleri karesel mesafe (kural 9). Gerekçe: çarpışma çözümü
+  (itme, sekme, yerçekimi) yok; mermiler zaten hedef takipli olduğu için
+  `velocity` her karede üzerine yazılırdı; havuza dönen nesnede sıfırlanacak
+  alan sayısı artardı (kural 3); ve `simulateWave` başsız kalabiliyor —
+  fizik olsaydı test bir Phaser dünyası ayağa kaldırmak zorundaydı.
+  **Eşik:** aynı anda düşman sayısı 200'ü aşarsa naif `O(n·m)` mesafe
+  taraması yetmez, uzamsal ızgara gerekir. Mevcut dalga bütçesi ~50 düşman.
 - Yalnızca yatay yönlendirme (mobilde çevirme uyarısı platform tarafından yapılır)
 - Ses: Phaser'ın kendi ses sistemi
 - Kayıt: `KeyValueStore` arayüzü arkasında `localStorage`,
@@ -121,8 +137,13 @@ public/assets/            atlas.png, atlas.json, bg/*.webp, audio/, fonts/
 
 ## Test
 
+- **Ortam `node`**, `jsdom` değil. Test edilen hiçbir şey DOM'a dokunmuyor;
+  `jsdom`'da WebGL/Canvas olmadığı için Phaser zaten koşmaz. `node` belirgin
+  şekilde hızlı ve `simulateWave`'in "10 dalga < 2 sn" şartı buna bağlı.
+  Phaser'a dokunan kısımlar **sahte sahne nesnesiyle** test edilir.
+  Bu ancak kural 11 tutuyorsa çalışır.
 - Saf mantık fonksiyonları için Vitest: `applyDamage`, dalga bütçesi üretici,
-  ekonomi hesapları, hedefleme seçicileri, `coveredLength`.
+  ekonomi hesapları, hedefleme seçicileri, `coveredLength`, `simulateWave`.
 - **Denge sağlamaları da test edilir** (M3'ten itibaren, M6'ya bırakılmaz):
   Kısıt A (tek düşman), Kısıt B (dalga verimi), ekonomi karşılanabilirliği.
   Üçü de `docs/GAME-DESIGN.md` §6'daki formülleri kullanır ve %15 pay arar.

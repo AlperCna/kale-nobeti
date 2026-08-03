@@ -134,6 +134,20 @@ export class GameClock {
 > Arcade fizik kullanılmayacaksa (mermiler elle hareket ettirilecekse) bu
 > satır gereksiz — ama karar M0'da verilmeli.
 
+> ## ☑ KARAR VERİLDİ — Arcade fizik kullanılmıyor
+>
+> Yukarıdaki `setScale` **üç** özellik yazıyor, dört değil:
+> `tweens`, `time`, `anims`. `physics.world.timeScale` satırı düştü.
+>
+> Gerekçe (`CLAUDE.md` Teknoloji): çarpışma çözümü yok; mermiler zaten hedef
+> takipli olduğu için `velocity` her karede üzerine yazılırdı; havuza dönen
+> nesnede sıfırlanacak alan sayısı artardı; ve en belirleyicisi —
+> `simulateWave` (M3-T09 başsız simülasyon) fizikle bir Phaser dünyası
+> ayağa kaldırmak zorunda kalırdı, saf fonksiyon olamazdı.
+>
+> Yan fayda: senkronda tutulacak zaman otoritesi dörtten üçe indi,
+> 2× hızda desenkron ihtimali azaldı.
+
 **Duraklatma** aynı mekanizmayla `setScale(0)` değil, sahne `pause()` ile
 yapılmalı; `scale 0` sıfıra bölme riskleri doğuruyor.
 

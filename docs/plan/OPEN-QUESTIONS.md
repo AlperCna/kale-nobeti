@@ -7,13 +7,13 @@ Bunları tek tek çözmeye çalışmak iki gün kod yazmamak demek.
 
 | Durum | Sayı |
 |---|---|
-| ☑ Kapandı | 6 (S25, S26, S27, S50, S56, S59) |
-| ☐ Varsayılanla geçilebilir | 56 |
+| ☑ Kapandı | 8 (S02, S08, S25, S26, S27, S50, S56, S59) |
+| ☐ Varsayılanla geçilebilir | 54 |
 | **⛔ Bloke edici** | **0** |
 
 **Kod yazmaya başlamak için beklenen hiçbir şey yok.**
 
-### Kapanan altı soru
+### Kapanan sekiz soru
 
 | # | Nasıl kapandı |
 |---|---|
@@ -22,6 +22,8 @@ Bunları tek tek çözmeye çalışmak iki gün kod yazmamak demek.
 | **S27** | Düştü — `aktiflikOranı` hiç hesaplanmıyor; simülasyon gerçek aktifliği zaten yaşıyor |
 | **S56** | **Kritik vuruş v1'den çıkarıldı.** Mekanik hiç tanımlı değildi; eklemek varyans getirip karşılığında hiçbir şey vermiyordu. Hasar rengi iki renk (`GAME-DESIGN.md` §3) |
 | **S59** | Eşikler verildi: 20 can → ★★★, 15-19 → ★★, ≤14 → ★ (`GAME-DESIGN.md` §9) |
+| **S02** | **Arcade fizik kullanılmıyor.** Mermiler elle hareket eder; yakınlık ve isabet karesel mesafe. `GameClock` üç özellik yazıyor, dört değil. Belirleyici sebep: `simulateWave` fizikle Phaser dünyası ayağa kaldırmak zorunda kalırdı — S02'nin cevabı aslında `M3-T09` kararında verilmişti. Eşik: düşman > 200 olursa uzamsal ızgara gerekir (`CLAUDE.md` Teknoloji) |
+| **S08** | **Vitest ortamı `node`**, Phaser'a dokunan kısımlar sahte nesneyle. `jsdom`'da WebGL/Canvas yok, Phaser zaten koşmaz; `node` hızlı ve "10 dalga < 2 sn" şartı buna bağlı. **Çalışma koşulu TIER 1 kural 11 olarak yazıldı** (`CLAUDE.md` Test) |
 | **S50** | **Özgün silüet** seçildi. Birimler koyu mürekkep silüet + tek vurgu + altın kontur; tezhip yalnız çerçeve ve arka planda. Hazır varlık paketi kullanılmıyor. M6 takvimi **3-4 hafta** (`GAME-DESIGN.md` §2 "Üretim seviyesi") |
 
 **S26/S27 neden "cevap" değil de "düştü":** Kısıt B birim testi olmaya
@@ -157,13 +159,11 @@ Hangi soruların **ne zaman** cevaplanması gerektiği:
 
 | Ne zaman | Sorular |
 |---|---|
-| M0 başlamadan | S02 (fizik — imza değiştiriyor), S08 (test ortamı) |
 | M1 başlamadan | S11, S12 (harita koordinatları — yoksa ölçüm anlamsız) |
 | M7 başlamadan | S57 (harita 2-3 koordinatları) |
 | Sırası gelince | Kalan 52 soru; hepsinin makul bir varsayılanı var |
 
-İkisi de (S02, S08) varsayılanla geçilebilir; erken cevaplanırsa `M0-T04`'ün
-imzası ve test şekli bir kez yazılır, sonra dönülmez.
+**M0 için cevaplanması gereken hiçbir soru kalmadı.**
 
 ## Takvim
 
