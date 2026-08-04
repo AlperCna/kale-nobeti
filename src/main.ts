@@ -1,13 +1,14 @@
 import Phaser from 'phaser';
 import { BootScene } from './scenes/BootScene';
 import { PreloadScene } from './scenes/PreloadScene';
+import { MenuScene } from './scenes/MenuScene';
 
 /**
- * GEÇİCİ yer tutucu sahne — M0-T07..T09 bunu
- * Menu → Game + Hud zinciriyle değiştirecek.
+ * GEÇİCİ oyun alanı yer tutucusu — M0-T08 bunu `GameScene` ile,
+ * M0-T09 da üstüne `HudScene` ile değiştirecek.
  *
- * Şu anki işi `M0-T05`'in kabul kriterini gözle doğrulanabilir kılmak:
- * Türkçe karakterler her iki fontta da kutucuk çıkmadan çiziliyor mu?
+ * M0-T05'in font doğrulaması buradan kaldırıldı: `MenuScene` başlığı
+ * zaten Grenze Gotisch ve "Kale Nöbeti" Türkçe karakter taşıyor.
  */
 class BootstrapScene extends Phaser.Scene {
   constructor() {
@@ -17,31 +18,11 @@ class BootstrapScene extends Phaser.Scene {
   create(): void {
     const { width, height } = this.scale;
 
-    // Statik metin — bir kez yazılıp değişmiyor, bu yüzden
-    // `Phaser.GameObjects.Text` serbest (TIER 1 kural 7 istisnası).
-    const ornek = 'İIıi ŞşĞğÇçÖöÜü';
-
     this.add
-      .text(width / 2, height / 2 - 60, ornek, {
-        fontFamily: '"Grenze Gotisch", serif',
-        fontSize: '48px',
-        color: '#D4A032', // GAME-DESIGN §2 "Altın varak"
-      })
-      .setOrigin(0.5);
-
-    this.add
-      .text(width / 2, height / 2 + 20, ornek, {
+      .text(width / 2, height / 2, 'oyun alanı — M0-T08 (geçici)', {
         fontFamily: 'Spectral, serif',
-        fontSize: '32px',
-        color: '#E4D3A8', // GAME-DESIGN §2 "Parşömen"
-      })
-      .setOrigin(0.5);
-
-    this.add
-      .text(width / 2, height / 2 + 80, 'M0-T05 — font doğrulaması (geçici)', {
-        fontFamily: 'Spectral, serif',
-        fontSize: '16px',
-        color: '#8A7250',
+        fontSize: '20px',
+        color: '#8A7250', // GAME-DESIGN §2 yol rengi
       })
       .setOrigin(0.5);
   }
@@ -75,7 +56,7 @@ const config: Phaser.Types.Core.GameConfig = {
   // görünür — kapatılıyor.
   banner: false,
 
-  scene: [BootScene, PreloadScene, BootstrapScene],
+  scene: [BootScene, PreloadScene, MenuScene, BootstrapScene],
 };
 
 new Phaser.Game(config);
