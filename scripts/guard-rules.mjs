@@ -174,6 +174,26 @@ const sonuclar = [];
 }
 
 // ---------------------------------------------------------------------
+// 8 — `coverage` elle yazılmıyor (CLAUDE.md Mimari kuralı)
+//
+// `MapDef.coverage` util/coverage.ts üretir. Elle yazılırsa denge testleri
+// gerçeği değil, birinin yazdığı sayıyı doğrular — sessiz ve ölümcül.
+// maps.test.ts de aynı şeyi kontrol ediyor; bu bekçi, testin silinmesi
+// durumunda ayakta kalan ikinci kat.
+// ---------------------------------------------------------------------
+{
+  const dosya = join(SRC, 'data', 'maps.ts');
+  let ihlalVar = false;
+  for (const s of kodSatirlari(readFileSync(dosya, 'utf8'))) {
+    if (/\bcoverage\s*:/.test(s.metin) && !/measureCoverage\s*\(/.test(s.metin)) {
+      ihlalVar = true;
+      ihlal('mim.', dosya, s.no, 'coverage elle yazılmış — measureCoverage üretmeli');
+    }
+  }
+  sonuclar.push(['mim. coverage measureCoverage ile üretiliyor', !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
 
 const gecen = sonuclar.filter(([, ok]) => ok).length;
 for (const [ad, ok] of sonuclar) console.log(`  ${ok ? '✓' : '✗'} ${ad}`);
