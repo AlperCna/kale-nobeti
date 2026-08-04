@@ -92,72 +92,94 @@ varsayımı. Gerçekte `kapsananYol ≈ 2 × menzil`.
 HataÇarpanı = L / (2 × menzil)
 ```
 
-Harita 1 için (L ≈ 1800 px, menzil ≈ 150 px):
+Harita 1 için — **artık tahmin değil, ölçüm** (`M1-T03`):
 
 ```
-HataÇarpanı = 1800 / 300 = 6
+L = 1700 px  (ölçüldü)
+ortalama kapsanan yol = 296,3 px  (ölçüldü, menzil 150)
+
+HataÇarpanı = 1700 / 296,3 = 5,74
 ```
 
-**Doküman savunma kapasitesini 6 kat abartıyor.** M6'daki "her dalga için
+**Doküman savunma kapasitesini ~5,7 kat abartıyor.** M6'daki "her dalga için
 `toplamHP < D·L/v` sağlaması yapılacak" maddesi bu haliyle 30 dalganın
 hepsini yanlış onaylar.
 
-> Not: `L` değeri dokümanda hiçbir yerde yazmıyor. 1280×720 bir haritada
-> 2 keskin virajlı tek yol için 1600-2000 px makul. Kesinleşmesi gerekiyor,
-> çünkü bütün denge buna asılı.
+> `L` başlangıçta dokümanın hiçbir yerinde yazmıyordu; burada "1600-2000 px
+> makul" diye tahmin edilmişti. Harita çizilince **1700** çıktı — tahmin
+> bandının ortası. İlk hesaptaki `1800 / 300 = 6` bu yüzden büyüklük olarak
+> doğruydu; kesin değer **5,74**.
 
 ---
 
 ## 4. Mevcut sayılara uygulama — Ogre Şef
 
-> ## ⚠️ ÇÖZÜLMEMİŞ VARSAYIM — kapsanan yol
+> ## ✅ ÇÖZÜLDÜ — kapsanan yol ölçüldü (M1)
 >
-> **Bu bölümün ve §5'in tüm sayıları `~300 px/kule` kapsama varsayımına
-> dayanıyor. Bu varsayım `03-mekanik-tasarim.md` §3 ile çelişiyor.**
+> Bu bölümün ve §5'in tüm sayıları `~300 px/kule` kapsama **varsayımına**
+> dayanıyordu ve o varsayım `03-mekanik-tasarim.md` §3'ün "≥ 450 px"
+> kriteriyle çelişiyordu. İkisi aynı harita için aynı anda doğru olamazdı.
 >
-> | Dosya | Değer | Nerede |
-> |---|---|---|
-> | `01` (bu dosya) | `kapsama ≈ 2 × menzil` = **300 px** | §3, §4 girdi tablosu, §5 |
-> | `03-mekanik-tasarim.md` §3 | ortalama **≥ 450 px** harita kabul kriteri | "Kapsanan yol uzunluğu bir harita özelliği olmalı" |
+> **Harita 1 çizildi ve ölçüldü** (`M1-T03`, `M1-T09`):
 >
-> İkisi aynı harita için aynı anda doğru olamaz.
+> | | |
+> |---|---|
+> | Yol uzunluğu `L` | **1700 px** |
+> | Ortalama kapsama (menzil 150) | **296,3 px** |
+> | `ort ÷ 2 × menzil` | **0,988** |
 >
-> ### Büyüklük
->
-> ΣDPS = 84 (T2 tahtası, boss'a etkin), boss hızı 28 px/sn:
+> **Bu dosyanın `kapsama ≈ 2 × menzil` modeli %1,2 hatayla doğrulandı.**
+> `03`'ün 450 px'i türetilmemişti ("T1 menzilinin 3 katı", hiçbir hesaptan
+> gelmiyor) ve §5'teki boss değeriyle aynı anda doğru olamıyordu: 450 px'te
+> T2 tavanı 1350 olur, boss 700 tavanın **%52**'sinde kalırdı.
 >
 > | Kapsama | Menzilde süre | T2 tavanı | Boss 700 = tavanın |
 > |---|---|---|---|
-> | 300 px | 10.7 sn | **899** | %78 ← §4'ün hedefi |
-> | 450 px | 16.1 sn | **1350** | **%52** |
+> | **296,3 px (ölçülen)** | **10,58 sn** | **889** | **%78,7** ✓ hedef %75-85 |
+> | 450 px (`03`, reddedildi) | 16,1 sn | 1350 | %52 |
 >
-> ### Çelişkinin kökeni
+> ### Dürüstlük notu: bu, 300'ün bağımsız kanıtı değil
 >
-> **450 px türetilmemiş.** `03`'te "T1 menzil 150'nin 3 katı" diye yazılmış;
-> hiçbir hesaptan gelmiyor. 300 px ise `2 × menzil` geometrisinden geliyor
-> ama **düz yol** varsayıyor — kıvrımlı yolda kapsama daha büyük.
+> Koordinatlar kapsama hedefinden **türetildi** — boss 700 ve T2 tahtası
+> sabit tutulup gereken ortalama kapsama çıkarıldı (≈292 px) ve yol onu
+> tutturacak şekilde çizildi. Ölçüm bu yüzden "300 doğruydu" demiyor;
+> **"450 px, §5'teki boss değeriyle aynı anda doğru olamıyor"** diyor.
+> Çelişki bu gerekçeyle 300 lehine kapandı.
 >
-> ### İki türev sonuç
+> ### Türev sonuç a) "Mutlak tavan 2131" — ayakta, ama payı ince
 >
-> **a) Aşağıdaki "mutlak tavan 2131" iddiası 450 px'te tersine dönüyor.**
-> Kıvrımlılık çarpanı 1.5 olursa T3 kapsamaları da 1.5 katına çıkar:
-> Havan 690 px → 1263, Yıldırım 510 px → 861, Keskin Nişancı 780 px → 536,
-> Meteor +360 → **mutlak tavan 3020 > 2200**. Yani boss 2200 "hiçbir durumda
-> öldürülemez" değil, "tam T3 tahtasıyla öldürülebilirdi" olurdu.
-> Manşetin zayıf hali ayakta: gerçekçi T2 tahtası 450 px'te bile
-> 1350 < 2200, yani 2200 pratikte fazla tanktı ve indirilmesi doğruydu.
+> Bu iddia `kapsama = 2 × menzil` ile hesaplanmıştı. Gerçek menzillerde
+> ölçülen kapsamayla yeniden hesaplandı:
 >
-> **b) §3'teki "tam 6 kat abartıyor" rakamı da varsayıma bağlı.**
-> `HataÇarpanı = L / kapsananYol`; 300 px'te 6, **450 px'te 4**.
-> Eski formülün yanlış olduğu bulgusu etkilenmiyor, yalnız büyüklüğü.
+> | Kule | Menzil | Ölçülen kapsama | Süre | Hasar |
+> |---|---|---|---|---|
+> | Havan ×3 | 230 | 476 px | 17,0 sn | 872 |
+> | Yıldırım ×3 | 170 | 340 px | 12,1 sn | 574 |
+> | Keskin Nişancı ×2 | 260 | 557 px | 19,9 sn | 382 |
+> | Meteor ×2 | — | — | — | 360 |
+> | **MUTLAK TAVAN** | | | | **2188** |
 >
-> ### Çözülme noktası: M1
+> **2188 < 2200 — iddia ayakta, ama yalnız %0,5 pay var** (eski tahmin
+> 2131 idi). Doğru ifade "matematiksel olarak imkânsız" değil,
+> **"pratikte imkânsız"**: senaryo ekonomik olarak zaten erişilemez ve
+> %0,5 pay tek bir menzil düzeltmesiyle kapanır.
+> `src/data/referenceBoards.test.ts` bu payı bekçiye bağladı.
 >
-> `util/coverage.ts` yazılıp Harita 1 çizildiğinde kapsama **ölçülecek**.
-> Kule, ekonomi, dalga hiçbiri gerekmiyor — M3'ü beklemeye gerek yok.
-> Ölçüm çıkınca Ogre Şef ve Trol yeniden hesaplanır (bkz. §12).
+> Not: geniş menzilli kulelerde `ort ÷ 2r` oranı 1'in üstüne çıkıyor
+> (260 px menzilde 1,070) — viraj noktaları yolu daha çok kez görüyor.
+> Tavanın 2131'den 2188'e çıkmasının sebebi bu.
 >
-> Bu not çözülene kadar aşağıdaki tüm sayılar **geçici**dir.
+> ### Türev sonuç b) §3'teki "tam 6 kat" → **5,7 kat**
+>
+> `HataÇarpanı = L / kapsananYol = 1700 / 296,3 = 5,74`. Eski formülün
+> yanlış olduğu bulgusu etkilenmiyor, yalnız büyüklüğü — ve 6'ya çok yakın.
+>
+> ### Kalan sınır
+>
+> Yukarıdaki oranlar **Harita 1 geometrisiyle** hesaplandı. Trol, Şaman,
+> Zırhlı Ork ve Örümcek Ana harita 2-3'te sahneye çıkıyor; oradaki HP
+> çarpanı (1,6 / 2,6) ve yapı noktası sayısı (10 / 12) farklı. Gerçek
+> sağlamaları o haritalar çizilince (M7) yapılacak.
 
 ### Girdi
 

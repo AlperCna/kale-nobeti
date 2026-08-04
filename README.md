@@ -20,6 +20,7 @@ Teknoloji planı: Phaser 3 + TypeScript (strict) + Vite.
 | [docs/ROADMAP.md](docs/ROADMAP.md) | 8 kilometre taşlı yol haritası |
 | [docs/plan/](docs/plan/README.md) | **Uygulama planı** — 82 kod görevi + 6 üretim bloğu, 8 taş dosyası, veri şemaları, test stratejisi, riskler, açık sorular |
 | [docs/results/](docs/results/README.md) | **Taş sonuçları** — her taş bitince yazılan ölçüm defteri |
+| [docs/results/OLCUMLER.md](docs/results/OLCUMLER.md) | **Ölçüm kütüğü** — varsayılmayan, ölçülen her sayı; nereden geldiği ve hangi test onu koruduğu |
 | [docs/research/](docs/research/README.md) | **Araştırma bulguları** — aşağıya bakınız |
 
 ## Araştırma
@@ -45,17 +46,22 @@ tutarlı. Neyin neden değiştiğinin kaydı
 
 **Ogre Şef öldürülemiyordu.** Tek bir düşmana verilebilecek toplam hasar,
 kule yerleşiminden bağımsız olarak `Σ (DPS × kapsananYol) / hız` ile sınırlı.
-Gerçekçi bir Tier 2 tahtasına karşı tavan **899–1350** arası; boss'un HP'si
-**2200**'dü. → Boss HP'si **700**'e indirildi (⚠️ geçici, aşağıya bakınız).
+Gerçekçi bir Tier 2 tahtasına karşı tavan **889**; boss'un HP'si **2200**'dü.
+→ Boss HP'si **700**'e indirildi — ölçülen tavanın **%78,7'si**, hedef band
+%75-85'in içinde.
 
-**⚠️ Kapsanan yol varsayımı hâlâ çözülmedi.** Araştırma dosyalarından biri
-`300 px/kule`, diğeri `≥ 450 px` kullanıyor ve tüm denge bu tek sayıya asılı.
-Boss (700) ve Trol (400) bu yüzden **geçici** işaretli. Ölçüm M1'de
-`util/coverage.ts` ile yapılacak. Bkz.
-[`01-denge-matematigi.md` §4](docs/research/01-denge-matematigi.md).
+**✅ Kapsanan yol ölçüldü (M1).** İki araştırma dosyası aynı büyüklük için
+farklı değer kullanıyordu (`300 px/kule` ve `≥ 450 px`) ve tüm denge bu tek
+sayıya asılıydı. Harita 1 çizildi ve ölçüldü: `L` = **1700 px**, ortalama
+kapsama **296,3 px** — yani `2 × menzil`in **0,988** katı. `450 px`
+türetilmemişti ve reddedildi: o değerde boss 700 tavanın yalnız %52'sinde
+kalırdı. Boss (700) ve Trol (400) üzerindeki **geçici işaretleri kalktı.**
+Sağlamalar `src/data/referenceBoards.test.ts` içinde koşuyor.
+Ayrıntı: [`M1-SONUC.md`](docs/results/M1-SONUC.md).
 
-**Sızıntı formülü savunmayı tam 6 kat abartıyordu.** Her kulenin yolun
-tamamını gördüğünü varsayıyordu; gerçek kapsama `2 × menzil`.
+**Sızıntı formülü savunmayı ~5,7 kat abartıyordu.** Her kulenin yolun
+tamamını gördüğünü varsayıyordu; gerçek kapsama `2 × menzil`. Ölçülen
+çarpan `1700 / 296,3 = 5,74` (ilk tahmin 6 idi).
 → İki kısıtlı modelle değiştirildi ve Vitest sağlamalarına bağlandı.
 
 **Tier 3 harita 1'de hiç görülmüyordu.** Ekonomi 8 noktayı doldurup yalnızca

@@ -5,6 +5,11 @@ Her kilometre taşı bitince buraya bir sonuç dosyası yazılır:
 
 Biçim: [`TEMPLATE.md`](TEMPLATE.md)
 
+Taşa bağlı olmayan, **ölçülen her sayının kütüğü**:
+[`OLCUMLER.md`](OLCUMLER.md). Sonuç dosyası bir taşın hikâyesini anlatır;
+kütük ise "bu sayı nereden geldi, neye asılı, hangi test koruyor"
+sorusunun tek adresi. Yeni bir ölçüm alan **ikisine birden** yazar.
+
 ## Neden var
 
 Bu klasör bir günlük değil, **ölçüm defteri.** `docs/plan/` neyin
@@ -59,7 +64,7 @@ tahminle verilir."
 | Taş | Dosya | Tarih | Gerçek süre |
 |---|---|---|---|
 | M0 | [M0-SONUC.md](M0-SONUC.md) | 2026-08-04 | ~1 sa 10 dk |
-| M1 | — | — | — |
+| M1 | [M1-SONUC.md](M1-SONUC.md) | 2026-08-05 | ~1 sa 40 dk |
 | M2 | — | — | — |
 | M3 | — | — | — |
 | M4 | — | — | — |

@@ -19,7 +19,7 @@ görevler.
 | Taş | Dosya | Kod görevi | Üretim bloğu | Takvim | Durum |
 |---|---|---|---|---|---|
 | M0 — İskelet, saat, aşamalı yükleme | [M0-iskelet-saat-yukleme.md](M0-iskelet-saat-yukleme.md) | 10 | — | 1 gün | **☑** |
-| M1 — Yol, düşman hareketi, kapsama aracı | [M1-yol-dusman-kapsama.md](M1-yol-dusman-kapsama.md) | 9 | — | 2 gün | ☐ |
+| M1 — Yol, düşman hareketi, kapsama aracı | [M1-yol-dusman-kapsama.md](M1-yol-dusman-kapsama.md) | 9 | — | 2 gün | **☑** |
 | M2 — Kule, mermi, hedefleme | [M2-kule-mermi-hedefleme.md](M2-kule-mermi-hedefleme.md) | 9 | — | 2-3 gün | ☐ |
 | M3 — Ekonomi, dalgalar, denge sağlamaları | [M3-ekonomi-dalga-denge.md](M3-ekonomi-dalga-denge.md) | 11 | — | 3 gün | ☐ |
 | M4 — Tam kule/düşman seti, yükseltme, bilgi paneli | [M4-tam-set-yukseltme-panel.md](M4-tam-set-yukseltme-panel.md) | 11 | — | 4 gün | ☐ |

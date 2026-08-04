@@ -41,10 +41,14 @@ C ≈ 292 px), yol ve 8 nokta onu tutturacak şekilde çizildi.
 `GAME-DESIGN.md` §5'teki boss değeriyle aynı anda doğru olamıyor. Çelişki
 bu yüzden 300 lehine kapanıyor.
 
-**Kalan iş (M1 kapsamı dışı):** altı dokümandaki uyarı blokları ve
-`GAME-DESIGN.md` §5'teki `700 ⚠️` / `400 ⚠️` işaretleri hâlâ duruyor.
-§9'daki "≥ 450 px" kabul kriteri de değişmedi. Bunlar M2 öncesinde tek
-seferde güncellenmeli — Trol 400 bu tavanla yeniden kontrol edilecek.
+**Kapanış (M2 öncesi, aynı oturumda yapıldı):** altı dokümandaki uyarı
+blokları çözüldü, `700 ⚠️` / `400 ⚠️` işaretleri kalktı, §9'daki
+"≥ 450 px" kriteri **menzile bağlı orana** çevrildi (`2 × menzil` ± %5).
+Trol 400 yeni tavanla kontrol edildi: **%38,7** — boss dışındaki en tank
+düşman ama duvar değil, rolüyle tutarlı.
+
+Ayrıca ölçülen her sayı `docs/results/OLCUMLER.md` kütüğüne işlendi ve
+`src/data/referenceBoards.test.ts` ile bekçiye bağlandı.
 
 ---
 
@@ -165,21 +169,43 @@ kör kalınan kapsam görünür, ama koşu çökmüyor.
 | **S14** | Düştü — ölçüm analitik, adım boyutu diye bir parametre yok |
 | **S16** | `L` = **1700 px** (ölçüldü) |
 | **S17** | Düşman **ekran dışında** doğuyor (`x = -60`); 60 px `L`'ye dahil |
+| **S13** | **Keskin dönüş, kalıcı.** Yay eklenmiyor: `L` ve kapsama keskin dönüşle ölçüldü; viraj noktalarının çift kapsaması bilinçli bir yerleşim kolu. Görsel bedeli M6'da dönüş tween'iyle (yalnız görüntü) |
+| **S15** | **İki kademeli.** Birincil: geliştirme makinesi 60 FPS. İkincil (yayın öncesi zorunlu): Chrome DevTools 4× CPU kısıtlamasında ≥ 30 FPS. 4 GB Chromebook elde yok; tekrarlanabilir **vekil** seçildi ve vekil olduğu yazıldı |
+| **S06** | `speed:changed` ve `game:paused` **onaylandı** — iki taş boyunca kullanımda kaldılar. Geçici işaretleri kalktı |
+| **S10** | "İlk indirme" tanımı `report-size.mjs` çıktısının içinde yazılı; `assets/lazy/` düşülüyor |
 
-Kapanan toplam: 15. Bloke edici soru: **0**.
+Kapanan toplam: **19**. M0 ve M1'de açık soru **kalmadı**. Bloke edici: **0**.
 
 ---
 
-## 6. Kalan işler
+## 6. M2 öncesi kapanış turu
 
-| İş | Neden M1'de yapılmadı | Nereye |
-|---|---|---|
-| Altı dokümandaki 300/450 uyarı bloklarının kaldırılması | Ölçüm yeni çıktı; Trol 400 de aynı tavanla yeniden kontrol edilmeli | M2 öncesi |
-| `GAME-DESIGN.md` §9 "≥ 450 px" kriterinin düzeltilmesi | Aynı | M2 öncesi |
-| `SpawnSystem` → `WaveManager` | Dalga sistemi M3 | `M3-T05` |
-| `M1_GECICI_DUSMAN`, `M1_GECICI_DOGMA_ARALIGI_SN` sabitlerinin silinmesi | `enemies.ts` ve dalga temposu M3 | `M3-T01` |
-| S13 (köşe kesme) | Keskin dönüş varsayılanıyla ilerlendi, işaretli | açık |
-| S15 (60 FPS hangi cihazda) | Ölçüm cihazı kararı | açık |
+M1 bittikten sonra, aynı oturumda, "M2'ye geçmeden her şeyi çözelim"
+kararıyla yapılanlar:
+
+| İş | Sonuç |
+|---|---|
+| Altı dokümandaki 300/450 uyarı blokları | **çözüldü** — hepsi "ölçüldü" kutusuna dönüştü |
+| `700 ⚠️` / `400 ⚠️` işaretleri (4 dosya) | **kalktı** |
+| `GAME-DESIGN.md` §9 "≥ 450 px" kriteri | **`2 × menzil` ± %5** oranına çevrildi (menzil 150'de 285-315 px) |
+| Trol 400'ün yeniden kontrolü | **%38,7** — boss dışındaki en tank, duvar değil |
+| "6 kat abartıyor" (3 dosya) | **5,74** olarak düzeltildi (`1700 / 296,3`) |
+| "mutlak tavan 2131" (4 dosya) | **2188** olarak ölçüldü; iddia ayakta, pay %0,5 |
+| `RISKS.md` R1 | **kapandı**; kalıntısı **R1b** (harita 2-3 geometrisi) olarak ayrıldı |
+| S06, S10, S13, S15 | **kapandı** |
+| `src/data/referenceBoards.ts` + testi | **yeni** — bulgular 8 regresyon testine bağlandı |
+| `docs/results/OLCUMLER.md` | **yeni** — ölçülen her sayının kütüğü |
+
+### Kalan işler (gerçekten M2 sonrasına ait)
+
+| İş | Nereye |
+|---|---|
+| ΣDPS'lerin `towers.ts`/`enemies.ts`'ten **türetilmesi** (şu an `~` işaretli, elle) | `M3-T07` (S25) |
+| `SpawnSystem` → `WaveManager` | `M3-T05` |
+| `M1_GECICI_DUSMAN`, `M1_GECICI_DOGMA_ARALIGI_SN` silinmesi | `M3-T01` |
+| Harita 2-3 geometrisinin ölçülmesi ve sağlamaların genişletilmesi (R1b) | M7 |
+| Köşe dönüş tween'i (görsel) | M6 |
+| 4× CPU kısıtlaması altında FPS ölçümü | M6, M7 |
 
 ### Ortam notu
 

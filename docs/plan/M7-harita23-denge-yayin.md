@@ -259,8 +259,12 @@ npm run test -- balanceChecks
 Beklenen: Kısıt A 3 harita × 9 düşman için yeşil; ekonomi sağlaması
 30 dalga için yeşil; Kısıt B ya yeşil ya **gerekçeli `todo`**.
 
-**Bitmedi sayılır eğer:** boss/Trol HP'si hâlâ ⚠️ geçici işaretliyse
-**ve** ölçüm mevcutsa — ölçüm varsa hesaplanmalı.
+**Bitmedi sayılır eğer:** sağlamalar hâlâ yalnız Harita 1 geometrisiyle
+koşuyorsa. Harita 1 için ⚠️ işaretleri M1'de kalktı (boss %78,7,
+Trol %38,7); burada kapanması gereken **R1b**: harita 2 ve 3'ün
+geometrisiyle aynı kontroller. `referenceBoards.test.ts` üç haritayı da
+kapsayacak şekilde genişletilmeli — HP çarpanı (1,6 / 2,6) ve yapı
+noktası sayısı (10 / 12) tavanı değiştiriyor.
 
 ---
 

@@ -4,8 +4,8 @@ import type { Speed } from './common';
  * Sistemler birbirini doğrudan çağırmaz, EventBus üzerinden haberleşir
  * (CLAUDE.md Mimari kurallar).
  *
- * İlk beş olay CLAUDE.md'de listeli. Son ikisi M0'ın kendi özellikleri —
- * S06 onaylanana kadar geçici işaretli.
+ * İlk beş olay CLAUDE.md'de listeli. Son ikisi M0'da eklendi ve **S06'da
+ * onaylandı** — M0 ve M1 boyunca kullanımda kaldılar, geçici değiller.
  */
 export interface GameEvents {
   'enemy:killed': { readonly id: number; readonly gold: number };
@@ -14,9 +14,9 @@ export interface GameEvents {
   'life:lost': { readonly remaining: number };
   'tower:placed': { readonly spotIndex: number };
 
-  /** GEÇİCİ — S06. CLAUDE.md'deki örnek listede yok, M0-T09 kullanıyor. */
+  /** S06 onaylandı. HUD hız butonu yayıyor. */
   'speed:changed': { readonly scale: Speed };
-  /** GEÇİCİ — S06. */
+  /** S06 onaylandı. ESC/boşluk duraklatması yayıyor. */
   'game:paused': { readonly paused: boolean };
 }
 

@@ -254,41 +254,58 @@ ayrık yollu haritalarda ilerleme yüzdesi karşılaştırılabilir değildir.
 | Harpi | 70 | 75 | 0 | 0 | 9 | 3 | **Uçar** — yolu takip etmez, engellenemez |
 | Kurt Binicisi | 60 | 110 | 1 | 0 | 9 | 3 | Çok hızlı |
 | Şaman | 130 | 42 | 0 | 0.40 | 15 | 5 | Yakındaki düşmanlara 8 HP/sn iyileştirme |
-| Trol | **400** ⚠️ | 30 | 4 | 0 | 24 | 8 | 6 HP/sn yenilenme |
+| Trol | **400** | 30 | 4 | 0 | 24 | 8 | 6 HP/sn yenilenme |
 | Örümcek Ana | 150 | 50 | 0 | 0.20 | 18 | 6 | Ölünce 3× yavru (HP 30, hız 90) |
-| **Ogre Şef** (boss) | **700** ⚠️ | 28 | 10 | 0.25 | 60 | 25 | Kışla askerlerini tek vuruşta öldürür |
+| **Ogre Şef** (boss) | **700** | 28 | 10 | 0.25 | 60 | 25 | Kışla askerlerini tek vuruşta öldürür |
 
 Sızma cezası: normal 1 can, Trol/Örümcek Ana 2 can, boss 10 can.
 
-### ⚠️ Ogre Şef (700) ve Trol (400) GEÇİCİ değerlerdir
+### Ogre Şef (700) ve Trol (400) — ölçümle doğrulandı
 
-Bu iki sayı **kule başına ~300 px kapsanan yol** varsayımıyla türetildi.
-O varsayım şu an çözülmemiş bir çelişkinin içinde:
-`docs/research/01-denge-matematigi.md` §4 → 300 px,
-`docs/research/03-mekanik-tasarim.md` §3 → ≥ 450 px.
+Bu iki sayı önceden `~300 px kapsanan yol` **varsayımıyla** türetilmişti ve
+o varsayım `research/03` §3'ün "≥ 450 px" kriteriyle çelişiyordu. M1'de
+Harita 1 çizildi ve kapsama ölçüldü: **296,3 px** (menzil 150).
 
-450 px doğruysa T2 tavanı 899 değil **1350**; boss 700 hedeflenen %78 yerine
-tavanın **%52'sine** düşer ve yolun yarısında ölür. Trol de "dengeli"den
-"rahat"a kayar (tavanı 1200 → 1800, efektif HP'si 760'ta sabit).
+| Düşman | Menzilde süre | ΣDPS | Tavan | Etkin HP | Oran |
+|---|---|---|---|---|---|
+| Ogre Şef | 10,58 sn | 84 | **889** | 700 | **%78,7** ✓ hedef %75-85 |
+| Trol | 9,88 sn | ~120 | **1185** | 459 (yenilenme dahil) | **%38,7** |
 
-**Kapsanan yol ölçülmeden bu iki sayı türetilemez.** M1'de `util/coverage.ts`
-yazılıp Harita 1 çizildiğinde ölçüm çıkacak; ikisi o zaman bir kez, doğru
-girdiyle yeniden hesaplanacak. Diğer düşmanlar etkilenmiyor — tavanları
-zaten HP'lerinin 3-8 katı, kapsama değişimi sıralamalarını bozmuyor.
+Trol, boss dışındaki **en tank düşman** ama duvar değil — Zırhlı Ork %22,
+Örümcek Ana %31. Yenilenme sıralamayı değiştirmiyor. Rolüyle tutarlı, sayı
+kalıyor.
+
+`450 px doğru olsaydı` boss tavanın **%52**'sinde kalırdı — yani 450 px,
+bu tablodaki boss değeriyle aynı anda doğru olamıyor. Çelişki 300 lehine
+kapandı.
+
+> **Sınır:** yukarıdaki oranlar **Harita 1 geometrisiyle** hesaplandı.
+> Trol, Şaman, Zırhlı Ork ve Örümcek Ana harita 2-3'te sahneye çıkıyor;
+> oradaki HP çarpanı (1,6 ve 2,6) ve yapı noktası sayısı (10 ve 12) farklı.
+> Gerçek sağlamaları o haritaların geometrisi çizilince (M7) yapılacak.
+> Buradaki hesap alt sınır sağlaması: harita 1'de bile rahat geçiliyorlar.
+> Sağlamalar `src/data/referenceBoards.test.ts` içinde koşuyor.
 
 ### Boss HP'si neden 2200 değil 700
 
 Eski 2200 değeri, gerçekçi bir Tier 2 tahtasına karşı **geçilemezdi.**
 Tek bir düşmana verilebilecek toplam hasar, kule yerleşiminden bağımsız
-olarak `Σ (DPS × kapsananYol) / hız` ile sınırlı; T2 tavanı 300 px'te 899,
-450 px'te 1350 — ikisi de 2200'ün çok altında.
+olarak `Σ (DPS × kapsananYol) / hız` ile sınırlı; ölçülen kapsamayla T2
+tavanı **889** — 2200'ün çok altında.
 
-> Dokümanın önceki hali "8 nokta Tier 3 olsa bile mutlak tavan 2131, boss
-> hiçbir durumda öldürülemez" diyordu. **Bu iddia 300 px varsayımına bağlı
-> ve 450 px'te düşüyor** (tavan ~3020 çıkıyor). İndirme kararı yine de
-> doğru; yalnız "mutlak imkânsız" gerekçesi geçerli değil.
+> **Manşet iddia ölçümle sınandı ve ayakta kaldı, ama payı ince.**
+> "8 nokta Tier 3 olsa ve Meteor iki kez kullanılsa bile boss ölmez"
+> hesabı `kapsama = 2 × menzil` varsayımıyla **2131** vermişti. Gerçek
+> menzillerde ölçülen kapsamayla (Havan 476, Yıldırım 340, Keskin Nişancı
+> 557 px) mutlak tavan **2188** çıkıyor — hâlâ 2200'ün altında ama yalnız
+> **%0,5** pay var.
+>
+> Doğru ifade "matematiksel olarak imkânsız" değil, **"pratikte imkânsız"**:
+> senaryo zaten ekonomik olarak erişilemez ve %0,5 pay tek bir denge
+> düzeltmesiyle kapanır. `referenceBoards.test.ts` bu payı bekçiye bağladı —
+> kule menzilleri artarsa manşet sessizce yanlışlanamaz.
 
-700 değeri 300 px tavanının %78'i — ölçüm gelene kadar geçici.
+700 değeri ölçülen tavanın **%78,7'si**.
 Tam hesap: `docs/research/01-denge-matematigi.md` §4.
 
 ### Altın oranı
@@ -505,14 +522,53 @@ boss'u kaçırmak doğrudan tek yıldıza düşürüyor — bilinçli.
 ediyor; tek kulede **%44 toplam hasar farkı**. Yani haritaların yapı noktası
 *sayısı* değil, her noktanın **kapsadığı yol uzunluğu** dengeyi belirliyor.
 
-**Kabul kriteri:** yapı noktası başına ortalama kapsanan yol **≥ 450 px**
-(T1 menzil 150'nin 3 katı). Altındaysa harita fazla düz demektir ve boss
-dalgası çalışmaz.
+**Kabul kriteri (M1'de düzeltildi):** yapı noktası başına ortalama kapsanan
+yol, T1 menzili için **`2 × menzil` ± %5** bandında olmalı — 150 px menzilde
+**285-315 px**. Altındaysa harita fazla düz, üstündeyse fazla kıvrımlı.
 
-> ⚠️ Bu 450 px türetilmemiş bir sayıdır ve §5'teki boss/Trol değerlerinin
-> dayandığı 300 px varsayımıyla çelişir. M1'de ölçüm yapılana kadar
-> **bağlayıcı değil.** Bkz. `docs/research/01-denge-matematigi.md` §4
-> "Çözülmemiş varsayım".
+> **Eski kriter "≥ 450 px" idi ve yanlıştı.** Türetilmemiş bir sayıydı
+> ("T1 menzilinin 3 katı") ve §5'teki boss değeriyle aynı anda doğru
+> olamıyordu: 450 px'te T2 tavanı 1350 olur, boss 700 tavanın %52'sinde
+> kalır ve yolun yarısında ölürdü.
+>
+> Harita 1 çizildi, kapsama ölçüldü: **296,3 px**, yani `2 × menzil`in
+> **0,988** katı. Model %1,2 hatayla tutuyor. Kriter bu yüzden mutlak bir
+> piksel sayısı değil, **menzile bağlı bir oran** olarak yazıldı — T2 ve T3
+> menzilleri farklı olduğu için tek bir px eşiği zaten anlamsızdı.
+
+**Bir harita aslında İKİ bağımsız bandı birden geçmeli.** İkisi farklı
+şeyi koruyor ve karıştırılmamalı:
+
+| Bant | Aralık (menzil 150) | Neyi korur | Nerede sınanır |
+|---|---|---|---|
+| **Geometri** — `2 × menzil` ± %5 | 285-315 px | Haritanın ne fazla düz ne fazla kıvrımlı olması; `research/01`'in tavan modelinin geçerli kalması | `referenceBoards.test.ts` |
+| **Boss** — tavanın %75-85'i | 275-311 px | Boss dalgasının zorlayıcı ama geçilebilir olması | `maps.test.ts` |
+
+Geçerli aralık ikisinin kesişimi: **285-311 px**. Harita 1: **296,3** ✓
+
+**Bandın türetilmesi.** Sayı seçilmedi, boss'tan geriye çözüldü: boss HP'si
+ve referans tahta sabit tutulup gereken ortalama kapsama çıkarıldı
+(`700 / 0,80` → tavan 875 → **C ≈ 292 px**). Harita bunu tutturacak şekilde
+çizildi. Bu, "elde kalem varken bilinmesi gereken şey yolu ne kadar
+kıvıracağımdır" demenin karşılığı.
+
+**Ölçülen menzil-kapsama eğrisi (Harita 1):**
+
+| Menzil | Ortalama kapsama | `ort ÷ 2r` |
+|---|---|---|
+| 150 (T1) | 296,3 | 0,988 |
+| 170 | 340,1 | 1,000 |
+| 180 | 361,2 | 1,003 |
+| 230 | 475,9 | 1,035 |
+| 260 | 556,5 | 1,070 |
+
+Menzil büyüdükçe oran hafifçe yükseliyor: geniş menzilli kule viraj
+noktalarından yolu daha çok kez görüyor. Bu, T3 hesaplarını **iyimserleştiren**
+bir etki ve mutlak tavan hesabında görünüyor (§5).
+
+Sağlamalar `src/data/referenceBoards.test.ts` içinde koşuyor; `coverage`
+alanı `util/coverage.ts` tarafından üretiliyor ve `npm run guard` elle
+yazılmasını engelliyor.
 
 Harita verisi:
 ```ts

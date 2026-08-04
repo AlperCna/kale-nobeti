@@ -7,18 +7,21 @@ Bunları tek tek çözmeye çalışmak iki gün kod yazmamak demek.
 
 | Durum | Sayı |
 |---|---|
-| ☑ Kapandı | 15 (S01, S02, S08, S11, S12, S14, S16, S17, S25, S26, S27, S50, S56, S59, S63) |
-| ☐ Varsayılanla geçilebilir | 49 |
+| ☑ Kapandı | 19 (S01, S02, S06, S08, S10, S11, S12, S13, S14, S15, S16, S17, S25, S26, S27, S50, S56, S59, S63) |
+| ☐ Varsayılanla geçilebilir | 45 |
 | **⛔ Bloke edici** | **0** |
 
 **Kod yazmaya başlamak için beklenen hiçbir şey yok.**
 
 ### Kapanan sorular
 
-> S11, S12, S16, S17 `M1-T03`'te kapandı; ayrıntısı aşağıda M1 bölümünde.
+> **M1 bölümünde ayrıntısı olanlar:** S11, S12, S13, S15, S16, S17.
+> **M0 bölümünde:** S06, S10.
 
 | # | Nasıl kapandı |
 |---|---|
+| **S13** | **Keskin dönüş, kalıcı.** Yay eklenmiyor — `L` ve kapsama keskin dönüşle ölçüldü, yay onları geçersiz kılar; viraj noktalarının çift kapsaması bilinçli bir yerleşim kolu. Görsel bedeli M6'da dönüş tween'iyle kapatılır (yalnız görüntü) |
+| **S15** | **İki kademeli ölçüm.** Birincil: geliştirme makinesi 60 FPS. İkincil (yayın öncesi zorunlu): Chrome DevTools 4× CPU kısıtlamasında ≥ 30 FPS. 4 GB Chromebook elde yok; uydurma sayı yerine **tekrarlanabilir vekil** seçildi ve vekil olduğu yazıldı |
 | **S25** | `ReferenceBoard` **türetiliyor**, uydurulmuyor — `M3-T07` ekonomi tablosundan algoritmayla üretiyor |
 | **S26** | Düştü — `dalgaSüresi` artık tanımlanmıyor, **ölçülüyor** (`M3-T09` başsız simülasyon) |
 | **S27** | Düştü — `aktiflikOranı` hiç hesaplanmıyor; simülasyon gerçek aktifliği zaten yaşıyor |
@@ -54,18 +57,36 @@ Her soru için: **neden önemli** · **hangi taşı bloke ediyor** ·
 | S03 | Duraklatma ekranında ne var — yalnız karartma mı, menü mü? | **Varsayılan uygulandı:** %72 mürekkep perde + "Duraklatıldı" + "ESC / boşluk" ipucu. Buton yok. Ayarlar M6'da gelince yeniden bakılacak | `M0-T09` ☑ | (uygulandı) |
 | S04 | 2× seçimi kalıcı mı — oturum boyu, harita boyu, yoksa her dalga 1×'e mi dönüyor? | **Varsayılan uygulandı:** oturum boyu, kaydedilmiyor. Ölçüldü — duraklatmayı aşıp korunuyor. Kalıcı olması istenirse `SaveSystem`'e (M7) bağlanır | `M0-T09` ☑ | (uygulandı) |
 | S05 | Menü M0'da ne kadar dolu — yalnız "Oyna" mı, Ayarlar/Seviye Seçim yer tutucuları da mı? | Kapsam şişmesi riski | `M0-T07` | Yalnız "Oyna" |
-| S06 | `EventBus` M0'da mı kurulsun? `speed:changed` ve `game:paused` olayları onaylanıyor mu? | İki olay `CLAUDE.md`'deki örnek listede yok | `M0-T03` | Kurulur, iki olay geçici işaretli |
+| S06 | ✅ **Kapandı.** `EventBus` M0'da kuruldu; `speed:changed` ve `game:paused` iki taş boyunca kullanımda kaldı ve M1'de `life:lost` da devreye girdi. İkisi de **onaylandı**, `types/events.ts`'teki geçici işaretleri kaldırıldı | — | `M0-T03` ☑ | (onaylandı) |
 | S07 | Hız butonu etiketi TIER 1 k.7'yi nasıl karşılayacak? | **(a) uygulandı** — iki statik `Text`, görünürlük değiştiriliyor. `setText` kod tabanında **hiç** çağrılmıyor (tarandı), yani kuralın önlemek istediği canvas yeniden üretimi doğmuyor. M6'da ikisi tek `BitmapText` olacak | `M0-T09` ☑ | (uygulandı) |
 | S08 | Vitest ortamı `node` mu `jsdom` mu? `GameClock`'un Phaser'a dokunan kısmı sahte nesneyle mi test edilecek? | Test yazım şeklini belirliyor | `M0-T01`, `M0-T04` | `node` + sahte sahne nesnesi |
 | S09 | `prefers-reduced-motion` M0'da mı okunacak? | TIER 1 k.6 erişilebilirlik tabanı istiyor ama efektler M6'da | `M0-T09` | M6'ya bırakılır |
-| S10 | "İlk indirme" tam olarak neyi kapsıyor — `dist/` toplamı mı, ilk oynanabilir ana kadar yüklenenler mi? | Poki 8 MB sınırının ölçüm tanımı | `M0-T10`, `M7-T09` | `dist/` toplamı, varsayım çıktıda yazdırılır |
+| S10 | ✅ **Kapandı.** `scripts/report-size.mjs` üç satır basıyor: `js/html/css` (gzip'li), `varlıklar` (sıkışmaz), `İLK İNDİRME` (Poki 8 MB) ve `toplam` (CrazyGames, SDK'sız). Tanım çıktının içinde yazılı, varsayım gizli değil. `assets/lazy/` dizini ilk indirmeden düşülüyor | — | `M0-T10` ☑ | (uygulandı) |
 
 ## M1 — Yol, düşman hareketi, kapsama aracı
 
-| # | Soru | Neden önemli | Bloke | Varsayılan |
-|---|---|---|---|---|
-| S13 | Köşe davranışı: keskin dönüş mü, köşe kesme (yay) mı? | Kapsama ölçümünü ve yol uzunluğunu değiştiriyor | `M1-T05`, `M1-T02` | Keskin dönüş |
-| S15 | "60 FPS" hangi cihazda ölçülecek? | CrazyGames 4 GB Chromebook şartı koyuyor | `M1-T07` kabulü | Geliştirme makinesi |
+**Açık soru kalmadı.** Altısı da M1'de kapandı.
+
+**S13 kapandı — keskin dönüş, kalıcı karar.** Yay (köşe kesme) eklenmiyor.
+Üç gerekçe: (1) `L` = 1700 ve ortalama kapsama 296,3 **keskin dönüşle
+ölçüldü**; yay yol uzunluğunu kısaltır ve kilitlenen denge sayılarını
+geçersiz kılar. (2) Viraj noktalarının çift kapsaması (421,8 px vs 259,8 px)
+bilinçli bir yerleşim kolu — yay onu yumuşatır ve yerleşim kararını
+düzleştirir. (3) TIER 1 kural 4 yolun sabit waypoint dizisi olmasını
+istiyor; yay bir eğri değerlendirmesi getirir.
+**Görsel bedeli M6'da kapatılır:** düşman köşede yön değiştirirken kısa bir
+dönüş tween'i — yalnız görüntü, `PathSystem`'e dokunmaz, ölçümler değişmez.
+
+**S15 kapandı — iki kademeli ölçüm.**
+- **Birincil geçit:** geliştirme makinesi, tepe dalgada **60 FPS**
+  (`M1-T07` kabul kriteri bu).
+- **İkincil geçit (yayın öncesi zorunlu):** Chrome DevTools **4× CPU
+  kısıtlaması** altında tepe dalgada **≥ 30 FPS**.
+
+Gerekçe: CrazyGames 4 GB Chromebook şartı koyuyor ama elde o cihaz yok.
+Uydurma bir sayı yerine **tekrarlanabilir bir vekil** seçildi; vekil
+olduğu açıkça yazılıyor. Gerçek cihaza erişilirse vekil düşer.
+**Nerede:** M6 (efektler FPS riskinin zirvesi) ve M7 (yayın öncesi tekrar).
 
 **S11, S12, S16, S17 `M1-T03`'te kapandı** — koordinatlar uydurulmadı,
 **kapsama hedefinden türetildi**. Boss 700 ve T2 tahtası sabit tutulup

@@ -59,10 +59,13 @@ bu taşta çiziliyor; yol yanlış çizilirse tüm denge yanlış oturuyor.
 can düşürüyor. Geliştirme modunda her yapı noktasının kapsadığı piksel
 ekranda yazıyor.
 
-> ⚠️ Eski kabul kriteri "ortalama ≥ 450 px" idi. **O sayı türetilmemiş ve
-> `docs/research/01-denge-matematigi.md` §4'ün 300 px varsayımıyla çelişiyor.**
-> M1'in gerçek çıktısı bir eşiği geçmek değil, **kapsamayı ölçmek**; ölçüm
-> çıkınca boss ve Trol HP'si yeniden hesaplanır. Bkz. `01` §4 ve §12.
+> ✅ **Ölçüldü.** Eski kabul kriteri "ortalama ≥ 450 px" idi; o sayı
+> türetilmemişti ve `01-denge-matematigi.md` §4'ün 300 px varsayımıyla
+> çelişiyordu. Harita 1'in ölçümü: `L` = **1700 px**, ortalama kapsama
+> **296,3 px** (`2 × menzil`in 0,988 katı). Boss 700 tavanın **%78,7'si**,
+> Trol 400 **%38,7**'si — ikisi de bandın içinde, ⚠️ işaretleri kalktı.
+> Kriter menzile bağlı orana çevrildi (`2 × menzil` ± %5).
+> Sonuç: `docs/results/M1-SONUC.md`.
 
 **Tuzak:** düşmanın kaleye kalan yol mesafesini sakla — `first`/`last`
 hedeflemesi buna bağlı olacak (yol *ilerlemesine* değil; ayrık yollu
