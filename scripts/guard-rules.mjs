@@ -151,6 +151,29 @@ const sonuclar = [];
 }
 
 // ---------------------------------------------------------------------
+// 7 — Math.sqrt (TIER 1 kural 9)
+//
+// Menzil ve yakınlık karşılaştırmaları karesel yapılır. Tek meşru
+// kullanım `util/math.ts` içindeki `segmentLength` — yol uzunluğu
+// toplanabilir olmalı ve karelerin toplamı uzunlukların toplamına eşit
+// değil (math.test.ts bunu ayrıca kanıtlıyor).
+// ---------------------------------------------------------------------
+{
+  let ihlalVar = false;
+  for (const dosya of dosyalar) {
+    if (dosya.endsWith('.test.ts')) continue;
+    const izinli = /util[\\/]math\.ts$/.test(dosya);
+    for (const s of kodSatirlari(readFileSync(dosya, 'utf8'))) {
+      if (/Math\.sqrt\s*\(/.test(s.metin) && !izinli) {
+        ihlalVar = true;
+        ihlal('k.9 ', dosya, s.no, 'Math.sqrt — karesel mesafe kullan');
+      }
+    }
+  }
+  sonuclar.push(['k.9  Math.sqrt yalnız math.ts', !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
 
 const gecen = sonuclar.filter(([, ok]) => ok).length;
 for (const [ad, ok] of sonuclar) console.log(`  ${ok ? '✓' : '✗'} ${ad}`);

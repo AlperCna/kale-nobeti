@@ -54,7 +54,7 @@ kontrolü mesafe hesabı yapıyor. `Math.sqrt` çağrılmaz.
 
 | | |
 |---|---|
-| **Kimlik** | `M1-T01` · **Durum** ☐ · **Süre** ~35 dk |
+| **Kimlik** | `M1-T01` · **Durum** ☑ · **Süre** ~35 dk |
 | **Önkoşul** | `M0-T03` |
 | **TIER 1** | kural 5, kural 9 |
 | **Açık soru** | — |
