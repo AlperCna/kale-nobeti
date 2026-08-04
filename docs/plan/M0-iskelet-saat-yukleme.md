@@ -59,7 +59,7 @@ Atlanmadılar, kapsam dışılar.
 | | |
 |---|---|
 | **Kimlik** | `M0-T01` |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ bitti |
 | **Süre** | ~40 dk |
 | **Önkoşul** | yok |
 | **TIER 1** | kural 5 |

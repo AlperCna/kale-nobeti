@@ -60,7 +60,13 @@ Hedef: 3 harita × 10 dalga, 4 kule ailesi, 2 aktif yetenek.
 
 ## Teknoloji
 
-- Phaser 3 + TypeScript (strict) + Vite
+- **Phaser 3** (`^3`, kurulu 3.90.0) + TypeScript (strict) + Vite.
+  **Phaser 4'e yükseltilmez.** `npm install phaser` bugün 4.x getiriyor —
+  sürüm `^3` ile sabitli, bilerek. Gerekçe: `docs/research/02-phaser-teknik.md`
+  içindeki her bulgu Phaser 3'e karşı doğrulandı (`BitmapText` performansı,
+  `timeScale` özellikleri, 16 doku batching sınırı, `Scale.FIT`); 4 bir yeniden
+  yazım ve bunları geçersizleştirir. Örnek/tutorial ekosistemi de hâlâ 3.
+  v1 yayınlandıktan sonra tartışılabilir.
 - Mantıksal çözünürlük 1280×720 (16:9), `Scale.FIT` + `CENTER_BOTH`, letterbox
 - **Arcade fizik kullanılmıyor.** Mermiler elle hareket eder; tüm yakınlık
   ve isabet kontrolleri karesel mesafe (kural 9). Gerekçe: çarpışma çözümü
