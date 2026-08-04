@@ -13,8 +13,6 @@
  * TIER 1 kural 11: bu dosya Phaser'a dokunmaz.
  */
 export interface DevHooks {
-  /** Geçici hız göstergesinin x konumu. M1'de kalkacak. */
-  probeX: () => number;
   /** `GameScene.update` çağrı sayısı. Duraklatmada **artmamalı**. */
   gameFrames: number;
   /** `HudScene.update` çağrı sayısı. Duraklatmada **artmaya devam etmeli**. */
@@ -27,6 +25,22 @@ export interface DevHooks {
   shutdownListeners: () => number;
   /** Sahneyi yeniden başlatır — yeniden başlatma davranışını sınamak için. */
   restartGame: () => void;
+
+  // --- M1 ---
+  /** Havuzdaki **kullanımdaki** düşman sayısı. Uzun koşuda sürekli artmamalı. */
+  enemyActive: () => number;
+  /** Havuz kapasitesi. **Sabit kalmalı** — sessiz büyüme TIER 1 kural 3 ihlali. */
+  enemyCapacity: () => number;
+  /** `acquire` kaç kez `null` döndü. */
+  poolExhausted: number;
+  /** Kalan can. */
+  lives: () => number;
+  /** Harita 1'in ölçülen yol uzunluğu (S16). */
+  pathLength: () => number;
+  /** Yapı noktası kapsamaları — `M1-T09` ekranda da gösteriyor. */
+  coverage: () => readonly { spotIndex: number; coveredPx: number }[];
+  /** Ortalama kapsama. `research/01` §4 çelişkisinin ölçülen cevabı. */
+  coverageAverage: () => number;
 }
 
 type Global = { __kn?: Partial<DevHooks> };

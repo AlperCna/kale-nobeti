@@ -14,14 +14,36 @@ import { join, relative, sep } from 'node:path';
 const SRC = 'src';
 const hatalar = [];
 
-/** src/ altındaki tüm .ts dosyaları. */
+/** Taranamayan dizinler — sessizce yutulmaz, özette basılır. */
+const taranamayan = [];
+
+/**
+ * src/ altındaki tüm .ts dosyaları.
+ *
+ * Okunamayan dizin **çökertmez ama gizlenmez de**. Bekçinin bir dizini
+ * atlayıp yine de yeşil dönmesi, bekçinin sessizce devre dışı kalması
+ * demektir; o yüzden atlanan her yol özetin başında listeleniyor.
+ * (Gerçek örnek: Windows'ta silinmeyi bekleyen bir dizin `EPERM` verip
+ * tüm bekçiyi düşürdü.)
+ */
 function tsDosyalari() {
   const sonuc = [];
   const gez = (dizin) => {
-    for (const ad of readdirSync(dizin)) {
+    let girisler;
+    try {
+      girisler = readdirSync(dizin);
+    } catch (e) {
+      taranamayan.push(`${relative('.', dizin).split(sep).join('/')} (${e.code ?? 'hata'})`);
+      return;
+    }
+    for (const ad of girisler) {
       const tam = join(dizin, ad);
-      if (statSync(tam).isDirectory()) gez(tam);
-      else if (ad.endsWith('.ts')) sonuc.push(tam);
+      try {
+        if (statSync(tam).isDirectory()) gez(tam);
+        else if (ad.endsWith('.ts')) sonuc.push(tam);
+      } catch (e) {
+        taranamayan.push(`${relative('.', tam).split(sep).join('/')} (${e.code ?? 'hata'})`);
+      }
     }
   };
   gez(SRC);
@@ -220,6 +242,11 @@ const sonuclar = [];
 // ---------------------------------------------------------------------
 
 const gecen = sonuclar.filter(([, ok]) => ok).length;
+if (taranamayan.length > 0) {
+  console.log(`  ⚠ TARANAMAYAN ${taranamayan.length} yol — bekçi bu kapsamda kör:`);
+  for (const y of taranamayan) console.log(`      ${y}`);
+  console.log('');
+}
 for (const [ad, ok] of sonuclar) console.log(`  ${ok ? '✓' : '✗'} ${ad}`);
 if (hatalar.length > 0) {
   console.log('\nİhlaller:');
