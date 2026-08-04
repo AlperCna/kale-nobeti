@@ -7,23 +7,8 @@
  */
 
 import type { Vec2 } from './common';
+import type { EnemyId } from './enemy';
 import type { SpotCoverage } from '../util/coverage';
-
-/**
- * Düşman türleri. Kaynak: `GAME-DESIGN.md` §5 tablosu (9 satır).
- * Sayısal değerleri M3'te `src/data/enemies.ts` taşıyacak; burada yalnız
- * kimlik var, çünkü `MapDef.enemyRoster` M1'de gerekiyor.
- */
-export type EnemyId =
-  | 'goblin'
-  | 'orkSavasci'
-  | 'zirhliOrk'
-  | 'harpi'
-  | 'kurtBinicisi'
-  | 'saman'
-  | 'trol'
-  | 'orumcekAna'
-  | 'ogreSef';
 
 export interface MapDef {
   readonly id: string;
