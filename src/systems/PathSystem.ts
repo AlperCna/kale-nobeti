@@ -13,23 +13,8 @@
  */
 
 import type { Vec2 } from '../types/common';
+import type { PathProgress } from '../types/path';
 import { lerp, segmentLength } from '../util/math';
-
-/**
- * Bir düşmanın yol üzerindeki konumu.
- *
- * `remainingDistance` **türetilmiş** bir alandır — `advance` her seferinde
- * `(segmentIndex, tInSegment)` üzerinden yeniden hesaplar, üstüne eklemez.
- * Kare kare çıkarma yapılsaydı kayan nokta hatası binlerce karede birikirdi
- * ve `first`/`last` hedeflemesi yanlış düşmanı seçmeye başlardı.
- */
-export interface PathProgress {
-  readonly segmentIndex: number;
-  /** Segment içindeki oran, 0..1. */
-  readonly tInSegment: number;
-  /** Kaleye kalan yol. Birim: px. `DEPENDENCIES.md` §3. */
-  readonly remainingDistance: number;
-}
 
 export class PathSystem {
   private readonly noktalar: readonly Vec2[];
