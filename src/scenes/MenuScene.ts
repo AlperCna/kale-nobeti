@@ -81,9 +81,9 @@ export class MenuScene extends Phaser.Scene {
 
   /**
    * `Hud`, `Game`'in **üstünde paralel** çalışır (CLAUDE.md Mimari).
-   * M0-T08/T09'da hedefler `Game` ve `Hud` olacak.
+   * M0-T09'da buraya `this.scene.launch('Hud')` eklenecek.
    */
   #startGame(): void {
-    this.scene.start('Bootstrap');
+    this.scene.start('Game');
   }
 }
