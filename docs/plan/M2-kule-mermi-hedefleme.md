@@ -6,7 +6,7 @@
 | **Görev** | 9 (`M2-T01` … `M2-T09`) |
 | **Kod yazma süresi** | ~6 sa 5 dk — **takvim değil** |
 | **Takvim bütçesi** | 2-3 gün (`ROADMAP.md`) |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ tamamlandı |
 
 ## 0. Oturum başlangıcı
 
@@ -27,8 +27,8 @@ duruyor ve M3'teki denge sağlamaları onu doğrudan çağıracak.
 
 **Taş bittiğinde oyun:** yapı noktasına tıklayıp Okçu veya Top (Tier 1)
 koyabiliyorum; kuleler otomatik ateş ediyor, düşmanlar ölüyor; hover'da
-menzil dairesi ve **kapsanan yol** görünüyor; hasar sayıları üç renkte
-(gri/parşömen/altın) süzülüyor.
+menzil dairesi ve **kapsanan yol** görünüyor; hasar sayıları **iki** renkte
+(gri/parşömen) süzülüyor. Kritik vuruş v1'den çıkarıldı (S56).
 
 **Olmayan:** altın, maliyet, satış, yükseltme, Tier 2-3, Büyü/Kışla,
 dalga, kazan/kaybet. Kuleler bedava ve sınırsız konuyor — ekonomi M3'te.
@@ -52,7 +52,7 @@ dalga, kazan/kaybet. Kuleler bedava ve sınırsız konuyor — ekonomi M3'te.
 
 | | |
 |---|---|
-| **Kimlik** | `M2-T01` · **Durum** ☐ · **Süre** ~40 dk |
+| **Kimlik** | `M2-T01` · **Durum** ☑ · **Süre** ~40 dk |
 | **Önkoşul** | `M1-T03` |
 | **TIER 1** | **kural 1**, kural 5 |
 | **Açık soru** | — |
@@ -104,7 +104,7 @@ kaynak belirtilmiş).
 
 | | |
 |---|---|
-| **Kimlik** | `M2-T02` · **Durum** ☐ · **Süre** ~40 dk |
+| **Kimlik** | `M2-T02` · **Durum** ☑ · **Süre** ~40 dk |
 | **Önkoşul** | `M2-T01` |
 | **TIER 1** | kural 5 |
 | **Açık soru** | — |
@@ -152,7 +152,7 @@ büyü direnci `%85`'in altındaysa taban hiç devreye girmez (§3 notu).
 
 | | |
 |---|---|
-| **Kimlik** | `M2-T03` · **Durum** ☐ · **Süre** ~45 dk |
+| **Kimlik** | `M2-T03` · **Durum** ☑ · **Süre** ~45 dk |
 | **Önkoşul** | `M1-T06`, `M2-T01` |
 | **TIER 1** | kural 5, **kural 9** |
 | **Açık soru** | S24 |
@@ -198,7 +198,7 @@ uçan düşman `airMultiplier: 0` kulede eleniyor.
 
 | | |
 |---|---|
-| **Kimlik** | `M2-T04` · **Durum** ☐ · **Süre** ~40 dk |
+| **Kimlik** | `M2-T04` · **Durum** ☑ · **Süre** ~40 dk |
 | **Önkoşul** | `M1-T08`, `M1-T02` |
 | **TIER 1** | kural 7, **Platform** (44×44) |
 | **Açık soru** | S19 |
@@ -234,7 +234,7 @@ kaybolmuyor; tıklama alanı görsel daireden büyük.
 
 | | |
 |---|---|
-| **Kimlik** | `M2-T05` · **Durum** ☐ · **Süre** ~40 dk |
+| **Kimlik** | `M2-T05` · **Durum** ☑ · **Süre** ~40 dk |
 | **Önkoşul** | `M2-T01`, `M2-T04` |
 | **TIER 1** | kural 5 |
 | **Açık soru** | S23 |
@@ -284,7 +284,7 @@ dolu nokta yeni kule kabul etmiyor; 8 noktanın hepsi dolabiliyor.
 
 | | |
 |---|---|
-| **Kimlik** | `M2-T06` · **Durum** ☐ · **Süre** ~45 dk |
+| **Kimlik** | `M2-T06` · **Durum** ☑ · **Süre** ~45 dk |
 | **Önkoşul** | `M1-T04`, `M2-T02` |
 | **TIER 1** | **kural 3**, **kural 8**, kural 9 |
 | **Açık soru** | S20, S21 |
@@ -348,7 +348,7 @@ konumu süpürülmüş kesişim noktası olmalı, son kare konumu değil.
 
 | | |
 |---|---|
-| **Kimlik** | `M2-T07` · **Durum** ☐ · **Süre** ~40 dk |
+| **Kimlik** | `M2-T07` · **Durum** ☑ · **Süre** ~40 dk |
 | **Önkoşul** | `M2-T03`, `M2-T05`, `M2-T06` |
 | **TIER 1** | **kural 8**, **kural 9** |
 | **Açık soru** | S24 |
@@ -374,22 +374,22 @@ bekleme süresi dolmadan mermi çıkarmıyor (atış aralığı gözle sabit).
 ```bash
 npm run guard
 ```
-Beklenen: `4/4 ✓`.
+Beklenen: `9/9 ✓`.
 
 **Bitmedi sayılır eğer:** `update` içinde her kule her karede tüm düşman
 listesini tarıyorsa (bekleme süresindeyken de).
 
 ---
 
-### M2-T08 — Hasar sayıları: `BitmapText` ve üç renk
+### M2-T08 — Hasar sayıları: `BitmapText` ve iki renk
 
 | | |
 |---|---|
-| **Kimlik** | `M2-T08` · **Durum** ☐ · **Süre** ~40 dk |
+| **Kimlik** | `M2-T08` · **Durum** ☑ · **Süre** ~40 dk |
 | **Önkoşul** | `M2-T02`, `M2-T06` |
 | **TIER 1** | **kural 3**, **kural 7** |
 | **Açık soru** | S18 |
-| **Doküman** | `GAME-DESIGN.md` §3 (üç renk tablosu), §10 · `research/02` §1 |
+| **Doküman** | `GAME-DESIGN.md` §3 (iki renk tablosu), §10 · `research/02` §1 |
 
 **Dosyalar**
 - `src/fx/DamageText.ts` — yeni — havuzlu hasar sayısı
@@ -412,7 +412,7 @@ listesini tarıyorsa (bekleme süresindeyken de).
 ```bash
 npm run guard
 ```
-Beklenen: `4/4 ✓` — kontrol 4 (değişen `Text`) temiz.
+Beklenen: `9/9 ✓` — kontrol 4 (`setText`) temiz.
 gözle: Okçu ile Ork Savaşçı'ya (zırh 2) vurunca parşömen `4`;
 Top ile vurunca parşömen `20`; zırhı hasardan büyük bir kurgu düşmana
 vurunca **gri** sayı + kalkan ikonu. Üçüncü bir renk **yok**.
@@ -425,7 +425,7 @@ vurunca **gri** sayı + kalkan ikonu. Üçüncü bir renk **yok**.
 
 | | |
 |---|---|
-| **Kimlik** | `M2-T09` · **Durum** ☐ · **Süre** ~35 dk |
+| **Kimlik** | `M2-T09` · **Durum** ☑ · **Süre** ~35 dk |
 | **Önkoşul** | `M2-T06`, `M2-T08` |
 | **TIER 1** | **kural 9** |
 | **Açık soru** | S22 |
@@ -485,7 +485,7 @@ kullanılıp işaretlendi.
 - [ ] Yapı noktasına tıklayıp Okçu ve Top koyabiliyorum
 - [ ] Kuleler otomatik ateş ediyor, düşmanlar ölüyor
 - [ ] Hover'da kesikli altın çember + koyu kontur + kapsanan yol vurgusu
-- [ ] Hasar sayıları `BitmapText` ve üç renk doğru çalışıyor
+- [x] Hasar sayıları `BitmapText` ve **iki** renk doğru çalışıyor
 - [ ] Top patlaması birden çok düşmanı vuruyor
 - [ ] `applyDamage` için ≥ 8 test geçiyor (zırh, direnç, %15 tabanı dahil)
 - [ ] Beş hedefleme modu ayrı ayrı test edildi

@@ -7,10 +7,12 @@ import type { Targetable } from '../types/enemy';
 import { GOBLIN } from '../data/enemies';
 import { GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI } from '../data/balance';
 
-class SahteMermi implements ProjectileState, Poolable {
+type MutTargetable = { -readonly [K in keyof Targetable]: Targetable[K] };
+
+class SahteMermi implements ProjectileState<MutTargetable>, Poolable {
   x = 0;
   y = 0;
-  target: Targetable | null = null;
+  target: MutTargetable | null = null;
   damage = 0;
   damageType: ProjectileState['damageType'] = 'physical';
   speed = 0;
@@ -36,8 +38,6 @@ class SahteMermi implements ProjectileState, Poolable {
   }
 }
 
-type MutTargetable = { -readonly [K in keyof Targetable]: Targetable[K] };
-
 function dusman(o: Partial<Targetable> = {}): MutTargetable {
   return {
     x: 100,
@@ -58,7 +58,7 @@ function kur(prealloc = 20) {
   return { pool, sys, onDamage };
 }
 
-function at(sys: ProjectileSystem<SahteMermi>, o: Partial<ProjectileState> = {}) {
+function at(sys: ProjectileSystem<MutTargetable, SahteMermi>, o: Partial<ProjectileState<MutTargetable>> = {}) {
   return sys.fire({
     x: 0,
     y: 0,

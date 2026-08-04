@@ -166,3 +166,31 @@ iki ölçüm arasında farklı düşman olabilir; tek bir nesneyi takip et.
 silinemiyor ve Windows'ta `EPERM` veren bir hayalet kalıyor — bekçinin
 tarayıcısını çökertmişti. Ölçüm gerekiyorsa **kalıcı bir test dosyası**
 yaz; ölçüm zaten regresyon bekçisi olmayı hak ediyor.
+
+---
+
+## 8. Kule ve mermi (M2)
+
+| # | İddia | Ölçüm |
+|---|---|---|
+| K1 | 8 kule + 26 düşmanla kare maliyeti | ort **4,38 ms** · p95 **5,80** · maks **8,70** (bütçe 16,67) |
+| K2 | Savunma hattı tutuyor | hiçbir düşman kaleye **208 px**'ten fazla yaklaşmadı; 100+ sn boyunca can 20/20 |
+| K3 | Mermi havuzu tepe kullanımı | **5** / 200 ayrılan — M3 dalga tepesinde yeniden ölçülmeli |
+| K4 | Okçu T1 atış hızı | 10 sn'de **11** atış (`fireRate` 1,1) |
+| K5 | Top T1 atış hızı | 10 sn'de **5-6** atış (`fireRate` 0,5) |
+| K6 | 2× hızda atış | tam iki katı |
+| K7 | Hasar sayısı `BitmapText` mi | `BitmapText` **60**, `Text` **9** (yalnız dev göstergesi) |
+| K8 | İki renk (§3) | normal `#E4D3A8` %100 · tabana düşen `#9AA0A6` %80 |
+| K9 | Hover tek `Graphics` | Graphics sayısı **2**, 100 kare boyunca sabit |
+| K10 | Havuz tükenmesi | **0** (düşman, mermi, hasar sayısı) |
+
+**Mermi süpürülmüş isabet kontrolü** dört kare boyutunda aynı sonucu
+veriyor: 144 FPS, 60 FPS, 30 FPS ve 30 FPS × 2. Nokta-mesafe kontrolü son
+senaryoda ıskalardı — 66 ms karede mermi 40 px atlıyor, isabet yarıçapı
+12 px.
+
+**Patlama merkezi hedefin konumu**, merminin değil. Süpürülmüş kontrol
+çarpmayı hedefe `hitRadius` kala yakalıyor; patlama merminin konumundan
+çözülseydi yarıçap 12 px geriye kayar ve tam sınırdaki düşman sistematik
+olarak ıskalanırdı (45 px yarıçapta 45 px uzaktaki düşman vurulmuyordu —
+sınır testi yakaladı).

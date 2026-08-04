@@ -41,6 +41,19 @@ export interface DevHooks {
   coverage: () => readonly { spotIndex: number; coveredPx: number }[];
   /** Ortalama kapsama. `research/01` §4 çelişkisinin ölçülen cevabı. */
   coverageAverage: () => number;
+
+  // --- M2 ---
+  /** Havadaki mermi sayısı. */
+  projectileActive: () => number;
+  /** Oyun boyunca görülen en yüksek mermi sayısı — havuz boyutu kararı. */
+  projectilePeak: () => number;
+  damageTextActive: () => number;
+  towerCount: () => number;
+  /** @returns Yerleştirilebildiyse `true`. */
+  placeTower: (spotIndex: number, towerId: string) => boolean;
+  hoverSpot: (spotIndex: number) => void;
+  /** Hasar sayısı üretip rengini/ölçeğini döndürür — iki renk kuralı sınaması. */
+  showDamage: (amount: number, floored: boolean) => { tint: number; scale: number; text: string };
 }
 
 type Global = { __kn?: Partial<DevHooks> };

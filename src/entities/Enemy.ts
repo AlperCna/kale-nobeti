@@ -29,10 +29,22 @@ export class Enemy extends Phaser.GameObjects.Rectangle implements Poolable, Ene
   /** `null` yalnız havuzda beklerken. */
   mover: Mover | null = null;
 
+  /**
+   * Havuzdaki nesnenin kalıcı kimliği. `enemy:killed` olayı bunu taşıyor.
+   *
+   * Havuz nesneyi geri kullandığı için bu **düşman örneğinin** değil
+   * **havuz yuvasının** kimliği; olay tüketicileri (M3 ekonomi) yalnız
+   * "bir düşman öldü" bilgisini kullanıyor.
+   */
+  readonly id: number;
+
+  static #sonrakiId = 1;
+
   readonly #baseColor: number;
 
   constructor(scene: Phaser.Scene, size: number, color: number) {
     super(scene, 0, 0, size, size, color);
+    this.id = Enemy.#sonrakiId++;
     this.#baseColor = color;
     scene.add.existing(this);
   }
