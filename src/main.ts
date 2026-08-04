@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
 import { BootScene } from './scenes/BootScene';
+import { PreloadScene } from './scenes/PreloadScene';
 
 /**
- * GEÇİCİ yer tutucu sahne — M0-T06..T09 bunu
- * Preload → Menu → Game + Hud zinciriyle değiştirecek.
+ * GEÇİCİ yer tutucu sahne — M0-T07..T09 bunu
+ * Menu → Game + Hud zinciriyle değiştirecek.
  *
  * Şu anki işi `M0-T05`'in kabul kriterini gözle doğrulanabilir kılmak:
  * Türkçe karakterler her iki fontta da kutucuk çıkmadan çiziliyor mu?
@@ -74,7 +75,7 @@ const config: Phaser.Types.Core.GameConfig = {
   // görünür — kapatılıyor.
   banner: false,
 
-  scene: [BootScene, BootstrapScene],
+  scene: [BootScene, PreloadScene, BootstrapScene],
 };
 
 new Phaser.Game(config);

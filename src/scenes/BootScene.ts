@@ -57,8 +57,7 @@ export class BootScene extends Phaser.Scene {
     // `create` async yapılmıyor: Phaser döndürülen promise'i beklemez.
     // Promise içeride yönetilip bitince sahne değiştiriliyor.
     void this.#loadFonts().finally(() => {
-      // M0-T06'da hedef 'Preload' olacak.
-      this.scene.start('Bootstrap');
+      this.scene.start('Preload');
     });
   }
 
