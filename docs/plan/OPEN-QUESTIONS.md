@@ -8,7 +8,7 @@ Bunları tek tek çözmeye çalışmak iki gün kod yazmamak demek.
 | Durum | Sayı |
 |---|---|
 | ☑ Kapandı | 8 (S02, S08, S25, S26, S27, S50, S56, S59) |
-| ☐ Varsayılanla geçilebilir | 55 |
+| ☐ Varsayılanla geçilebilir | 56 |
 | **⛔ Bloke edici** | **0** |
 
 **Kod yazmaya başlamak için beklenen hiçbir şey yok.**
@@ -144,9 +144,13 @@ Her soru için: **neden önemli** · **hangi taşı bloke ediyor** ·
 |---|---|---|---|---|
 | **S63** | **Oyunun dili ne olacak?** Türkçe / İngilizce / ikisi | 6571 satır dokümanda dil kelimesi **hiç geçmiyor**. Oyun tamamen Türkçe (menü "Oyna", HUD, telegraf) ama Poki elle küratörlü ve uluslararası, CrazyGames global dağıtım yapıyor (`research/05` §1-2). Türkçe-only bir TD'nin bu platformlarda erişimi ciddi biçimde sınırlı. **Bu bir M6/M7 sorunu değil, M0 sorunu:** karar bugün verilmezse metinler kod içine sabit string olarak dağılır, sonradan toplamak `scenes/` ve `Hud`'un her yerine dokunmak demek | `M0-T03`, `M0-T07` | **Yok.** Karar verilene kadar metinler `src/data/strings.ts` içinde tek yerde tutulur — dil eklemek ucuz kalır, karar ertelenebilir |
 
-> S63 bu oturumun denetiminde bulundu, taş planlarından çıkmadı.
-> Varsayılanı (`strings.ts`) M0'da ~20 dakika; sonradan toplamak günler.
+| **S64** | **Harita başına tamamlama ve bırakma noktası nasıl ölçülecek?** `ROADMAP.md` "v1 sonrası karar noktası" teşhis matrisi üç metriğe dayanıyor: ortalama oturum, harita başına tamamlama, nerede bırakıldığı. Portal panelleri ilk ve son metriği veriyor ama **harita/dalga kırılımını verdikleri doğrulanmadı** (`research/05` yalnız `gameplayStart`/`gameplayStop` ve Data modülünü belgeliyor). Vermiyorlarsa kendi sayacımız gerekir — ama **kendi sunucumuz yok**, yani sayaç `KeyValueStore`'a yazıp bir sonraki açılışta portala mı gönderecek? | `M7-T11` ve v1 sonrası karar | **Yok.** M7'de portal panelini aç, ne verdiğine bak, sonra karar ver. Vermiyorsa karar matrisi iki metrikle çalışır (oturum + dönüş) — daha kaba ama kullanılabilir |
+
+> S63 ve S64 bu oturumun denetiminde bulundu, taş planlarından çıkmadı.
+> S63'ün varsayılanı (`strings.ts`) M0'da ~20 dakika; sonradan toplamak günler.
 > Karar ertelenebilir ama **yapı ertelenmemeli.**
+> S64 M7'ye kadar beklenebilir — ama beklemek, karar matrisinin üç ayaktan
+> ikisiyle çalışması demek.
 
 ---
 

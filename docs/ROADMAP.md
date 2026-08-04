@@ -207,6 +207,92 @@ Otomatik testlerin yakalayamadıkları — bunlar elle oynanarak kontrol edilir:
 
 ---
 
+## v1 sonrası — karar noktası
+
+**Bu bölüm M8'i planlamaz.** M7 bitince hangi soruyu soracağımızı ve neye
+bakarak cevaplayacağımızı kaydeder. Gerekçe: §12'deki yedi kapsam dışı
+maddeden hangisinin gerektiğini **veri söyleyecek**, tahmin değil.
+Bugün seçmek, bir hafta sonra ücretsiz gelecek bilgiyi tahmin etmek olur.
+
+### v1 bittiğinde elimizde ne var
+
+3 harita × 10 dalga · 4 kule ailesi × 4 kademe · 9 düşman · 2 yetenek ·
+3 yıldız · kayıt · yayında.
+
+Oynanış süresi: dalga döngüsü ~80 sn (60 sn dalga + 20 sn hazırlık) →
+harita ~13 dk → **temiz geçişte ~40 dk**, tekrarlarla **1,5-2,5 saat**.
+
+Bu bir **dikey dilim**: çekirdek döngü ve karşı-oyun katmanı tam, içerik ince.
+Karşılaştırma için Kingdom Rush kampanyası 12 seviye + kahraman + meta ağaç.
+
+### Ne ölçülecek
+
+Kaynak: portal geliştirici panelleri (`docs/research/05-yayin-platformlari.md`).
+CrazyGames'in Full Launch geçişi zaten bunlara bakıyor.
+
+| Metrik | Nereden |
+|---|---|
+| Ortalama oturum süresi | Portal paneli |
+| Harita başına tamamlama oranı | Kendi olayımız (`wave:started` / kazanma) |
+| Nerede bırakıyorlar (harita ve dalga) | Kendi olayımız |
+| Dönüş oranı (retention) | Portal paneli |
+| Yıldız dağılımı | Kayıttan |
+
+İlk üçü için M7'de küçük bir olay sayacı gerekiyor — portal SDK'sına
+gömülü, kendi sunucumuz yok. `M7-SONUC.md` bunları taşır.
+
+### Teşhis matrisi — hangi sinyal hangi yöne
+
+Sayı uydurmuyoruz; **sinyal birleşimine** bakıyoruz.
+
+| Tamamlama | Oturum | Dönüş | Teşhis | Yön |
+|---|---|---|---|---|
+| Yüksek | Kısa | — | İçerik bitiyor | **Harita ekle** |
+| Düşük, harita 1'de bırakıyor | Kısa | — | Öğretici/zorluk sorunu | **İçerik ekleme, dengeyi düzelt** |
+| Düşük, harita 3'te bırakıyor | Uzun | — | Sondaki zorluk sıçraması | **Denge, dalga 8-10** |
+| Yüksek | Uzun | Düşük | Geri dönme sebebi yok | **Meta ilerleme veya sonsuz mod** |
+| Düşük | Uzun | Yüksek | İlerlemeden oynuyorlar | **Ekonomi sorunu** |
+
+En sık hata: tamamlama düşükken içerik eklemek. Oyuncu zaten bitiremiyorsa
+dördüncü harita hiç görülmez.
+
+### §12'deki yedi maddenin maliyet/getiri sırası
+
+| Madde | Maliyet | Yeni sistem? | Not |
+|---|---|---|---|
+| **Yeni harita** | 2-3 gün | Hayır | `MapDef` + dalga verisi + arka plan. **En ucuz içerik kolu.** |
+| **Başarımlar** | 2-3 gün | Küçük (`SaveData`) | Ucuz dönüş sebebi |
+| **Sonsuz mod** | 4-5 gün | Orta | **Zor kısmı zaten yazılı** — `budget(n)` üreticisi doğal olarak uzuyor |
+| **Meta yükseltme ağacı** | 1-2 hafta | Büyük | ⚠️ **Dengeyi baştan bozar** — Kısıt A/B sabit referans tahta varsayıyor; kalıcı yükseltme o varsayımı geçersiz kılar |
+| **Kahraman birimi** | 2-3 hafta | Büyük | Kontrol, yetenek, seviye, ölüm/diriliş. En pahalı tek özellik |
+| **Günlük sıralama** | 1 hafta+ | ⚠️ **Sunucu gerekir** | Portal SDK'sı veriyorsa ucuz, vermiyorsa kategori değişimi |
+| **Harita editörü** | 2-3 hafta | Çok büyük | Getirisi niş |
+| **Çoklu oyuncu** | Aylar | ⚠️ Sunucu | v1 sonrası değil, **başka bir oyun** |
+
+Üç uyarı:
+
+- **Sıralama ve çoklu oyuncu sunucu istiyor.** Bu bir özellik değil, kategori
+  değişimi — barındırma, maliyet, bakım. v1'in "statik dosya, portala yükle"
+  modelini kırar.
+- **Meta ağaç denge işini geçersizleştirir.** M3'te kurulan üç sağlama
+  (Kısıt A, Kısıt B, ekonomi) `referenceBoards.ts`'e dayanıyor. Kalıcı
+  yükseltme eklenirse referans tahta dalgaya değil **oyuncunun geçmişine**
+  bağlı olur ve üç test de yeniden yazılır.
+- **Sonsuz mod beklenenden ucuz.** `budget(n) = 10 × 1.20^(n-1)` zaten
+  sınırsız üretiyor; dalga 15'te ~150 puan, 20'de ~380. Asıl iş denge değil,
+  havuz boyutları ve `simulateWave`'in uzun koşuda hâlâ hızlı kalması.
+
+### Karar sırası
+
+1. M7 biter, yayına girer
+2. **En az bir hafta veri biriktir** — daha erken bakmak gürültü okumak
+3. `M7-SONUC.md`'ye metrikleri yaz
+4. Teşhis matrisinden yönü oku
+5. **O zaman** M8'in planını yaz — `docs/plan/` kuralı gereği, önceki taş
+   bitmeden sonraki planlanmaz
+
+---
+
 ## Claude Code komut şablonu
 
 Her taşın başında:

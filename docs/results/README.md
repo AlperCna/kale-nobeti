@@ -39,7 +39,16 @@ bunlar doldurulmadan tamamlanmış sayılmaz.
 | **M4** | Karşı-oyun tablosunun 7 senaryosu (geçti/kaldı) · uçan hattını kesen yapı noktası sayısı | M7 harita kabul kriteri |
 | **M5** | 9 engelleme kuralının test sonucu · kışlalı/kışlasız Trol karşılaştırması | M7 denge oturumları |
 | **M6** | İlk indirme boyutu · hedef cihazda FPS · üretilen varlık sayısı · atlas boyutu | M7 yayın kontrolü |
-| **M7** | 30 dalganın sağlama sonucu · nihai paket boyutu · yükleme süresi · portal başvuru durumu | — (son taş) |
+| **M7** | 30 dalganın sağlama sonucu · nihai paket boyutu · yükleme süresi · portal başvuru durumu | v1 sonrası karar |
+
+`M7-SONUC.md` iki aşamalı yazılır: taş bitince teknik ölçümler, **yayından
+en az bir hafta sonra** portal metrikleri eklenir (ortalama oturum, harita
+başına tamamlama, bırakma noktası, dönüş oranı). İkinci aşama
+`docs/ROADMAP.md` "v1 sonrası — karar noktası" bölümündeki teşhis matrisini
+besliyor. Daha erken bakmak gürültü okumak olur.
+
+Hangi metriğin portal panelinden geleceği doğrulanmadı — `OPEN-QUESTIONS.md`
+**S64**.
 
 `docs/plan/TEST-STRATEGY.md` §5 bu listenin gerekçesini taşıyor:
 "beşi de bir sayı üretir ve o sayı bir kararı besler. Raporlanmazsa karar
