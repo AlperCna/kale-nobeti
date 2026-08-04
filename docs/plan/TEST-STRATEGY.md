@@ -227,6 +227,13 @@ E16 ve E17 **portal kabul şartı** — atlanırsa yayın reddedilir
 **Negatif doğrulama zorunlu** (`M0-T10`): kasten bir ihlal ekle, `guard`'ın
 exit 1 verdiğini gör, geri al. Yapılmazsa bekçilerin çalıştığı bilinmiyor.
 
+> ⚠️ **Bekçiler kanıt değil, ağ.** Dördü de düzenli ifade sezgiseli —
+> özellikle kontrol 4 (`setText`). Negatif doğrulama bekçinin
+> **ateşlendiğini** kanıtlar, **her ihlali yakaladığını** değil.
+> Bir görev `guard` yeşil diye kural 7'ye uygun sayılmaz; asıl koruma
+> görevin kendi kabul kriteri ve kod incelemesi. Bekçi yalnız sessiz
+> gerilemeleri (regression) yakalar.
+
 ### Taş sonu komutu
 
 ```bash

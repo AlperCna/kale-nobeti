@@ -74,6 +74,14 @@ Hedef: 3 harita × 10 dalga, 4 kule ailesi, 2 aktif yetenek.
 - Ses: Phaser'ın kendi ses sistemi
 - Kayıt: `KeyValueStore` arayüzü arkasında `localStorage`,
   tek anahtar `kale-nobeti-save-v1`
+- **Oyuncuya görünen hiçbir metin kodun içinde yazılmaz.** Hepsi
+  `src/data/strings.ts` içinde bir **dil haritası**nda durur:
+  `{ tr: {...}, en: {...} }`, varsayılan `tr`. Kullanım `t('play')`
+  biçimindedir, `strings.play` değil. `en` anahtarları şimdilik boş —
+  yapı doğru olduktan sonra çeviri bir oturumluk iş; sonradan **yapı**
+  eklemek `scenes/`'in tamamına dokunmak demek. Gerekçe: Poki ve
+  CrazyGames global platformlar, Türkçe-only bir oyun oradaki erişimi
+  büyük ölçüde kesiyor.
 - Fontlar `Boot` sahnesinde `FontFace` API ile yüklenir, `Preload`'dan önce
   `await` edilir. Sayı fontu web fontu değil, **bitmap font**tur.
 - Harici bağımlılık eklemeden önce sor
@@ -100,8 +108,11 @@ Ayrıntı: `docs/research/04-varlik-paket-boyut.md`
 - Bitmap font: PNG-8 + `.xml`.
 - Ses efektleri: **yalnız `.m4a`** (AAC). `.ogg` kopyası üretilmez.
 - Müzik: `.m4a` 96 kbps mono, ilk dalgadan sonra yüklenir.
-- Web fontları: statik `woff2`, tek ağırlık, **`latin-ext`** alt kümesi
-  (Türkçe karakterler için zorunlu).
+- Web fontları: Google Fonts'tan **`latin-ext`** alt kümesiyle indirilip
+  `public/assets/fonts/` altında **yerel** sunulur (CDN'e bağımlılık yok).
+  Statik `woff2`, tek ağırlık. `latin` alt kümesi Türkçe karakterleri
+  **içermez** — unutulursa arayüzde kutucuk çıkar. En sık kaçan çift:
+  **`İ` ve `ı`**.
 - Toplam doku sayısı ≤ 16 (Phaser multi-texture batching sınırı).
 
 ## Klasör yapısı
