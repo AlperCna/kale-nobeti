@@ -114,11 +114,14 @@ Ayrıntı: `docs/research/04-varlik-paket-boyut.md`
 - Bitmap font: PNG-8 + `.xml`.
 - Ses efektleri: **yalnız `.m4a`** (AAC). `.ogg` kopyası üretilmez.
 - Müzik: `.m4a` 96 kbps mono, ilk dalgadan sonra yüklenir.
-- Web fontları: Google Fonts'tan **`latin-ext`** alt kümesiyle indirilip
-  `public/assets/fonts/` altında **yerel** sunulur (CDN'e bağımlılık yok).
-  Statik `woff2`, tek ağırlık. `latin` alt kümesi Türkçe karakterleri
-  **içermez** — unutulursa arayüzde kutucuk çıkar. En sık kaçan çift:
-  **`İ` ve `ı`**.
+- Web fontları: Google Fonts'tan indirilip `public/assets/fonts/` altında
+  **yerel** sunulur (CDN'e bağımlılık yok). Statik `woff2`, tek ağırlık.
+  **`latin` ve `latin-ext` alt kümelerinin ikisi de gerekir** — Google
+  Fonts'ta `latin-ext`, `latin`'i *tamamlar, değiştirmez*:
+  `ç ö ü Ç Ö Ü` ve `ı` (U+0131) `latin` içinde, `İ ş ğ Ş Ğ` `latin-ext`
+  içinde. Yalnız biri indirilirse arayüzde kutucuk çıkar.
+  `FontFace` yüzleri `unicodeRange` ile ayrı ayrı kaydedilir
+  (bkz. `src/scenes/BootScene.ts`).
 - Toplam doku sayısı ≤ 16 (Phaser multi-texture batching sınırı).
 
 ## Klasör yapısı
