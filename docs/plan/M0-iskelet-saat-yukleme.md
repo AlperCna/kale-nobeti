@@ -117,7 +117,7 @@ yeşile getirilir, yoksa sonraki dokuz görev boyunca gürültü yapar.
 | | |
 |---|---|
 | **Kimlik** | `M0-T02` |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ bitti |
 | **Süre** | ~30 dk |
 | **Önkoşul** | `M0-T01` |
 | **TIER 1** | kural 5 |

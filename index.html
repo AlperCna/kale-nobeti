@@ -4,9 +4,34 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Kale Nöbeti</title>
+    <style>
+      /* CLAUDE.md Platform kısıtları */
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden; /* sayfa kaydırma çubuğu çıkmasın */
+        background: #14203a; /* GAME-DESIGN §2 "Mürekkep" — letterbox şeritleri
+                                tuvalle aynı renk olsun diye gövdede de var */
+      }
+
+      /* CrazyGames şartı: seçim davranışı kapatılır. */
+      * {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      /* Phaser tuvali gövdeye eklenir; blok yapıp alttaki boşluğu keser. */
+      canvas {
+        display: block;
+      }
+    </style>
   </head>
   <body>
-    <!-- M0-T02: Phaser tuvali, CSS sifirlama ve -webkit-user-select burada.
-         Bu dosya M0-T01'de yalnizca Vite'in servis edebilmesi icin var. -->
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
