@@ -380,7 +380,7 @@ bekler. İki ihlal de kasten denendi, ikisi de yakalandı (9/9 → 8/9).
 
 | | |
 |---|---|
-| **Kimlik** | `M1-T06` · **Durum** ☐ · **Süre** ~45 dk |
+| **Kimlik** | `M1-T06` · **Durum** ☑ · **Süre** ~45 dk |
 | **Önkoşul** | `M1-T04`, `M1-T05` |
 | **TIER 1** | **kural 3**, **kural 8** |
 | **Açık soru** | — |
@@ -427,6 +427,41 @@ ilerleme **durur**; `resetForPool` sonrası tüm alanlar başlangıç değerinde
 
 **Bitmedi sayılır eğer:** `Enemy` içinde `PathSystem`'e doğrudan atıf varsa
 (strateji üzerinden gitmeli).
+
+**Sapma: `movers.ts` `entities/` değil `systems/` altına alındı.**
+
+Plan `src/entities/movers.ts` diyordu. Orada kalsaydı kabul kriterinin
+kendisi imkânsız olurdu, çünkü `entities/` çalışma zamanında Phaser'a
+dokunuyor. Ölçüldü:
+
+```
+A) systems/movers.ts import edildi   → Tests 1 passed
+B) entities/Enemy.ts import edildi   → ReferenceError: window is not defined
+```
+
+Yani "≥ 4 passed" şartını `Enemy.ts` üzerinden karşılamanın yolu yok.
+Ayrım üslup tercihi değil, TIER 1 kural 11'in zorunlu sonucu.
+
+**Bölünme**
+
+| Katman | Dosya | Test |
+|---|---|---|
+| Tip | `types/enemy.ts` (`EnemyState`, `Mover`), `types/path.ts` | — |
+| Mantık | `systems/movers.ts` (`PathMover`, `resetEnemyState`) | 12 test, `node` |
+| Phaser | `entities/Enemy.ts` — ince kabuk | elle |
+
+`Enemy` yalnız `Mover` biliyor; `PathSystem`'e değer olarak atıf yok
+(yalnız `PathProgress` tipi, o da artık `types/path.ts`'te).
+
+**Katman tersliği düzeltildi:** `PathProgress` `PathSystem.ts` içinde
+tanımlıydı ve `types/enemy.ts` ondan çekiyordu — tip katmanının sistem
+katmanından içeri alması. `types/path.ts`'e taşındı; ilk dairesel
+`import`'ta patlayacaktı.
+
+**Kabul kriteri değişti:** `npm run test -- Enemy` yerine
+`npm run test -- movers`. Sıfırlamanın test edilebilir olması gereken
+kısmı (`blockedBy`, `progress`) `resetEnemyState`'te; görsel kısım
+(`killTweensOf`, tint, ölçek) `Enemy.resetForPool`'da ve elle test ediliyor.
 
 ---
 
