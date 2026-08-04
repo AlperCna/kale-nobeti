@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { distSq, lerp, segmentLength, pointToSegmentDistSq, angleTo } from './math';
+import {
+  distSq,
+  lerp,
+  segmentLength,
+  pointToSegmentDistSq,
+  angleTo,
+  segmentCircleOverlapLength,
+} from './math';
 
 describe('distSq', () => {
   it('3-4-5 üçgeni: mesafe karesi 25', () => {
@@ -116,5 +123,67 @@ describe('angleTo', () => {
 
   it('aynı nokta: 0, çökme yok', () => {
     expect(angleTo({ x: 3, y: 3 }, { x: 3, y: 3 })).toBe(0);
+  });
+});
+
+describe('segmentCircleOverlapLength', () => {
+  const a = { x: 0, y: 0 };
+  const b = { x: 1000, y: 0 };
+
+  it('çemberi hiç kesmiyor: 0', () => {
+    expect(segmentCircleOverlapLength(a, b, { x: 500, y: 400 }, 150)).toBe(0);
+  });
+
+  it('merkez segment üstünde: tam çap', () => {
+    expect(segmentCircleOverlapLength(a, b, { x: 500, y: 0 }, 150)).toBeCloseTo(300, 9);
+  });
+
+  it('yandan bakış: kiriş 2√(r²−d²)', () => {
+    const d = 90;
+    const r = 150;
+    const beklenen = 2 * Math.sqrt(r * r - d * d);
+    expect(segmentCircleOverlapLength(a, b, { x: 500, y: d }, r)).toBeCloseTo(beklenen, 9);
+  });
+
+  it('tam teğet: 0', () => {
+    expect(segmentCircleOverlapLength(a, b, { x: 500, y: 150 }, 150)).toBeCloseTo(0, 9);
+  });
+
+  it('segment ucu çemberin içinde: kırpılıyor', () => {
+    // Merkez a'nın üstünde; sonsuz doğru 300 verirdi, segment yarısını verir.
+    expect(segmentCircleOverlapLength(a, b, { x: 0, y: 0 }, 150)).toBeCloseTo(150, 9);
+  });
+
+  it('segment tamamen çemberin içinde: segment uzunluğu', () => {
+    const kisa = { x: 10, y: 0 };
+    expect(segmentCircleOverlapLength(a, kisa, { x: 5, y: 0 }, 150)).toBeCloseTo(10, 9);
+  });
+
+  it('çember segmentin uzantısında: 0', () => {
+    expect(segmentCircleOverlapLength(a, b, { x: 1300, y: 0 }, 150)).toBe(0);
+  });
+
+  it('sıfır uzunluklu segment: 0, çökme yok', () => {
+    expect(segmentCircleOverlapLength(a, a, { x: 0, y: 0 }, 150)).toBe(0);
+  });
+
+  it('sıfır veya negatif yarıçap: 0', () => {
+    expect(segmentCircleOverlapLength(a, b, { x: 500, y: 0 }, 0)).toBe(0);
+    expect(segmentCircleOverlapLength(a, b, { x: 500, y: 0 }, -5)).toBe(0);
+  });
+
+  it('uç nokta sırası sonucu değiştirmez', () => {
+    const c = { x: 500, y: 60 };
+    expect(segmentCircleOverlapLength(a, b, c, 150)).toBeCloseTo(
+      segmentCircleOverlapLength(b, a, c, 150),
+      9,
+    );
+  });
+
+  it('eğik segmentte de doğru', () => {
+    // (0,0)-(100,100) segmenti, merkez (50,50), r=10 → çap 20.
+    expect(
+      segmentCircleOverlapLength({ x: 0, y: 0 }, { x: 100, y: 100 }, { x: 50, y: 50 }, 10),
+    ).toBeCloseTo(20, 9);
   });
 });
