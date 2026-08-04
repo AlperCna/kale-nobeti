@@ -1,0 +1,23 @@
+{
+  "name": "kale-nobeti",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Fantastik ortaçağ temalı, tarayıcıda çalışan tower defense oyunu",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && node scripts/report-size.mjs",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "guard": "node scripts/guard-rules.mjs"
+  },
+  "dependencies": {
+    "phaser": "^3.90.0"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.2.0",
+    "vitest": "^4.1.10"
+  }
+}
