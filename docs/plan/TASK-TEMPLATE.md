@@ -30,9 +30,15 @@ bölünmeli.
 
 **İmza**
 ```ts
+export interface ClockTarget {
+  tweens: { timeScale: number };
+  time:   { timeScale: number };
+  anims:  { globalTimeScale: number };
+}
+
 export class GameClock {
   readonly scaledDelta: number;
-  setScale(s: 1 | 2, scene: Phaser.Scene): void;
+  setScale(s: 1 | 2, target: ClockTarget): void;
   tick(delta: number): void;
 }
 ```
@@ -45,13 +51,13 @@ export class GameClock {
 ```bash
 npm run test -- GameClock
 ```
-Beklenen: `4 passed`. Testler: `tick` 1×, `tick` 2×, `setScale` dört
-özelliği de yazar, `physics.world.timeScale === 0.5`.
+Beklenen: `4 passed`. Testler: `tick` 1×, `tick` 2×, `setScale` üç
+özelliği de `2` yapar, `setScale(1, ...)` hepsini `1`'e döndürür.
 
-**Bitmedi sayılır eğer:** `setScale` dört özellikten üçünü yazıyorsa.
+**Bitmedi sayılır eğer:** `setScale` üç özellikten birini atlıyorsa.
 
-**Risk:** `physics.world.timeScale` ters çalışır (`1/s`). Yanlış yazılırsa
-2× seçince oyun yavaşlar — erken uyarı bu.
+**Risk:** dosya Phaser'ı çalışma zamanında import ederse `node` ortamındaki
+test `window is not defined` ile patlar (TIER 1 k.11) — erken uyarı bu.
 ````
 
 ---

@@ -606,3 +606,5 @@ türetilmiş referans tahtaya karşı.
 - [ ] `M1-T07`'nin geçici `SpawnSystem`'i silindi
 - [ ] Uydurulmuş hiçbir sayı yok; geçiciler `// GEÇİCİ — S<nn>` işaretli
 - [ ] Yeni ortaya çıkan belirsizlikler `OPEN-QUESTIONS.md`'ye eklendi
+- [ ] **`docs/results/M3-SONUC.md` yazıldı** — 8 noktanın dolduğu dalga,
+      Kısıt A sonuçları, `simulateWave` sızan HP tablosu dahil.

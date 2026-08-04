@@ -105,6 +105,8 @@ hep kendi yazdığımız `update` kodunda olacağı için, **tek doğru çözüm
 saatimizi tutmak:**
 
 ```
+ESKİ TASLAK — yürürlükteki hâli CLAUDE.md TIER 1 kural 8'de, ÜÇ özellikli.
+
 TIER 1 — Kural 8: Hiçbir sistem ham `delta` kullanmaz. Tüm zaman bağımlı
 mantık `GameClock.scaledDelta` üzerinden çalışır. `GameClock.setScale(1|2)`
 ayrıca dört Phaser özelliğini de günceller (tweens, physics.world, time,
@@ -112,8 +114,13 @@ anims). Bu sözleşme M0'da kurulur — sonradan eklemek her sisteme dokunmak
 demektir.
 ```
 
+> ⚠️ **Aşağıdaki kod bloğu ESKİ — kopyalama.** Araştırma anındaki hâli;
+> fizik satırı sonradan düştü. Uygulanacak imza
+> `docs/plan/M0-iskelet-saat-yukleme.md` `M0-T04` içinde. Gerekçe bu
+> bölümün sonundaki karar kutusunda.
+
 ```ts
-// systems/GameClock.ts
+// systems/GameClock.ts — ESKİ SÜRÜM, bkz. yukarıdaki uyarı
 export class GameClock {
   private scale = 1;
   scaledDelta = 0;
@@ -121,7 +128,7 @@ export class GameClock {
   setScale(s: 1 | 2, scene: Phaser.Scene) {
     this.scale = s;
     scene.tweens.timeScale = s;
-    scene.physics.world.timeScale = 1 / s;  // DİKKAT: fizikte ters
+    scene.physics.world.timeScale = 1 / s;  // ← BU SATIR DÜŞTÜ
     scene.time.timeScale = s;
     scene.anims.globalTimeScale = s;
   }

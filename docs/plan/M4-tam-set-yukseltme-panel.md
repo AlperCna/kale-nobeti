@@ -443,3 +443,5 @@ S37, S38, S39 denge etkisi olan **eksik sayılar** — uydurulmadı.
 - [ ] Beş hedefleme modu kule başına seçilebiliyor
 - [ ] Geçici sayılar (S37, S38) kodda işaretli
 - [ ] Boss HP'sinde geçicilik yorumu var
+- [ ] **`docs/results/M4-SONUC.md` yazıldı** — karşı-oyun tablosunun 7
+      senaryosu ve uçan hattını kesen nokta sayısı dahil.

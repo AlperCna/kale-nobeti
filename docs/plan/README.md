@@ -12,6 +12,7 @@ görevler.
 | [`TEST-STRATEGY.md`](TEST-STRATEGY.md) | Neyin nasıl doğrulanacağı |
 | [`RISKS.md`](RISKS.md) | Projeyi öldürebilecek riskler |
 | [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) | Karar bekleyen soruların tek listesi |
+| [`../results/`](../results/README.md) | **Taş sonuçları** — her taş bitince yazılan ölçüm defteri |
 
 ## Taşlar
 
@@ -77,6 +78,19 @@ Beşi birden sağlanmalı:
 
 Beşincisi en çok atlanan. Bu projede en büyük risk modelin eksik bilgiyi
 sayı uydurarak kapatması; bir kez oldu (2200 HP'lik boss).
+
+## Bir taş ne zaman "bitti" sayılır
+
+Görevlerin hepsi bitmesi **yetmez**. İki şey daha:
+
+1. Taş dosyasındaki **taş sonu kontrol listesinin** her maddesi işaretli.
+2. **`docs/results/M<n>-SONUC.md` yazıldı** ve zorunlu ölçümler dolduruldu
+   ([`../results/README.md`](../results/README.md)).
+
+Sonuç dosyası yazılmadan bir sonraki taş **başlamaz.** Her taş bir
+sonrakinin girdisini üretiyor; o girdi yazılı değilse sonraki oturum onu
+yeniden tahmin eder — ve bu projede tahminle başlayan her sayı bir kez
+yanlış çıktı.
 
 ## Plan yazma kuralları
 
