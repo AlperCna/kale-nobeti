@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { coveredLength, measureCoverage, pathLength, spotsCoveringFlyerPaths } from './coverage';
+import {
+  coveredLength,
+  coveredSegments,
+  measureCoverage,
+  pathLength,
+  spotsCoveringFlyerPaths,
+} from './coverage';
+import { MAP_1 } from '../data/maps';
 import { distSq, lerp, segmentLength } from './math';
 import type { Vec2 } from '../types/common';
 
@@ -118,6 +125,50 @@ describe('coveredLength', () => {
   it('kapsama menzille birlikte büyüyor', () => {
     const spot = { x: 500, y: 100 };
     expect(coveredLength(DUZ, spot, 200)).toBeGreaterThan(coveredLength(DUZ, spot, 100));
+  });
+});
+
+describe('coveredSegments — çizilen çizgi ile ölçülen sayı aynı hesaptan', () => {
+  it('parçaların toplam uzunluğu coveredLength ile birebir', () => {
+    // Ayrı yazılsalardı oyuncunun gördüğü altın çizgi ile dengeyi belirleyen
+    // sayı sessizce ayrışabilirdi. Bu testin varlık sebebi o.
+    const senaryolar: ReadonlyArray<{ path: readonly Vec2[]; spot: Vec2; r: number }> = [
+      { path: DUZ, spot: { x: 500, y: 100 }, r: 150 },
+      { path: DUZ, spot: { x: 500, y: 40 }, r: 150 },
+      { path: DUZ, spot: { x: 0, y: 100 }, r: 150 },
+      { path: MAP_1.paths[0] ?? [], spot: MAP_1.buildSpots[3] ?? { x: 0, y: 0 }, r: 150 },
+      { path: MAP_1.paths[0] ?? [], spot: MAP_1.buildSpots[5] ?? { x: 0, y: 0 }, r: 260 },
+    ];
+    for (const { path, spot, r } of senaryolar) {
+      const parcalar = coveredSegments(path, spot, r);
+      const toplam = parcalar.reduce((t, p) => t + segmentLength(p.a, p.b), 0);
+      expect(toplam).toBeCloseTo(coveredLength(path, spot, r), 9);
+    }
+  });
+
+  it('viraj noktası İKİ parça döndürüyor — yolu iki kez görüyor', () => {
+    // Harita 1'in 3. noktası viraj içinde; kapsaması 421,8 px ve iki
+    // segmentten geliyor.
+    const parcalar = coveredSegments(MAP_1.paths[0] ?? [], MAP_1.buildSpots[3]!, 150);
+    expect(parcalar).toHaveLength(2);
+  });
+
+  it('düz segment kenarındaki nokta TEK parça', () => {
+    const parcalar = coveredSegments(MAP_1.paths[0] ?? [], MAP_1.buildSpots[0]!, 150);
+    expect(parcalar).toHaveLength(1);
+  });
+
+  it('parçaların uçları yolun üstünde', () => {
+    for (const p of coveredSegments(DUZ, { x: 500, y: 40 }, 150)) {
+      expect(p.a.y).toBe(100);
+      expect(p.b.y).toBe(100);
+    }
+  });
+
+  it('kapsama yoksa boş dizi', () => {
+    expect(coveredSegments(DUZ, { x: 500, y: 900 }, 150)).toEqual([]);
+    expect(coveredSegments(DUZ, { x: 500, y: 100 }, 0)).toEqual([]);
+    expect(coveredSegments([], { x: 0, y: 0 }, 150)).toEqual([]);
   });
 });
 

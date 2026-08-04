@@ -1,5 +1,5 @@
 import type { Vec2 } from '../types/common';
-import { segmentLength, segmentCircleOverlapLength } from './math';
+import { lerp, segmentLength, segmentCircleOverlapLength, segmentCircleOverlapRange } from './math';
 
 /**
  * Kapsanan yol ölçümü — **projenin en kritik sayısı.**
@@ -64,6 +64,43 @@ export function measureCoverage(
     spotIndex,
     coveredPx: paths.reduce((t, path) => t + coveredLength(path, spot, range), 0),
   }));
+}
+
+/** Çizilebilir bir yol parçası. */
+export interface CoveredSegment {
+  readonly a: Vec2;
+  readonly b: Vec2;
+}
+
+/**
+ * Kapsanan yol parçalarının **dünya koordinatları**.
+ *
+ * `GAME-DESIGN.md` §4.5: "Hover'da kapsanan yol vurgulanır — o yapı
+ * noktasının gördüğü yol parçası kalın altın çizgiyle çizilir. Sabit yapı
+ * noktalı bir oyunda 'hangi noktaya hangi kule' kararının tamamı buna bağlı."
+ *
+ * `coveredLength` ile **aynı** hesaptan besleniyor
+ * (`math.segmentCircleOverlapRange`). Ayrı yazılsalardı oyuncunun gördüğü
+ * çizgi ile dengeyi belirleyen sayı sessizce ayrışabilirdi — bu oyunda en
+ * pahalı sessiz hata türü o.
+ */
+export function coveredSegments(
+  path: readonly Vec2[],
+  spot: Vec2,
+  range: number,
+): CoveredSegment[] {
+  const sonuc: CoveredSegment[] = [];
+  if (path.length < 2 || range <= 0) return sonuc;
+
+  for (let i = 0; i < path.length - 1; i++) {
+    const a = path[i];
+    const b = path[i + 1];
+    if (a === undefined || b === undefined) continue;
+    const aralik = segmentCircleOverlapRange(a, b, spot, range);
+    if (aralik === null) continue;
+    sonuc.push({ a: lerp(a, b, aralik.t1), b: lerp(a, b, aralik.t2) });
+  }
+  return sonuc;
 }
 
 /** Bir yolun toplam uzunluğu. `research/01` §3'teki `L` değeri. */

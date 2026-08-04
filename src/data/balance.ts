@@ -18,7 +18,33 @@
  */
 export const POOL_PREALLOC = {
   enemy: 60,
+  projectile: 200,
+  damageText: 60,
 } as const;
+
+/**
+ * Mermi uçuş hızı. Birim: px/sn.
+ *
+ * `// GEÇİCİ — S20`: **dokümanda hiçbir yerde yok.** Uydurulmadı, geçici
+ * işaretlendi. Denge etkisi var — yavaş mermi hızlı düşmanı (Kurt Binicisi
+ * 110 px/sn) ıskalar ve kulenin etkin DPS'i düşer.
+ *
+ * 600, en hızlı düşmanın 5,5 katı; menzil 150 px'lik bir kulede uçuş süresi
+ * en fazla 0,25 sn.
+ */
+export const GECICI_MERMI_HIZI = 600;
+
+/**
+ * Mermi isabet yarıçapı. Birim: px.
+ *
+ * Greybox düşman 22×22 px; yarı kenarı 11, yarı köşegeni ~15,6. 12 ikisinin
+ * arasında. **M6'da sprite gelince yeniden bakılacak** — o zamana kadar
+ * görsel boyutla bağlantısı elle korunuyor.
+ *
+ * Tünellemeye karşı asıl koruma bu sayı değil, `ProjectileSystem`'deki
+ * **süpürülmüş** isabet kontrolü.
+ */
+export const MERMI_ISABET_YARICAPI = 12;
 
 /** Başlangıç canı. Kaynak: `GAME-DESIGN.md` §6. Yıldız eşikleri buna göre (§9). */
 export const STARTING_LIVES = 20;

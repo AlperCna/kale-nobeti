@@ -5,7 +5,7 @@
  * TIER 1 kural 1: burada **şekil** var, sayı yok. Sayılar `src/data/towers.ts`.
  */
 
-import type { DamageType } from './enemy';
+import type { DamageType, Targetable } from './enemy';
 
 /** `GAME-DESIGN.md` §4 — dört aile. M2'de yalnız ilk ikisi kuruluyor. */
 export type TowerId = 'okcu' | 'top' | 'buyu' | 'kisla';
@@ -36,6 +36,26 @@ export interface TowerTier {
    * `0` = hiç vuramaz ve hedef listesinden **elenir** (`GAME-DESIGN.md` §4.2).
    */
   readonly airMultiplier: 0 | 0.5 | 1;
+}
+
+/**
+ * `TowerSystem`'in bir kuleden gördüğü yüzey.
+ *
+ * `entities/Tower` sınıfı değil **bu şekil** talep ediliyor: `TowerSystem`
+ * `systems/` altında ve `Tower` bir `Phaser.GameObjects.Container`
+ * (TIER 1 kural 11). Ateş döngüsü `node`'da test ediliyor.
+ */
+export interface TowerRuntime {
+  readonly spotIndex: number;
+  readonly x: number;
+  readonly y: number;
+  readonly def: TowerDef;
+  /** `0` = T1, `1` = T2. T3 dalları M4'te ayrışacak. */
+  tierIndex: 0 | 1;
+  targetMode: TargetMode;
+  /** Bir sonraki atışa kalan süre. Birim: **saniye**. */
+  cooldownLeft: number;
+  target: Targetable | null;
 }
 
 export interface TowerDef {
