@@ -320,7 +320,7 @@ var olma sebebi tam olarak bu.
 | | |
 |---|---|
 | **Kimlik** | `M0-T05` |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ bitti |
 | **Süre** | ~40 dk |
 | **Önkoşul** | `M0-T02` |
 | **TIER 1** | kural 5 |

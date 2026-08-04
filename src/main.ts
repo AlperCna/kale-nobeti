@@ -1,15 +1,48 @@
 import Phaser from 'phaser';
+import { BootScene } from './scenes/BootScene';
 
 /**
- * GEÇİCİ yer tutucu sahne — M0-T05..T09 bunu
- * Boot → Preload → Menu → Game + Hud zinciriyle değiştirecek.
+ * GEÇİCİ yer tutucu sahne — M0-T06..T09 bunu
+ * Preload → Menu → Game + Hud zinciriyle değiştirecek.
  *
- * Var olma sebebi: Phaser boş sahne listesiyle uyarı basıyor ve M0-T02'nin
- * kabul kriteri "konsol temiz" diyor.
+ * Şu anki işi `M0-T05`'in kabul kriterini gözle doğrulanabilir kılmak:
+ * Türkçe karakterler her iki fontta da kutucuk çıkmadan çiziliyor mu?
  */
 class BootstrapScene extends Phaser.Scene {
   constructor() {
     super('Bootstrap');
+  }
+
+  create(): void {
+    const { width, height } = this.scale;
+
+    // Statik metin — bir kez yazılıp değişmiyor, bu yüzden
+    // `Phaser.GameObjects.Text` serbest (TIER 1 kural 7 istisnası).
+    const ornek = 'İIıi ŞşĞğÇçÖöÜü';
+
+    this.add
+      .text(width / 2, height / 2 - 60, ornek, {
+        fontFamily: '"Grenze Gotisch", serif',
+        fontSize: '48px',
+        color: '#D4A032', // GAME-DESIGN §2 "Altın varak"
+      })
+      .setOrigin(0.5);
+
+    this.add
+      .text(width / 2, height / 2 + 20, ornek, {
+        fontFamily: 'Spectral, serif',
+        fontSize: '32px',
+        color: '#E4D3A8', // GAME-DESIGN §2 "Parşömen"
+      })
+      .setOrigin(0.5);
+
+    this.add
+      .text(width / 2, height / 2 + 80, 'M0-T05 — font doğrulaması (geçici)', {
+        fontFamily: 'Spectral, serif',
+        fontSize: '16px',
+        color: '#8A7250',
+      })
+      .setOrigin(0.5);
   }
 }
 
@@ -41,7 +74,7 @@ const config: Phaser.Types.Core.GameConfig = {
   // görünür — kapatılıyor.
   banner: false,
 
-  scene: [BootstrapScene],
+  scene: [BootScene, BootstrapScene],
 };
 
 new Phaser.Game(config);
