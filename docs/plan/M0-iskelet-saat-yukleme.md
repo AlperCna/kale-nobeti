@@ -176,6 +176,8 @@ tanımlanmışsa (`CLAUDE.md` Klasör yapısı: sahne kaydı `main.ts`'te).
 - `src/types/events.ts` — yeni — olay haritası
 - `src/systems/EventBus.ts` — yeni — tipli sarmalayıcı
 - `src/systems/EventBus.test.ts` — yeni
+- `src/data/strings.ts` — yeni — dil haritası (S63)
+- `src/util/i18n.ts` — yeni — `t()` erişimcisi
 
 **İmza**
 ```ts
@@ -198,11 +200,33 @@ export class EventBus {
 }
 ```
 
+**İmza — dil haritası (S63)**
+```ts
+// src/data/strings.ts
+export type Locale = 'tr' | 'en';
+export const DEFAULT_LOCALE: Locale = 'tr';
+
+/** tr eksiksiz; en şimdilik boş — yapı doğru olsun diye var.
+ *  Çeviri M7'de bir oturumluk iş; YAPIYI sonradan eklemek
+ *  scenes/'in tamamına dokunmak demek (CLAUDE.md Teknoloji). */
+export const STRINGS = {
+  tr: { play: 'Oyna', pause: 'Duraklat', resume: 'Devam', speed: 'Hız' },
+  en: { play: '', pause: '', resume: '', speed: '' },
+} as const satisfies Record<Locale, Record<string, string>>;
+
+// src/util/i18n.ts
+export function t(key: StringKey, locale?: Locale): string;
+```
+
 **Yapılacak**
 - `Phaser.Events.EventEmitter` üstüne tipli kabuk. Ham emitter dışarı sızmaz.
 - İlk beş olay `CLAUDE.md` Mimari kurallar'dan birebir alınır.
 - `speed:changed` ve `game:paused` M0'ın kendi özellikleri; **S06 onaylanana
   kadar geçici işaretli** yorumla dursun.
+- **`strings.ts` tek düz nesne değil, dil haritası** (S63). `t('play')`
+  kullanılır, `STRINGS.tr.play` değil — çağrı yerleri dil bilmez.
+- `t()` boş çeviri bulursa varsayılan dile düşer, boş string döndürmez.
+- Bu dosyalar Phaser'a **hiç dokunmaz** (TIER 1 k.11).
 
 **Kabul kriteri**
 ```bash
@@ -210,6 +234,13 @@ npm run test -- EventBus
 ```
 Beklenen: `3 passed` — `emit`/`on` turu, `off` sonrası çağrılmama,
 aynı olaya iki dinleyici.
+```bash
+npm run test -- i18n
+```
+Beklenen: `3 passed` — `t('play')` varsayılan dilde `'Oyna'`;
+`t('play','en')` boş olduğu için **varsayılana düşüyor**;
+`STRINGS.en` anahtar kümesi `STRINGS.tr` ile birebir aynı (tip düzeyinde
+zorunlu, testte de doğrulanır).
 
 **Bitmedi sayılır eğer:** yanlış payload ile `emit` çağrısı `npm run typecheck`
 sırasında hata vermiyorsa. (Elle doğrula: kasten yanlış payload yaz, hatayı
@@ -293,12 +324,13 @@ var olma sebebi tam olarak bu.
 | **Süre** | ~40 dk |
 | **Önkoşul** | `M0-T02` |
 | **TIER 1** | kural 5 |
-| **Açık soru** | S01 |
+| **Açık soru** | — (S01 kapandı) |
 | **Doküman** | `CLAUDE.md` Teknoloji, Varlık formatları · `research/02` §2 · `GAME-DESIGN.md` §2 |
 
 **Dosyalar**
 - `src/scenes/BootScene.ts` — yeni — font yükleme, sonra `Preload`
-- `public/assets/fonts/.gitkeep` — yeni — yer tutucu dizin
+- `public/assets/fonts/grenze.woff2` — yeni — Grenze Gotisch, `latin-ext`
+- `public/assets/fonts/spectral.woff2` — yeni — Spectral, `latin-ext`
 
 **İmza**
 ```ts
@@ -318,15 +350,26 @@ export class BootScene extends Phaser.Scene {
 - `create` içinde `async` kullanma — Phaser döndürülen promise'i beklemez.
   Promise'i içeride yönet, bitince `this.scene.start('Preload')`.
 
+**Font kaynağı (S01 cevabı)**
+- Google Fonts'tan **`latin-ext` alt kümesiyle** indirilir, `public/assets/fonts/`
+  altında **yerel** sunulur — CDN bağımlılığı yok (`CLAUDE.md` Varlık formatları).
+- `&subset=latin-ext` ile indir veya `pyftsubset` ile kendin üret.
+- `latin` alt kümesi Türkçe karakterleri **içermez.**
+
 **Kabul kriteri**
 ```bash
 npm run dev
 ```
-gözle: `public/assets/fonts/` boşken bile 2 saniye içinde `Preload`'a geçiyor;
-konsolda `Unhandled promise rejection` yok; yazılar sistem serif'iyle çiziliyor.
+gözle, üç kontrol:
+1. Fontlar yüklendiğinde ekrandaki test metni **`İIıi ŞşĞğÇçÖöÜü`**
+   doğru render ediliyor — hiçbiri kutucuk değil. **`İ` ve `ı` en sık
+   kaçan çift**, ayrıca bak.
+2. `public/assets/fonts/` **boşaltıldığında** oyun takılmıyor; 2 saniye
+   içinde sistem serif'ine düşüp `Preload`'a geçiyor.
+3. Konsolda `Unhandled promise rejection` yok.
 
 **Bitmedi sayılır eğer:** font yüklemesi hata verdiğinde siyah ekranda
-kalıyorsa.
+kalıyorsa, **veya** herhangi bir Türkçe karakter kutucuk çıkıyorsa.
 
 ---
 
@@ -404,6 +447,8 @@ export class MenuScene extends Phaser.Scene {
 - Başlık "Kale Nöbeti", Grenze Gotisch. **Statik metin olduğu için
   `Phaser.GameObjects.Text` serbest** (TIER 1 k.7 istisnası) — bunu koda
   yorum olarak yaz, sonradan "kural ihlali mi" diye sorulmasın.
+- **Buton yazısı `t('play')` ile gelir**, kodda `'Oyna'` yazmaz
+  (`CLAUDE.md` Teknoloji, S63). Oyun başlığı marka adı olduğu için istisna.
 - "Oyna" butonu: tıklama alanı **≥ 44×44 px**, yazı **≥ 16 px**
   (`CLAUDE.md` Platform). Tıklama alanı yazı kutusundan büyük olmalı.
 - `startGame` hem `Game` hem `Hud` sahnesini başlatır (`CLAUDE.md` Mimari:
@@ -579,7 +624,6 @@ Tam liste ve varsayılan davranışlar: [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md)
 
 | # | Özet | Bloke ettiği görev |
 |---|---|---|
-| S01 | Font dosyaları nereden gelecek, alt kümelemeyi kim yapacak? | `M0-T05` |
 | S03 | Duraklatma ekranında ne olacak? | `M0-T09` |
 | S04 | 2× seçimi kalıcı mı? | `M0-T09` |
 | S05 | Menü M0'da ne kadar dolu? | `M0-T07` |
@@ -587,7 +631,11 @@ Tam liste ve varsayılan davranışlar: [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md)
 | S07 | Hız butonu etiketi TIER 1 k.7'yi nasıl karşılayacak? | `M0-T09` |
 | S09 | `prefers-reduced-motion` M0'da mı okunacak? | `M0-T09` |
 | S10 | "İlk indirme" tam olarak neyi kapsıyor? | `M0-T10` |
-| **S63** | **Oyunun dili?** Karar ertelenebilir ama **yapı ertelenemez** — metinler `src/data/strings.ts` içinde tek yerde tutulmalı, yoksa sonradan `scenes/`'in her yerine dokunmak gerekir | `M0-T03`, `M0-T07` |
+
+> **S01, S02, S08 ve S63 kapandı.** Fontlar Google Fonts'tan `latin-ext`
+> alt kümesiyle, yerel sunulur (`M0-T05`). Metinler `src/data/strings.ts`
+> içinde **dil haritası**: `{ tr, en }`, varsayılan `tr`, `en` şimdilik boş
+> (`M0-T03`, `M0-T07`). Gerekçeler `CLAUDE.md` Teknoloji.
 
 > **S02 ve S08 kapandı.** Arcade fizik **kullanılmıyor** (`CLAUDE.md`
 > Teknoloji); Vitest ortamı **`node`**, Phaser'a dokunan kısımlar sahte

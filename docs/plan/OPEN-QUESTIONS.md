@@ -7,13 +7,13 @@ Bunları tek tek çözmeye çalışmak iki gün kod yazmamak demek.
 
 | Durum | Sayı |
 |---|---|
-| ☑ Kapandı | 8 (S02, S08, S25, S26, S27, S50, S56, S59) |
-| ☐ Varsayılanla geçilebilir | 56 |
+| ☑ Kapandı | 10 (S01, S02, S08, S25, S26, S27, S50, S56, S59, S63) |
+| ☐ Varsayılanla geçilebilir | 54 |
 | **⛔ Bloke edici** | **0** |
 
 **Kod yazmaya başlamak için beklenen hiçbir şey yok.**
 
-### Kapanan sekiz soru
+### Kapanan on soru
 
 | # | Nasıl kapandı |
 |---|---|
@@ -22,6 +22,8 @@ Bunları tek tek çözmeye çalışmak iki gün kod yazmamak demek.
 | **S27** | Düştü — `aktiflikOranı` hiç hesaplanmıyor; simülasyon gerçek aktifliği zaten yaşıyor |
 | **S56** | **Kritik vuruş v1'den çıkarıldı.** Mekanik hiç tanımlı değildi; eklemek varyans getirip karşılığında hiçbir şey vermiyordu. Hasar rengi iki renk (`GAME-DESIGN.md` §3) |
 | **S59** | Eşikler verildi: 20 can → ★★★, 15-19 → ★★, ≤14 → ★ (`GAME-DESIGN.md` §9) |
+| **S01** | **Fontlar Google Fonts'tan `latin-ext` alt kümesiyle** indirilip `public/assets/fonts/` altında yerel sunulur — CDN bağımlılığı yok. `latin` alt kümesi Türkçe karakterleri içermiyor; `M0-T05` kabul kriterine `İIıi ŞşĞğÇçÖöÜü` render kontrolü eklendi (`CLAUDE.md` Varlık formatları) |
+| **S63** | **Dil haritası.** `src/data/strings.ts` düz nesne değil `{ tr, en }` haritası; varsayılan `tr`, `en` anahtarları şimdilik boş. Kullanım `t('play')`. Gerekçe: Poki ve CrazyGames global; Türkçe-only erişimi kesiyor. Çeviri M7'de bir oturumluk iş ama **yapıyı** sonradan eklemek `scenes/`'in tamamına dokunmak demek (`CLAUDE.md` Teknoloji) |
 | **S02** | **Arcade fizik kullanılmıyor.** Mermiler elle hareket eder; yakınlık ve isabet karesel mesafe. `GameClock` üç özellik yazıyor, dört değil. Belirleyici sebep: `simulateWave` fizikle Phaser dünyası ayağa kaldırmak zorunda kalırdı — S02'nin cevabı aslında `M3-T09` kararında verilmişti. Eşik: düşman > 200 olursa uzamsal ızgara gerekir (`CLAUDE.md` Teknoloji) |
 | **S08** | **Vitest ortamı `node`**, Phaser'a dokunan kısımlar sahte nesneyle. `jsdom`'da WebGL/Canvas yok, Phaser zaten koşmaz; `node` hızlı ve "10 dalga < 2 sn" şartı buna bağlı. **Çalışma koşulu TIER 1 kural 11 olarak yazıldı** (`CLAUDE.md` Test) |
 | **S50** | **Özgün silüet** seçildi. Birimler koyu mürekkep silüet + tek vurgu + altın kontur; tezhip yalnız çerçeve ve arka planda. Hazır varlık paketi kullanılmıyor. M6 takvimi **3-4 hafta** (`GAME-DESIGN.md` §2 "Üretim seviyesi") |
@@ -45,7 +47,6 @@ Her soru için: **neden önemli** · **hangi taşı bloke ediyor** ·
 
 | # | Soru | Neden önemli | Bloke | Varsayılan |
 |---|---|---|---|---|
-| S01 | Grenze Gotisch + Spectral `woff2` dosyaları nereden, alt kümelemeyi (`latin-ext`) kim yapacak? | Türkçe karakterler `latin` alt kümesinde yok; unutulursa arayüzde kutucuk çıkar | `M0-T05` | Font yolu yer tutucu, sistem serif'e düşülür |
 | S02 | Arcade fizik kullanılacak mı? | `research/02` §3 kararı açıkça M0'a bırakıyor. Kullanılmazsa `GameClock`'tan `physics` satırı düşer; M2'de mermi yazılırken geri dönmek pahalı | `M0-T04` | Kullanılmıyor; mermiler elle hareket eder |
 | S03 | Duraklatma ekranında ne var — yalnız karartma mı, menü mü? | Ayarlar M6'da; M0'da yer tutucu buton olacak mı | `M0-T09` | Yalnız karartma + "devam" |
 | S04 | 2× seçimi kalıcı mı — oturum boyu, harita boyu, yoksa her dalga 1×'e mi dönüyor? | Kalıcıysa `SaveSystem`'e M0'da dokunmak gerekir | `M0-T09` | Oturum boyu, kaydedilmiyor |
@@ -142,13 +143,10 @@ Her soru için: **neden önemli** · **hangi taşı bloke ediyor** ·
 
 | # | Soru | Neden önemli | Bloke | Varsayılan |
 |---|---|---|---|---|
-| **S63** | **Oyunun dili ne olacak?** Türkçe / İngilizce / ikisi | 6571 satır dokümanda dil kelimesi **hiç geçmiyor**. Oyun tamamen Türkçe (menü "Oyna", HUD, telegraf) ama Poki elle küratörlü ve uluslararası, CrazyGames global dağıtım yapıyor (`research/05` §1-2). Türkçe-only bir TD'nin bu platformlarda erişimi ciddi biçimde sınırlı. **Bu bir M6/M7 sorunu değil, M0 sorunu:** karar bugün verilmezse metinler kod içine sabit string olarak dağılır, sonradan toplamak `scenes/` ve `Hud`'un her yerine dokunmak demek | `M0-T03`, `M0-T07` | **Yok.** Karar verilene kadar metinler `src/data/strings.ts` içinde tek yerde tutulur — dil eklemek ucuz kalır, karar ertelenebilir |
-
 | **S64** | **Harita başına tamamlama ve bırakma noktası nasıl ölçülecek?** `ROADMAP.md` "v1 sonrası karar noktası" teşhis matrisi üç metriğe dayanıyor: ortalama oturum, harita başına tamamlama, nerede bırakıldığı. Portal panelleri ilk ve son metriği veriyor ama **harita/dalga kırılımını verdikleri doğrulanmadı** (`research/05` yalnız `gameplayStart`/`gameplayStop` ve Data modülünü belgeliyor). Vermiyorlarsa kendi sayacımız gerekir — ama **kendi sunucumuz yok**, yani sayaç `KeyValueStore`'a yazıp bir sonraki açılışta portala mı gönderecek? | `M7-T11` ve v1 sonrası karar | **Yok.** M7'de portal panelini aç, ne verdiğine bak, sonra karar ver. Vermiyorsa karar matrisi iki metrikle çalışır (oturum + dönüş) — daha kaba ama kullanılabilir |
 
 > S63 ve S64 bu oturumun denetiminde bulundu, taş planlarından çıkmadı.
-> S63'ün varsayılanı (`strings.ts`) M0'da ~20 dakika; sonradan toplamak günler.
-> Karar ertelenebilir ama **yapı ertelenmemeli.**
+> **S63 kapandı** — dil haritası, `M0-T03`'te kuruluyor.
 > S64 M7'ye kadar beklenebilir — ama beklemek, karar matrisinin üç ayaktan
 > ikisiyle çalışması demek.
 
