@@ -164,7 +164,7 @@ tanımlanmışsa (`CLAUDE.md` Klasör yapısı: sahne kaydı `main.ts`'te).
 | | |
 |---|---|
 | **Kimlik** | `M0-T03` |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ bitti |
 | **Süre** | ~30 dk |
 | **Önkoşul** | `M0-T01` |
 | **TIER 1** | kural 5 |
