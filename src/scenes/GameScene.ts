@@ -35,14 +35,28 @@ export class GameScene extends Phaser.Scene {
     // GEÇİCİ — M1'de yerini yol ve düşmanlar alacak.
     this.#probe = this.add.rectangle(0, height / 2, PROBE_SIZE, PROBE_SIZE, 0x8a7250);
 
+    // `once`, `on` DEĞİL. Phaser kaynağı (Systems.js):
+    //   - `shutdown()` yalnız SHUTDOWN yayar, dinleyicileri KALDIRMAZ
+    //     (`removeAllListeners` `destroy()` içinde, 810. satır)
+    //   - `SceneManager.create()` her başlatmada `create()`'i çağırır
+    // Yani `on` kullanılsaydı her yeniden başlatma kalıcı bir dinleyici
+    // daha eklerdi ve `bus.clear()` N. kapanışta N kez çağrılırdı.
+    // `once` her `create`'te taze kaydediliyor, kapanışta tükeniyor.
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.bus.clear();
+      const d = devHooks();
+      if (d !== undefined) d.clearCount = (d.clearCount ?? 0) + 1;
     });
 
     const dev = devHooks();
     if (dev !== undefined) {
       dev.probeX = () => this.#probe?.x ?? -1;
       dev.scale = () => this.clock.scale;
+      dev.shutdownListeners = () =>
+        this.events.listenerCount(Phaser.Scenes.Events.SHUTDOWN);
+      dev.restartGame = () => {
+        this.scene.start('Game');
+      };
     }
   }
 

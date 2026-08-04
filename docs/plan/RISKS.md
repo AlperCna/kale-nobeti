@@ -144,21 +144,47 @@ ortasında takılıyor.
 verildi (M5). Her kural için ayrı test (`M5-T04`, `M5-T05`).
 **Taş:** M5.
 
-### R7 · Paket boyutu
+### R7 · Paket boyutu — **risk kodda değil, M6 varlıklarında**
 
 | | |
 |---|---|
-| **Olasılık** | Düşük · **Etki** Yüksek |
-| **Kaynak** | `research/04` §1, §4 · `research/05` §1 |
+| **Olasılık** | Orta · **Etki** Yüksek |
+| **Kaynak** | `research/04` §1, §4 · `research/05` §1-2 · `results/M0-SONUC.md` §3 |
 
-Arka planlar PNG-24 kalırsa üç tanesi tek başına 4-6 MB eder ve Poki'nin
-8 MB sınırını patlatır.
+M0'da ölçüldü: ilk indirme **0,38 MB**. Ama bu sayı **yanıltıcı okunmaya
+çok müsait** ve bir kez öyle okundu.
 
-**Erken uyarı:** `npm run build` raporu 5 MB uyarısını geçiyor.
+**Neden yanıltıcı:** 0,38 MB'ın 0,31'i JavaScript ve gzip'te ~3,7:1
+sıkışıyor. M6'da eklenecek her şey **zaten sıkıştırılmış**:
 
-**Azaltma:** `CLAUDE.md` Varlık formatları (WebP q80, atlas dışında) +
-aşamalı yükleme (`M0-T06`) + her `build`'de boyut raporu (`M0-T10`).
-**Taş:** M0 (raporlama), M6 (uygulama), M7 (doğrulama).
+| Varlık | gzip kazancı |
+|---|---|
+| `atlas.png` (PNG-8, 2048×2048) | ~%2 |
+| Arka planlar (WebP q80) | ~%2 |
+| Ses (`.m4a`) | ~%0 |
+| Fontlar (`woff2`) | ~%0 |
+
+Yani M6 varlıkları bütçeye **1:1** yazılacak. Kaba tahmin (aşamalı yükleme
+dahil — müzik ve harita 2-3 ilk indirmede değil):
+JS 0,31 + font 0,07 + atlas ~1-2 + bir arka plan ~0,4 + ses efektleri ~0,4
+= **2,2-3,2 MB**. 8 MB sınırı tutuyor ama **5 MB uyarı eşiğine yaklaşıyor**.
+
+> **Kod tarafı kapandı.** M1-M5 boyunca eklenen her satır gzip'te eriyor;
+> 0,31 MB birkaç bin satırla belki 0,45 MB olur. Risk oraya bakarak
+> değerlendirilemez.
+
+**Erken uyarı:** `npm run build` raporundaki **`varlıklar`** satırı — `js`
+satırı değil. İkisi `M0-T10`'da ayrıldı tam da bu yüzden.
+
+**Azaltma:** `CLAUDE.md` Varlık formatları (WebP q80, atlas dışında,
+`.m4a` tek format, PNG-8 maks 2048×2048) + aşamalı yükleme (`M0-T06`) +
+M6'da ses bitrate ve atlas boyutunda **disiplin**. "Nasılsa yerimiz var"
+diye gevşerse tek seferde patlar.
+**Taş:** M0 ☑ (ölçüm ve ayrım), M6 (asıl risk burada), M7 (doğrulama).
+
+> İki sınır ayrı: Poki **ilk indirme** < 8 MB; CrazyGames SDK'sız
+> **paketin tamamını** ilk indirme sayıyor (`research/05` §2, S61).
+> `report-size.mjs` ikisini de basıyor.
 
 ### R8 · Poki küratörlüğü reddi
 

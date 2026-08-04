@@ -149,6 +149,17 @@ public/assets/            atlas.png, atlas.json, bg/*.webp, audio/, fonts/
 - Sistemler birbirini doğrudan çağırmaz, `EventBus` (Phaser events) üzerinden
   haberleşir. Örnek olaylar: `enemy:killed`, `wave:started`, `gold:changed`,
   `life:lost`, `tower:placed`.
+- **`create()` içinde kaydedilen her dinleyici, `shutdown()` tarafından ya
+  tüketilmeli (`once`) ya da açıkça kaldırılmalı.** Phaser `shutdown()`'da
+  `removeAllListeners()` çağırmıyor (o `destroy()` içinde), ama `create()`
+  her yeniden başlatmada koşuyor. Yani `create()` içinde `on` kullanmak
+  her denemede kalıcı bir dinleyici daha ekler.
+  **Kayıt `create()` dışına taşınırsa semantik tersine döner** — `init`,
+  kurucu veya alan başlatıcıda `once` bu kez yalnız bir kez çalışır.
+  Sahne yeniden başlatma bu oyunda garanti: kaybedince tekrar dene,
+  haritalar arası geçiş, seviye seçimden dönüş.
+  Sızıntı çökme üretmez, **olayların iki kez işlenmesi** olarak görünür.
+  Çalışma zamanı sağlaması: `TEST-STRATEGY.md` E6b.
 - `Enemy` kendi hasarını hesaplamaz; `combat.ts` içindeki saf `applyDamage()`
   fonksiyonu kullanılır (test edilebilir olsun diye).
 - Harita verisi (`maps.ts`) waypoint + yapı noktası koordinatları içerir.
