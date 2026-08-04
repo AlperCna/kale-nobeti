@@ -253,7 +253,7 @@ gör, geri al.)
 | | |
 |---|---|
 | **Kimlik** | `M0-T04` |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ bitti |
 | **Süre** | ~45 dk |
 | **Önkoşul** | `M0-T01` |
 | **TIER 1** | kural 5, **kural 8**, **kural 11** |
