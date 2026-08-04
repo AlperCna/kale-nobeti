@@ -597,7 +597,7 @@ araması yaptığında yakalar — bu yüzden `M0-T10` bu görevden sonra gelmel
 | | |
 |---|---|
 | **Kimlik** | `M0-T10` |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ bitti |
 | **Süre** | ~40 dk |
 | **Önkoşul** | `M0-T01`, `M0-T06`, `M0-T08`, `M0-T09` |
 | **TIER 1** | kural 2, 5, 7, 8 (hepsini denetler) |
