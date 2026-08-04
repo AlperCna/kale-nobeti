@@ -18,6 +18,7 @@ export const DEFAULT_LOCALE: Locale = 'tr';
 const TR = {
   play: 'Oyna',
   pause: 'Duraklat',
+  paused: 'Duraklatıldı',
   resume: 'Devam',
   speed: 'Hız',
 } as const;
@@ -34,6 +35,7 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
   en: {
     play: '',
     pause: '',
+    paused: '',
     resume: '',
     speed: '',
   },

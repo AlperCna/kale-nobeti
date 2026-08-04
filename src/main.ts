@@ -3,12 +3,12 @@ import { BootScene } from './scenes/BootScene';
 import { PreloadScene } from './scenes/PreloadScene';
 import { MenuScene } from './scenes/MenuScene';
 import { GameScene } from './scenes/GameScene';
+import { HudScene } from './scenes/HudScene';
 
 /**
  * Sahne kaydı yalnız burada yapılır (CLAUDE.md Klasör yapısı).
  *
- * Zincir: Boot → Preload → Menu → Game.
- * M0-T09'da `Hud`, `Game`'in üstünde paralel başlatılacak.
+ * Zincir: Boot → Preload → Menu → Game (+ Hud paralel).
  */
 const config: Phaser.Types.Core.GameConfig = {
   // research/02 §4: AUTO (WebGL öncelikli). Canvas'a düşme kararı
@@ -35,7 +35,7 @@ const config: Phaser.Types.Core.GameConfig = {
   // görünür — kapatılıyor.
   banner: false,
 
-  scene: [BootScene, PreloadScene, MenuScene, GameScene],
+  scene: [BootScene, PreloadScene, MenuScene, GameScene, HudScene],
 };
 
 new Phaser.Game(config);

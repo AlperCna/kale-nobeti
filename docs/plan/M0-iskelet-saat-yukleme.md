@@ -536,7 +536,7 @@ değil), veya ölçülen hız kare hızıyla birlikte değişiyorsa.
 | | |
 |---|---|
 | **Kimlik** | `M0-T09` |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ bitti |
 | **Süre** | ~45 dk |
 | **Önkoşul** | `M0-T08` |
 | **TIER 1** | kural 7 |
@@ -567,16 +567,24 @@ export class HudScene extends Phaser.Scene {
   `Text` nesnesinin görünürlüğünü değiştir** ve bunu geçici olarak işaretle.
 - Buton `speed:changed` ve `game:paused` olaylarını yayar.
 
-**Kabul kriteri**
-```bash
-npm run dev
-```
-gözle: ESC duraklatıyor, tekrar ESC devam ettiriyor; boşluk da aynısını
-yapıyor; duraklatmada `M0-T08`'in dikdörtgeni donuyor ama hız butonu hâlâ
-tıklanabiliyor; 2× seçince dikdörtgen **gözle görülür şekilde iki kat**
-hızlanıyor.
+**Kabul kriteri — ölçülerek** (gözle yetmiyor; `devHooks` sayaçları kullanılır)
 
-**Bitmedi sayılır eğer:** duraklatmada `Hud` da donuyorsa.
+| Ölçüm | Beklenen |
+|---|---|
+| 1× hız / 2× hız oranı | **2,00 ± %2** |
+| 1× ve 2×'te kare sayısı | **eşit** — hızlanma `scaledDelta`'dan gelmeli, daha çok kare çizmekten değil |
+| Duraklatmada `gameFrames` artışı | **0** |
+| Duraklatmada `hudFrames` artışı | **> 0** |
+| Duraklatmada `probeX` değişimi | **0** |
+| ESC ve boşluk | ikisi de **her iki yönde** çalışıyor |
+
+> Klavye doğrulaması `KeyboardEvent`'in `code`/`keyCode` alanları dolu
+> olarak gönderilerek yapılır. Otomasyon araçlarının sentetik tuş olayı
+> `code`'u boş bırakabiliyor; Phaser o alanla eşleştirdiği için olay
+> sessizce düşer ve testi yanıltır.
+
+**Bitmedi sayılır eğer:** duraklatmada `hudFrames` de artmıyorsa —
+o zaman devam butonu tıklanamaz.
 
 **Risk:** hız butonunun etiketi `Text` olarak yazılıp kural 7 ihlali
 kalıcılaşır. **Erken uyarı:** `npm run guard` (`M0-T10`) değişen `Text`

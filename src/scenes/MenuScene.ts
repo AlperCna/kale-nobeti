@@ -81,9 +81,11 @@ export class MenuScene extends Phaser.Scene {
 
   /**
    * `Hud`, `Game`'in **üstünde paralel** çalışır (CLAUDE.md Mimari).
-   * M0-T09'da buraya `this.scene.launch('Hud')` eklenecek.
+   * `start` menüyü kapatıp oyunu açar; `launch` HUD'ı **durdurmadan**
+   * yanına ekler — duraklatmada HUD'ın yaşamaya devam etmesi buna bağlı.
    */
   #startGame(): void {
     this.scene.start('Game');
+    this.scene.launch('Hud');
   }
 }
