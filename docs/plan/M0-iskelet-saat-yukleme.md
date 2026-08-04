@@ -481,7 +481,7 @@ Kabulü **boyut değiştirilmiş pencerede de** dene.
 | | |
 |---|---|
 | **Kimlik** | `M0-T08` |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ bitti |
 | **Süre** | ~35 dk |
 | **Önkoşul** | `M0-T04`, `M0-T07` |
 | **TIER 1** | **kural 8** |
@@ -511,12 +511,23 @@ export class GameScene extends Phaser.Scene {
 
 **Kabul kriteri**
 ```bash
-grep -rn "delta" src/ --include=*.ts | grep -v "GameClock" | grep -v "clock.tick"
+grep -n "\bdelta\b" src/scenes/GameScene.ts | grep -v "^\s*[0-9]*:\s*[*/]"
 ```
-Beklenen: **boş çıktı**.
-gözle: `npm run dev` → dikdörtgen sabit hızla sağa gidiyor, kenarda başa dönüyor.
+Beklenen: **tam 2 satır** — `update` imzası ve `this.clock.tick(delta)`.
+Üçüncü bir satır çıkarsa ham `delta` oyun mantığına sızmış demektir.
 
-**Bitmedi sayılır eğer:** hareket `delta` ile yapılıyorsa (`scaledDelta` değil).
+> Bu kriter düzeltildi. Önceki hâli `grep -rn "delta" … | grep -v "clock.tick"`
+> → "boş çıktı" bekliyordu, ama `update(_time, delta)` **imzası** da
+> eşleşiyor; ölçüt hiçbir zaman boş çıkamazdı. Yorumlar da sayılıyordu.
+
+**Ölçülerek doğrulama (gözle yetmiyor):** geliştirme kancasıyla 600 ms'lik
+pencerede hız örneklenir.
+Beklenen: ölçülen hız `PROBE_SPEED` ile **±%2** içinde **ve** ölçüm
+60 FPS'ten farklı bir kare hızında yapıldığında da aynı kalıyor — bu,
+hareketin kareye değil zamana bağlı olduğunun kanıtı.
+
+**Bitmedi sayılır eğer:** hareket `delta` ile yapılıyorsa (`scaledDelta`
+değil), veya ölçülen hız kare hızıyla birlikte değişiyorsa.
 
 ---
 

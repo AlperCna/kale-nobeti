@@ -2,34 +2,13 @@ import Phaser from 'phaser';
 import { BootScene } from './scenes/BootScene';
 import { PreloadScene } from './scenes/PreloadScene';
 import { MenuScene } from './scenes/MenuScene';
-
-/**
- * GEÇİCİ oyun alanı yer tutucusu — M0-T08 bunu `GameScene` ile,
- * M0-T09 da üstüne `HudScene` ile değiştirecek.
- *
- * M0-T05'in font doğrulaması buradan kaldırıldı: `MenuScene` başlığı
- * zaten Grenze Gotisch ve "Kale Nöbeti" Türkçe karakter taşıyor.
- */
-class BootstrapScene extends Phaser.Scene {
-  constructor() {
-    super('Bootstrap');
-  }
-
-  create(): void {
-    const { width, height } = this.scale;
-
-    this.add
-      .text(width / 2, height / 2, 'oyun alanı — M0-T08 (geçici)', {
-        fontFamily: 'Spectral, serif',
-        fontSize: '20px',
-        color: '#8A7250', // GAME-DESIGN §2 yol rengi
-      })
-      .setOrigin(0.5);
-  }
-}
+import { GameScene } from './scenes/GameScene';
 
 /**
  * Sahne kaydı yalnız burada yapılır (CLAUDE.md Klasör yapısı).
+ *
+ * Zincir: Boot → Preload → Menu → Game.
+ * M0-T09'da `Hud`, `Game`'in üstünde paralel başlatılacak.
  */
 const config: Phaser.Types.Core.GameConfig = {
   // research/02 §4: AUTO (WebGL öncelikli). Canvas'a düşme kararı
@@ -56,7 +35,7 @@ const config: Phaser.Types.Core.GameConfig = {
   // görünür — kapatılıyor.
   banner: false,
 
-  scene: [BootScene, PreloadScene, MenuScene, BootstrapScene],
+  scene: [BootScene, PreloadScene, MenuScene, GameScene],
 };
 
 new Phaser.Game(config);
