@@ -2,18 +2,20 @@
 
 ## Bloke edici soru kalmadı
 
-56 sorunun makul bir varsayılanı var ve varsayılanla ilerlenebilir.
+Kalan soruların makul bir varsayılanı var ve varsayılanla ilerlenebilir.
 Bunları tek tek çözmeye çalışmak iki gün kod yazmamak demek.
 
 | Durum | Sayı |
 |---|---|
-| ☑ Kapandı | 11 (S01, S02, S08, S14, S25, S26, S27, S50, S56, S59, S63) |
-| ☐ Varsayılanla geçilebilir | 53 |
+| ☑ Kapandı | 15 (S01, S02, S08, S11, S12, S14, S16, S17, S25, S26, S27, S50, S56, S59, S63) |
+| ☐ Varsayılanla geçilebilir | 49 |
 | **⛔ Bloke edici** | **0** |
 
 **Kod yazmaya başlamak için beklenen hiçbir şey yok.**
 
-### Kapanan on bir soru
+### Kapanan sorular
+
+> S11, S12, S16, S17 `M1-T03`'te kapandı; ayrıntısı aşağıda M1 bölümünde.
 
 | # | Nasıl kapandı |
 |---|---|
@@ -62,12 +64,16 @@ Her soru için: **neden önemli** · **hangi taşı bloke ediyor** ·
 
 | # | Soru | Neden önemli | Bloke | Varsayılan |
 |---|---|---|---|---|
-| S11 | Harita 1'in waypoint koordinatlarını kim çizecek? | Dokümanda yalnız "tek yol, 2 keskin viraj" var; koordinat yok | `M1-T03` | Geçici yol çizilir, `// GEÇİCİ — S11` |
-| S12 | 8 yapı noktasının koordinatları? | Kapsanan yol doğrudan buna bağlı → tüm denge | `M1-T03` | Geçici yerleşim |
 | S13 | Köşe davranışı: keskin dönüş mü, köşe kesme (yay) mı? | Kapsama ölçümünü ve yol uzunluğunu değiştiriyor | `M1-T05`, `M1-T02` | Keskin dönüş |
 | S15 | "60 FPS" hangi cihazda ölçülecek? | CrazyGames 4 GB Chromebook şartı koyuyor | `M1-T07` kabulü | Geliştirme makinesi |
-| S16 | **Harita 1'in yol uzunluğu `L` kaç px?** | `research/01` §3: "hiçbir yerde yazmıyor, kesinleşmesi gerekiyor, çünkü bütün denge buna asılı" | `M1-T03`, `M1-T09` | Çizilen yoldan **ölçülür** ve raporlanır |
-| S17 | Düşman nerede doğar — ilk waypoint mi, ekran dışı mı? | Ekran dışıysa görsel olarak daha iyi ama yol uzunluğu değişiyor | `M1-T07` | İlk waypoint |
+
+**S11, S12, S16, S17 `M1-T03`'te kapandı** — koordinatlar uydurulmadı,
+**kapsama hedefinden türetildi**. Boss 700 ve T2 tahtası sabit tutulup
+gereken ortalama kapsama çıkarıldı (≈292 px), yol ve 8 nokta onu tutturacak
+şekilde çizildi. Ölçülen: `L` = **1700 px**, ortalama kapsama **296,3 px**,
+boss 700 = tavanın **%78,7'si** (hedef %75-85). Düşman **ekran dışında**
+doğuyor (`x = -60`) — 60 px'i `L`'ye dahil. Ayrıntı:
+[M1 §M1-T03](M1-yol-dusman-kapsama.md).
 
 ## M2 — Kule, mermi, hedefleme
 

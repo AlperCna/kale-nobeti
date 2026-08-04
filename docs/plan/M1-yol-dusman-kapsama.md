@@ -158,10 +158,10 @@ yol ucunda kırpma → yarım kiriş;
 
 | | |
 |---|---|
-| **Kimlik** | `M1-T03` · **Durum** ☐ · **Süre** ~40 dk |
+| **Kimlik** | `M1-T03` · **Durum** ☑ · **Süre** ~40 dk |
 | **Önkoşul** | `M1-T02` |
 | **TIER 1** | **kural 1** (denge verisi `src/data/`), kural 5 |
-| **Açık soru** | S11, S12, S16, S17 |
+| **Açık soru** | — (S11, S12, S16, S17 **kapandı**, aşağıya bak) |
 | **Doküman** | `GAME-DESIGN.md` §9 (`MapDef` şeması, harita tablosu) · `DEPENDENCIES.md` §1 |
 
 **Dosyalar**
@@ -204,6 +204,38 @@ Beklenen: `typecheck` temiz; test → `coverage` alanı `measureCoverage`
 çıktısıyla birebir eşleşiyor (elle yazılmadığının kanıtı).
 
 **Bitmedi sayılır eğer:** `coverage` dizisi `maps.ts` içinde sabit yazılmışsa.
+
+**Sonuç — ölçülen geometri**
+
+Koordinatlar **kapsama hedefinden türetildi**, uydurulmadı (Plan A §3.4:
+"türetme yönü M1'de ters olmalı"). Boss 700 ve T2 tahtası (ΣDPS 84,
+boss hızı 28) sabit tutulup gereken ortalama kapsama çıkarıldı: 700/0.80
+→ tavan 875 → C ≈ 292 px. Yol ve 8 nokta bunu tutturacak şekilde çizildi.
+
+| Ölçüm | Değer |
+|---|---|
+| Yol uzunluğu `L` (S16) | **1700 px** |
+| Ortalama kapsama (menzil 150) | **296,3 px** |
+| Kısıt A tavanı (3C) | **889** |
+| Boss 700 / tavan | **%78,7** — hedef band %75-85 ✓ |
+| Uçan hattını gören nokta | **7/8 = %87,5** — eşik %40 ✓ |
+| En değerli / en değersiz nokta | 421,8 / 229,9 = **1,83×** |
+
+Nokta başına: 259,8 · 259,8 · 259,8 · **421,8** · 259,8 · **420,0** · 259,8 · 229,9.
+Kalın olanlar viraj içi — yolu iki kez görüyorlar, yerleşim kararını anlamlı
+kılan şey bu fark.
+
+> **300/450 çelişkisi 300 lehine kapanıyor.** Ama bu bağımsız bir kanıt
+> değil: harita 296'yı tutturmak için çizildi. Asıl iddia şu — 450 px
+> kriteri **tutturulsaydı** tavan 1350 olur, boss 700 tavanın %52'sinde
+> kalırdı; yani 450 px, §5'teki boss değeriyle aynı anda doğru olamıyor.
+> Dokümanlardaki uyarı blokları M1 sonunda, `M1-T09` ekranda da
+> doğruladıktan sonra tek seferde güncellenecek.
+
+**Bekçi eklendi:** `npm run guard` 8. kontrol — `maps.ts` içindeki
+`coverage:` satırı `measureCoverage(` içermiyorsa hata. Kasten ihlal
+edilerek doğrulandı: bekçi 7/8'e düştü ve `maps.test.ts` aynı anda
+4 test kaybetti (iki bağımsız kat).
 
 ---
 
