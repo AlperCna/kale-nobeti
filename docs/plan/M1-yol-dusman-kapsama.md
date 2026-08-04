@@ -121,13 +121,13 @@ export function spotsCoveringFlyerPaths(...): number;               // GAME-DESI
 > hassasiyet/maliyet takasını ortadan kaldırıyor.
 
 **Yapılacak**
-- Yolu `stepPx` aralıklarla örnekle, her örnek noktanın menzil içinde olup
-  olmadığına `distSq <= range²` ile bak (TIER 1 k.9).
+- Her segment için segment-çember kesişimini kapalı formülle çöz
+  (`math.segmentCircleOverlapLength`); kesişim aralığı segment dışına
+  taşarsa kırp. Örnekleme yok, dolayısıyla `distSq` eşiği de yok — ama
+  `Math.sqrt` yalnız `math.ts` içinde kalıyor (TIER 1 k.9 bekçisi doğruluyor).
 - **Kıvrımlı yolda aynı kule yolu birden çok kez görebilir** — kapsama
   toplanır, `2 × menzil` ile sınırlanmaz. `research/01` §4'teki çelişkinin
   çözümü bu fonksiyonun çıktısı.
-- `stepPx` varsayılanı **S14**'e bağlı; cevap gelene kadar `4` kullanılır ve
-  bu değer dosyada geçici olarak işaretlenir.
 
 **Kabul kriteri**
 ```bash
@@ -149,8 +149,9 @@ yol ucunda kırpma → yarım kiriş;
 **Bitmedi sayılır eğer:** fonksiyon `2 × range` üstünü kırpıyorsa.
 
 **Risk:** Bu fonksiyonun çıktısı boss ve Trol HP'sini belirleyecek
-(`GAME-DESIGN.md` §5 ⚠️ notu). **Erken uyarı:** yakınsama testi geçmiyorsa
-ölçüm gürültülü demektir ve türetilen HP'ler de gürültülü olur.
+(`GAME-DESIGN.md` §5 ⚠️ notu). **Erken uyarı:** analitik sonuç ile örnekleme
+kâhini arasındaki fark 1 px'i aşarsa formülde bir kırpma hatası var demektir
+ve türetilen HP'ler de yanlış olur.
 
 ---
 
@@ -243,7 +244,7 @@ edilerek doğrulandı: bekçi 7/8'e düştü ve `maps.test.ts` aynı anda
 
 | | |
 |---|---|
-| **Kimlik** | `M1-T04` · **Durum** ☐ · **Süre** ~40 dk |
+| **Kimlik** | `M1-T04` · **Durum** ☑ · **Süre** ~40 dk |
 | **Önkoşul** | `M0-T03` |
 | **TIER 1** | **kural 3** |
 | **Açık soru** | — |
@@ -284,6 +285,28 @@ Beklenen: `≥ 5 passed` — `acquire`/`release` turu, havuz dolunca `null`,
 `release` edilirse ikincisi yok sayılıyor.
 
 **Bitmedi sayılır eğer:** `acquire` havuz dolduğunda yeni nesne yaratıyorsa.
+
+**Kural 3 ↔ kural 11 çarpışması ve çözümü**
+
+Kural 3 `Phaser.GameObjects.Group` diyor; kural 11 `util/`'in çalışma
+zamanında Phaser'a dokunmasını yasaklıyor. İkisi bir arada duramıyordu.
+
+**Sorumluluk bölündü:** `util/pool.ts` yalnız *muhasebe* tutuyor (kim
+serbest, kim kullanımda, sıfırlama çağrıldı mı, kapasite doldu mu) —
+Phaser'sız, `node'da` test ediliyor. `Group` havuzu *kullanan* tarafta
+(`entities/`, `scenes/`) kalıyor: görüntü listesine girme ve sahne
+kapanınca toplanma onun işi. Kural 3'ün asıl önlemek istediği iki şey
+— oyun içinde `new` ve sıfırlanmamış durumun geri dönmesi — tamamen
+havuz tarafında zorlanıyor.
+
+Gerekçe: havuz mantığı `Group'un` içine yazılsaydı tek bir havuz testi
+bile Phaser dünyası ayağa kaldırmak zorunda kalırdı ve kural 11'in
+gerekçesindeki zincir (jsdom → yavaş test → `simulateWave` şartı düşer)
+işlerdi. `CLAUDE.md` kural 3'e bu sınır yazıldı.
+
+**Ek dosya:** `src/data/balance.ts` — `POOL_PREALLOC.enemy = 60`. Ön
+ayırma boyutu bir sayı; TIER 1 kural 1 gereği `data/` içinde durur.
+Havuz sessizce büyümediği için bu aynı zamanda sert bir tavan.
 
 ---
 

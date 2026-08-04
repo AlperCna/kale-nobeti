@@ -17,6 +17,12 @@ Hedef: 3 harita × 10 dalga, 4 kule ailesi, 2 aktif yetenek.
    mermi yaratılmaz. Havuza dönen nesne **tüm durumunu sıfırlar**
    (hedef referansı, tween, timer, tint) — sıfırlanmayan hedef referansı
    ölü düşmanı canlı tutar.
+   **Kural 11 ile sınırı:** havuz *muhasebesi* (`util/pool.ts` — kim serbest,
+   kim kullanımda, sıfırlama çağrıldı mı, kapasite doldu mu) Phaser'sızdır ve
+   `node`'da test edilir; `Group` havuzu kullanan tarafta (`entities/`,
+   `scenes/`) yaşar ve nesnenin görüntü listesine girmesi, sahne kapanınca
+   toplanması onun işidir. Havuz mantığı `Group`'un içine yazılırsa tek bir
+   havuz testi bile Phaser dünyası ayağa kaldırmak zorunda kalır.
 4. **Yol bulma dinamik değildir.** Yol sabit waypoint dizisidir. A* veya
    flow field eklenmez. Kuleler yolu değiştiremez.
 5. **`any` tipi kullanılmaz.** TypeScript strict modda çalışır.
