@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { PathSystem } from './PathSystem';
 import { PathMover, resetEnemyState } from './movers';
 import type { EnemyState } from '../types/enemy';
+import { GOBLIN } from '../data/enemies';
 import type { Vec2 } from '../types/common';
 
 const YOL: readonly Vec2[] = [
@@ -16,6 +17,7 @@ function sys(): PathSystem {
 /** `Enemy` sınıfı olmadan `EnemyState` — Mover'lar şekli tanır, sınıfı değil. */
 function dusman(mover: PathMover, ozel: Partial<EnemyState> = {}): EnemyState {
   return {
+    def: GOBLIN,
     hp: 100,
     maxHp: 100,
     speed: 60,
@@ -149,6 +151,7 @@ describe('resetEnemyState', () => {
 
   it('EnemyState şeklindeki her nesnede çalışıyor', () => {
     const dz: EnemyState = {
+      def: GOBLIN,
       hp: 1,
       maxHp: 1,
       speed: 1,

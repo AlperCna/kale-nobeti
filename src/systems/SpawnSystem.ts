@@ -12,15 +12,16 @@
  * TIER 1 kural 8: zaman yalnız `scaledDelta` üzerinden gelir.
  */
 
-import type { Mover, SpawnableEnemy } from '../types/enemy';
+import type { EnemyDef, Mover, SpawnableEnemy } from '../types/enemy';
 import type { Poolable } from '../util/pool';
 import { Pool } from '../util/pool';
 import { EventBus } from './EventBus';
 
 export interface SpawnSystemOptions {
-  readonly hp: number;
-  /** Birim: px/sn. */
-  readonly speed: number;
+  /** Doğacak düşman türü. M3'te `WaveManager` dalga tanımından seçecek. */
+  readonly def: EnemyDef;
+  /** Harita HP çarpanı (`MapDef.hpMultiplier`, `GAME-DESIGN.md` §9). */
+  readonly hpMultiplier: number;
   /** Birim: saniye. */
   readonly intervalSeconds: number;
   readonly startingLives: number;
@@ -88,7 +89,7 @@ export class SpawnSystem<T extends SpawnableEnemy & Poolable> {
         this.#birikenMs = 0;
         return;
       }
-      dusman.spawn(this.mover, this.options.hp, this.options.speed);
+      dusman.spawn(this.mover, this.options.def, this.options.hpMultiplier);
     }
   }
 

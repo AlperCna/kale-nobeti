@@ -62,9 +62,17 @@ export interface EnemyDef {
  * `Mover`'lar `Enemy` sınıfını değil bu şekli tanır.
  */
 export interface EnemyState {
+  /**
+   * Bu düşmanın **kimliği** — havuzdan çıkarken atanır, dönerken `null`'lanır.
+   *
+   * Zırh, direnç, uçma, altın, puan hepsi buradan okunuyor. M1'de yalnız
+   * `hp`/`speed` sayı olarak taşınıyordu; M2'de hedefleme uçma bilgisini,
+   * `applyDamage` zırh/direnci istedi ve ham sayı taşımak sürdürülemez oldu.
+   */
+  def: EnemyDef | null;
   hp: number;
   maxHp: number;
-  /** Birim: px/sn. */
+  /** Birim: px/sn. Harita çarpanı uygulanmış hâli. */
   speed: number;
   progress: PathProgress;
   /**
@@ -92,9 +100,28 @@ export interface EnemyState {
  * kural 11'i delerdi. Testler bu arayüzü uygulayan düz bir nesne kullanıyor.
  */
 export interface SpawnableEnemy extends EnemyState {
-  spawn(mover: Mover, hp: number, speed: number): void;
+  /** @param hpMultiplier Harita çarpanı (`MapDef.hpMultiplier`, §9). */
+  spawn(mover: Mover, def: EnemyDef, hpMultiplier: number): void;
   step(scaledDelta: number): void;
   reachedEnd(): boolean;
+}
+
+/**
+ * `selectTarget`'ın bir düşmandan gördüğü yüzey.
+ *
+ * `Enemy` sınıfı değil bu şekil talep ediliyor (TIER 1 kural 11) — hedefleme
+ * `systems/` altında ve `node`'da test ediliyor. `x`/`y` Phaser'ın
+ * `GameObject`'inden geliyor ama burada yalnız iki sayı.
+ */
+export interface Targetable {
+  readonly x: number;
+  readonly y: number;
+  readonly hp: number;
+  readonly maxHp: number;
+  readonly alive: boolean;
+  /** Kaleye kalan yol. `first`/`last` buna bakar (`GAME-DESIGN.md` §4.5). */
+  readonly remainingDistance: number;
+  readonly def: EnemyDef | null;
 }
 
 export interface Mover {

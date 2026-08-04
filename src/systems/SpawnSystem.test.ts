@@ -4,7 +4,8 @@ import { PathSystem } from './PathSystem';
 import { PathMover, resetEnemyState } from './movers';
 import { EventBus } from './EventBus';
 import { Pool } from '../util/pool';
-import type { Mover, SpawnableEnemy } from '../types/enemy';
+import type { EnemyDef, Mover, SpawnableEnemy } from '../types/enemy';
+import { GOBLIN } from '../data/enemies';
 import type { Poolable } from '../util/pool';
 import type { Vec2 } from '../types/common';
 
@@ -18,6 +19,7 @@ const YOL: readonly Vec2[] = [
  * `entities/Enemy.ts` `node` ortamında import edilemez (Phaser `window` arar).
  */
 class SahteDusman implements SpawnableEnemy, Poolable {
+  def: EnemyDef | null = null;
   hp = 0;
   maxHp = 0;
   speed = 0;
@@ -26,11 +28,13 @@ class SahteDusman implements SpawnableEnemy, Poolable {
   alive = false;
   mover: Mover | null = null;
 
-  spawn(mover: Mover, hp: number, speed: number): void {
+  spawn(mover: Mover, def: EnemyDef, hpMultiplier: number): void {
+    const hp = def.hp * hpMultiplier;
     this.mover = mover;
+    this.def = def;
     this.hp = hp;
     this.maxHp = hp;
-    this.speed = speed;
+    this.speed = def.speed;
     this.blockedBy = null;
     this.alive = true;
     this.progress = mover.spawnProgress();
@@ -50,27 +54,30 @@ class SahteDusman implements SpawnableEnemy, Poolable {
   }
 }
 
-function kur(prealloc = 10, ozel: Partial<Parameters<typeof yapilandir>[0]> = {}) {
+/** Hız artık `EnemyDef`'ten geliyor; test senaryosu için türev tanım. */
+function hizli(speed: number): EnemyDef {
+  return { ...GOBLIN, speed };
+}
+
+function kur(
+  prealloc = 10,
+  ozel: Partial<{
+    speed: number;
+    hpMultiplier: number;
+    intervalSeconds: number;
+    startingLives: number;
+  }> = {},
+) {
   const pool = new Pool<SahteDusman>(() => new SahteDusman(), prealloc);
   const mover = new PathMover(new PathSystem(YOL));
   const bus = new EventBus();
-  const sys = new SpawnSystem(pool, mover, bus, yapilandir(ozel));
+  const sys = new SpawnSystem(pool, mover, bus, {
+    def: ozel.speed === undefined ? GOBLIN : hizli(ozel.speed),
+    hpMultiplier: ozel.hpMultiplier ?? 1,
+    intervalSeconds: ozel.intervalSeconds ?? 1,
+    startingLives: ozel.startingLives ?? 20,
+  });
   return { pool, mover, bus, sys };
-}
-
-function yapilandir(o: Partial<{
-  hp: number;
-  speed: number;
-  intervalSeconds: number;
-  startingLives: number;
-}> = {}) {
-  return {
-    hp: 45,
-    speed: 60,
-    intervalSeconds: 1,
-    startingLives: 20,
-    ...o,
-  };
 }
 
 describe('SpawnSystem — doğurma', () => {
@@ -82,16 +89,27 @@ describe('SpawnSystem — doğurma', () => {
     expect(pool.activeCount).toBe(1);
   });
 
-  it('doğan düşman verilen değerlerle ve yolun BAŞINDA başlıyor', () => {
+  it('doğan düşman EnemyDef değerleriyle ve yolun BAŞINDA başlıyor', () => {
     const { pool, sys, mover } = kur();
     sys.update(1000);
     const d = pool.activeItems()[0]!;
-    expect(d.hp).toBe(45);
-    expect(d.maxHp).toBe(45);
-    expect(d.speed).toBe(60);
+    expect(d.def).toBe(GOBLIN);
+    expect(d.hp).toBe(GOBLIN.hp);
+    expect(d.maxHp).toBe(GOBLIN.hp);
+    expect(d.speed).toBe(GOBLIN.speed);
     expect(d.alive).toBe(true);
     expect(d.blockedBy).toBeNull();
     expect(mover.remainingDistance(d)).toBe(600);
+  });
+
+  it('harita HP çarpanı uygulanıyor, hıza dokunulmuyor', () => {
+    // GAME-DESIGN §9: harita 2 çarpanı 1.6. Hız ölçeklenmez.
+    const { pool, sys } = kur(10, { hpMultiplier: 1.6 });
+    sys.update(1000);
+    const d = pool.activeItems()[0]!;
+    expect(d.hp).toBeCloseTo(GOBLIN.hp * 1.6, 10);
+    expect(d.maxHp).toBeCloseTo(GOBLIN.hp * 1.6, 10);
+    expect(d.speed).toBe(GOBLIN.speed);
   });
 
   it('tek karede birden çok doğum sırası gelirse HEPSİ doğuyor', () => {
