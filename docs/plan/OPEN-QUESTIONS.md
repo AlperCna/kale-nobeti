@@ -8,7 +8,7 @@ Bunları tek tek çözmeye çalışmak iki gün kod yazmamak demek.
 | Durum | Sayı |
 |---|---|
 | ☑ Kapandı | 8 (S02, S08, S25, S26, S27, S50, S56, S59) |
-| ☐ Varsayılanla geçilebilir | 54 |
+| ☐ Varsayılanla geçilebilir | 55 |
 | **⛔ Bloke edici** | **0** |
 
 **Kod yazmaya başlamak için beklenen hiçbir şey yok.**
@@ -137,6 +137,16 @@ Her soru için: **neden önemli** · **hangi taşı bloke ediyor** ·
 | S60 | `SaveData` şeması | Sürüm alanı, göç stratejisi | `M7-T05` | `DATA-SCHEMAS.md` §9 taslağı |
 | S61 | Portal SDK entegrasyonu M7'de mi, sonra mı? | Poki `gameplayStart`/`gameplayStop` zorunlu kılıyor (`research/05` §1) | `M7-T10`, `M7-T11` | itch.io için gerekmez; portal başvurusunda eklenir |
 | S62 | Harita kilidi: yalnız bitirme mi, yıldız şartı var mı? | S59'a bağlı | `M7-T06` | Yalnız bitirme |
+
+## Taşlara bağlı olmayan
+
+| # | Soru | Neden önemli | Bloke | Varsayılan |
+|---|---|---|---|---|
+| **S63** | **Oyunun dili ne olacak?** Türkçe / İngilizce / ikisi | 6571 satır dokümanda dil kelimesi **hiç geçmiyor**. Oyun tamamen Türkçe (menü "Oyna", HUD, telegraf) ama Poki elle küratörlü ve uluslararası, CrazyGames global dağıtım yapıyor (`research/05` §1-2). Türkçe-only bir TD'nin bu platformlarda erişimi ciddi biçimde sınırlı. **Bu bir M6/M7 sorunu değil, M0 sorunu:** karar bugün verilmezse metinler kod içine sabit string olarak dağılır, sonradan toplamak `scenes/` ve `Hud`'un her yerine dokunmak demek | `M0-T03`, `M0-T07` | **Yok.** Karar verilene kadar metinler `src/data/strings.ts` içinde tek yerde tutulur — dil eklemek ucuz kalır, karar ertelenebilir |
+
+> S63 bu oturumun denetiminde bulundu, taş planlarından çıkmadı.
+> Varsayılanı (`strings.ts`) M0'da ~20 dakika; sonradan toplamak günler.
+> Karar ertelenebilir ama **yapı ertelenmemeli.**
 
 ---
 

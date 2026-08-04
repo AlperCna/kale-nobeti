@@ -369,3 +369,5 @@ havuz doluyken Takviye asker sayısını kısıyor ve `new` çağırmıyor.
 - [ ] 2× hızda beklemeler de iki kat hızlı
 - [ ] Asker ve geçici asker havuzları sızdırmıyor
 - [ ] S43'e uydurulmuş bir kalkan değeri **yazılmadı**
+- [ ] **`docs/results/M5-SONUC.md` yazıldı** — 9 engelleme kuralının test
+      sonucu ve kışlalı/kışlasız Trol karşılaştırması dahil.

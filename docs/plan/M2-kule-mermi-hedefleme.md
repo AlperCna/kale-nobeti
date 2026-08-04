@@ -477,3 +477,5 @@ kullanılıp işaretlendi.
 - [ ] Uzun oyun sonrası mermi `activeCount` sabit
 - [ ] Geçici sayılar (`S20`, `S22`, `S24`) kodda işaretli ve
       `OPEN-QUESTIONS.md`'de listeli
+- [ ] **`docs/results/M2-SONUC.md` yazıldı** — test sayısı, 8 kule + 20
+      düşmanla FPS, mermi havuzu tepe kullanımı dahil.

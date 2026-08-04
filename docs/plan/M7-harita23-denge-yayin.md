@@ -381,3 +381,5 @@ Devam eden: S10 (ilk indirme tanımı), S39 (Trol yenilenmesi ölçekleniyor mu)
 - [ ] Yayın yapısında konsol çıktısı ve hata ayıklama yok
 - [ ] itch.io'da yayında; 3 kişiye oynatıldı ve notlar alındı
 - [ ] `ROADMAP.md` M7 denge kontrol listesinin 9 maddesi işlendi
+- [ ] **`docs/results/M7-SONUC.md` yazıldı** — 30 dalganın sağlama sonucu,
+      nihai paket boyutu, yükleme süresi ve portal başvuru durumu dahil.

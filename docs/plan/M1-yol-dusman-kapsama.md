@@ -519,3 +519,6 @@ düzeltme önerilecek. Bu, sonraki taşların tahminlerini de kalibre eder.
 - [ ] `Math.sqrt` yalnız `segmentLength` içinde
 - [ ] `blockedBy` alanı tanımlı ve testli (M5 için)
 - [ ] `paths` çoğul (M7 için)
+- [ ] **`docs/results/M1-SONUC.md` yazıldı** — 8 yapı noktasının kapsanan
+      yolu, ortalaması ve `L` dahil. **Bu üç sayı M3'ün denge sağlamalarının
+      tek girdisi**; yazılmadan M2'ye geçilmez.

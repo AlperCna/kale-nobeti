@@ -587,6 +587,7 @@ Tam liste ve varsayılan davranışlar: [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md)
 | S07 | Hız butonu etiketi TIER 1 k.7'yi nasıl karşılayacak? | `M0-T09` |
 | S09 | `prefers-reduced-motion` M0'da mı okunacak? | `M0-T09` |
 | S10 | "İlk indirme" tam olarak neyi kapsıyor? | `M0-T10` |
+| **S63** | **Oyunun dili?** Karar ertelenebilir ama **yapı ertelenemez** — metinler `src/data/strings.ts` içinde tek yerde tutulmalı, yoksa sonradan `scenes/`'in her yerine dokunmak gerekir | `M0-T03`, `M0-T07` |
 
 > **S02 ve S08 kapandı.** Arcade fizik **kullanılmıyor** (`CLAUDE.md`
 > Teknoloji); Vitest ortamı **`node`**, Phaser'a dokunan kısımlar sahte
@@ -600,7 +601,8 @@ sayısı içermiyor.
 
 | Risk | Erken uyarı | Hafifletme |
 |---|---|---|
-| `physics.world.timeScale` ters mantığı | 2× seçince oyun yavaşlar | `M0-T04` testi `1/s`'i açıkça doğrular |
+| `setScale` üç özellikten birini atlar | 2× hızda bir sistem hızlanmıyor (ör. tween'ler normal, hareket hızlı) | `M0-T04` testi üçünü de tek tek doğrular |
+| `GameClock.ts` Phaser'ı çalışma zamanında import eder | `npm run test` `window is not defined` ile patlar | `ClockTarget` arayüzü + TIER 1 k.11 |
 | `base: './'` unutulur | `dev`'de fark edilmez; alt klasörden servis edilince beyaz ekran | Taş sonu kontrolünde `dist/` alt klasörden servis edilir |
 | Phaser tipleri strict modda `any` sızdırır | `typecheck` ilk kurulumda hata yağmuru | `M0-T01` her şeyden önce yeşile getirilir |
 | `Scale.FIT` letterbox'ta girdi kayması | Pencere boyutu değişince tıklama ıskalıyor | `M0-T07` kabulü boyut değiştirilmiş pencerede de yapılır |
@@ -624,3 +626,5 @@ sayısı içermiyor.
 - [ ] 10 açık sorunun durumu `OPEN-QUESTIONS.md`'de güncel
 - [ ] Bu taşta verilen kararlardan `CLAUDE.md`'ye eklenmesi gerekenler
       **önerildi** (eklenmedi — `ROADMAP.md` komut şablonu)
+- [ ] **`docs/results/M0-SONUC.md` yazıldı** — ilk indirme boyutu, gerçek
+      süre ve sabitlenen sürümler dahil. Bu dosya yazılmadan M1 başlamaz.

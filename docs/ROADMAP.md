@@ -27,8 +27,10 @@ Boot → Preload → Menu → Game sahne zinciri. `npm run dev`, `build`,
 Bu taşta kurulması **zorunlu** olan üç şey — sonradan eklemek her sisteme
 dokunmak demek:
 
-1. **`GameClock`** — `scaledDelta` + `setScale(1|2)`, dört Phaser `timeScale`
-   özelliğini de günceller (`CLAUDE.md` TIER 1 kural 8).
+1. **`GameClock`** — `scaledDelta` + `setScale(1|2)`, **üç** Phaser
+   `timeScale` özelliğini de günceller: `tweens`, `time`, `anims`
+   (`CLAUDE.md` TIER 1 kural 8). Arcade fizik kullanılmadığı için
+   `physics.world.timeScale` yok (`CLAUDE.md` Teknoloji).
 2. **Duraklatma** — ESC ve boşluk (Poki zorunlu şartı).
 3. **Aşamalı `Preload`** — tek dev `preload()` yazma. Dört aşama:
    açılış / oyun / arka plan (müzik) / tembel (harita 2-3).

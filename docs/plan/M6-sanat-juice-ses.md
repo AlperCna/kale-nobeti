@@ -416,4 +416,7 @@ Gizli sekmede oyun **çöküyor mu** — çökmemeli.
 - [ ] Gri tonlamada düşman tipleri ayırt edilebiliyor
 - [ ] `prefers-reduced-motion` varsayılanları düşürüyor
 - [ ] Ayarlar gizli sekmede de çökmüyor
-- [ ] S50 kararı verilmiş ve `GAME-DESIGN.md` §2'ye işlenmiş
+- [ ] Silüet kuralına sadık kalındı — hiçbir birimde iç detay/işleme yok
+      (`GAME-DESIGN.md` §2 "Üretim seviyesi")
+- [ ] **`docs/results/M6-SONUC.md` yazıldı** — ilk indirme boyutu, hedef
+      cihazda FPS, üretilen varlık sayısı ve atlas boyutu dahil.
