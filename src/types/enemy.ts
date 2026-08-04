@@ -10,6 +10,52 @@ import type { Vec2 } from './common';
 import type { PathProgress } from './path';
 
 /**
+ * Düşman türleri. Kaynak: `GAME-DESIGN.md` §5 tablosu (9 satır).
+ *
+ * `types/map.ts` içindeydi (`MapDef.enemyRoster` için gerekiyordu);
+ * M2'de düşman verisi gelince asıl yerine taşındı.
+ */
+export type EnemyId =
+  | 'goblin'
+  | 'orkSavasci'
+  | 'zirhliOrk'
+  | 'harpi'
+  | 'kurtBinicisi'
+  | 'saman'
+  | 'trol'
+  | 'orumcekAna'
+  | 'ogreSef';
+
+/**
+ * `GAME-DESIGN.md` §3: iki hasar tipi, iki savunma tipi. Kule
+ * çeşitliliğinin **tek** kaynağı bu.
+ *
+ * `true` yalnız yeteneklerde — hiçbir şeyle azalmaz.
+ */
+export type DamageType = 'physical' | 'magic' | 'true';
+
+/** Düşman tanımı. Kaynak: `GAME-DESIGN.md` §5 tablosu, `DATA-SCHEMAS.md`. */
+export interface EnemyDef {
+  readonly id: EnemyId;
+  /** **Temel** can; harita `hpMultiplier` ile çarpılır (§9). */
+  readonly hp: number;
+  /** Yol üstünde ilerleme hızı. Birim: px/sn. */
+  readonly speed: number;
+  /** Fiziksel hasardan **sabit miktar** düşer (§3). */
+  readonly armor: number;
+  /** Büyü hasarını **yüzde** azaltır, 0..1 (§3). */
+  readonly magicResist: number;
+  /** **Temel** öldürme altını; harita `goldMultiplier` ile çarpılır (§9). */
+  readonly gold: number;
+  /** Dalga bütçesi maliyeti. Birim: puan (§7). */
+  readonly points: number;
+  /** Sızdığında düşen can. §5: normal 1, Trol/Örümcek Ana 2, boss 10. */
+  readonly leakDamage: number;
+  /** Uçar mı — yolu takip etmez, engellenemez (§5). */
+  readonly flying: boolean;
+}
+
+/**
  * Hareketin ihtiyaç duyduğu düşman durumu.
  *
  * `Enemy` bunu uygular ama testler düz bir nesneyle de uygulayabilir —
