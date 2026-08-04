@@ -378,7 +378,7 @@ kalıyorsa, **veya** herhangi bir Türkçe karakter kutucuk çıkıyorsa.
 | | |
 |---|---|
 | **Kimlik** | `M0-T06` |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ bitti |
 | **Süre** | ~45 dk |
 | **Önkoşul** | `M0-T05` |
 | **TIER 1** | kural 2 |
@@ -410,10 +410,15 @@ export class PreloadScene extends Phaser.Scene {
 
 **Kabul kriteri**
 ```bash
-grep -cE "queueBoot|queueGame|queueBackground|queueLazy" src/scenes/PreloadScene.ts
+grep -oE "(private |static )queue[A-Za-z]+\(" src/scenes/PreloadScene.ts | sort -u | wc -l
 ```
-Beklenen: `≥ 8` (her fonksiyon en az tanım + çağrı/atıf).
-gözle: `npm run dev` → yükleme çubuğu görünüp `Menu`'ye geçiyor.
+Beklenen: `4` — dört aşama **ayrı ayrı tanımlı** fonksiyon.
+
+> Bu kriter düzeltildi. Önceki hâli `grep -c "queue…" ≥ 8` idi; yorumları
+> da sayıyordu ve yorum ekleyerek geçilebiliyordu. Sayım değil, **ayrık
+> tanım sayısı** ölçülüyor artık.
+
+gözle: `npm run dev` → yükleme çubuğu görünüp bir sonraki sahneye geçiyor.
 
 **Bitmedi sayılır eğer:** `preload()` içinde `queueGame` de çağrılıyorsa —
 oyun varlıkları menüden önce inmemeli, ilk indirmeyi şişirir.
