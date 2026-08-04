@@ -48,11 +48,11 @@ Her soru için: **neden önemli** · **hangi taşı bloke ediyor** ·
 | # | Soru | Neden önemli | Bloke | Varsayılan |
 |---|---|---|---|---|
 | S02 | Arcade fizik kullanılacak mı? | `research/02` §3 kararı açıkça M0'a bırakıyor. Kullanılmazsa `GameClock`'tan `physics` satırı düşer; M2'de mermi yazılırken geri dönmek pahalı | `M0-T04` | Kullanılmıyor; mermiler elle hareket eder |
-| S03 | Duraklatma ekranında ne var — yalnız karartma mı, menü mü? | Ayarlar M6'da; M0'da yer tutucu buton olacak mı | `M0-T09` | Yalnız karartma + "devam" |
-| S04 | 2× seçimi kalıcı mı — oturum boyu, harita boyu, yoksa her dalga 1×'e mi dönüyor? | Kalıcıysa `SaveSystem`'e M0'da dokunmak gerekir | `M0-T09` | Oturum boyu, kaydedilmiyor |
+| S03 | Duraklatma ekranında ne var — yalnız karartma mı, menü mü? | **Varsayılan uygulandı:** %72 mürekkep perde + "Duraklatıldı" + "ESC / boşluk" ipucu. Buton yok. Ayarlar M6'da gelince yeniden bakılacak | `M0-T09` ☑ | (uygulandı) |
+| S04 | 2× seçimi kalıcı mı — oturum boyu, harita boyu, yoksa her dalga 1×'e mi dönüyor? | **Varsayılan uygulandı:** oturum boyu, kaydedilmiyor. Ölçüldü — duraklatmayı aşıp korunuyor. Kalıcı olması istenirse `SaveSystem`'e (M7) bağlanır | `M0-T09` ☑ | (uygulandı) |
 | S05 | Menü M0'da ne kadar dolu — yalnız "Oyna" mı, Ayarlar/Seviye Seçim yer tutucuları da mı? | Kapsam şişmesi riski | `M0-T07` | Yalnız "Oyna" |
 | S06 | `EventBus` M0'da mı kurulsun? `speed:changed` ve `game:paused` olayları onaylanıyor mu? | İki olay `CLAUDE.md`'deki örnek listede yok | `M0-T03` | Kurulur, iki olay geçici işaretli |
-| S07 | Hız butonu etiketi TIER 1 k.7'yi nasıl karşılayacak? (a) iki statik `Text` görünürlük, (b) iki sprite karesi, (c) yer tutucu bitmap font | Kuralın **ilk gerçek çarpışması**. Bitmap font M6'ya kadar yok | `M0-T09` | (a) iki statik `Text` |
+| S07 | Hız butonu etiketi TIER 1 k.7'yi nasıl karşılayacak? | **(a) uygulandı** — iki statik `Text`, görünürlük değiştiriliyor. `setText` kod tabanında **hiç** çağrılmıyor (tarandı), yani kuralın önlemek istediği canvas yeniden üretimi doğmuyor. M6'da ikisi tek `BitmapText` olacak | `M0-T09` ☑ | (uygulandı) |
 | S08 | Vitest ortamı `node` mu `jsdom` mu? `GameClock`'un Phaser'a dokunan kısmı sahte nesneyle mi test edilecek? | Test yazım şeklini belirliyor | `M0-T01`, `M0-T04` | `node` + sahte sahne nesnesi |
 | S09 | `prefers-reduced-motion` M0'da mı okunacak? | TIER 1 k.6 erişilebilirlik tabanı istiyor ama efektler M6'da | `M0-T09` | M6'ya bırakılır |
 | S10 | "İlk indirme" tam olarak neyi kapsıyor — `dist/` toplamı mı, ilk oynanabilir ana kadar yüklenenler mi? | Poki 8 MB sınırının ölçüm tanımı | `M0-T10`, `M7-T09` | `dist/` toplamı, varsayım çıktıda yazdırılır |

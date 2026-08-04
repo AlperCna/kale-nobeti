@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GameClock } from '../systems/GameClock';
 import { EventBus } from '../systems/EventBus';
+import { devHooks } from '../util/devHooks';
 
 /**
  * GEÇİCİ hız göstergesi. M1'de silinecek.
@@ -38,28 +39,11 @@ export class GameScene extends Phaser.Scene {
       this.bus.clear();
     });
 
-    this.#exposeDevProbe();
-  }
-
-  /**
-   * Geliştirme kancası — yayın yapısına **girmez**
-   * (CLAUDE.md Platform: "yayın yapısında hata ayıklama tuşları bulunmaz").
-   *
-   * Var olma sebebi: hız değişiminin gerçekten iki kat olduğunu gözle
-   * değil **ölçerek** doğrulamak. `M0-T09`'un kabul kriteri buna dayanıyor.
-   * `M1-T09`'daki kapsama göstergesi de aynı deseni kullanacak.
-   */
-  #exposeDevProbe(): void {
-    if (!import.meta.env.DEV) return;
-
-    const kanca = globalThis as unknown as {
-      __kn?: { probeX: () => number; frames: number; scale: () => number };
-    };
-    kanca.__kn = {
-      probeX: () => this.#probe?.x ?? -1,
-      frames: 0,
-      scale: () => this.clock.scale,
-    };
+    const dev = devHooks();
+    if (dev !== undefined) {
+      dev.probeX = () => this.#probe?.x ?? -1;
+      dev.scale = () => this.clock.scale;
+    }
   }
 
   /**
@@ -73,10 +57,8 @@ export class GameScene extends Phaser.Scene {
     this.clock.tick(delta);
     this.#stepProbe();
 
-    if (import.meta.env.DEV) {
-      const kanca = globalThis as unknown as { __kn?: { frames: number } };
-      if (kanca.__kn !== undefined) kanca.__kn.frames += 1;
-    }
+    const dev = devHooks();
+    if (dev !== undefined) dev.gameFrames = (dev.gameFrames ?? 0) + 1;
   }
 
   /** GEÇİCİ — M1'de silinecek. `scaledDelta` kullanımının canlı örneği. */
