@@ -86,14 +86,55 @@ export function segmentCircleOverlapLength(
   center: Vec2,
   radius: number,
 ): number {
-  if (radius <= 0) return 0;
+  const aralik = segmentCircleOverlapRange(a, b, center, radius);
+  if (aralik === null) return 0;
+  return (aralik.t2 - aralik.t1) * segmentLength(a, b);
+}
+
+/**
+ * `from`'dan `to`'ya doğru en fazla `maxStep` kadar ilerlemiş konum.
+ *
+ * Mermi hareketi bunu kullanıyor. `Math.sqrt` burada meşru: normalleştirme
+ * bir **konum** hesabı, karşılaştırma değil (TIER 1 kural 9'un konusu
+ * karşılaştırmalar). Aynı sebeple `segmentLength` de burada.
+ *
+ * @returns Hedefe kalan mesafe `maxStep`'ten küçükse doğrudan `to`.
+ */
+export function moveToward(from: Vec2, to: Vec2, maxStep: number): Vec2 {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const uzaklikKare = dx * dx + dy * dy;
+
+  if (uzaklikKare <= maxStep * maxStep) return { x: to.x, y: to.y };
+
+  const uzaklik = Math.sqrt(uzaklikKare);
+  return { x: from.x + (dx / uzaklik) * maxStep, y: from.y + (dy / uzaklik) * maxStep };
+}
+
+/**
+ * Aynı kesişimin **parametre aralığı**: `[t1, t2]`, `0 ≤ t1 < t2 ≤ 1`.
+ *
+ * `segmentCircleOverlapLength` bunun uzunluğunu döndürüyor; çizim tarafı
+ * (`M2-T04` hover'da kapsanan yol vurgusu) uçların **nerede** olduğunu
+ * istiyor. Aynı hesabı iki kez yazmamak için ikisi de buradan besleniyor —
+ * ayrılsalardı vurgulanan çizgi ile ölçülen uzunluk sessizce ayrışabilirdi.
+ *
+ * @returns Kesişim yoksa `null`.
+ */
+export function segmentCircleOverlapRange(
+  a: Vec2,
+  b: Vec2,
+  center: Vec2,
+  radius: number,
+): { t1: number; t2: number } | null {
+  if (radius <= 0) return null;
 
   const dx = b.x - a.x;
   const dy = b.y - a.y;
   const A = dx * dx + dy * dy;
 
   // Sıfır uzunluklu segment: uzunluğu zaten sıfır, kapsanan da sıfır.
-  if (A === 0) return 0;
+  if (A === 0) return null;
 
   const fx = a.x - center.x;
   const fy = a.y - center.y;
@@ -102,7 +143,7 @@ export function segmentCircleOverlapLength(
   const C = fx * fx + fy * fy - radius * radius;
 
   const disc = B * B - 4 * A * C;
-  if (disc < 0) return 0; // çemberi hiç kesmiyor
+  if (disc < 0) return null; // çemberi hiç kesmiyor
 
   const kok = Math.sqrt(disc);
   let t1 = (-B - kok) / (2 * A);
@@ -111,7 +152,7 @@ export function segmentCircleOverlapLength(
   // Segment [0,1] ile sınırlı; sonsuz doğrunun dışı sayılmaz.
   if (t1 < 0) t1 = 0;
   if (t2 > 1) t2 = 1;
-  if (t2 <= t1) return 0;
+  if (t2 <= t1) return null;
 
-  return (t2 - t1) * Math.sqrt(A);
+  return { t1, t2 };
 }
