@@ -93,10 +93,10 @@ nokta segmentin uzantısında, nokta tam segment üstünde.
 
 | | |
 |---|---|
-| **Kimlik** | `M1-T02` · **Durum** ☐ · **Süre** ~45 dk |
+| **Kimlik** | `M1-T02` · **Durum** ☑ · **Süre** ~45 dk |
 | **Önkoşul** | `M1-T01` |
 | **TIER 1** | kural 5, kural 9 |
-| **Açık soru** | S14 |
+| **Açık soru** | — (S14 **düştü**, aşağıya bak) |
 | **Doküman** | `research/02-phaser-teknik.md` §6 · `research/01` §2, §4 uyarı kutusu |
 
 **Dosyalar**
@@ -105,16 +105,20 @@ nokta segmentin uzantısında, nokta tam segment üstünde.
 
 **İmza**
 ```ts
-/** Bir noktanın menzili içinde kalan yol uzunluğu. Birim: px. */
-export function coveredLength(
-  path: readonly Vec2[], spot: Vec2, range: number, stepPx?: number
-): number;
-
-/** Tüm yapı noktaları için ölçüm. maps.ts'in coverage alanını üretir. */
+export function coveredLength(path: readonly Vec2[], spot: Vec2, range: number): number;
 export function measureCoverage(
   paths: readonly (readonly Vec2[])[], spots: readonly Vec2[], range: number
-): { spotIndex: number; coveredPx: number }[];
+): SpotCoverage[];
+export function pathLength(path: readonly Vec2[]): number;          // research/01 §3'teki L
+export function spotsCoveringFlyerPaths(...): number;               // GAME-DESIGN §5 kriteri
 ```
+
+> **`stepPx` yok — S14 düştü.** Ölçüm örnekleme değil **analitik**:
+> `math.segmentCircleOverlapLength` segment-çember kesişimini kapalı
+> formülle çözüyor. Örnekleme sürümü ilk yazıldığında adım boyutuna göre
+> **%1,45** kuantizasyon hatası verdi; dengenin tamamı bu sayıya asılı
+> olduğu için kabul edilmedi. Kapalı formül hem tam sonuç veriyor hem
+> hassasiyet/maliyet takasını ortadan kaldırıyor.
 
 **Yapılacak**
 - Yolu `stepPx` aralıklarla örnekle, her örnek noktanın menzil içinde olup
@@ -131,9 +135,16 @@ npm run test -- coverage
 ```
 Beklenen: `≥ 6 passed`. Zorunlu senaryolar:
 kule yoldan uzak → `0`;
-düz yol kule merkezinden geçiyor → `≈ 2 × range` (±%3);
-yol menzilden iki kez geçiyor → iki geçişin toplamı;
-`stepPx` yarıya inince sonuç %1'den az değişiyor (yakınsama).
+düz yol kule merkezinden geçiyor → **tam** `2 × range` (9 ondalık);
+yandan bakış → kiriş formülü `2√(r²−d²)`;
+yol menzilden iki kez geçiyor → iki geçişin toplamı, `2r`'yi **aşıyor**;
+yol ucunda kırpma → yarım kiriş;
+**bağımsız örnekleme kâhiniyle uyuşma → fark < 1 px.**
+
+> Son madde yakınsama testinin yerini aldı. Üretim kodu analitik, kâhin
+> tamamen farklı bir yöntemle (örnekleme) aynı sayıyı hesaplıyor; uyuşma
+> formülün hem cebirsel hem geometrik doğruluğunu gösteriyor. Tek bir
+> hesabın kendini doğrulamasından güçlü.
 
 **Bitmedi sayılır eğer:** fonksiyon `2 × range` üstünü kırpıyorsa.
 

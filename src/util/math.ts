@@ -63,3 +63,55 @@ export function pointToSegmentDistSq(p: Vec2, a: Vec2, b: Vec2): number {
 export function angleTo(from: Vec2, to: Vec2): number {
   return Math.atan2(to.y - from.y, to.x - from.x);
 }
+
+/**
+ * `a`-`b` segmentinin, `center` merkezli `radius` yarıçaplı çemberin
+ * **içinde kalan** parçasının uzunluğu.
+ *
+ * Kapsama ölçümünün çekirdeği (`util/coverage.ts`). **Analitik** —
+ * örnekleme değil. Örnekleme yaklaşımı adım boyutuna göre %1-2 kuantizasyon
+ * hatası veriyordu; dengenin tamamı bu sayıya asılı olduğu için kapalı
+ * formül tercih edildi. Yan fayda: `stepPx` parametresi ve onunla gelen
+ * hassasiyet/maliyet takası tamamen ortadan kalktı.
+ *
+ * Yöntem: `Q(t) = a + t·(b−a)` üzerinde `|Q(t) − center|² = radius²`
+ * ikinci derece denklemi çözülüp kökler `[0,1]`'e kırpılıyor.
+ *
+ * `Math.sqrt` burada meşru: diskriminantın karekökü kesişim **konumunu**
+ * veriyor, karşılaştırma değil (TIER 1 kural 9'un konusu karşılaştırmalar).
+ */
+export function segmentCircleOverlapLength(
+  a: Vec2,
+  b: Vec2,
+  center: Vec2,
+  radius: number,
+): number {
+  if (radius <= 0) return 0;
+
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const A = dx * dx + dy * dy;
+
+  // Sıfır uzunluklu segment: uzunluğu zaten sıfır, kapsanan da sıfır.
+  if (A === 0) return 0;
+
+  const fx = a.x - center.x;
+  const fy = a.y - center.y;
+
+  const B = 2 * (fx * dx + fy * dy);
+  const C = fx * fx + fy * fy - radius * radius;
+
+  const disc = B * B - 4 * A * C;
+  if (disc < 0) return 0; // çemberi hiç kesmiyor
+
+  const kok = Math.sqrt(disc);
+  let t1 = (-B - kok) / (2 * A);
+  let t2 = (-B + kok) / (2 * A);
+
+  // Segment [0,1] ile sınırlı; sonsuz doğrunun dışı sayılmaz.
+  if (t1 < 0) t1 = 0;
+  if (t2 > 1) t2 = 1;
+  if (t2 <= t1) return 0;
+
+  return (t2 - t1) * Math.sqrt(A);
+}

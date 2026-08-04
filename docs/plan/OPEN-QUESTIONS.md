@@ -7,13 +7,13 @@ Bunları tek tek çözmeye çalışmak iki gün kod yazmamak demek.
 
 | Durum | Sayı |
 |---|---|
-| ☑ Kapandı | 10 (S01, S02, S08, S25, S26, S27, S50, S56, S59, S63) |
-| ☐ Varsayılanla geçilebilir | 54 |
+| ☑ Kapandı | 11 (S01, S02, S08, S14, S25, S26, S27, S50, S56, S59, S63) |
+| ☐ Varsayılanla geçilebilir | 53 |
 | **⛔ Bloke edici** | **0** |
 
 **Kod yazmaya başlamak için beklenen hiçbir şey yok.**
 
-### Kapanan on soru
+### Kapanan on bir soru
 
 | # | Nasıl kapandı |
 |---|---|
@@ -24,6 +24,7 @@ Bunları tek tek çözmeye çalışmak iki gün kod yazmamak demek.
 | **S59** | Eşikler verildi: 20 can → ★★★, 15-19 → ★★, ≤14 → ★ (`GAME-DESIGN.md` §9) |
 | **S01** | **Fontlar Google Fonts'tan `latin-ext` alt kümesiyle** indirilip `public/assets/fonts/` altında yerel sunulur — CDN bağımlılığı yok. `latin` alt kümesi Türkçe karakterleri içermiyor; `M0-T05` kabul kriterine `İIıi ŞşĞğÇçÖöÜü` render kontrolü eklendi (`CLAUDE.md` Varlık formatları) |
 | **S63** | **Dil haritası.** `src/data/strings.ts` düz nesne değil `{ tr, en }` haritası; varsayılan `tr`, `en` anahtarları şimdilik boş. Kullanım `t('play')`. Gerekçe: Poki ve CrazyGames global; Türkçe-only erişimi kesiyor. Çeviri M7'de bir oturumluk iş ama **yapıyı** sonradan eklemek `scenes/`'in tamamına dokunmak demek (`CLAUDE.md` Teknoloji) |
+| **S14** | **Düştü** — kapsama ölçümü örnekleme değil **analitik** oldu (`math.segmentCircleOverlapLength`, segment-çember kesişimi kapalı formül). Adım boyutu diye bir parametre kalmadı. Örnekleme sürümü %1,45 kuantizasyon hatası veriyordu ve dengenin tamamı bu sayıya asılı |
 | **S02** | **Arcade fizik kullanılmıyor.** Mermiler elle hareket eder; yakınlık ve isabet karesel mesafe. `GameClock` üç özellik yazıyor, dört değil. Belirleyici sebep: `simulateWave` fizikle Phaser dünyası ayağa kaldırmak zorunda kalırdı — S02'nin cevabı aslında `M3-T09` kararında verilmişti. Eşik: düşman > 200 olursa uzamsal ızgara gerekir (`CLAUDE.md` Teknoloji) |
 | **S08** | **Vitest ortamı `node`**, Phaser'a dokunan kısımlar sahte nesneyle. `jsdom`'da WebGL/Canvas yok, Phaser zaten koşmaz; `node` hızlı ve "10 dalga < 2 sn" şartı buna bağlı. **Çalışma koşulu TIER 1 kural 11 olarak yazıldı** (`CLAUDE.md` Test) |
 | **S50** | **Özgün silüet** seçildi. Birimler koyu mürekkep silüet + tek vurgu + altın kontur; tezhip yalnız çerçeve ve arka planda. Hazır varlık paketi kullanılmıyor. M6 takvimi **3-4 hafta** (`GAME-DESIGN.md` §2 "Üretim seviyesi") |
@@ -64,7 +65,6 @@ Her soru için: **neden önemli** · **hangi taşı bloke ediyor** ·
 | S11 | Harita 1'in waypoint koordinatlarını kim çizecek? | Dokümanda yalnız "tek yol, 2 keskin viraj" var; koordinat yok | `M1-T03` | Geçici yol çizilir, `// GEÇİCİ — S11` |
 | S12 | 8 yapı noktasının koordinatları? | Kapsanan yol doğrudan buna bağlı → tüm denge | `M1-T03` | Geçici yerleşim |
 | S13 | Köşe davranışı: keskin dönüş mü, köşe kesme (yay) mı? | Kapsama ölçümünü ve yol uzunluğunu değiştiriyor | `M1-T05`, `M1-T02` | Keskin dönüş |
-| S14 | Kapsama ölçüm adım boyutu kaç px? | Hassasiyet/hız takası; yakınsama testi buna bakıyor | `M1-T02` | `4 px` |
 | S15 | "60 FPS" hangi cihazda ölçülecek? | CrazyGames 4 GB Chromebook şartı koyuyor | `M1-T07` kabulü | Geliştirme makinesi |
 | S16 | **Harita 1'in yol uzunluğu `L` kaç px?** | `research/01` §3: "hiçbir yerde yazmıyor, kesinleşmesi gerekiyor, çünkü bütün denge buna asılı" | `M1-T03`, `M1-T09` | Çizilen yoldan **ölçülür** ve raporlanır |
 | S17 | Düşman nerede doğar — ilk waypoint mi, ekran dışı mı? | Ekran dışıysa görsel olarak daha iyi ama yol uzunluğu değişiyor | `M1-T07` | İlk waypoint |
