@@ -1,22 +1,163 @@
-// TIER 1 kural bekcileri — YER TUTUCU.
+// TIER 1 kural bekçileri.
 //
-// Gercek hali M0-T10'da yazilir. Bes kontrol:
-//   1. Ham `delta` kullanimi (GameClock disinda)        — TIER 1 k.8
-//   2. `: any` / `<any>` / `as any`                     — TIER 1 k.5
-//   3. PreloadScene'de >= 4 asama fonksiyonu            — ROADMAP M0
-//   4. Degisen metinde setText (BitmapText degilse)     — TIER 1 k.7
-//   5. systems/util/data/types icinde `import type`     — TIER 1 k.11
-//      olmayan Phaser import'u
-//   6. src/ altinda en az bir *.test.ts var mi          — vitest'in
-//      passWithNoTests maskesini denetlenmis varsayima cevirir
-//      (vitest.config.ts'teki nota bak)
+// UYARI (TEST-STRATEGY §4): bekçiler kanıt değil, AĞ. Hepsi düzenli ifade
+// sezgiseli. Negatif doğrulama bekçinin ateşlendiğini kanıtlar, HER ihlali
+// yakaladığını değil. Kuralları asıl koruyan şey görevlerin kendi kabul
+// kriterleri ve kod incelemesi; bekçiler yalnız sessiz gerilemeleri yakalar.
 //
-// M0-T10 ayrica negatif dogrulama sart kosuyor: kasten bir ihlal ekle,
-// exit 1 gordugunu dogrula, geri al. Yapilmazsa bekcilerin gercekten
-// calistigi bilinmiyor demektir.
-//
-// UYARI (TEST-STRATEGY §4): bekciler kanit degil, AG. Hepsi duzenli ifade
-// sezgiseli. Negatif dogrulama bekcinin atesledigini kanitlar, her ihlali
-// yakaladigini degil. Asil koruma gorevin kendi kabul kriteri.
+// Node ile yazıldı (kabuk betiği değil) ki PowerShell'de de aynı komutla
+// koşsun — TASK-TEMPLATE.md "Kabuk notu".
 
-console.log("[guard] YER TUTUCU — 5 kontrol M0-T10'da yazilacak.");
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join, relative, sep } from 'node:path';
+
+const SRC = 'src';
+const hatalar = [];
+
+/** src/ altındaki tüm .ts dosyaları. */
+function tsDosyalari() {
+  const sonuc = [];
+  const gez = (dizin) => {
+    for (const ad of readdirSync(dizin)) {
+      const tam = join(dizin, ad);
+      if (statSync(tam).isDirectory()) gez(tam);
+      else if (ad.endsWith('.ts')) sonuc.push(tam);
+    }
+  };
+  gez(SRC);
+  return sonuc;
+}
+
+/** Yorum satırlarını eler — `//`, `/*`, ` *`. */
+function kodSatirlari(icerik) {
+  return icerik
+    .split(/\r?\n/)
+    .map((satir, i) => ({ no: i + 1, metin: satir }))
+    .filter(({ metin }) => !/^\s*(\/\/|\/\*|\*)/.test(metin));
+}
+
+function ihlal(kural, dosya, no, mesaj) {
+  hatalar.push(`  ${kural}  ${relative('.', dosya).split(sep).join('/')}:${no}  ${mesaj}`);
+}
+
+const dosyalar = tsDosyalari();
+const sonuclar = [];
+
+// ---------------------------------------------------------------------
+// 1 — Ham `delta` (TIER 1 kural 8)
+//
+// İzinli: GameClock.ts (saatin kendisi) ve GameScene.ts'te TAM 2 satır
+// (update imzası + clock.tick çağrısı). Üçüncü satır sızıntı demektir.
+// ---------------------------------------------------------------------
+{
+  let ihlalVar = false;
+  for (const dosya of dosyalar) {
+    if (/GameClock\.(ts|test\.ts)$/.test(dosya)) continue;
+    const hits = kodSatirlari(readFileSync(dosya, 'utf8')).filter((s) => /\bdelta\b/.test(s.metin));
+    const izinli = /GameScene\.ts$/.test(dosya) ? 2 : 0;
+    if (hits.length > izinli) {
+      ihlalVar = true;
+      for (const h of hits.slice(izinli)) {
+        ihlal('k.8 ', dosya, h.no, `ham delta (izinli: ${izinli})`);
+      }
+    }
+  }
+  sonuclar.push(['k.8  ham delta yalnız GameClock/GameScene', !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
+// 2 — `any` (TIER 1 kural 5)
+// ---------------------------------------------------------------------
+{
+  let ihlalVar = false;
+  for (const dosya of dosyalar) {
+    for (const s of kodSatirlari(readFileSync(dosya, 'utf8'))) {
+      if (/:\s*any\b|<any>|\bas\s+any\b/.test(s.metin)) {
+        ihlalVar = true;
+        ihlal('k.5 ', dosya, s.no, 'any kullanımı');
+      }
+    }
+  }
+  sonuclar.push(['k.5  any kullanılmıyor', !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
+// 3 — PreloadScene dört aşama (ROADMAP M0)
+//
+// Tek blok preload() yazılırsa M6'da sökmek pahalı.
+// ---------------------------------------------------------------------
+{
+  const dosya = join(SRC, 'scenes', 'PreloadScene.ts');
+  const icerik = readFileSync(dosya, 'utf8');
+  const adlar = new Set([...icerik.matchAll(/(?:private|static)\s+(queue[A-Za-z]+)\s*\(/g)].map((m) => m[1]));
+  const tamam = adlar.size >= 4;
+  if (!tamam) ihlal('M0  ', dosya, 1, `aşama fonksiyonu ${adlar.size}/4: ${[...adlar].join(', ')}`);
+  sonuclar.push([`M0   PreloadScene 4 aşama (${adlar.size})`, tamam]);
+}
+
+// ---------------------------------------------------------------------
+// 4 — setText (TIER 1 kural 7)
+//
+// SEZGİSEL: BitmapText'in de setText'i var, düzenli ifade ikisini ayıramaz.
+// M6'da bitmap font gelince bu kontrol "Text nesnesinde setText" olarak
+// daraltılmalı. Şimdilik her setText yasak, çünkü henüz BitmapText yok.
+// ---------------------------------------------------------------------
+{
+  let ihlalVar = false;
+  for (const dosya of dosyalar) {
+    for (const s of kodSatirlari(readFileSync(dosya, 'utf8'))) {
+      if (/\.setText\s*\(/.test(s.metin)) {
+        ihlalVar = true;
+        ihlal('k.7 ', dosya, s.no, 'setText — değişen metin BitmapText olmalı');
+      }
+    }
+  }
+  sonuclar.push(['k.7  setText yok (sezgisel)', !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
+// 5 — Çalışma zamanı Phaser import'u (TIER 1 kural 11)
+//
+// systems/, util/, data/, types/ Phaser'ı yalnız `import type` ile alır.
+// İhlal edilirse node ortamındaki testler `window is not defined` ile
+// patlar — M0-T04'te kasten ihlal edilerek kanıtlandı.
+// ---------------------------------------------------------------------
+{
+  const kapsam = ['systems', 'util', 'data', 'types'].map((d) => join(SRC, d) + sep);
+  let ihlalVar = false;
+  for (const dosya of dosyalar) {
+    if (!kapsam.some((k) => dosya.startsWith(k))) continue;
+    for (const s of kodSatirlari(readFileSync(dosya, 'utf8'))) {
+      if (/^\s*import\s+(?!type\b)[^;]*from\s+['"]phaser['"]/.test(s.metin)) {
+        ihlalVar = true;
+        ihlal('k.11', dosya, s.no, 'çalışma zamanı Phaser import');
+      }
+    }
+  }
+  sonuclar.push(['k.11 saf mantıkta runtime Phaser yok', !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
+// 6 — En az bir test dosyası
+//
+// vitest.config.ts'teki passWithNoTests maskesini denetlenmiş varsayıma
+// çevirir: "tüm testlerim kayboldu" durumunu yakalar.
+// ---------------------------------------------------------------------
+{
+  const sayi = dosyalar.filter((d) => d.endsWith('.test.ts')).length;
+  const tamam = sayi > 0;
+  if (!tamam) ihlal('test', SRC, 1, 'hiç *.test.ts yok — passWithNoTests maskeliyor');
+  sonuclar.push([`test src/ altında test dosyası (${sayi})`, tamam]);
+}
+
+// ---------------------------------------------------------------------
+
+const gecen = sonuclar.filter(([, ok]) => ok).length;
+for (const [ad, ok] of sonuclar) console.log(`  ${ok ? '✓' : '✗'} ${ad}`);
+if (hatalar.length > 0) {
+  console.log('\nİhlaller:');
+  for (const h of hatalar) console.log(h);
+}
+console.log(`\n[guard] ${gecen}/${sonuclar.length} ✓`);
+
+process.exit(gecen === sonuclar.length ? 0 : 1);

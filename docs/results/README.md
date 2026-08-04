@@ -58,7 +58,7 @@ tahminle verilir."
 
 | Taş | Dosya | Tarih | Gerçek süre |
 |---|---|---|---|
-| M0 | — | — | — |
+| M0 | [M0-SONUC.md](M0-SONUC.md) | 2026-08-04 | ~1 sa 10 dk |
 | M1 | — | — | — |
 | M2 | — | — | — |
 | M3 | — | — | — |
