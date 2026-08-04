@@ -430,7 +430,7 @@ oyun varlıkları menüden önce inmemeli, ilk indirmeyi şişirir.
 | | |
 |---|---|
 | **Kimlik** | `M0-T07` |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ bitti |
 | **Süre** | ~30 dk |
 | **Önkoşul** | `M0-T06` |
 | **TIER 1** | kural 7 (istisna kullanımı) |

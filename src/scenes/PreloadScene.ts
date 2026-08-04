@@ -38,8 +38,7 @@ export class PreloadScene extends Phaser.Scene {
 
   create(): void {
     this.#bar?.destroy();
-    // M0-T07'de hedef 'Menu' olacak.
-    this.scene.start('Bootstrap');
+    this.scene.start('Menu');
   }
 
   // ---------------------------------------------------------------------
