@@ -31,17 +31,17 @@ import type { DamageResult } from './combat';
 const MS_TO_S = 1 / 1000;
 
 /** Bir düşmanın hasar alması. Hasar sayısı üretimi çağıranın işi. */
-export type DamageHandler = (
-  enemy: Targetable,
+export type DamageHandler<E extends Targetable> = (
+  enemy: E,
   result: DamageResult,
   x: number,
   y: number,
 ) => void;
 
-export class ProjectileSystem<T extends ProjectileState & Poolable> {
+export class ProjectileSystem<E extends Targetable, T extends ProjectileState<E> & Poolable> {
   constructor(
     private readonly pool: Pool<T>,
-    private readonly onDamage: DamageHandler,
+    private readonly onDamage: DamageHandler<E>,
   ) {}
 
   get activeCount(): number {
@@ -49,7 +49,7 @@ export class ProjectileSystem<T extends ProjectileState & Poolable> {
   }
 
   /** @returns Havuz doluysa `null` — sessizce büyümüyor (TIER 1 kural 3). */
-  fire(init: Omit<ProjectileState, 'alive' | 'lastKnownX' | 'lastKnownY'>): T | null {
+  fire(init: Omit<ProjectileState<E>, 'alive' | 'lastKnownX' | 'lastKnownY'>): T | null {
     const m = this.pool.acquire();
     if (m === null) return null;
 
@@ -68,7 +68,7 @@ export class ProjectileSystem<T extends ProjectileState & Poolable> {
   }
 
   /** @param scaledDelta `GameClock.scaledDelta`, birim ms. */
-  update(scaledDelta: number, enemies: readonly Targetable[]): void {
+  update(scaledDelta: number, enemies: readonly E[]): void {
     const adim = scaledDelta * MS_TO_S;
     if (!(adim > 0)) return;
 
@@ -119,7 +119,7 @@ export class ProjectileSystem<T extends ProjectileState & Poolable> {
     }
   }
 
-  #carp(m: T, enemies: readonly Targetable[]): void {
+  #carp(m: T, enemies: readonly E[]): void {
     // Çarpma noktası **hedefin konumu**, merminin konumu değil.
     //
     // Süpürülmüş kontrol isabeti hedefe `hitRadius` kadar yaklaşınca
@@ -150,7 +150,7 @@ export class ProjectileSystem<T extends ProjectileState & Poolable> {
    * Patlama konumu merminin **süpürülmüş kesişim anındaki** konumu —
    * `#carp` çağrılmadan önce `m.x/m.y` zaten o kareye taşınmış durumda.
    */
-  #patlat(m: T, enemies: readonly Targetable[]): void {
+  #patlat(m: T, enemies: readonly E[]): void {
     const yaricapKare = m.splashRadius * m.splashRadius;
     for (const e of enemies) {
       if (!e.alive || e.def === null) continue;
@@ -159,7 +159,7 @@ export class ProjectileSystem<T extends ProjectileState & Poolable> {
     }
   }
 
-  #vur(e: Targetable, m: T): void {
+  #vur(e: E, m: T): void {
     if (e.def === null) return;
     const sonuc = applyDamage(m.damage, m.damageType, e.def);
     this.onDamage(e, sonuc, e.x, e.y);

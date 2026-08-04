@@ -120,21 +120,35 @@ const sonuclar = [];
 // ---------------------------------------------------------------------
 // 4 — setText (TIER 1 kural 7)
 //
-// SEZGİSEL: BitmapText'in de setText'i var, düzenli ifade ikisini ayıramaz.
-// M6'da bitmap font gelince bu kontrol "Text nesnesinde setText" olarak
-// daraltılmalı. Şimdilik her setText yasak, çünkü henüz BitmapText yok.
+// SEZGİSEL: `BitmapText`in de `setText`i var ve o **serbest** — kuralın
+// yasakladığı şey `Text` nesnesinin içeriğini değiştirmek, çünkü `Text`
+// her değişimde canvas yeniden üretip GPU'ya yüklüyor.
+//
+// M2'ye kadar kontrol "hiç setText olmasın" idi; bitmap font M2-T08'de
+// (planlanandan erken) gelince daraltıldı: **bir dosya `setText` çağırıyorsa
+// içinde `Text` nesnesi ÜRETMEMELİ.** Aynı dosyada ikisi bir aradaysa hangi
+// nesneye çağrıldığı düzenli ifadeyle ayrılamaz ve ihlal sayılır.
 // ---------------------------------------------------------------------
 {
   let ihlalVar = false;
   for (const dosya of dosyalar) {
-    for (const s of kodSatirlari(readFileSync(dosya, 'utf8'))) {
-      if (/\.setText\s*\(/.test(s.metin)) {
-        ihlalVar = true;
-        ihlal('k.7 ', dosya, s.no, 'setText — değişen metin BitmapText olmalı');
+    const satirlar = kodSatirlari(readFileSync(dosya, 'utf8'));
+    const setTextSatirlari = satirlar.filter((s) => /\.setText\s*\(/.test(s.metin));
+    if (setTextSatirlari.length === 0) continue;
+
+    const textUretimi = satirlar.filter((s) =>
+      /\badd\.text\s*\(|new\s+Phaser\.GameObjects\.Text\b|GameObjects\.Text\b(?!\s*\.)/.test(
+        s.metin,
+      ),
+    );
+    if (textUretimi.length > 0) {
+      ihlalVar = true;
+      for (const s of setTextSatirlari) {
+        ihlal('k.7 ', dosya, s.no, 'setText + aynı dosyada Text üretimi — ayrıştırılamıyor');
       }
     }
   }
-  sonuclar.push(['k.7  setText yok (sezgisel)', !ihlalVar]);
+  sonuclar.push(['k.7  setText yalnız Text üretmeyen dosyada', !ihlalVar]);
 }
 
 // ---------------------------------------------------------------------

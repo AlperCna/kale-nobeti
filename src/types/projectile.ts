@@ -7,14 +7,14 @@
 
 import type { DamageType, Targetable } from './enemy';
 
-export interface ProjectileState {
+export interface ProjectileState<E extends Targetable = Targetable> {
   x: number;
   y: number;
   /**
    * Takip edilen düşman. Havadayken ölürse `null`'lanmaz — mermi son bilinen
    * konuma gider (`// GEÇİCİ — S21`); alan hasarlı mermilerde fark yaratıyor.
    */
-  target: Targetable | null;
+  target: E | null;
   /** Ham hasar; zırh/direnç `applyDamage`'ta uygulanıyor. */
   damage: number;
   damageType: DamageType;
