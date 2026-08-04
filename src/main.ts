@@ -38,4 +38,11 @@ const config: Phaser.Types.Core.GameConfig = {
   scene: [BootScene, PreloadScene, MenuScene, GameScene, HudScene],
 };
 
-new Phaser.Game(config);
+const game = new Phaser.Game(config);
+
+// Geliştirme kancası: sahne durumunu dışarıdan sorgulayabilmek için.
+// `CLAUDE.md` Platform — yayın yapısında hata ayıklama bulunmaz; bu dal
+// üretimde derleyici tarafından tamamen siliniyor.
+if (import.meta.env.DEV) {
+  (globalThis as { __game?: Phaser.Game }).__game = game;
+}

@@ -38,6 +38,19 @@ export interface EnemyState {
  * `PathMover` M1'de, `LineMover` (uçanlar) M4'te aynı arayüzü uygular.
  * Ayrılmasaydı M4'te entity'yi yarmak gerekirdi.
  */
+/**
+ * `SpawnSystem`'in bir düşmandan beklediği yüzey.
+ *
+ * `Enemy` sınıfı değil **bu şekil** talep ediliyor: `SpawnSystem` `systems/`
+ * altında ve `entities/Enemy`'yi çalışma zamanında içeri alsaydı TIER 1
+ * kural 11'i delerdi. Testler bu arayüzü uygulayan düz bir nesne kullanıyor.
+ */
+export interface SpawnableEnemy extends EnemyState {
+  spawn(mover: Mover, hp: number, speed: number): void;
+  step(scaledDelta: number): void;
+  reachedEnd(): boolean;
+}
+
 export interface Mover {
   /** @param scaledDelta `GameClock.scaledDelta`, birim ms (TIER 1 kural 8). */
   step(e: EnemyState, scaledDelta: number): void;

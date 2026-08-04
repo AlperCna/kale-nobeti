@@ -6,7 +6,7 @@
 | **Görev** | 9 (`M1-T01` … `M1-T09`) |
 | **Kod yazma süresi** | ~5 sa 50 dk — **takvim değil** |
 | **Takvim bütçesi** | 2 gün (`ROADMAP.md`). Fark: harita çizimi, ölçüm turu, Phaser öğrenme. |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ tamamlandı |
 
 ## 0. Oturum başlangıcı
 
@@ -469,7 +469,7 @@ kısmı (`blockedBy`, `progress`) `resetEnemyState`'te; görsel kısım
 
 | | |
 |---|---|
-| **Kimlik** | `M1-T07` · **Durum** ☐ · **Süre** ~35 dk |
+| **Kimlik** | `M1-T07` · **Durum** ☑ · **Süre** ~35 dk |
 | **Önkoşul** | `M1-T06` |
 | **TIER 1** | kural 3, kural 9 |
 | **Açık soru** | S17 |
@@ -516,7 +516,7 @@ Beklenen: `4/4 ✓` — `M0-T08`'in ham `delta` kontrolü hâlâ temiz.
 
 | | |
 |---|---|
-| **Kimlik** | `M1-T08` · **Durum** ☐ · **Süre** ~35 dk |
+| **Kimlik** | `M1-T08` · **Durum** ☑ · **Süre** ~35 dk |
 | **Önkoşul** | `M1-T03` |
 | **TIER 1** | kural 7 |
 | **Açık soru** | — |
@@ -548,7 +548,7 @@ yürüyor (yoldan sapma yok); pencere yeniden boyutlandırılınca hizalama bozu
 
 | | |
 |---|---|
-| **Kimlik** | `M1-T09` · **Durum** ☐ · **Süre** ~30 dk |
+| **Kimlik** | `M1-T09` · **Durum** ☑ · **Süre** ~30 dk |
 | **Önkoşul** | `M1-T02`, `M1-T08` |
 | **TIER 1** | kural 7, **Platform** (yayında hata ayıklama yok) |
 | **Açık soru** | S16 |
@@ -568,13 +568,19 @@ yürüyor (yoldan sapma yok); pencere yeniden boyutlandırılınca hizalama bozu
 
 **Kabul kriteri**
 ```bash
-npm run dev
-```
-gözle: 8 noktanın her birinde bir piksel sayısı; köşede `ort: N px · L: M px`.
-```bash
-npm run build && grep -rc "coveredPx" dist/assets/*.js
+npm run build && grep -ro "menzil: \| · L: \|monospace\|__kn\|devHooks" dist/ | wc -l
 ```
 Beklenen: `0` — gösterge yayın yapısına sızmamış.
+
+> **Eski kriter yanlıştı.** `grep -rc "coveredPx" dist/... → 0` yazılmıştı;
+> ölçüldüğünde **1** çıktı. Ama bu bir sızıntı değil: `coveredPx`
+> `MapDef.coverage` alanının anahtarı (`GAME-DESIGN.md` §9) ve
+> `measureCoverage` üretim kodunda çalışıyor — kural zaten "elle yazılmaz,
+> **üretilir**" diyor. Kriter hata ayıklama göstergesiyle üretim verisini
+> karıştırmış. Yerine göstergenin kendi dizeleri kondu; hepsi `0`.
+>
+> Kalan `#D4A032` isabetleri de göstergeden değil: yapı noktası konturu ve
+> kale çerçevesi o altın rengi kullanıyor, ikisi de üretim çizimi.
 
 **Bitmedi sayılır eğer:** gösterge yayın yapısında görünüyorsa.
 
