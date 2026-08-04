@@ -314,7 +314,7 @@ Havuz sessizce büyümediği için bu aynı zamanda sert bir tavan.
 
 | | |
 |---|---|
-| **Kimlik** | `M1-T05` · **Durum** ☐ · **Süre** ~45 dk |
+| **Kimlik** | `M1-T05` · **Durum** ☑ · **Süre** ~45 dk |
 | **Önkoşul** | `M1-T01`, `M1-T03` |
 | **TIER 1** | **kural 4**, **kural 8** |
 | **Açık soru** | S13 |
@@ -361,6 +361,18 @@ bir adımda iki segment geçme; `remainingDistance` monoton azalıyor;
 `totalLength` segment uzunlukları toplamına eşit; yol sonunda `reachedEnd`.
 
 **Bitmedi sayılır eğer:** `advance` içinde `delta` veya `Date.now()` geçiyorsa.
+
+**Karar: `remainingDistance` türetiliyor, biriktirilmiyor.**
+Her `advance` onu `(segmentIndex, tInSegment)` üzerinden yeniden hesaplıyor.
+Kare kare çıkarma yapılsaydı kayan nokta hatası birikirdi; 10 000 adımlık
+test bunu ölçüyor (sapma < 1e-6). Hedefleme (`first`/`last`) bu sayıya
+bakacağı için sapma yanlış düşman seçmek demekti.
+
+**Bekçi eklendi:** `guard` 9. kontrol — `systems/`, `util/`, `data/`,
+`types/` içinde `Date.now()` / `performance.now()` yasak. Kural 8'in
+ikinci yüzü: duvar saati ham `delta`dan daha sinsi, çünkü 2× hızda
+hızlanmaz, duraklatmada durmaz ve başsız simülasyonda gerçek zamanı
+bekler. İki ihlal de kasten denendi, ikisi de yakalandı (9/9 → 8/9).
 
 ---
 

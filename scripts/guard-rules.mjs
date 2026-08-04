@@ -194,6 +194,30 @@ const sonuclar = [];
 }
 
 // ---------------------------------------------------------------------
+// 9 — Duvar saati (TIER 1 kural 8'in ikinci yüzü)
+//
+// Kural 8 ham `delta`yı yasaklıyor ama asıl amaç şu: zaman bağımlı mantık
+// TEK bir kaynaktan beslensin. `Date.now()` veya `performance.now()` ham
+// `delta`dan daha sinsi — 2× hızda hiç hızlanmaz, duraklatmada durmaz ve
+// başsız simülasyonda (`simulateWave`) gerçek zamanı bekler.
+// Kapsam kural 11'inkiyle aynı: saf mantık katmanı.
+// ---------------------------------------------------------------------
+{
+  const kapsam = ['systems', 'util', 'data', 'types'].map((d) => join(SRC, d) + sep);
+  let ihlalVar = false;
+  for (const dosya of dosyalar) {
+    if (!kapsam.some((k) => dosya.startsWith(k))) continue;
+    for (const s of kodSatirlari(readFileSync(dosya, 'utf8'))) {
+      if (/\b(Date\.now|performance\.now)\s*\(/.test(s.metin)) {
+        ihlalVar = true;
+        ihlal('k.8 ', dosya, s.no, 'duvar saati — zaman GameClock üzerinden gelmeli');
+      }
+    }
+  }
+  sonuclar.push(['k.8  saf mantıkta duvar saati yok', !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
 
 const gecen = sonuclar.filter(([, ok]) => ok).length;
 for (const [ad, ok] of sonuclar) console.log(`  ${ok ? '✓' : '✗'} ${ad}`);
