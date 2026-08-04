@@ -327,6 +327,21 @@ yaratılmıyor.
 
 **Bitmedi sayılır eğer:** `activeCount` uzun oyunda sürekli artıyorsa.
 
+**Tuzak — mermi tünellemesi.** İsabet kontrolü **süpürülmüş** olmalı:
+önceki konum → yeni konum doğru parçasının hedefe uzaklığı. Nokta-mesafe
+kontrolü (`distSq(mermi, hedef) <= r²`) **yetmez.**
+
+Hesap: 30 FPS'lik bir mobil cihazda **2× hızda** `scaledDelta` 66 ms'e
+çıkıyor. 600 px/sn mermi o karede **40 px** atlıyor. İsabet yarıçapı
+40 px'ten küçükse mermi hedefin içinden geçip ıskalıyor.
+
+**Neden sinsi:** yalnız düşük FPS **ve** 2× birleşince oluyor. Geliştirme
+makinesinde (M0'da 145 FPS ölçüldü) asla görünmez; M7'de "bazen mermiler
+ıskalıyor" diye bulunamayan bir hata olarak döner.
+
+`M2-T09`'daki patlama yarıçapı kontrolü de aynı sorunu taşıyor — patlama
+konumu süpürülmüş kesişim noktası olmalı, son kare konumu değil.
+
 ---
 
 ### M2-T07 — Ateş döngüsü ve hedef arama bütçesi

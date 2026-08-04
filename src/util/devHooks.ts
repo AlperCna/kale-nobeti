@@ -21,6 +21,12 @@ export interface DevHooks {
   hudFrames: number;
   scale: () => 1 | 2;
   paused: boolean;
+  /** `bus.clear()` kaç kez çağrıldı. Sahne yeniden başlatma sızıntı testi. */
+  clearCount: number;
+  /** `scene.events` üzerindeki SHUTDOWN dinleyici sayısı. Birikmemeli. */
+  shutdownListeners: () => number;
+  /** Sahneyi yeniden başlatır — yeniden başlatma davranışını sınamak için. */
+  restartGame: () => void;
 }
 
 type Global = { __kn?: Partial<DevHooks> };
@@ -30,6 +36,6 @@ export function devHooks(): Partial<DevHooks> | undefined {
   if (!import.meta.env.DEV) return undefined;
 
   const g = globalThis as Global;
-  g.__kn ??= { gameFrames: 0, hudFrames: 0, paused: false };
+  g.__kn ??= { gameFrames: 0, hudFrames: 0, paused: false, clearCount: 0 };
   return g.__kn;
 }

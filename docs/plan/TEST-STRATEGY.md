@@ -194,6 +194,7 @@ Bu liste yazıldı ki sonradan "neden sahne testi yok" sorulmasın.
 | E4 | Font düşüşü | `fonts/` klasörünü boşalt | 2 sn içinde sistem serif'e düşüp devam ediyor | M0 |
 | E5 | Alt klasör servisi | `npx serve dist -l 5000`, alt yoldan aç | Beyaz ekran yok (`base:'./'`) | M0 |
 | E6 | Havuz sızıntısı | 10 dalga oyna, `activeCount` izle | Sabit kalıyor | M1 |
+| E6b | **Dinleyici sızıntısı** | Sahneyi N kez yeniden başlat, `devHooks.shutdownListeners()` izle | **Sabit kalıyor** | M1 |
 | E7 | Kapsama ölçümü | Geliştirme göstergesini oku | Ortalama ve `L` raporlanıyor | M1 |
 | E8 | Karşı-oyun | §5 tablosundaki 7 senaryoyu dene | Her tehdidin cevabı işliyor | M4 |
 | E9 | Uçan hattı | Hazırlık aşamasına bak | Kesikli altın hat görünüyor, ≥3 nokta kesiyor | M4 |
@@ -210,6 +211,18 @@ Bu liste yazıldı ki sonradan "neden sahne testi yok" sorulmasın.
 
 E16 ve E17 **portal kabul şartı** — atlanırsa yayın reddedilir
 (`research/05` §1, §2).
+
+### E6 ve E6b neden ikiz
+
+İkisi de **sessiz birikme** sınıfından: ne çökme üretiyorlar ne hata
+mesajı. Havuz sızıntısı FPS düşüşü olarak, dinleyici sızıntısı **olayların
+birden çok kez işlenmesi** olarak görünüyor — "bir düşman öldü, iki kez
+altın geldi" gibi. Sebebi aramak M3'te akla gelmez.
+
+**Bekçiye dönüştürülemez.** Statik analiz `once`/`on` ayrımının doğru olup
+olmadığını, kaydın `create()` içinde mi dışında mı olduğunu bilmeden
+söyleyemez — M0'da tam olarak bu ayrım bir hatalı teşhise yol açtı.
+Çalışma zamanı sağlaması doğru araç; kancalar `devHooks`'ta hazır.
 
 ---
 
