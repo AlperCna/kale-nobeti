@@ -221,8 +221,8 @@ export function t(key: StringKey, locale?: Locale): string;
 **Yapılacak**
 - `Phaser.Events.EventEmitter` üstüne tipli kabuk. Ham emitter dışarı sızmaz.
 - İlk beş olay `CLAUDE.md` Mimari kurallar'dan birebir alınır.
-- `speed:changed` ve `game:paused` M0'ın kendi özellikleri; **S06 onaylanana
-  kadar geçici işaretli** yorumla dursun.
+- `speed:changed` ve `game:paused` M0'ın kendi özellikleri; geçici işaretli
+  yorumla dursun. **(S06 M1 sonunda onaylandı — işaretler kaldırıldı.)**
 - **`strings.ts` tek düz nesne değil, dil haritası** (S63). `t('play')`
   kullanılır, `STRINGS.tr.play` değil — çağrı yerleri dil bilmez.
 - `t()` boş çeviri bulursa varsayılan dile düşer, boş string döndürmez.

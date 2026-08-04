@@ -188,10 +188,10 @@ export interface EnemyDef {
 | Harpi | 70 | 75 | 0 | 0 | 9 | 3 | 1 | **✓** |
 | Kurt Binicisi | 60 | 110 | 1 | 0 | 9 | 3 | 1 | — |
 | Şaman | 130 | 42 | 0 | 0.40 | 15 | 5 | 1 | — |
-| Trol | **400 ⚠️** | 30 | 4 | 0 | 24 | 8 | 2 | — |
+| Trol | **400** | 30 | 4 | 0 | 24 | 8 | 2 | — |
 | Örümcek Ana | 150 | 50 | 0 | 0.20 | 18 | 6 | 2 | — |
 | Yavru | 30 | 90 | **S38** | **S38** | **S38** | **S38** | **S38** | — |
-| **Ogre Şef** | **700 ⚠️** | 28 | 10 | 0.25 | 60 | 25 | 10 | — |
+| **Ogre Şef** | **700** | 28 | 10 | 0.25 | 60 | 25 | 10 | — |
 
 ⚠️ = `GAME-DESIGN.md` §5'te **geçici** işaretli; kapsanan yol ölçülmeden
 türetilemez. M1 ölçümünden sonra yeniden hesaplanacak.

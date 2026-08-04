@@ -262,7 +262,7 @@ gevşetilmez. Kriter sağlanmıyorsa harpi mekaniği yazı-turadır
 - Trol: **6 HP/sn** yenilenme (§5). Harita çarpanıyla ölçekleniyor mu — **S39.**
   Ölçeklenmiyorsa harita 3'te (HP ×2.6) oransal olarak zayıflıyor.
 - Mesafe kontrolü `distSq` (TIER 1 k.9), süreler `scaledDelta` (k.8).
-- Zırhlı Ork `160/38/8/0`, Şaman `130/42/0/0.40`, Trol `400 ⚠️/30/4/0` (§5).
+- Zırhlı Ork `160/38/8/0`, Şaman `130/42/0/0.40`, Trol `400/30/4/0` (§5).
   **Trol'ün 400'ü geçici** (§5 ⚠️ notu).
 
 **Kabul kriteri**
@@ -316,7 +316,7 @@ kısıyor ve `new` çağırmıyor.
 - `src/data/waves.ts` — değişiklik — harita 1 dalga 10
 
 **Yapılacak**
-- Ogre Şef `700 ⚠️/28/10/0.25`, altın 60, puan 25, sızma cezası **10 can** (§5).
+- Ogre Şef `700/28/10/0.25`, altın 60, puan 25, sızma cezası **10 can** (§5).
 - **HP'si geçici** — `// GEÇİCİ — bkz. GAME-DESIGN §5 ⚠️` yorumu zorunlu.
 - Kışla askerlerini tek vuruşta öldürme özelliği **M5'te** bağlanır; alan
   şimdi tanımlanır.

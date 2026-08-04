@@ -38,33 +38,37 @@ varsayımı) Ogre Şef'e verilebilecek **teorik tavan ~900 hasar**. Boss'un HP's
 **2200**.
 
 Sekiz noktanın hepsi Tier 3 olsa, hepsi boss'a en uygun kule seçilse ve
-Meteor iki kez kullanılsa bile mutlak tavan **2131** — hâlâ 2200'ün altında.
+Meteor iki kez kullanılsa bile mutlak tavan **2188** — hâlâ 2200'ün altında.
 Yani boss **hiçbir oyun durumunda** öldürülemiyor.
 
 Bu bir denge sorunu değil, tanım hatası.
 
-> ## ⚠️ Bu bulgu çözülmemiş bir varsayıma bağlı
+> ## ✅ M1'de ölçüldü — bulgu ayakta, iki sayı düzeldi
 >
-> Yukarıdaki 900 ve 2131 sayıları `kapsama = 2 × menzil` = **300 px**
-> varsayımıyla hesaplandı. `03-mekanik-tasarim.md` §3 ise harita kriteri
-> olarak **≥ 450 px** koyuyor. İkisi çelişiyor.
+> Yukarıdaki sayılar `kapsama = 2 × menzil` **varsayımıyla** hesaplanmıştı
+> ve `03-mekanik-tasarim.md` §3'ün "≥ 450 px" kriteriyle çelişiyordu.
+> Harita 1 çizildi ve kapsama ölçüldü: **296,3 px**, yani `2 × menzil`in
+> **0,988** katı. Model %1,2 hatayla tuttu; `03`'ün 450 px'i türetilmemişti
+> ve reddedildi (450 px'te boss 700 tavanın %52'sinde kalırdı).
 >
-> 450 px'te: gerçekçi T2 tavanı 900 değil **1350**, mutlak tavan 2131 değil
-> **~3020**. Yani **"hiçbir oyun durumunda öldürülemiyor" iddiası düşüyor** —
-> tam T3 tahtasıyla öldürülebilirdi. Zayıf hali ayakta kalıyor: T2 tahtası
-> 450 px'te bile 1350 < 2200, yani 2200 fazla tanktı.
+> **Değişen iki sayı:**
+> - Gerçekçi T2 tavanı ~900 → **889**
+> - Mutlak tavan 2131 → **2188** (geniş menzilli kuleler viraj noktalarından
+>   yolu daha çok kez görüyor; `ort ÷ 2r` 260 px menzilde 1,070)
 >
-> Aynı sebeple §2'deki "tam 6 kat" da 450 px'te **4 kat** olur.
+> **Manşet ayakta ama payı ince: 2188 < 2200, yalnız %0,5.** Doğru ifade
+> "matematiksel olarak imkânsız" değil, **"pratikte imkânsız"**. Senaryo
+> zaten ekonomik olarak erişilemez. `src/data/referenceBoards.test.ts`
+> bu payı bekçiye bağladı.
 >
-> Tam analiz ve çözülme noktası (M1):
-> [`01-denge-matematigi.md` §4](01-denge-matematigi.md) ve §12.
-Ayrıntı ve düzeltme seçenekleri: `01-denge-matematigi.md` §4.
+> Tam analiz: [`01-denge-matematigi.md` §4](01-denge-matematigi.md).
 
-### 2. `GAME-DESIGN.md` §6'daki sızıntı formülü savunmayı 6 kat abartıyor **[H]**
+### 2. `GAME-DESIGN.md` §6'daki sızıntı formülü savunmayı ~6 kat abartıyor **[H]**
 
 Dokümandaki `toplamHP < D × L / v` formülü her kulenin yolun tamamını
 kapsadığını varsayıyor. Gerçek kapsama `2 × menzil`. Harita 1 için hata
-çarpanı tam olarak `L / 2r = 1800 / 300 = 6`.
+çarpanı, ölçülen değerlerle `L / kapsama = 1700 / 296,3 = **5,74**`
+(ilk tahmin `1800 / 300 = 6` idi — büyüklük doğruydu).
 
 M6'daki "her dalga için sağlama yap" maddesi bu formülle çalıştırılırsa
 30 dalganın hepsi yanlış onaylanır. Düzeltilmiş iki-kısıt modeli:

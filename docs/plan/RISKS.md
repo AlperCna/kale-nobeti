@@ -11,26 +11,48 @@ Olasılık/etki: Düşük · Orta · Yüksek.
 
 ## Kritik — projeyi durdurabilir
 
-### R1 · Kapsanan yol belirsizliği
+### R1 · Kapsanan yol belirsizliği — ✅ **KAPANDI (M1)**
 
 | | |
 |---|---|
-| **Olasılık** | Yüksek (zaten gerçekleşti) |
-| **Etki** | Yüksek |
-| **Kaynak** | `research/01` §4 uyarı kutusu · `research/03` §3 uyarı kutusu |
+| **Olasılık** | — (gerçekleşti ve çözüldü) |
+| **Etki** | Yüksekti |
+| **Kaynak** | `research/01` §4 · `research/03` §3 |
 
-Araştırma dosyalarından biri `300 px/kule`, diğeri `≥ 450 px` kullanıyor.
-**Tüm denge bu tek sayıya asılı.** 450 px doğruysa T2 tavanı 899 değil 1350;
-boss 700 hedeflenen %78 yerine %52'ye düşüyor. Üstelik 450 px türetilmemiş,
-elle konmuş bir sayı.
+Araştırma dosyalarından biri `300 px/kule`, diğeri `≥ 450 px` kullanıyordu ve
+tüm denge bu tek sayıya asılıydı.
 
-**Erken uyarı:** `M1-T09`'un ölçtüğü ortalama ikisinden de uzak çıkıyor.
-Bu **beklenen** durum — sorun değil, sinyal.
+**Nasıl kapandı:** Harita 1 çizilip ölçüldü — `L` = **1700 px**, ortalama
+kapsama **296,3 px** (`2 × menzil`in 0,988 katı). `450 px` türetilmemişti ve
+§5'teki boss değeriyle aynı anda doğru olamıyordu. Boss 700 = tavanın
+**%78,7'si**, Trol 400 = **%38,7'si**; ⚠️ işaretleri altı dokümandan kalktı.
 
-**Azaltma:** `M1-T02` gerçek ölçüm + `M1-T09` raporu → boss ve Trol
-`M7-T08`'de yeniden hesaplanır. Kalıcı çözüm `research/01` §12
-(`deriveBossHp`).
-**Taş:** M1 (ölçüm), M7 (uygulama).
+**Kalıcı koruma:** `src/data/referenceBoards.test.ts` sağlamaları koşuyor;
+`npm run guard` 8. kontrol `coverage` alanının elle yazılmasını engelliyor.
+Yani risk yalnız kapanmadı, **geri gelmesi de bekçiye bağlandı**.
+
+**Devralan risk → R1b.**
+
+### R1b · Harita 2-3 geometrisi henüz yok
+
+| | |
+|---|---|
+| **Olasılık** | Orta |
+| **Etki** | Orta |
+| **Kaynak** | R1'in kalıntısı · `GAME-DESIGN.md` §9 |
+
+R1'in ölçümü **yalnız Harita 1 geometrisini** kapsıyor. Trol, Şaman, Zırhlı
+Ork ve Örümcek Ana harita 2-3'te sahneye çıkıyor; oradaki HP çarpanı
+(1,6 / 2,6) ve yapı noktası sayısı (10 / 12) farklı. Bugünkü sağlamalar
+**alt sınır** kontrolü: harita 1'de bile rahat geçiliyorlar.
+
+**Erken uyarı:** harita 2 veya 3 çizildiğinde ortalama kapsama `2 × menzil`
+bandının dışına çıkıyor — özellikle harita 3'ün iki girişi kapsama
+toplamını şişirebilir (`measureCoverage` yolları topluyor).
+
+**Azaltma:** `M7-T02`/`M7-T03`'te aynı ölçüm tekrarlanır ve
+`referenceBoards.test.ts` her harita için koşacak şekilde genişletilir.
+**Taş:** M7.
 
 ### R2 · Sanat üretim maliyeti
 

@@ -175,28 +175,36 @@ interface MapDef {
 }
 ```
 
-Ve her harita için bir hedef: yapı noktası başına ortalama kapsanan yol
-**≥ 450 px** (T1 menzil 150'nin 3 katı). Bunun altındaysa harita düz demektir
-ve boss dalgası çalışmaz.
+Ve her harita için bir hedef: yapı noktası başına ortalama kapsanan yol,
+T1 menzili için **`2 × menzil` ± %5** — 150 px menzilde **285-315 px**.
+Altındaysa harita fazla düz, üstündeyse fazla kıvrımlı.
 
-> ## ⚠️ ÇÖZÜLMEMİŞ VARSAYIM — kapsanan yol
+> ## ❌ Bu bölümün eski "≥ 450 px" kriteri YANLIŞTI — M1'de düzeltildi
 >
-> **Yukarıdaki 450 px, `01-denge-matematigi.md` §4-§5 ile çelişiyor.**
-> O dosya bütün tavan hesaplarını `kapsama ≈ 2 × menzil` = **300 px** ile
-> yapıyor ve Ogre Şef HP'sini (700) o hesaptan türetiyor.
+> Buradaki özgün kriter "ortalama ≥ 450 px (T1 menzilinin 3 katı)" idi.
+> İki sorunu vardı:
+>
+> **1. Türetilmemişti.** "Menzilin 3 katı" bir hesap değil, elle konmuş
+> bir sayıydı. `01-denge-matematigi.md` §4 ise aynı büyüklüğü
+> `kapsama ≈ 2 × menzil` = 300 px alıyor ve Ogre Şef HP'sini (700) o
+> hesaptan türetiyordu. İkisi aynı harita için aynı anda doğru olamazdı.
+>
+> **2. Kendi dosyasındaki boss değeriyle çelişiyordu.**
 >
 > | Kapsama | T2 tavanı (boss) | Boss 700 = tavanın |
 > |---|---|---|
 > | 300 px (`01` §4) | 899 | %78 ← hedeflenen |
-> | 450 px (bu bölüm) | **1350** | **%52** |
+> | 450 px (eski kriter) | 1350 | **%52** — boss yolun yarısında ölür |
 >
-> 450 px doğruysa boss yolun yarısında ölür ve final dalgası olay olmaktan
-> çıkar. **Ayrıca 450 px'in kaynağı yok** — "T1 menzilinin 3 katı" bir
-> hesap değil, elle konmuş bir sayı. Çelişkinin kökeni bu.
+> **Ölçüm (M1, Harita 1):** ortalama kapsama **296,3 px**, yani
+> `2 × menzil`in **0,988** katı. `01`'in modeli %1,2 hatayla tuttu.
 >
-> Bu kriter, ölçüm yapılana kadar **bağlayıcı değildir.**
-> Tam analiz: `01-denge-matematigi.md` §4 "Çözülmemiş varsayım".
-> Çözülme noktası: M1, `util/coverage.ts` ile ölçüm.
+> Kriter bu yüzden mutlak bir piksel eşiği değil, **menzile bağlı bir oran**
+> olarak yeniden yazıldı — T1/T2/T3 menzilleri 150'den 260'a değişiyor,
+> tek bir px sayısı hepsi için anlamlı olamaz.
+>
+> Tam analiz: `01-denge-matematigi.md` §4.
+> Sağlama: `src/data/referenceBoards.test.ts`.
 
 ---
 
