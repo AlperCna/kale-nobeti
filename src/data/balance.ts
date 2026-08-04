@@ -24,21 +24,6 @@ export const POOL_PREALLOC = {
 export const STARTING_LIVES = 20;
 
 /**
- * M1'in geçici doğurucusu için düşman değerleri.
- *
- * Kaynak: `GAME-DESIGN.md` §5 tablosu, **Goblin** satırı (HP 45, hız 60).
- * Uydurulmadı — kadronun en basit üyesi seçildi.
- *
- * **M3'te `src/data/enemies.ts` bunu tamamen değiştirecek** ve `SpawnSystem`
- * yerini `WaveManager`'a bırakacak. O noktada bu sabit silinir.
- */
-export const M1_GECICI_DUSMAN = {
-  hp: 45,
-  /** Birim: px/sn. */
-  speed: 60,
-} as const;
-
-/**
  * M1'in geçici doğurma aralığı. Birim: saniye.
  *
  * Dalga temposu `GAME-DESIGN.md` §7'de formülle tanımlı ama sabitleri

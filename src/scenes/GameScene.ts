@@ -7,12 +7,8 @@ import { SpawnSystem } from '../systems/SpawnSystem';
 import { Enemy } from '../entities/Enemy';
 import { Pool } from '../util/pool';
 import { MAP_1, COVERAGE_REFERENCE_RANGE } from '../data/maps';
-import {
-  POOL_PREALLOC,
-  STARTING_LIVES,
-  M1_GECICI_DUSMAN,
-  M1_GECICI_DOGMA_ARALIGI_SN,
-} from '../data/balance';
+import { POOL_PREALLOC, STARTING_LIVES, M1_GECICI_DOGMA_ARALIGI_SN } from '../data/balance';
+import { GOBLIN } from '../data/enemies';
 import { devHooks } from '../util/devHooks';
 
 /**
@@ -77,8 +73,8 @@ export class GameScene extends Phaser.Scene {
     );
 
     this.#spawner = new SpawnSystem(pool, mover, this.bus, {
-      hp: M1_GECICI_DUSMAN.hp,
-      speed: M1_GECICI_DUSMAN.speed,
+      def: GOBLIN,
+      hpMultiplier: MAP_1.hpMultiplier,
       intervalSeconds: M1_GECICI_DOGMA_ARALIGI_SN,
       startingLives: STARTING_LIVES,
     });

@@ -56,6 +56,7 @@ export class PathMover implements Mover {
  * kalenin dibinde doğurur.
  */
 export function resetEnemyState(e: EnemyState): void {
+  e.def = null;
   e.hp = 0;
   e.maxHp = 0;
   e.speed = 0;

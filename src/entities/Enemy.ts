@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import type { EnemyState, Mover } from '../types/enemy';
+import type { EnemyDef, EnemyState, Mover } from '../types/enemy';
 import type { PathProgress } from '../types/path';
 import type { Poolable } from '../util/pool';
 import { resetEnemyState } from '../systems/movers';
@@ -17,6 +17,7 @@ import { resetEnemyState } from '../systems/movers';
  * M4'te `LineMover` alacak ve bu dosya değişmeyecek (`DEPENDENCIES.md` §2).
  */
 export class Enemy extends Phaser.GameObjects.Rectangle implements Poolable, EnemyState {
+  def: EnemyDef | null = null;
   hp = 0;
   maxHp = 0;
   /** Birim: px/sn. */
@@ -36,12 +37,19 @@ export class Enemy extends Phaser.GameObjects.Rectangle implements Poolable, Ene
     scene.add.existing(this);
   }
 
-  /** Havuzdan çıkarken çağrılır. */
-  spawn(mover: Mover, hp: number, speed: number): void {
+  /**
+   * Havuzdan çıkarken çağrılır.
+   *
+   * @param hpMultiplier Harita çarpanı (`MapDef.hpMultiplier`,
+   *   `GAME-DESIGN.md` §9). Hız çarpanla ölçeklenmiyor — yalnız HP ve altın.
+   */
+  spawn(mover: Mover, def: EnemyDef, hpMultiplier: number): void {
+    const hp = def.hp * hpMultiplier;
     this.mover = mover;
+    this.def = def;
     this.hp = hp;
     this.maxHp = hp;
-    this.speed = speed;
+    this.speed = def.speed;
     this.blockedBy = null;
     this.alive = true;
     this.progress = mover.spawnProgress();
