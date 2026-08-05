@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import { t } from '../util/i18n';
+import { SaveSystem, starsFor } from '../systems/SaveSystem';
+import { LocalStore } from '../util/storage';
 import { BALANCE } from '../data/balance';
 import { devHooks } from '../util/devHooks';
 
@@ -24,14 +26,25 @@ export interface GameOverData {
  * ve burada sayı olarak gösteriliyor.
  */
 export class GameOverScene extends Phaser.Scene {
-  #data: GameOverData = { won: false, lives: 0 };
+  #data: GameOverData & { mapId?: string } = { won: false, lives: 0 };
 
   constructor() {
     super('GameOver');
   }
 
-  init(data: Partial<GameOverData>): void {
-    this.#data = { won: data.won ?? false, lives: data.lives ?? 0 };
+  init(data: Partial<GameOverData> & { mapId?: string }): void {
+    this.#data = { won: data.won ?? false, lives: data.lives ?? 0, mapId: data.mapId };
+
+    // **Sonuç burada kaydediliyor** — `init` her sahne başlatmasında
+    // koşuyor, yani tekrar oynanan her el kaydediliyor. `recordResult`
+    // yıldızı **düşürmüyor**: kötü bir tekrar kazanılmış ★★★'ü silmiyor.
+    if (this.#data.mapId !== undefined) {
+      new SaveSystem(new LocalStore()).recordResult(
+        this.#data.mapId,
+        this.#data.lives,
+        this.#data.won,
+      );
+    }
   }
 
   create(): void {
@@ -77,9 +90,8 @@ export class GameOverScene extends Phaser.Scene {
 
   /** `GAME-DESIGN.md` §9 yıldız tablosu. */
   #yildiz(lives: number): number {
-    if (lives >= BALANCE.startLives) return 3;
-    if (lives >= 15) return 2;
-    return 1;
+    // Eşikler tek adreste: `SaveSystem.starsFor` (§9). Burada kopya yok.
+    return starsFor(lives, this.#data.won);
   }
 
   #menuButonu(x: number, y: number): void {
@@ -102,7 +114,7 @@ export class GameOverScene extends Phaser.Scene {
       // ve kuleleri kalırdı — görevin "bitmedi sayılır eğer" maddesi.
       this.scene.stop('Hud');
       this.scene.stop('Game');
-      this.scene.start('Menu');
+      this.scene.start('LevelSelect');
     });
   }
 }

@@ -29,6 +29,9 @@ const TR = {
   defeat: 'Kale düştü',
   livesLeft: 'kalan can',
   backToMenu: 'Ana menü',
+  levelSelect: 'Seviye Seç',
+  locked: 'Kilitli',
+  back: '← Geri',
 } as const;
 
 export type StringKey = keyof typeof TR;
@@ -54,5 +57,8 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     defeat: '',
     livesLeft: '',
     backToMenu: '',
+    levelSelect: '',
+    locked: '',
+    back: '',
   },
 };

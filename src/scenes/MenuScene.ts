@@ -85,7 +85,7 @@ export class MenuScene extends Phaser.Scene {
    * yanına ekler — duraklatmada HUD'ın yaşamaya devam etmesi buna bağlı.
    */
   #startGame(): void {
-    this.scene.start('Game');
-    this.scene.launch('Hud');
+    // M7: doğrudan oyuna değil, **seviye seçime**. Üç harita var artık.
+    this.scene.start('LevelSelect');
   }
 }
