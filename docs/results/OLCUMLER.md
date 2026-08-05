@@ -309,7 +309,7 @@ Hedef ≥3'tü (R4). **2,3-2,7 katı.** Harita 2-3'te yeniden ölçülecek.
 | Örümcek Yavrusu | 381 | 30 | %7,9 |
 | **Ogre Şef** | **761** | **700** | **%92,0** ✗ |
 
-### Boss payı — iki tahta (S43)
+### Boss payı — iki tahta (S65)
 
 | Tahta | Nokta dolma | Tavan | Boss oranı |
 |---|---|---|---|
@@ -354,3 +354,126 @@ aynı anda 11 birim var ve boss tek başına geliyor.
 | Test | **430** / 23 dosya · 1,56 sn |
 | İlk indirme | **0,39 MB** (sınır 8 MB) |
 | Bekçi | **9/9** ✓ (+1 taranamayan yol raporu) |
+
+## 11. Kışla, asker, yetenek (M5)
+
+### S66 — düşmanın askere verdiği hasar (**türetildi**)
+
+Dokümanda **hiç yok**. §4.4 kural 3 "düşman yalnızca `blockedBy` askerine
+hasar verir" diyor, sayıyı vermiyor; §5 tablosunda saldırı gücü sütunu yok.
+
+    K = 45 HP / 8 sn / 1 puan = 5,625 DPS / puan
+
+| Düşman | Puan | Askere DPS | T1 (45 HP) | T2 (75) | Paladin (140) |
+|---|---|---|---|---|---|
+| Goblin | 1 | 5,63 | 8,00 sn | 13,3 | 24,9 |
+| Ork Savaşçı | 2 | 11,25 | 4,00 | 6,67 | 12,4 |
+| Kurt Binicisi | 3 | 16,88 | 2,67 | 4,44 | 8,30 |
+| Zırhlı Ork | 4 | 22,50 | 2,00 | 3,33 | 6,22 |
+| Şaman | 5 | 28,13 | 1,60 | 2,67 | 4,98 |
+| Örümcek Ana | 6 | 33,75 | 1,33 | 2,22 | 4,15 |
+| **Trol** | 8 | **45,00** | **1,00** | **1,67** | **3,11** |
+| Ogre Şef | 25 | (140,6) | kural 9: **anlık** | anlık | anlık |
+
+**Dayanak:** §4.4 T1 satırı (45 HP, 8 sn) + §5'in puan ölçeği
+(`altın = 3 × puan`). **Neye asılı:** `barracks.ts` T1 satırı değişirse K
+değişir. **Koruyan:** `data/barracks.test.ts` — "T1 askeri Goblin karşısında
+tam bir diriliş döngüsü dayanıyor".
+
+### Kışlalı / kışlasız Trol (zorunlu ölçüm)
+
+Taban: **kışlasız Trol kule menzilinde 15,32 sn** (Okçu T2, Harita 1,
+kapsaması en yüksek nokta).
+
+| Kışla | ×1 | ×2 | ×3 |
+|---|---|---|---|
+| T1 | +%13 | +%26 | +%39 |
+| T2 | +%22 | +%43 | +%238 |
+| Paladin | +%41 | ölüyor | ölüyor |
+| **Haydutlar** | **+%68** | ölüyor | ölüyor |
+
+Planın "%50" ölçütünü tutturan **en küçük yapılandırma: tek Haydutlar
+kışlası**. **Koruyan:** `BarracksScenario.test.ts`.
+
+**Ölçüt notu:** "menzilde geçen süre" tek başına yanıltıcı — Trol ölürse süre
+kısalıyor. Birleşik ölçüt: `öldü VEYA süre ≥ %50 uzun`.
+
+### Sinerji — kural 3'ten türüyor
+
+| Asker | Verilen hasar başına alınan hasar |
+|---|---|
+| 2 | taban |
+| 4 | **taban × 0,50** |
+
+Verilen `N × dpsEtkin`, alınan `1 × meleeDps`. N ikiye katlanınca oran yarıya
+iniyor. **Özel kod yok.**
+
+### S69 — kışlanın yeri (canlı, aynı tahta)
+
+| Tahta | Can | Dalga 10 kare ort |
+|---|---|---|
+| 8 kule, kışlasız | **20/20 ★★★** | 3,69 ms |
+| 7 kule + kışla **en yüksek** kapsamada (422 px) | **0/20 kayıp** | 3,84 ms |
+| 7 kule + kışla **en düşük** kapsamada (230 px) | **19/20 ★★** | 3,95 ms |
+
+Kışla kapsamayı kullanmıyor ama noktayı işgal ediyor. **M7 harita kuralı:**
+her haritada kışlaya uygun düşük kapsamalı nokta olmalı.
+
+### Harita 1 yapı noktalarının yola uzaklığı
+
+| Nokta | Yola px | Kapsama px |
+|---|---|---|
+| 0 | 75,0 | 259,8 |
+| 1 | 75,0 | 259,8 |
+| 2 | 75,0 | 259,8 |
+| 3 | 90,0 | 421,8 |
+| 4 | 75,0 | 259,8 |
+| 5 | 90,0 | 420,0 |
+| 6 | 75,0 | 259,8 |
+| 7 | 75,0 | 229,9 |
+
+**Hepsi `pathSnapMax = 40`'ın dışında.** Bu yüzden varsayılan toplanma
+noktası kışlanın üstü **olamıyor** — `defaultRally()` yola en yakın noktayı
+veriyor. Kışlanın üstü kullanılsaydı askerler yol kenarında durur, aggro
+(60 px) yola yetişmez ve kışla hiçbir şey yapmazdı. **Koruyan:**
+`BarracksSystem.test.ts` — "Harita 1'in HER yapı noktası geçerli bir
+toplanma noktası üretiyor".
+
+### Canlı engelleme sağlamaları
+
+| # | İddia | Ölçüm |
+|---|---|---|
+| K3 | İki asker dövüşüyor, **biri** hasar alıyor | HP **38 vs 45** |
+| K5 | Aynı anda engellenen tepe | **3** (asker sayısı kadar) |
+| K8 | Uçan engelleniyor mu | **475 örnek, 0 ihlal** |
+| K9 | Boss askeri tek karede öldürüyor | **75 / 60 / 60 HP → 0** |
+
+### Yetenekler (§8)
+
+| Ölçüm | Değer |
+|---|---|
+| Meteor — Ogre Şef'e (zırh 10, direnç %25) | tam **180** (gerçek hasar) |
+| Meteor yarıçapı / bekleme | 90 px / 45 sn |
+| Takviye — asker sayısı / HP / DPS / ömür | 2 / 60 / 7 / 20 sn |
+| Takviye askeri engelliyor mu (S47) | **evet**, anında `fighting` |
+| Geçici asker havuza dönüşü | **4 → 2**, `destroy` yok |
+| Bekleme 2× hızda | **yarı sürede** doluyor |
+
+### Havuz (M5 sonu)
+
+| Havuz | Ön ayırma | Tepe kullanım | Taşma |
+|---|---|---|---|
+| Asker | **24** | 4 | **0** |
+| Mermi | 200 | 4 | 0 |
+
+Asker 24'ün dayanağı: 8 nokta × 3 asker (Haydutlar) = 24, yani tüm noktalar
+Haydutlar kışlası olsa bile karşılanıyor. Takviye'nin 2 geçici askeri bunun
+**üstüne** geliyor ve havuz doluysa sessizce kısılıyor.
+
+### Test ve paket (M5 sonu)
+
+| Ölçüm | Değer |
+|---|---|
+| Test | **531** / 27 dosya · 1,81 sn (M4: 430 / 23) |
+| İlk indirme | **0,39 MB** (değişmedi) |
+| Bekçi | **9/9** ✓ |

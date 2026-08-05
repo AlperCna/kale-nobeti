@@ -20,6 +20,16 @@ export const POOL_PREALLOC = {
   enemy: 60,
   projectile: 200,
   damageText: 60,
+  /**
+   * Asker (M5). `research/02` §7 tablosu **24** diyor.
+   *
+   * Sağlaması: 8 yapı noktasının hepsi Haydutlar kışlası olsa 8 × 3 = 24
+   * kışla askeri eder — yani tavan tam dolduğunda bile kışlalar
+   * karşılanıyor. Takviye'nin 2 geçici askeri bunun **üstüne** geliyor ve
+   * havuz doluysa sessizce kısılıyor (`AbilitySystem.castReinforcements`);
+   * §8 Takviye'yi bir ek olarak tanımlıyor, garantili bir hak olarak değil.
+   */
+  soldier: 24,
 } as const;
 
 /**

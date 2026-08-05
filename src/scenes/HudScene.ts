@@ -6,6 +6,7 @@ import { devHooks } from '../util/devHooks';
 import { HudReadout } from '../fx/HudReadout';
 import { WaveTelegraph } from '../fx/WaveTelegraph';
 import { ensureNumberFont } from '../fx/numberFont';
+import { AbilityButtons } from '../fx/AbilityButtons';
 
 const INK = 0x14203a;
 const PARCHMENT = 0xe4d3a8;
@@ -46,6 +47,9 @@ export class HudScene extends Phaser.Scene {
   #earlyLabel?: Phaser.GameObjects.Text;
   #bitti = false;
 
+  /** İki yetenek butonu + dairesel bekleme dolumu (§8, M5-T07). */
+  #abilityButtons?: AbilityButtons;
+
   constructor() {
     super('Hud');
   }
@@ -58,6 +62,12 @@ export class HudScene extends Phaser.Scene {
     this.#readout = new HudReadout(this, MARGIN, MARGIN);
     this.#telegraph = new WaveTelegraph(this, MARGIN + 150, MARGIN + 78);
     this.#createEarlyStartButton();
+    this.#abilityButtons = new AbilityButtons(
+      this,
+      MARGIN + 40,
+      this.scale.height - MARGIN - 46,
+      (id) => this.#game().armAbility(id),
+    );
     this.#createPauseOverlay();
     this.#bindKeys();
 
@@ -85,6 +95,7 @@ export class HudScene extends Phaser.Scene {
       totalWaves: game.totalWaves,
     });
     this.#telegraph?.show(game.upcomingWave);
+    this.#abilityButtons?.update((id) => game.abilities.progress(id), game.pendingAbility);
 
     const erkenAcik = game.earlyStartAvailable;
     this.#earlyBtn?.setVisible(erkenAcik);

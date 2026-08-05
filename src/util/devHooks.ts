@@ -77,6 +77,33 @@ export interface DevHooks {
   flyerHintOn: () => boolean;
   enemyKinds: () => string[];
   enemySpeedFactors: () => number[];
+
+  // --- M5 ---
+  /** @returns Kurulabildiyse `true`. */
+  placeBarracks: (spotIndex: number) => boolean;
+  upgradeBarracks: (spotIndex: number, tier: number) => boolean;
+  sellBarracks: (spotIndex: number) => number;
+  /** Toplanma noktasını taşır; **kural 6'dan geçmiş** sonucu döndürür. */
+  setRally: (spotIndex: number, x: number, y: number) => { x: number; y: number };
+  rallyOf: (spotIndex: number) => { x: number; y: number };
+  /** Askerlerin durumu — engelleme kurallarının canlı sağlaması. */
+  soldiers: () => {
+    spotIndex: number;
+    state: string;
+    hp: number;
+    engaged: boolean;
+    x: number;
+    y: number;
+  }[];
+  soldierActive: () => number;
+  soldierCapacity: () => number;
+  /** Kaç düşman şu an engelleniyor (kural 5 tavanı). */
+  blockedEnemies: () => number;
+  abilityReady: (id: string) => boolean;
+  abilityProgress: (id: string) => number;
+  /** @returns Meteor'un vurduğu düşman sayısı ve toplam hasar. */
+  castMeteor: (x: number, y: number) => { hit: number; totalDamage: number } | null;
+  castReinforcements: (x: number, y: number) => number;
 }
 
 type Global = { __kn?: Partial<DevHooks> };

@@ -152,7 +152,7 @@ export const ORUMCEK_YAVRUSU: EnemyDef = {
  * Boss. Kışla askerlerini tek vuruşta öldürür (M5'te bağlanacak).
  * Sızma cezası **10 can** — 20 canlık havuzun yarısı (§5).
  *
- * HP **700 — ölçüldü, ama M4'te sınıra dayandı (S43).**
+ * HP **700 — ölçüldü, ama M4'te sınıra dayandı (S65).**
  *
  * M1'de, iki aileli (Top/Okçu) referans tahtayla Kısıt A tavanının
  * **%78,7'siydi** ve hedef band %75-85'in ortasındaydı
