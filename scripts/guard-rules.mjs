@@ -282,6 +282,136 @@ const sonuclar = [];
 }
 
 // ---------------------------------------------------------------------
+// 10 — Sahne alanları `create()` içinde sıfırlanıyor (mimari)
+//
+// **Bu tuzak DÖRT kez çıktı:**
+//   M0  `create()` içinde `on` → her yeniden başlatmada bir dinleyici daha
+//   M4  `#towerBySpot` → yeni oyunda önceki oyunun yok edilmiş kuleleri
+//   M5  kışla durumu → aynısı
+//   M6  `#gecici` → yok edilmiş sahnenin askerleri sonsuza dek işleniyor
+//
+// Sebep hep aynı: **alan başlatıcısı yalnız BİR KEZ koşuyor, `create()`
+// her yeniden başlatmada.** Phaser sahne örneğini yeniden kullanıyor.
+// Sızıntı çökme üretmiyor, "yanlış durum" olarak görünüyor — yani en zor
+// fark edilen türden.
+//
+// Kural: bir sahnenin **değişebilir** özel alanı `create()` gövdesinde
+// adı geçmeden var olamaz. Salt okunur sabitler (`readonly x = new X()`
+// biçiminde olup `create()`'te dokunulmayanlar) muaf **değil** — çünkü
+// `Map`/`Set`/dizi `readonly` olsa da içeriği değişir; M4 ve M6 hataları
+// tam olarak bunlardı.
+// ---------------------------------------------------------------------
+{
+  let ihlalVar = false;
+  const sahneler = dosyalar.filter(
+    (d) => /scenes[\\/][A-Za-z]+Scene\.ts$/.test(d) && !d.endsWith('.test.ts'),
+  );
+
+  for (const dosya of sahneler) {
+    const icerik = readFileSync(dosya, 'utf8');
+    const satirlar = kodSatirlari(icerik);
+
+    // `create()` gövdesi **süslü parantez eşleştirmesiyle** çıkarılıyor.
+    //
+    // İlk yazımda "imzadan dosya sonuna kadar" bakılıyordu ve kural
+    // **hiçbir şey yakalamıyordu**: alan adları `create()`'in altındaki
+    // metotlarda (`#placeTower`, `#kislalariIsle`…) zaten geçiyor, yani
+    // kontrol her zaman geçiyordu. Kasıtlı bozma sınamasında ortaya çıktı —
+    // bekçinin kendisi de negatif doğrulanmadan güvenilmez.
+    /** Bir metodun gövdesini süslü parantez eşleştirmesiyle çıkarır. */
+    const govdeCikar = (bas) => {
+      let derinlik = 0;
+      let basladi = false;
+      const metinler = [];
+      let sonNo = satirlar[bas].no;
+      for (const s of satirlar.slice(bas)) {
+        for (const ch of s.metin) {
+          if (ch === '{') {
+            derinlik++;
+            basladi = true;
+          } else if (ch === '}') derinlik--;
+        }
+        metinler.push(s.metin);
+        sonNo = s.no;
+        if (basladi && derinlik <= 0) break;
+      }
+      return { metin: metinler.join('\n'), ilkNo: satirlar[bas].no, sonNo };
+    };
+
+    // **Üç yaşam döngüsü kancası da sayılıyor: `init`, `preload`, `create`.**
+    // Phaser üçünü de sahnenin HER başlatılmasında çağırıyor; kuralın
+    // sorduğu şey "alan her başlatmada tazeleniyor mu", "özellikle
+    // `create()`'te mi" değil. (`GameOverScene.#data` `init(data)` içinde,
+    // `PreloadScene.#bar` `preload()` içinde atanıyor — ikisi de doğru.)
+    const kancaBaslari = ['init', 'preload', 'create']
+      .map((ad) => satirlar.findIndex((s) => new RegExp(`^\\s*${ad}\\s*\\(`).test(s.metin)))
+      .filter((i) => i >= 0);
+    if (kancaBaslari.length === 0) continue;
+
+    const kancalar = kancaBaslari.map(govdeCikar);
+    let createGovde = kancalar.map((k) => k.metin).join('\n');
+    const createBas = kancaBaslari[0];
+    void createBas;
+
+    // `create()` çağırdığı özel yardımcıların gövdeleri de sayılıyor.
+    //
+    // Aksi hâlde kural, kurulumu bir yardımcıya çıkarmayı cezalandırırdı:
+    // `#label1x` `#createLabels()` içinde atanıyor ve o da `create()`'ten
+    // çağrılıyor — durum her yeniden başlatmada gerçekten tazeleniyor.
+    // **Tek kademe.** İki kademe geri çağrıların (`kb.on(... => this.#togglePause())`)
+    // içine girip alanı "ele alınmış" sayıyordu — oysa geri çağrı `create()`
+    // sırasında koşmuyor, kullanıcı tuşa basınca koşuyor.
+    for (let kademe = 0; kademe < 1; kademe++) {
+      const cagrilanlar = [...createGovde.matchAll(/this\.(#[A-Za-z][A-Za-z0-9]*)\s*\(/g)].map(
+        (m) => m[1],
+      );
+      for (const ad of new Set(cagrilanlar)) {
+        const bas = satirlar.findIndex((s) => new RegExp(`^\\s*${ad}\\s*\\(`).test(s.metin));
+        if (bas < 0) continue;
+        createGovde += '\n' + govdeCikar(bas).metin;
+      }
+    }
+
+    // Alan bildirimleri **sınıfın tamamında** aranıyor, yalnız `create()`
+    // öncesinde değil: `#gecici` `create()`'in altında bildirilmişti ve
+    // ilk sürüm onu kaçırdı.
+    for (const s of satirlar) {
+      // Kancaların KENDİ satırları atlanıyor. İlk sürüm bitişi "başlangıç +
+      // gövde satır SAYISI" diye hesaplıyordu; yorumlar elendiği için o
+      // sayı gerçek satır numarasının çok altındaydı ve aralık dosyanın
+      // yarısını yutup `#gecici`yi görünmez yapıyordu.
+      if (kancalar.some((k) => s.no >= k.ilkNo && s.no <= k.sonNo)) continue;
+      // `#ad = deger;` / `#ad?: Tip;` / `readonly #ad = new Map...`
+      const m = /^\s*(?:readonly\s+)?(#[A-Za-z][A-Za-z0-9]*)\s*[?:=]/.exec(s.metin);
+      if (m === null) continue;
+      const ad = m[1];
+
+      // **Adın geçmesi yetmez, ATANMASI gerekir.**
+      //
+      // İlk sürüm yalnız adı arıyordu ve hiçbir şey yakalamıyordu:
+      // `#gecici` `#devKancalari` içinde *okunuyor* (`[...this.#gecici]`),
+      // yani "ele alınmış" sayılıyordu — oysa hiç sıfırlanmıyordu ve tam
+      // da aradığımız hata oydu.
+      const atama = new RegExp(
+        `this\\.${ad}\\s*=(?!=)` + // this.#x = ...
+          `|this\\.${ad}\\.(clear|reset|splice)\\s*\\(` + // .clear() / .reset() / .splice()
+          `|this\\.${ad}\\.length\\s*=`, // .length = 0
+      );
+      if (atama.test(createGovde)) continue;
+
+      ihlalVar = true;
+      ihlal(
+        'mim.',
+        dosya,
+        s.no,
+        `${ad} create() içinde sıfırlanmıyor — yeniden başlatmada önceki oyunun durumu taşınır`,
+      );
+    }
+  }
+  sonuclar.push(['mim. sahne alanları create() içinde sıfırlanıyor', !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
 
 const gecen = sonuclar.filter(([, ok]) => ok).length;
 if (taranamayan.length > 0) {

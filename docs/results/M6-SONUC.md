@@ -36,7 +36,7 @@
 | **`M6-T07` `ScreenShake`** | ☑ | 11 test |
 | **`M6-T08` `HitStop`** | ☑ | 10 test |
 | **`M6-T09` Parçacıklar** | ☑ | Phaser parçacığı, ayrı havuz yok |
-| **`M6-T10` Vinyet, squash, toz** | ☑ **kısmi** | Altın uçuşu ve dalga sonu sayacı `T01`'in bitmap fontuna bağlı |
+| **`M6-T10` Vinyet, squash, toz, sayaç** | ☑ **kısmi** | Yalnız **altın uçuşu** kaldı — altın ikonu (`M6-P02`) gerekiyor. Dalga sonu sayacı yapıldı |
 | `M6-T11` Ses ve müzik | ⏸ | 20 ses efekti + 2 müzik parçası (`S51`, `S52`) |
 | **`M6-T12` Ayarlar + erişilebilirlik** | ☑ | 17 test |
 
@@ -108,8 +108,29 @@ yolu izliyor.
 | Can kaybında vermilyon vinyet nabzı | ☑ 400 ms, **efekt ayarından bağımsız** |
 | Düşman ölürken 1,3× yatay ezilme, 120 ms | ☑ havuz baskısı altında atlanıyor |
 | Kule yerleşiminde toz halkası | ☑ |
-| Altın uçuşu (bezier → HUD sayacı) | ⏸ `T01` bitmap fontu |
-| Dalga sonu altın sayacının tek tek artması | ⏸ `T01` bitmap fontu |
+| Altın uçuşu (bezier → HUD sayacı) | ⏸ altın ikonu — `M6-P02` |
+| **Dalga sonu altın sayacının tek tek artması** | ☑ **yapıldı** |
+
+**Sayaç `T01`'i beklemiyormuş.** İlk değerlendirmede "bitmap fontuna bağlı"
+diye ertelenmişti; oysa `numberFont.ts` **çalışma zamanında üretilen** bir
+bitmap font sağlıyor ve M2'den beri kullanımda. `T01`'in getireceği şey
+nihai *görünüm*, sayacın çalışması değil. Ertelemenin gerekçesi yanlıştı ve
+görev `M6-T10`'un açık "bitmedi sayılır eğer" şartıydı:
+
+> **Bitmedi sayılır eğer:** dalga sonu altını **anında** ekleniyorsa.
+
+**Ölçüldü (canlı):** kule satıldığında gerçek altın anında `259` oluyor,
+ekran `219 → 227 → 233 → 238 → … → 259` diye ~20 karede sayıyor.
+**Harcama anında** — sayaç geriye doğru saymıyor, çünkü oyuncu parayı zaten
+harcadı ve gecikme "yetiyor mu" kararını yanıltır.
+
+Formül: kalan farkın **%18'i + en az 1**, kare başına. Sabit adım (`+1/kare`)
+dalga 10'un 80 altınlık bonusunu 1,3 saniyede sayardı ama tek goblinin
+3 altını 3 karede biter ve fark edilmezdi; oranla ikisi de aynı formülden
+doğru çıkıyor.
+
+**Altın uçuşu** hâlâ bekliyor ama bağımlılığı `T01` değil **`M6-P02`** —
+uçacak bir altın ikonu gerekiyor.
 
 **Vinyet neden efekt ayarından bağımsız:** can kaybı bir süs değil bir
 **uyarı**. TIER 1 kural 6 erişilebilirlik tabanı istiyor; can kaybının
@@ -180,9 +201,72 @@ eşleşmeli.
 
 ---
 
+## 4b. Yeni bekçi kuralı: sahne alanları `create()` içinde sıfırlanıyor
+
+**Aynı hata dördüncü kez çıktı**, bu kez `#gecici`'de (Takviye'nin geçici
+askerleri). Tek tek düzeltmek yerine bekçiye onuncu kural eklendi.
+
+### Hatanın kendisi
+
+Yeniden başlatmadan sonra `soldiers()` **2** asker gösteriyor ama yeni
+havuzun `activeCount`'u **0**'dı. O ikisi **yok edilmiş sahnenin**
+askerleriydi: her karede işleniyor, yeni havuz onları tanımadığı için
+(`Pool.release` bilinmeyen nesneyi yok sayıyor) asla iade edilemiyor ve
+**her yeniden başlatmada birikiyorlardı**.
+
+Sebep dört kezdir aynı: **alan başlatıcısı yalnız bir kez koşuyor,
+`create()` her yeniden başlatmada.** Sızıntı çökme üretmiyor, "yanlış durum"
+olarak görünüyor — yani en zor fark edilen türden.
+
+### Kural ve iki yanlış deneme
+
+Kural: bir sahnenin değişebilir özel alanı, `init`/`preload`/`create`
+kancalarının birinde (veya oradan çağrılan bir yardımcıda) **atanmalı**.
+
+İlk iki sürüm işe yaramıyordu ve **kasıtlı bozma sınaması olmasa fark
+edilmezdi** — ikisi de yeşil dönüyordu:
+
+| Sürüm | Hata | Sonuç |
+|---|---|---|
+| 1 | "`create()` gövdesi" = imzadan dosya sonuna | Alan adları alttaki metotlarda geçtiği için **hiçbir şey** yakalamıyordu |
+| 2 | Gövde bitişi = "başlangıç + gövde satır **sayısı**" | Yorumlar elendiği için aralık dosyanın yarısını yutuyordu |
+| 3 | "adı geçiyor mu" | `#gecici` `#devKancalari` içinde **okunuyordu**, atanmıyordu — "ele alınmış" sayılıyordu |
+
+Son hâli: süslü parantez eşleştirmesiyle gerçek gövde, **atama** araması
+(`this.#x =`, `.clear()`, `.reset()`, `.splice()`, `.length =`), ve
+`init`/`preload`/`create` üçünün de sayılması (Phaser üçünü de her
+başlatmada çağırıyor).
+
+### Negatif doğrulama — beş tarihsel hatanın hepsi
+
+| Sınama | Yakalandı |
+|---|---|
+| M6 `#gecici` | ✅ |
+| M4 `#towerBySpot` | ✅ |
+| M5 `#barracksBySpot` | ✅ |
+| HUD `#paused` | ✅ |
+| HUD `#speed` | ✅ |
+
+### Kuralın bulduğu iki YENİ hata
+
+Kural yazılır yazılmaz `HudScene`'de iki gerçek hata çıkardı:
+
+- **`#paused`** — duraklatılmışken kaybedilip yeniden başlanınca `true`
+  kalıyordu. `create()` yeni bir perde yaratıyor ve o **gizli** başlıyor,
+  ama bayrak `true`; ilk ESC oyunu duraklatmak yerine `scene.resume`
+  çağırıyor ve perde açılıyordu — durum tam ters.
+- **`#speed`** — 2×'te kaybedip yeniden başlayınca etiket 2× gösteriyordu
+  ama `GameClock` yeni sahnede 1×'ten başlıyor. Gösterge yalan söylüyordu.
+
+**Canlı doğrulandı:** duraklatılmış hâlde yeniden başlatma → `paused: false`.
+Üç kez üst üste Takviye + yeniden başlatma → asker **0**, havuz **0**
+(birikme yok).
+
+---
+
 ## 5. Kontrol listesinden geçenler
 
-- [x] `typecheck && test && build && guard` — 569 test, 9/9 bekçi
+- [x] `typecheck && test && build && guard` — 569 test, **10/10** bekçi
 - [x] **Ses ve efektler kapalıyken oyun okunur** — efekt kapalıyken parçacık tepesi 0, oyun oynanabilir
 - [x] 2× hızda hit-stop **kapalı**, parçacık yoğunluğu **yarı**
 - [x] İlk indirme ≤ 5 MB — **0,39 MB**

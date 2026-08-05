@@ -221,6 +221,16 @@ export class GameScene extends Phaser.Scene {
     // M5: kışla ve yetenek durumu da yeniden başlatmada sıfırlanıyor —
     // aynı tuzak (alan başlatıcısı bir kez, `create` her seferinde).
     this.#barracksBySpot.clear();
+    // **`#gecici` de burada.** Atlanmıştı, canlı testte yakalandı: yeniden
+    // başlatmadan sonra `soldiers()` 2 asker gösteriyordu ama yeni havuzun
+    // `activeCount`'u 0'dı — o ikisi **yok edilmiş sahnenin** askerleriydi.
+    // Her karede işleniyor, yeni havuz onları tanımadığı için (`release`
+    // bilinmeyen nesneyi yok sayıyor) asla iade edilemiyor ve her yeniden
+    // başlatmada birikiyorlardı.
+    //
+    // Aynı tuzağın **dördüncü** görünümü (M0 `once`/`on`, M4
+    // `#towerBySpot`, M5 kışla durumu). Bekçiye kural 10 bu yüzden eklendi.
+    this.#gecici.length = 0;
     this.#draggingRally = -1;
     this.#pendingAbility = null;
     this.abilities.reset(); // S49 — beklemeler haritalar arası sıfırlanıyor

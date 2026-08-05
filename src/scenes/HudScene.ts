@@ -60,6 +60,21 @@ export class HudScene extends Phaser.Scene {
 
   create(): void {
     this.#bitti = false;
+    // **Bekçi kural 10'un bulduğu iki gerçek hata.**
+    //
+    // `#paused`: duraklatılmışken kaybedilip yeniden başlanınca `true`
+    // kalıyordu. `create()` yeni bir perde yaratıyor ve o **gizli**
+    // başlıyor, ama bayrak `true`; ilk ESC oyunu duraklatmak yerine
+    // `scene.resume` çağırıyor ve perde açılıyordu — durum tam ters.
+    //
+    // `#speed`: 2×'te kaybedip yeniden başlayınca etiket 2× gösteriyordu
+    // ama `GameClock` yeni sahnede 1×'ten başlıyor. Gösterge yalan
+    // söylüyordu.
+    //
+    // İkisi de M0/M4/M5/M6'da dört kez çıkan tuzağın aynısı: alan
+    // başlatıcısı bir kez, `create()` her seferinde.
+    this.#paused = false;
+    this.#speed = 1;
     ensureNumberFont(this);
     this.#createSpeedButton();
     this.#createLabels();

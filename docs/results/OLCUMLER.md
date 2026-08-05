@@ -529,7 +529,49 @@ Haydutlar kışlası olsa bile karşılanıyor. Takviye'nin 2 geçici askeri bun
 | Test | **569** / 29 dosya (M5: 531 / 27) |
 | İlk indirme | **0,39 MB** (hedef ≤ 5 MB) |
 | `.ogg` dosyası | **0** |
-| Bekçi | **9/9** ✓ (k.8 izin listesine çevrildi) |
+| Bekçi | **10/10** ✓ (k.8 izin listesine çevrildi, mim. k.10 eklendi) |
 
 **Not:** sanat ve ses varlıkları henüz yok; nihai paket boyutu `P01`-`P04`
 ve `T11` girdileriyle yeniden ölçülecek.
+
+### Sahne yeniden başlatma sızıntısı (M6, kapanış turu)
+
+Aynı hata sınıfının **dördüncü** görünümü: `#gecici` (Takviye askerleri).
+
+| Ölçüm | Düzeltmeden önce | Sonra |
+|---|---|---|
+| Yeniden başlatma sonrası `soldiers()` | **2** | **0** |
+| Aynı anda `soldierActive()` (yeni havuz) | **0** | **0** |
+| Üç kez üst üste yeniden başlatma | birikiyor | **0** |
+
+İkisinin uyuşmaması hatanın imzası: gösterilen askerler **yok edilmiş
+sahnenin** nesneleri, yeni havuz onları tanımıyor ve `release` yok sayıyor.
+
+**Bekçi kural 10 eklendi**, beş tarihsel hataya karşı negatif doğrulandı
+(`#gecici`, `#towerBySpot`, `#barracksBySpot`, `#paused`, `#speed`).
+Kuralın kendisi **üç kez yanlış yazıldı** ve üçünde de yeşil dönüyordu;
+kasıtlı bozma sınaması olmasa fark edilmezdi.
+
+### Dalga sonu altın sayacı (§10)
+
+| Ölçüm | Değer |
+|---|---|
+| Gerçek altın (kule satışı) | anında **259** |
+| Ekranda okunanlar | 219 → 227 → 233 → 238 → 242 → … → **259** |
+| Sayma süresi | ~**20 kare** (0,33 sn) |
+| Harcama yönü | **anında** (geriye saymıyor) |
+
+Formül: `kalan fark × 0,18`, en az `1`, kare başına.
+
+### Kare maliyeti — tüm juice açık (dalga 10)
+
+| Ölçüm | Değer |
+|---|---|
+| Ortalama | **1,91 ms** |
+| p95 | **2,7 ms** |
+| Maksimum | **7,6 ms** |
+| Örnek | 2802 kare |
+| Sonuç | 10 dalga, **20/20 can ★★★** |
+
+60 FPS bütçesi 16,7 ms. Juice katmanı (sarsıntı, hit-stop, parçacık, vinyet,
+squash, toz, sayaç) ölçülebilir bir maliyet getirmedi.
