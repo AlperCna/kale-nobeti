@@ -7,6 +7,7 @@
  */
 
 import type { EnemyDef } from '../types/enemy';
+import { bossFor } from './bossScaling';
 
 export const GOBLIN: EnemyDef = {
   id: 'goblin',
@@ -198,4 +199,19 @@ export const ENEMIES: readonly EnemyDef[] = [
 
 export function getEnemy(id: EnemyDef['id']): EnemyDef | undefined {
   return ENEMIES.find((e) => e.id === id);
+}
+
+/**
+ * **Haritaya duyarlı** düşman çözücü — boss haritadan haritaya değişiyor.
+ *
+ * Boss'un zırhı ve canı `bossScaling.ts` tarafından türetiliyor; diğer
+ * düşmanlar §5 tablosunda yazdığı gibi kalıyor. Doğum yolu bu fonksiyondan
+ * geçtiği sürece hem oyun hem `simulateWave` **aynı** boss'u görüyor.
+ */
+export function getEnemyForMap(
+  id: EnemyDef['id'],
+  map: { id: string; hpMultiplier: number },
+): EnemyDef | undefined {
+  if (id === 'ogreSef') return bossFor(map);
+  return getEnemy(id);
 }

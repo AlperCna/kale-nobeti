@@ -13,7 +13,7 @@ import type { BoardTower, ReferenceBoard } from '../types/board';
 import type { Wave } from '../types/wave';
 import type { SpotCoverage } from '../util/coverage';
 import { BALANCE } from '../data/balance';
-import { getEnemy } from '../data/enemies';
+import { getEnemy, getEnemyForMap } from '../data/enemies';
 import { BUYU, OKCU, TOP, getTower, tierAt } from '../data/towers';
 import { applyDamage } from './combat';
 import { measureCoverage } from '../util/coverage';
@@ -102,7 +102,7 @@ export function cumulativeGold(
   for (const w of waves) {
     if (w.index > throughWave) break;
     for (const g of w.groups) {
-      const e = getEnemy(g.enemy);
+      const e = getEnemyForMap(g.enemy, map);
       if (e === undefined) continue;
       toplam += Math.round(e.gold * map.goldMultiplier) * g.count;
     }

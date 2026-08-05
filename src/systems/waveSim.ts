@@ -29,6 +29,7 @@ import type { Poolable } from '../util/pool';
 import { Pool } from '../util/pool';
 import { GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI, POOL_PREALLOC } from '../data/balance';
 import { getTower } from '../data/towers';
+import { getEnemyForMap } from '../data/enemies';
 import { KISLA, barracksTierAt, SOLDIER_SPEED } from '../data/barracks';
 import { defaultRally, spawnSoldier, stepSoldiers } from './BarracksSystem';
 import type { SoldierState } from '../types/barracks';
@@ -214,6 +215,7 @@ export function simulateWave(
     eco,
     [wave],
     map.hpMultiplier,
+    (id) => getEnemyForMap(id, map),
     (e) => {
       leakedHp += Math.max(0, e.hp);
       leakedCount++;
