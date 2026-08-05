@@ -7,9 +7,9 @@ Bunları tek tek çözmeye çalışmak iki gün kod yazmamak demek.
 
 | Durum | Sayı |
 |---|---|
-| ☑ Kapandı | 27 (S01, S02, S06, S08, S10-S18, S21, S25-S33, S50, S56, S59, S63) |
-| ☐ Varsayılanla geçilebilir | 37 |
-| ⚠️ Yeni denge bulgusu | 2 (S34, S35) |
+| ☑ Kapandı | 31 (S01, S02, S06, S08, S10-S18, S21, S25-S33, S39-S42, S50, S56, S59, S63) |
+| ☐ Varsayılanla geçilebilir | 33 |
+| ⚠️ Yeni denge bulgusu | 3 (M3: 8 nokta · yükseltme kapsamı · M4: S43 boss payı) |
 | **⛔ Bloke edici** | **0** |
 
 **Kod yazmaya başlamak için beklenen hiçbir şey yok.**
@@ -131,17 +131,21 @@ hâlâ açık ve ikisi de M3'ün girdisi.**
 
 ## M4 — Tam set, yükseltme, bilgi paneli
 
-| # | Soru | Neden önemli | Bloke | Varsayılan |
-|---|---|---|---|---|
-| S34 | Kundakçı yanması yığılır mı? (4/sn, 4 sn) | İki Kundakçı aynı düşmanı yakarsa hasar iki katı mı | `M4-T04` | Yığılmaz, süre yenilenir |
-| S35 | Yavaşlatmalar yığılır mı? (Buz %50 + Barut Fıçısı %40) | Yığılırsa düşman neredeyse duruyor | `M4-T04` | Yığılmaz, güçlü olan uygulanır |
-| S36 | Yıldırım aynı hedefe iki kez sıçrayabilir mi? | Tek düşmana karşı 3 kat hasar demek | `M4-T04` | Hayır, her hedef bir kez |
-| S37 | **Şaman iyileştirme yarıçapı?** | §5 "8 HP/sn" veriyor, menzil yok. Yarıçap büyükse Şaman dalgayı ayakta tutuyor | `M4-T07` | Geçici değer, işaretli |
-| S38 | **Örümcek yavrusunun zırh/direnç/altın/puanı?** | §5 yalnız HP 30 ve hız 90 veriyor. Altın 0 ise bölünme ekonomik ceza oluyor | `M4-T08` | Hepsi `0` |
-| S39 | Trol yenilenmesi (6 HP/sn) harita çarpanıyla ölçekleniyor mu? | Ölçeklenmezse harita 3'te (HP ×2.6) oransal olarak zayıflıyor. Aynı soru yavaşlatma/yanma süreleri için de geçerli | `M4-T07`, `M7-T04` | Ölçeklenmiyor |
-| S40 | Yükseltme sırasında kule ateş etmeye devam ediyor mu? | Etmiyorsa yoğun dalgada yükseltme risk oluyor | `M4-T03` | Devam ediyor |
-| S41 | T3 dalı seçildikten sonra geri alınabilir mi? | Alınabiliyorsa yanlış seçim cezası kalkıyor | `M4-T01`, `M4-T03` | Hayır, yalnız satılabilir |
-| S42 | Bilgi panelindeki düşman şeridi hangi düşmanları listeleyecek? | O haritanın kadrosu mu, dokuzu birden mi | `M4-T10` | O haritanın `enemyRoster`'ı |
+**Dokuzu da kapandı veya varsayılanla uygulandı. M4 bir YENİ denge bulgusu
+üretti: S43 — boss payı.**
+
+| # | Durum | Ayrıntı |
+|---|---|---|
+| **S34** | ☐ varsayılan uygulandı | **Yanma yığılmıyor, yenileniyor.** İkinci Kundakçı vurunca süre sıfırlanıyor, DPS toplanmıyor. Yığılsaydı iki Kundakçı 8 DPS eder ve tek dalın gücü kule sayısıyla üstel büyürdü |
+| **S35** | ☐ varsayılan uygulandı | **Yavaşlatmada en güçlüsü kazanıyor.** Buz (%50) varken Barut Fıçısı (%40) vurursa %50'de kalıyor. Çarpımsal yığılma (%50 × %40 = %70) iki kuleyle düşmanı neredeyse durdururdu. Canlı ölçüm: hız çarpanı tam **0,50** |
+| **S36** | ☐ varsayılan uygulandı | **Zincir aynı hedefe iki kez sıçramıyor.** Sıçrayabilseydi tek düşmanlı dalgada Yıldırım hasarını üçe katlar ve "kalabalık cevabı" olmaktan çıkardı. Sıçrama yarıçapı **85 px** (kule menzilinin ~yarısı) — dokümanda yok, kodda işaretli |
+| **S37** | ☐ varsayılan uygulandı | Şaman iyileştirme yarıçapı **90 px**, `enemies.ts` içinde işaretli. §5 yalnız "8 HP/sn" veriyor. Şaman **kendini iyileştirmiyor** — §5 "yakındaki **düşmanlara**" diyor |
+| **S38** | ☐ varsayılan uygulandı | Örümcek yavrusu: §5'te yalnız HP 30 ve hız 90 var. Zırh/direnç/altın/puan **sıfır**. Altın 0 bilinçli: yavrudan altın gelseydi §5'in "altın = 3 × puan" oranı bozulurdu. Puan 0 → dalga bütçesine girmiyor (anne zaten 6 puan) |
+| **S39** | ✅ kapandı | Trol yenilenmesi harita çarpanıyla **ölçeklenmiyor**. §5 mutlak hız veriyor. Sonuç: harita 3'te (HP ×2,6) yenilenme oransal zayıflıyor — bilinçli, aksi hâlde HP çarpanının zorluk etkisi nötrlenirdi. Ayrı test var |
+| **S40** | ✅ kapandı | **Yükseltme sırasında kule ateş etmeye devam ediyor.** Bekleme sıfırlanmıyor; yalnız hedef düşürülüyor (yeni kademenin menzili farklı olabilir). Kesinti "yükseltme anında sızma" cezası getirirdi ve §6 zaten yükseltmeyi altın başına verimsiz kılıyor |
+| **S41** | ✅ kapandı | **T3 dalı geri alınamıyor.** Değiştirmek için satmak gerekiyor; %30 kayıp bilinçli bedel. Geri alınabilseydi dal seçimi karar olmaktan çıkardı |
+| **S42** | ✅ kapandı | Bilgi panelindeki düşman şeridi **o haritanın kadrosunu** listeliyor (`MapDef.enemyRoster`). Hepsini listelemek oyuncuya henüz görmediği düşmanları gösterirdi |
+| **S43** | ⚠️ **yeni** | **Boss tam sınırda.** Muhafazakâr tahtayla tavan 761, boss **%92,0** → %15 payı **tutmuyor**; gerçekçi tahtayla (erken başlatma kullanılmış) 818, **%85,6** → tutuyor. Tasarım bandı %75-85'in 0,6 puan üstünde. Sebep: Büyü T1 100 altın (Okçu 70), noktaları doldurmak pahalılaştı. Boss **öldürülebilir** — canlı ölçümde 700 → 18 HP |
 
 ## M5 — Kışla, askerler, yetenekler
 

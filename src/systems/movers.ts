@@ -26,7 +26,7 @@ export class PathMover implements Mover {
     if (!e.alive) return;
     // Engellenmiş düşman ilerlemez — DEPENDENCIES §7, kullanımı M5'te.
     if (e.blockedBy !== null) return;
-    e.progress = this.path.advance(e.progress, e.speed * scaledDelta * MS_TO_S);
+    e.progress = this.path.advance(e.progress, e.speed * e.speedFactor * scaledDelta * MS_TO_S);
   }
 
   remainingDistance(e: EnemyState): number {
@@ -70,7 +70,7 @@ export class LineMover implements Mover {
   step(e: EnemyState, scaledDelta: number): void {
     if (!e.alive) return;
     // `blockedBy` KONTROL EDİLMİYOR: uçan engellenemez (§5).
-    e.progress = this.path.advance(e.progress, e.speed * scaledDelta * MS_TO_S);
+    e.progress = this.path.advance(e.progress, e.speed * e.speedFactor * scaledDelta * MS_TO_S);
   }
 
   remainingDistance(e: EnemyState): number {
@@ -104,6 +104,7 @@ export function resetEnemyState(e: EnemyState): void {
   e.hp = 0;
   e.maxHp = 0;
   e.speed = 0;
+  e.speedFactor = 1;
   e.blockedBy = null;
   e.alive = false;
   e.progress = { segmentIndex: 0, tInSegment: 0, remainingDistance: 0 };

@@ -238,6 +238,27 @@ describe('spotsCoveringFlyerPaths', () => {
     expect(spotsCoveringFlyerPaths([ucus], spots, 150)).toBe(2);
   });
 
+  it('HARİTA KABUL KRİTERİ: uçan hattı ≥ %40 yapı noktasını kesiyor', () => {
+    // `M4-T06` "bitmedi sayılır eğer": test kırmızıysa **harita düzeltilir**,
+    // test gevşetilmez. Kriter sağlanmazsa harpi mekaniği yazı-turadır —
+    // oyuncunun hiçbir kararı sonucu değiştiremez (`research/01` §7).
+    //
+    // Menzil olarak T1 (150) alınıyor: en dar menzil kriteri geçiyorsa
+    // daha geniş olanlar da geçiyor.
+    const goren = spotsCoveringFlyerPaths(MAP_1.flyerPaths, MAP_1.buildSpots, 150);
+    const oran = goren / MAP_1.buildSpots.length;
+
+    expect(goren, `${goren}/${MAP_1.buildSpots.length} nokta`).toBeGreaterThanOrEqual(3);
+    expect(oran).toBeGreaterThanOrEqual(0.4);
+  });
+
+  it('Okçu menzili genişledikçe daha çok nokta uçanı görüyor', () => {
+    // T2 (165) ve Keskin Nişancı (260) — menzil arttıkça kriter güçleniyor.
+    const t1 = spotsCoveringFlyerPaths(MAP_1.flyerPaths, MAP_1.buildSpots, 150);
+    const t3 = spotsCoveringFlyerPaths(MAP_1.flyerPaths, MAP_1.buildSpots, 260);
+    expect(t3).toBeGreaterThanOrEqual(t1);
+  });
+
   it('hiçbiri görmüyorsa 0 — harpi garantili sızar', () => {
     const ucus: readonly Vec2[] = [
       { x: 0, y: 900 },

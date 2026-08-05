@@ -6,6 +6,7 @@ import type { ProjectileState } from '../types/projectile';
 import type { Targetable } from '../types/enemy';
 import { GOBLIN } from '../data/enemies';
 import { GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI } from '../data/balance';
+import type { TowerEffect } from '../types/tower';
 
 type MutTargetable = { -readonly [K in keyof Targetable]: Targetable[K] };
 
@@ -18,6 +19,7 @@ class SahteMermi implements ProjectileState<MutTargetable>, Poolable {
   speed = 0;
   splashRadius = 0;
   hitRadius = 0;
+  effect: TowerEffect | undefined = undefined;
   alive = false;
   lastKnownX = 0;
   lastKnownY = 0;
@@ -29,6 +31,7 @@ class SahteMermi implements ProjectileState<MutTargetable>, Poolable {
     this.speed = 0;
     this.splashRadius = 0;
     this.hitRadius = 0;
+    this.effect = undefined;
     this.alive = false;
     this.x = 0;
     this.y = 0;
@@ -68,6 +71,7 @@ function at(sys: ProjectileSystem<MutTargetable, SahteMermi>, o: Partial<Project
     speed: GECICI_MERMI_HIZI,
     splashRadius: 0,
     hitRadius: MERMI_ISABET_YARICAPI,
+    effect: undefined,
     ...o,
   });
 }

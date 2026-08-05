@@ -6,6 +6,7 @@
  */
 
 import type { DamageType, Targetable } from './enemy';
+import type { TowerEffect } from './tower';
 
 export interface ProjectileState<E extends Targetable = Targetable> {
   x: number;
@@ -24,6 +25,8 @@ export interface ProjectileState<E extends Targetable = Targetable> {
   splashRadius: number;
   /** Birim: px. */
   hitRadius: number;
+  /** Kule kademesinin etkisi (yanma/yavaşlatma/zincirleme). */
+  effect: TowerEffect | undefined;
   alive: boolean;
   /** Hedef ölürse mermi buraya gidip sönümlenir (S21). */
   lastKnownX: number;

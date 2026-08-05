@@ -152,9 +152,23 @@ export const ORUMCEK_YAVRUSU: EnemyDef = {
  * Boss. Kışla askerlerini tek vuruşta öldürür (M5'te bağlanacak).
  * Sızma cezası **10 can** — 20 canlık havuzun yarısı (§5).
  *
- * HP **700 ⚠️ değil, doğrulandı**: M1'de ölçülen kapsamayla Kısıt A
- * tavanının %78,7'si, hedef band %75-85'in içinde
- * (`docs/results/M1-SONUC.md`).
+ * HP **700 — ölçüldü, ama M4'te sınıra dayandı (S43).**
+ *
+ * M1'de, iki aileli (Top/Okçu) referans tahtayla Kısıt A tavanının
+ * **%78,7'siydi** ve hedef band %75-85'in ortasındaydı
+ * (`docs/results/M1-SONUC.md`). M4'te üçüncü aile gelince tahta türetici
+ * 3'lü döngüye geçti; Büyü T1'in 100 altını (Okçu 70) noktaları
+ * doldurmayı pahalılaştırdı ve oran yükseldi:
+ *
+ *   muhafazakâr tahta → tavan 761, **%92,0** (%15 payı tutmuyor)
+ *   gerçekçi tahta    → tavan 818, **%85,6** (bandın 0,6 puan üstü)
+ *
+ * **Sayı bilerek değiştirilmedi.** Boss canlı oyunda 700 → 18 HP'ye
+ * düşüp öldü, yani sınırda ama geçilebilir. Kapsama · tahta · boss HP
+ * birbirine bağlı üç büyüklük; yalnız birini oynatmak
+ * `docs/research/01-denge-matematigi.md` §12'nin "türetme yönü"
+ * uyarısını çiğner. M7'de Harita 2-3 ile birlikte tek seferde bakılacak
+ * (`docs/results/M4-SONUC.md` §4).
  */
 export const OGRE_SEF: EnemyDef = {
   id: 'ogreSef',

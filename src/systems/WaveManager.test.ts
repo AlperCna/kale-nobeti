@@ -24,6 +24,7 @@ class SahteDusman implements SpawnableEnemy, Poolable {
   hp = 0;
   maxHp = 0;
   speed = 0;
+  speedFactor = 1;
   progress = { segmentIndex: 0, tInSegment: 0, remainingDistance: 0 };
   blockedBy: object | null = null;
   alive = false;
@@ -64,7 +65,7 @@ function kur(
   const bus = new EventBus();
   const eco = new EconomySystem(MAP_1, bus);
   const mover = new PathMover(new PathSystem(yol));
-  const wm = new WaveManager(pool, mover, bus, eco, waves, MAP_1.hpMultiplier);
+  const wm = new WaveManager(pool, () => mover, bus, eco, waves, MAP_1.hpMultiplier);
   return { pool, bus, eco, mover, wm };
 }
 
