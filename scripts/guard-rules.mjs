@@ -237,11 +237,19 @@ const sonuclar = [];
 // `delta`dan daha sinsi — 2× hızda hiç hızlanmaz, duraklatmada durmaz ve
 // başsız simülasyonda (`simulateWave`) gerçek zamanı bekler.
 // Kapsam kural 11'inkiyle aynı: saf mantık katmanı.
+//
+// **Test dosyaları hariç** — k.9'daki `Math.sqrt` istisnasıyla aynı gerekçe:
+// bir performans testinin `performance.now()` ile *kendi koşu süresini*
+// ölçmesi kuralın konusu değil. Kural oyun mantığının duvar saatine
+// bağlanmasını yasaklıyor; test dosyası yayına girmiyor ve içinde oyun
+// mantığı yaşamıyor. Ham `delta` kontrolü (yukarıdaki 1. kontrol) bu
+// istisnayı **almıyor**: orada isim bile karışıklık üretiyor.
 // ---------------------------------------------------------------------
 {
   const kapsam = ['systems', 'util', 'data', 'types'].map((d) => join(SRC, d) + sep);
   let ihlalVar = false;
   for (const dosya of dosyalar) {
+    if (dosya.endsWith('.test.ts')) continue;
     if (!kapsam.some((k) => dosya.startsWith(k))) continue;
     for (const s of kodSatirlari(readFileSync(dosya, 'utf8'))) {
       if (/\b(Date\.now|performance\.now)\s*\(/.test(s.metin)) {

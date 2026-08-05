@@ -10,14 +10,18 @@
  */
 
 import type { DamageType, EnemyDef } from '../types/enemy';
+import { BALANCE } from '../data/balance';
 
 /**
  * Hiçbir vuruş tamamen emilmez — ham hasarın en az bu oranı geçer.
  *
  * `GAME-DESIGN.md` §3: "oyuncu tamamen yanlış kule kurduğunda oyun
  * kilitlenmez, sadece verimsizleşir. Ceza var ama duvar yok."
+ *
+ * Sayının kendisi `data/balance.ts`'te (TIER 1 kural 1) — burası yalnız
+ * okunur bir takma ad; M2'de sayı bu dosyada yazılıydı ve kuralı deliyordu.
  */
-export const DAMAGE_FLOOR_RATIO = 0.15;
+export const DAMAGE_FLOOR_RATIO = BALANCE.damageFloor;
 
 export interface DamageResult {
   /** Düşmanın canından düşecek miktar. Yuvarlanmaz — gösterim katmanı yuvarlar. */

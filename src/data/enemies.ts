@@ -36,7 +36,20 @@ export const ORK_SAVASCI: EnemyDef = {
   flying: false,
 };
 
-export const ENEMIES: readonly EnemyDef[] = [GOBLIN, ORK_SAVASCI];
+/** Hız kavramını tanıtır: 110 px/sn, kadronun en hızlısı (§5). */
+export const KURT_BINICISI: EnemyDef = {
+  id: 'kurtBinicisi',
+  hp: 60,
+  speed: 110,
+  armor: 1,
+  magicResist: 0,
+  gold: 9,
+  points: 3,
+  leakDamage: 1,
+  flying: false,
+};
+
+export const ENEMIES: readonly EnemyDef[] = [GOBLIN, ORK_SAVASCI, KURT_BINICISI];
 
 export function getEnemy(id: EnemyDef['id']): EnemyDef | undefined {
   return ENEMIES.find((e) => e.id === id);

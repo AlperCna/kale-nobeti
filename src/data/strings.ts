@@ -21,6 +21,14 @@ const TR = {
   paused: 'Duraklatıldı',
   resume: 'Devam',
   speed: 'Hız',
+  gold: 'altın',
+  lives: 'can',
+  wave: 'dalga',
+  startWave: 'Dalgayı başlat',
+  victory: 'Kale ayakta',
+  defeat: 'Kale düştü',
+  livesLeft: 'kalan can',
+  backToMenu: 'Ana menü',
 } as const;
 
 export type StringKey = keyof typeof TR;
@@ -38,5 +46,13 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     paused: '',
     resume: '',
     speed: '',
+    gold: '',
+    lives: '',
+    wave: '',
+    startWave: '',
+    victory: '',
+    defeat: '',
+    livesLeft: '',
+    backToMenu: '',
   },
 };

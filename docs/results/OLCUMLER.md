@@ -194,3 +194,58 @@ senaryoda ıskalardı — 66 ms karede mermi 40 px atlıyor, isabet yarıçapı
 çözülseydi yarıçap 12 px geriye kayar ve tam sınırdaki düşman sistematik
 olarak ıskalanırdı (45 px yarıçapta 45 px uzaktaki düşman vurulmuyordu —
 sınır testi yakaladı).
+
+---
+
+## 9. Ekonomi ve dalga (M3)
+
+| # | Büyüklük | Değer | Neye asılı |
+|---|---|---|---|
+| E1 | Harita 1 toplam geliri (10 dalga, erken bonus yok) | **1614** | §6 "~1850" diyor — %13 düşük, sebep eksik kadro (S34) |
+| E2 | 8 yapı noktasının dolduğu dalga (karışık tahta) | **6** | §6 "4-5" diyor (S34) |
+| E3 | 8 yapı noktasının dolduğu dalga (en ucuz tahta) | **5** | aynı |
+| E4 | `SPAWN_K` (doğum penceresi) | **24 sn** | ölçülerek seçildi, S28 |
+| E5 | Referans tahta ile sızan düşman | **1** / 10 dalga | kalan can 19/20 = ★★ |
+| E6 | Yalnız T1 ile sızan düşman | **30** | oyun kaybediliyor → yükseltme M3'e alındı (S35) |
+
+### `SPAWN_K` taraması
+
+| `SPAWN_K` | doğum penceresi | sızan dalga | toplam sızan HP |
+|---|---|---|---|
+| 8 | 7,2 sn | 6 | 364 |
+| 12 | 10,8 sn | 5 | 315 |
+| 15 | 13,5 sn | 5 | 158 |
+| 18 | 16,2 sn | 3 | 118 |
+| 20 | 18,0 sn | 4 | 74 |
+| **24** | **21,6 sn** | **1** | **14** |
+
+**Bulgu:** `SPAWN_K` bir "aralık katsayısı" değil, **dalganın doğum
+penceresi** — `(n−1)×K/n ≈ K`, dalga boyundan bağımsız.
+
+### Kısıt A (dalga 10 tahtası, ölçülen kapsamayla)
+
+| Düşman | Tavan | Etkin HP | Oran |
+|---|---|---|---|
+| Goblin | 551 | 45 | %8,2 |
+| Ork Savaşçı | 636 | 110 | %17,3 |
+| Kurt Binicisi | 280 | 60 | %21,4 |
+
+Yerleşimden bağımsızlık ayrı testle kanıtlandı (ters sırada aynı sonuç,
+9 ondalık).
+
+### Canlı oyun (Phaser döngüsü elle sürülerek)
+
+| # | İddia | Ölçüm |
+|---|---|---|
+| C1 | 10 dalga bitiriliyor | **evet**, 19/20 can, ★★ |
+| C2 | Simülasyon ↔ canlı oyun uyumu | ikisi de **1 sızıntı, 19 can** |
+| C3 | Dalga 10 kare maliyeti | ort **1,93 ms** · p95 **2,80** · maks **3,50** |
+| C4 | Dalga 10 tepe düşman | **10** |
+| C5 | Mermi havuzu tepe | **5** / 200 |
+| C6 | Havuz tükenmesi | **0** |
+| C7 | Telegraf dalga başlayınca | **gizleniyor** |
+| C8 | Menüden yeni oyun | 280 altın, 20 can, 0 kule — temiz |
+
+**C2 en değerli ölçüm:** başsız simülasyon ile gerçek Phaser döngüsü
+bağımsız yollardan aynı sayıya çıktı. Kısıt B'nin oyunu temsil ettiğinin
+kanıtı bu.

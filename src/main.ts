@@ -4,6 +4,7 @@ import { PreloadScene } from './scenes/PreloadScene';
 import { MenuScene } from './scenes/MenuScene';
 import { GameScene } from './scenes/GameScene';
 import { HudScene } from './scenes/HudScene';
+import { GameOverScene } from './scenes/GameOverScene';
 
 /**
  * Sahne kaydı yalnız burada yapılır (CLAUDE.md Klasör yapısı).
@@ -35,7 +36,7 @@ const config: Phaser.Types.Core.GameConfig = {
   // görünür — kapatılıyor.
   banner: false,
 
-  scene: [BootScene, PreloadScene, MenuScene, GameScene, HudScene],
+  scene: [BootScene, PreloadScene, MenuScene, GameScene, HudScene, GameOverScene],
 };
 
 const game = new Phaser.Game(config);

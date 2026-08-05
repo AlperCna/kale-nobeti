@@ -6,7 +6,7 @@
 | **Görev** | 11 (`M3-T01` … `M3-T11`) |
 | **Kod yazma süresi** | ~7 sa 30 dk — **takvim değil** |
 | **Takvim bütçesi** | 3 gün (`ROADMAP.md`) |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ tamamlandı |
 
 ## 0. Oturum başlangıcı
 
@@ -59,7 +59,7 @@ Altın, can ve geri sayım **her karede değişen metinler** — üçü de
 
 | | |
 |---|---|
-| **Kimlik** | `M3-T01` · **Durum** ☐ · **Süre** ~40 dk |
+| **Kimlik** | `M3-T01` · **Durum** ☑ · **Süre** ~40 dk |
 | **Önkoşul** | `M2-T01` |
 | **TIER 1** | **kural 1**, kural 5 |
 | **Açık soru** | S28 |
@@ -111,7 +111,7 @@ geçiyorsa (TIER 1 k.1).
 
 | | |
 |---|---|
-| **Kimlik** | `M3-T02` · **Durum** ☐ · **Süre** ~45 dk |
+| **Kimlik** | `M3-T02` · **Durum** ☑ · **Süre** ~45 dk |
 | **Önkoşul** | `M3-T01` |
 | **TIER 1** | **kural 1** |
 | **Açık soru** | S30, S33 |
@@ -159,7 +159,7 @@ içeriyorsa.
 
 | | |
 |---|---|
-| **Kimlik** | `M3-T03` · **Durum** ☐ · **Süre** ~40 dk |
+| **Kimlik** | `M3-T03` · **Durum** ☑ · **Süre** ~40 dk |
 | **Önkoşul** | `M3-T01`, `M2-T05` |
 | **TIER 1** | kural 1, **kural 7** |
 | **Açık soru** | — |
@@ -209,7 +209,7 @@ uygulanıyor; can 0'ın altına inmiyor.
 
 | | |
 |---|---|
-| **Kimlik** | `M3-T04` · **Durum** ☐ · **Süre** ~40 dk |
+| **Kimlik** | `M3-T04` · **Durum** ☑ · **Süre** ~40 dk |
 | **Önkoşul** | `M3-T03` |
 | **TIER 1** | **kural 7**, **kural 8** |
 | **Açık soru** | S29 |
@@ -247,7 +247,7 @@ Beklenen: `≥ 5 passed` — `earlyStartBonus(20, 1) === 0` (kapalı);
 
 | | |
 |---|---|
-| **Kimlik** | `M3-T05` · **Durum** ☐ · **Süre** ~45 dk |
+| **Kimlik** | `M3-T05` · **Durum** ☑ · **Süre** ~45 dk |
 | **Önkoşul** | `M3-T02`, `M3-T04` |
 | **TIER 1** | kural 3, **kural 8** |
 | **Açık soru** | S28 |
@@ -282,7 +282,7 @@ atlanıyorsa.
 
 | | |
 |---|---|
-| **Kimlik** | `M3-T06` · **Durum** ☐ · **Süre** ~40 dk |
+| **Kimlik** | `M3-T06` · **Durum** ☑ · **Süre** ~40 dk |
 | **Önkoşul** | `M3-T05` |
 | **TIER 1** | kural 7 |
 | **Açık soru** | — |
@@ -315,7 +315,7 @@ bir kare + adet; dalga başlayınca telegraf sönümleniyor; dalga 4'te
 
 | | |
 |---|---|
-| **Kimlik** | `M3-T07` · **Durum** ☐ · **Süre** ~40 dk |
+| **Kimlik** | `M3-T07` · **Durum** ☑ · **Süre** ~40 dk |
 | **Önkoşul** | `M3-T03` |
 | **TIER 1** | **kural 1** |
 | **Açık soru** | — (S25 kapandı: bu görev cevabı **türetiyor**) |
@@ -371,7 +371,7 @@ değiştiğinde tahta eskiyor ve üç denge testi sessizce yanlış temele oturu
 
 | | |
 |---|---|
-| **Kimlik** | `M3-T08` · **Durum** ☐ · **Süre** ~45 dk |
+| **Kimlik** | `M3-T08` · **Durum** ☑ · **Süre** ~45 dk |
 | **Önkoşul** | `M1-T02`, `M2-T02`, `M3-T07` |
 | **TIER 1** | kural 5 |
 | **Açık soru** | — (S25 `M3-T07`'de türetiliyor) |
@@ -422,7 +422,7 @@ boss/Trol dışındaki düşmanlar için tavan HP'nin 3-8 katı çıkmıyorsa
 
 | | |
 |---|---|
-| **Kimlik** | `M3-T09` · **Durum** ☐ · **Süre** ~45 dk |
+| **Kimlik** | `M3-T09` · **Durum** ☑ · **Süre** ~45 dk |
 | **Önkoşul** | `M3-T05`, `M3-T07` |
 | **TIER 1** | kural 5, **kural 8** |
 | **Açık soru** | — (S26 ve S27 **kapandı** — aşağıdaki gerekçe) |
@@ -491,7 +491,7 @@ fonksiyonla doğrulanıyor, ayrık yol dahil.
 
 | | |
 |---|---|
-| **Kimlik** | `M3-T10` · **Durum** ☐ · **Süre** ~35 dk |
+| **Kimlik** | `M3-T10` · **Durum** ☑ · **Süre** ~35 dk |
 | **Önkoşul** | `M3-T07`, `M3-T03` |
 | **TIER 1** | kural 5 |
 | **Açık soru** | — (S25 `M3-T07`'de türetiliyor) |
@@ -529,7 +529,7 @@ test başarısızlığı değil, **denge bulgusu**; `OPEN-QUESTIONS.md`'ye yazı
 
 | | |
 |---|---|
-| **Kimlik** | `M3-T11` · **Durum** ☐ · **Süre** ~35 dk |
+| **Kimlik** | `M3-T11` · **Durum** ☑ · **Süre** ~35 dk |
 | **Önkoşul** | `M3-T05`, `M3-T03` |
 | **TIER 1** | kural 7 |
 | **Açık soru** | S31, S32 |

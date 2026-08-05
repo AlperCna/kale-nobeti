@@ -67,7 +67,11 @@ export class DamageText extends Phaser.GameObjects.BitmapText implements Poolabl
     this.setAlpha(1);
     this.setScale(1);
     this.clearTint();
-    this.setText('');
+
+    // Sahne yıkılırken font verisi düşmüş olabiliyor; o durumda `setText`
+    // Phaser'ın içinde `null.chars` okuyup çöküyor (ölçüldü). Metin zaten
+    // görünmez bir nesnede duruyor ve nesne birazdan yok edilecek.
+    if (this.fontData !== null && this.fontData !== undefined) this.setText('');
   }
 }
 
