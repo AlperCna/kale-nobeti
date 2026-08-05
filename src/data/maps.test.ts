@@ -151,12 +151,15 @@ describe('Harita 2 ve 3 — GAME-DESIGN.md §9 tablosu', () => {
     expect(MAP_3.buildSpots).toHaveLength(12);
     expect(MAP_3.paths).toHaveLength(2); // iki giriş
     expect(MAP_3.hpMultiplier).toBe(2.6);
-    expect(MAP_3.goldMultiplier).toBe(2.6);
-    expect(MAP_3.startGold).toBe(728);
+    expect(MAP_3.goldMultiplier).toBe(3.8); // S73 — HP çarpanından ayrıştı
+    expect(MAP_3.startGold).toBe(1064); // 280 × 3,8
   });
 
-  it('altın çarpanı HP çarpanına EŞİT — §9', () => {
-    for (const m of MAPS) expect(m.goldMultiplier).toBe(m.hpMultiplier);
+  it('S73 — altın çarpanı HP çarpanından AZ OLAMAZ', () => {
+    // §9 "eşit" diyordu; gerekçesi "altın/HP oranı düşmesin". Ölçüm harita
+    // 3'te eşitliğin bu gerekçeyi karşılamadığını gösterdi (12 nokta tam
+    // yükseltilemiyordu). Kural gevşetildi: **en az** eşit.
+    for (const m of MAPS) expect(m.goldMultiplier).toBeGreaterThanOrEqual(m.hpMultiplier);
   });
 
   it('kadrolar §5 tablosuyla eşleşiyor — mekanik erken, uç örneği geç', () => {
@@ -177,7 +180,7 @@ describe('Harita 2 ve 3 — GAME-DESIGN.md §9 tablosu', () => {
 
   it('S72 — başlangıç altını çarpanı İZLİYOR', () => {
     for (const m of MAPS) {
-      expect(m.startGold, m.id).toBe(Math.round(MAP_1.startGold * m.hpMultiplier));
+      expect(m.startGold, m.id).toBe(Math.round(MAP_1.startGold * m.goldMultiplier));
     }
   });
 

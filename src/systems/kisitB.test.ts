@@ -20,6 +20,7 @@ import { MAP1_WAVES, MAP2_WAVES, MAP3_WAVES } from '../data/waves';
 import { buildReferenceBoards } from './balanceChecks';
 import { simulateAllWaves } from './waveSim';
 import { measureCoverage } from '../util/coverage';
+import { getEnemyForMap } from '../data/enemies';
 import type { EnemyId } from '../types/enemy';
 import type { MapDef } from '../types/map';
 import type { Wave } from '../types/wave';
@@ -34,6 +35,17 @@ function kosu(map: MapDef, waves: readonly Wave[]) {
     }
   }
   return { sim, toplam, adet: sim.reduce((t, r) => t + r.leakedCount, 0) };
+}
+
+/** Sızan düşmanların toplam can bedeli — asıl kabul ölçütü. */
+function canKaybi(map: MapDef, waves: readonly Wave[]): number {
+  const r = kosu(map, waves);
+  let can = 0;
+  for (const [id, n] of Object.entries(r.toplam)) {
+    const e = getEnemyForMap(id as EnemyId, map);
+    if (e) can += e.leakDamage * (n ?? 0);
+  }
+  return can;
 }
 
 describe('Kısıt B — düşman kırılımı', () => {
@@ -55,24 +67,23 @@ describe('Kısıt B — düşman kırılımı', () => {
     }
   });
 
-  it('Trol Kısıt A’da kalıyor ama Kısıt B’de BASKIN sızan değil', () => {
-    // §5 Trol'ün cevabını kışla olarak veriyor; Kısıt A kışlayı
-    // modellemiyor ve Trol'ü olduğundan zor gösteriyor. Gerçek ölçüm:
-    const r = kosu(MAP_3, MAP3_WAVES);
-    const trol = r.toplam.trol ?? 0;
-    const enCok = Math.max(...Object.values(r.toplam).map((v) => v ?? 0));
-    expect(trol).toBeGreaterThan(0); // sızıyor — ama
-    expect(trol).toBeLessThan(enCok); // baskın sızan DEĞİL
-    expect(r.toplam.orkSavasci ?? 0).toBeGreaterThan(trol);
+  it('**üç harita da GEÇİLEBİLİR** — kaybedilen can 20’nin altında', () => {
+    // Asıl kabul ölçütü bu: sızıntı sayısı değil, **can kaybı**. Farklı
+    // düşmanların sızma cezası farklı (Trol 2, boss 10).
+    for (const [m, w] of [
+      [MAP_1, MAP1_WAVES],
+      [MAP_2, MAP2_WAVES],
+      [MAP_3, MAP3_WAVES],
+    ] as const) {
+      expect(canKaybi(m, w), m.id).toBeLessThan(20);
+    }
   });
 
-  it('**baskın sızan Ork Savaşçı** — Kısıt A onu güvenli sayıyor', () => {
-    // Kısıt A'da %39,9 (eşik %87) ile rahat geçiyor ama en çok o sızıyor.
-    // Bu, iki sağlamanın farklı şeyleri ölçtüğünün kanıtı: Kısıt A tek
-    // düşmanın tankiliği, Kısıt B dalganın debisi.
+  it('Ork Savaşçı debisi çözüldü — S73', () => {
+    // S73 öncesi harita 3'te Ork Savaşçı ×11 ile baskın sızandı ve toplam
+    // can kaybı 34'tü (20 canla kayıp). Ekonomi düzeltilince düştü.
     const r = kosu(MAP_3, MAP3_WAVES);
-    const sirali = Object.entries(r.toplam).sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0));
-    expect(sirali[0]?.[0]).toBe('orkSavasci');
+    expect(r.toplam.orkSavasci ?? 0).toBeLessThanOrEqual(6);
   });
 
   it('sızıntı erken dalgalarda DEĞİL — S72 düzeltmesi tutuyor', () => {

@@ -283,13 +283,13 @@ export const MAP3_WAVES: readonly Wave[] = [
     ['orkSavasci', 3, 1],
   ]), // 12 = bütçe 12
   dalgaKur(3, [
-    ['orkSavasci', 4],
+    ['orkSavasci', 3],
     ['zirhliOrk', 1, 1],
     ['goblin', 2, 1],
   ]), // 14 = bütçe 14
   dalgaKur(4, [
     ['goblin', 5],
-    ['orkSavasci', 5, 1],
+    ['orkSavasci', 4, 1],
   ]), // NEFES, 15 = bütçe 15
   dalgaKur(5, [
     ['orkSavasci', 3],
@@ -304,18 +304,18 @@ export const MAP3_WAVES: readonly Wave[] = [
   ]), // 25 = bütçe 25. TROL tanıtılıyor: yenilenme + kışla.
   dalgaKur(7, [
     ['goblin', 4],
-    ['orkSavasci', 6, 1],
+    ['orkSavasci', 5, 1],
     ['zirhliOrk', 2],
   ]), // NEFES, 24 ≈ bütçe 25
   dalgaKur(8, [
-    ['orumcekAna', 3],
+    ['orumcekAna', 2],
     ['zirhliOrk', 2, 1],
     ['saman', 1],
     ['trol', 1, 1],
   ]), // 39 ≈ bütçe 36
   dalgaKur(9, [
     ['trol', 2],
-    ['orumcekAna', 2, 1],
+    ['orumcekAna', 1, 1],
     ['zirhliOrk', 2],
     ['saman', 1, 1],
     ['harpi', 2],

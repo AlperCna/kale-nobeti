@@ -117,6 +117,7 @@ it('dokum', () => {
           kollar: kollar.map((k) => Math.round(k)),
           oran: tavan > 0 ? +((effectiveHp(e, m) / tavan) * 100).toFixed(1) : null };
       }).filter(Boolean),
+      canKaybi: sim.reduce((t, r) => t + Object.entries(r.leakedByEnemy).reduce((a, [id, v]) => a + (getEnemyForMap(id, m)?.leakDamage ?? 0) * v, 0), 0),
       kisitB: { sizanAdet: sim.reduce((t, r) => t + r.leakedCount, 0),
         sizanHp: Math.round(sim.reduce((t, r) => t + r.leakedHp, 0)),
         dalga: sim.map((r) => r.leakedCount),
@@ -400,8 +401,17 @@ function olustur() {
     ['Odaklanma kaybı', `×${n(D.balance.focusLoss)}`, 'Kuleler aynı hedefe ateş ederken kayıp'],
     ['Güvenlik payı', `×${n(D.balance.safetyMargin)}`, 'Kısıt A eşiği: `tavan > eHP × 1,15`'],
   ]), '');
-  y(`**Altın çarpanı = HP çarpanı.** Gerekçe §9'da yazılı: eskiden yalnız HP`);
-  y(`ölçekleniyordu ve harita 3'te altın/HP oranı %38'e düşüyordu.`, '');
+  y(`**Altın çarpanı ≥ HP çarpanı** (S73). §9 "eşit" diyordu ve gerekçesi`);
+  y(`"altın/HP oranı düşmesin"di; ölçüm eşitliğin harita 3'te bu gerekçeyi`);
+  y(`**karşılamadığını** gösterdi — 12 nokta ×2,6 altınla tam yükseltilemiyor,`);
+  y(`tahta 3820'de takılıyor ve oyuncu 34 can kaybediyordu (20 canla kayıp).`, '');
+  y(tablo(['Harita', 'HP çarpanı', 'Altın çarpanı', 'Tahta maliyeti', 'Can kaybı'],
+    D.haritalar.map((m) => [HARITA_ADI[m.id] ?? m.id, `×${n(m.hpMultiplier)}`,
+      `×${n(m.goldMultiplier)}${m.goldMultiplier !== m.hpMultiplier ? ' **←ayrıştı**' : ''}`,
+      n(m.tahta10?.maliyet), `${n(m.canKaybi)} / 20${m.canKaybi < 20 ? ' ✓' : ' ✗'}`])), '');
+  y(`Türetilebilir kural: **altın, haritanın noktalarını tam yükseltmeye`);
+  y(`yetmeli.** 3,8'de maliyet doyuyor (üstü fazladan kule almıyor), yani sayı`);
+  y(`seçilmedi — tam yükseltme noktası olarak **ölçüldü**.`, '');
   y(`**Başlangıç altını da çarpanı izliyor** — S72, kapandı. §9 tablosu`);
   y(`280/340/400 diyordu ama 340 ve 400 çarpanı izlemiyordu (×1,21 ve ×1,43,`);
   y(`oysa HP ×1,6 ve ×2,6). Ölçülen sonuç: dalga 1 tahtası üç haritada da 3-4`);

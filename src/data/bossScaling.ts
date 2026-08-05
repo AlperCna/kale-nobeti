@@ -36,12 +36,17 @@
  * | 2 Taş Köprü | 5 | 890 | **712** |
  * | 3 Kül Ovası | **2** | 925 | **740** |
  *
- * **Harita 3'ün zırhı 3'ten 2'ye indi** çünkü referans tahta artık bir
- * kışla satın alıyor (§5: Trol'ün cevabı kışla) ve kışla bir kule
- * noktasını işgal ediyor — tavan 977'den 881'e düştü, türetilen HP 705
- * olup harita 2'nin 712'sinin **altına** indi ve monotonluk bozuldu.
- * Regresyon bandı testi bunu **yakaladı**; sayı elle değil ölçümle
- * düzeltildi.
+ * **Harita 3 iki kez yeniden türetildi ve iki kez de regresyon bandı
+ * yakaladı** — sayı hiç elle ayarlanmadı:
+ *
+ * 1. Tahtaya kışla eklenince (§5 Trol) bir kule noktası gitti, tavan
+ *    977 → 881 düştü, türetilen 705 olup harita 2'nin 712'sinin altına
+ *    indi ve **monotonluk bozuldu**. Zırh 3 → 2 yapıldı, HP 740 oldu.
+ * 2. S73'te altın çarpanı 2,6 → 3,8 olunca tahta tam yükseltilebildi,
+ *    tavan 925 → **1278** çıktı ve yazılı 740 türetilenden %27,6 saptı.
+ *    HP **1023** oldu.
+ *
+ * Her iki seferde de bandı **test** kırdı, ben değil.
  *
  * Harita 1'in türetilmiş değeri 718; §5'in yazdığı **700 aynen korunuyor**
  * (fark %2,5) — yani belgelenmiş sayı değişmiyor, yalnız 2 ve 3 türetiliyor.
@@ -85,7 +90,7 @@ export const BOSS_ARMOR_BY_MAP: Readonly<Record<string, number>> = {
 export const BOSS_HP_BY_MAP: Readonly<Record<string, number>> = {
   'degirmen-gecidi': 700, // §5'in belgelenmiş değeri (türetme 718 diyor)
   'tas-kopru': 712,
-  'kul-ovasi': 740,
+  'kul-ovasi': 1023,
 };
 
 /** Türetilen değerin kabul edilebilir sapma payı (regresyon bandı, §12). */

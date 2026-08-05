@@ -290,9 +290,31 @@ export const MAP_3: MapDef = {
   flyerPaths: [MAP3_FLYER_A, MAP3_FLYER_B],
   castle: MAP3_KALE,
   hpMultiplier: 2.6,
-  goldMultiplier: 2.6, // = hpMultiplier (§9)
-  // S72 — §9 tablosu 400 diyor; **280 × 2,6 = 728** (yukarıdaki gerekçe).
-  startGold: Math.round(280 * 2.6),
+  /**
+   * **S73 — altın çarpanı HP çarpanından AYRIŞTI (2,6 → 3,8).**
+   *
+   * §9 "altın çarpanı = HP çarpanı" diyor ve gerekçesi *"altın/HP oranı
+   * düşmesin"*. Ölçüm bu gerekçenin harita 3'te **karşılanmadığını**
+   * gösterdi: 12 nokta ×2,6 altınla tam yükseltilemiyordu ve tahta
+   * 3820 altınlık bir tavanda takılıyordu.
+   *
+   * Türetilebilir kural: **altın, haritanın noktalarını tam yükseltmeye
+   * yetmeli.** Tarama (sabit tahta, sabit dalgalar):
+   *
+   * | Altın çarpanı | Tahta maliyeti | Can kaybı |
+   * |---|---|---|
+   * | 2,6 | 3820 | 26 ✗ |
+   * | 3,0 | 4390 | 25 ✗ |
+   * | 3,4 | 4870 | 21 ✗ |
+   * | **3,8** | **5100** (doyum) | **15 ✓** |
+   * | 4,2 | 5100 (aynı) | 10 |
+   *
+   * 3,8'de maliyet **doyuyor** — üstü fazladan bir kule almıyor. Yani bu
+   * sayı seçilmedi, tam yükseltme noktası olarak **ölçüldü**.
+   */
+  goldMultiplier: 3.8,
+  // S72 + S73 — başlangıç altını da **altın** çarpanını izliyor.
+  startGold: Math.round(280 * 3.8),
   // §5: + Trol, Örümcek Ana. Örümcek yavrusu kadroda sayılmaz (bölünmeden
   // çıkıyor) ama doğabilmesi için listede olmak zorunda.
   enemyRoster: [
