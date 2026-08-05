@@ -9,12 +9,13 @@
 import type { EnemyDef } from '../types/enemy';
 import type { MapDef } from '../types/map';
 import type { TierIndex, TowerDef } from '../types/tower';
-import type { BoardTower, ReferenceBoard } from '../types/board';
+import type { BoardBarracks, BoardTower, ReferenceBoard } from '../types/board';
 import type { Wave } from '../types/wave';
 import type { SpotCoverage } from '../util/coverage';
 import { BALANCE } from '../data/balance';
 import { getEnemy, getEnemyForMap } from '../data/enemies';
 import { BUYU, OKCU, TOP, getTower, tierAt } from '../data/towers';
+import { KISLA, barracksTierAt } from '../data/barracks';
 import { applyDamage } from './combat';
 import { measureCoverage } from '../util/coverage';
 
@@ -186,7 +187,26 @@ export function buildReferenceBoards(
   withEarlyBonus = false,
 ): ReferenceBoard[] {
   // Kapsaması yüksek nokta önce.
-  const sirali = [...coverage].sort((a, b) => b.coveredPx - a.coveredPx).map((c) => c.spotIndex);
+  const tumSirali = [...coverage].sort((a, b) => b.coveredPx - a.coveredPx).map((c) => c.spotIndex);
+
+  /**
+   * **Kışla, kadroda Trol varsa alınıyor.**
+   *
+   * §5 karşı-oyun tablosu Trol'ün cevabını açıkça "Kışla ile tut + yoğun
+   * tek hedef" diye veriyor. Tahta kışla almadığı sürece Kısıt B, oyuncunun
+   * gerçekte kuracağı tahtayı değil **eksik** bir tahtayı simüle ediyordu;
+   * harita 3'te Trol sızıntısının bir kısmı buradan geliyordu.
+   *
+   * **En DÜŞÜK kapsamalı noktaya** kuruluyor — S69'un ölçtüğü şey: kışla
+   * kapsamayı kullanmıyor (hasar vermiyor, menzili yok) ama işgal ettiği
+   * nokta bir kuleyi dışarıda bırakıyor. Canlı ölçümde en yüksek kapsamalı
+   * noktaya kurmak 20/20 canı 0/20'ye çeviriyordu.
+   */
+  const kislaAlinacak = map.enemyRoster.includes('trol');
+  const kislaNoktasi = kislaAlinacak ? tumSirali[tumSirali.length - 1] : undefined;
+  const sirali = tumSirali.filter((i) => i !== kislaNoktasi);
+  let kislaKuruldu = false;
+  const kislalar: BoardBarracks[] = [];
 
   const kuleler: BoardTower[] = [];
   let harcanan = 0;
@@ -196,6 +216,22 @@ export function buildReferenceBoards(
     // Bu dalganın **başında** elde olan altın = önceki dalgalara kadarki gelir.
     const gelir = cumulativeGold(map, waves, w.index - 1, withEarlyBonus);
     let kullanilabilir = gelir - harcanan;
+
+    // 0) Kışla — **kuleden önce**, ama ilk dalgada değil.
+    //
+    // Trol harita 3'te dalga 6'da geliyor (§5 tanıtım sırası). Oyuncu
+    // kışlayı ona hazırlanmak için alıyor, açılışta değil: dalga 1'de
+    // kışla almak ilk kuleyi geciktirir ve erken dalgaları sızdırır.
+    // Dalga 4 (ilk nefes) makul oyuncunun nefes aldığı yer.
+    if (kislaAlinacak && !kislaKuruldu && kislaNoktasi !== undefined && w.index >= 4) {
+      const maliyet = barracksTierAt(KISLA, 0).cost;
+      if (kullanilabilir >= maliyet) {
+        kislalar.push({ spotIndex: kislaNoktasi, tier: 0 });
+        kullanilabilir -= maliyet;
+        harcanan += maliyet;
+        kislaKuruldu = true;
+      }
+    }
 
     // 1) Boş nokta kaldıysa doldur.
     for (const spotIndex of sirali) {
@@ -255,6 +291,7 @@ export function buildReferenceBoards(
     sonuc.push({
       waveIndex: w.index,
       towers: kuleler.map((k) => ({ ...k })),
+      ...(kislalar.length > 0 ? { barracks: kislalar.map((k) => ({ ...k })) } : {}),
       cumulativeCost: harcanan,
     });
   }
