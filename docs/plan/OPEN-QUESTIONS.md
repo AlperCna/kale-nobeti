@@ -1,18 +1,25 @@
 # Açık sorular
 
-## Bloke edici soru kalmadı
+## Kod bekleyen soru kalmadı — **sanat ve ses bekliyor**
+
+M0-M5 boyunca hiçbir soru kodu bloke etmedi ve etmiyor. **M6'da durum
+değişti:** S50 (sanat yönü), S51 (ses efektleri) ve S52 (müzik) üçü de
+**insan üretimi** gerektiriyor ve M6'nın 12 görevinden 7'sini bekletiyor.
+Bunlar bir *karar* değil bir *çıktı* bekliyor; mimari veya denge sorusu
+değiller.
 
 Kalan soruların makul bir varsayılanı var ve varsayılanla ilerlenebilir.
 Bunları tek tek çözmeye çalışmak iki gün kod yazmamak demek.
 
 | Durum | Sayı |
 |---|---|
-| ☑ Kapandı | 36 (S01, S02, S06, S08, S10-S18, S21, S25-S33, S39-S42, S45-S47, S49, S50, S56, S59, S63) |
-| ☐ Varsayılanla geçilebilir | 28 |
+| ☑ Kapandı | 39 (S01, S02, S06, S08, S10-S18, S21, S25-S33, S39-S42, S45-S47, S49, S53-S56, S59, S63) |
+| ☐ Varsayılanla geçilebilir | 25 |
 | ⚠️ Yeni denge bulgusu | 7 (M3: 8 nokta · yükseltme kapsamı · M4: S65 boss payı · M5: S66 asker hasarı · S67 hasar tipi · S68 asker hızı · S69 kışla yeri) |
-| **⛔ Bloke edici** | **0** |
+| **⛔ Bloke edici** | **3** — S50 sanat · S51 ses · S52 müzik. Üçü de **insan üretimi**; M6’nın 7 görevini bekletiyor, mimari veya denge kararı bekletmiyor |
 
-**Kod yazmaya başlamak için beklenen hiçbir şey yok.**
+**Kod yazmaya başlamak için beklenen hiçbir şey yok.** M6’nın sanat ve ses
+görevleri varlık bekliyor (S50/S51/S52); geri kalan her şey yazılabilir.
 
 ### Kapanan sorular
 
@@ -35,7 +42,7 @@ Bunları tek tek çözmeye çalışmak iki gün kod yazmamak demek.
 | **S14** | **Düştü** — kapsama ölçümü örnekleme değil **analitik** oldu (`math.segmentCircleOverlapLength`, segment-çember kesişimi kapalı formül). Adım boyutu diye bir parametre kalmadı. Örnekleme sürümü %1,45 kuantizasyon hatası veriyordu ve dengenin tamamı bu sayıya asılı |
 | **S02** | **Arcade fizik kullanılmıyor.** Mermiler elle hareket eder; yakınlık ve isabet karesel mesafe. `GameClock` üç özellik yazıyor, dört değil. Belirleyici sebep: `simulateWave` fizikle Phaser dünyası ayağa kaldırmak zorunda kalırdı — S02'nin cevabı aslında `M3-T09` kararında verilmişti. Eşik: düşman > 200 olursa uzamsal ızgara gerekir (`CLAUDE.md` Teknoloji) |
 | **S08** | **Vitest ortamı `node`**, Phaser'a dokunan kısımlar sahte nesneyle. `jsdom`'da WebGL/Canvas yok, Phaser zaten koşmaz; `node` hızlı ve "10 dalga < 2 sn" şartı buna bağlı. **Çalışma koşulu TIER 1 kural 11 olarak yazıldı** (`CLAUDE.md` Test) |
-| **S50** | **Özgün silüet** seçildi. Birimler koyu mürekkep silüet + tek vurgu + altın kontur; tezhip yalnız çerçeve ve arka planda. Hazır varlık paketi kullanılmıyor. M6 takvimi **3-4 hafta** (`GAME-DESIGN.md` §2 "Üretim seviyesi") |
+| **S50** | **Kararı kapandı, üretimi kapanmadı.** Yön **özgün silüet**: koyu mürekkep silüet + tek vurgu + altın kontur; tezhip yalnız çerçeve ve arka planda, hazır varlık paketi yok, takvim **3-4 hafta** (`GAME-DESIGN.md` §2). **Ama varlıklar üretilmedi** — M6 bölümünde ⛔ olarak duruyor ve 7 görevi bekletiyor. Karar bir daha sorulmayacak; beklenen şey çizim |
 
 **S26/S27 neden "cevap" değil de "düştü":** Kısıt B birim testi olmaya
 uygun değildi. Kısıt A statik veriden hesaplanabiliyor; Kısıt B'nin
@@ -168,14 +175,17 @@ hâlâ açık ve ikisi de M3'ün girdisi.**
 
 ## M6 — Sanat, juice, ses
 
-| # | Soru | Neden önemli | Bloke | Varsayılan |
-|---|---|---|---|---|
-| **S50** | **Sanat yönü:** (a) Kenney tabanı + özgün UI (~1 hafta, %60 kimlik), (b) özgün silüet (~3-4 hafta, %90), (c) tam tezhip (2-3 ay) | `research/06` §5. **M6'nın tamamını ve takvimi belirliyor.** Pentiment ~13 kişiydi | `M6-T02`, `M6-T03`, `M6-T05`, `M6-T06` | **Yok.** Karar verilmeden M6 başlayamaz |
-| S51 | Ses efektleri nereden — kayıt, ücretsiz kütüphane, üretim? | 20 ses efekti; lisans ve tutarlılık | `M6-T11` | CC0 kütüphane |
-| S52 | Müzik nereden? | 2 parça, döngülü | `M6-T11` | CC0 kütüphane |
-| S53 | Efekt yoğunluğu ayarının kademeleri — kapalı/düşük/tam mı? | `prefers-reduced-motion` hangi kademeye ayarlayacağını belirliyor | `M6-T09`, `M6-T12` | Üç kademe |
-| S54 | `prefers-reduced-motion` hangi kademeye ayarlıyor? | §10 "varsayılanı düşük yapar" diyor, kademe belirtmiyor | `M6-T12` | "düşük" |
-| S55 | Ekran sarsıntısı 2× hızda kapanıyor mu? | §10 hit-stop için "2×'te kapalı" diyor, sarsıntı için demiyor | `M6-T07`, `M6-T08` | Açık kalır |
+**S53, S54, S55 kapandı** (juice kod katmanı). S50, S51, S52 **hâlâ açık** —
+üçü de insan üretimi gerektiriyor ve M6'nın 7 görevini bekletiyor.
+
+| # | Durum | Ayrıntı |
+|---|---|---|
+| **S50** | ⛔ **bekliyor** | **Sanat yönü.** Karar "özgün silüet" olarak verildi ama **varlık üretilmedi**: 3 arka plan, HUD çerçevesi, 16 kule silüeti, 9 düşman silüeti. `M6-T02`, `T03`, `T04`, `T05`, `T06` girdisiz kaldı |
+| **S51** | ⛔ **bekliyor** | Ses efektleri nereden — 20 efekt. `M6-T11` bunu bekliyor. Format kararı verili: **yalnız `.m4a`**, `.ogg` yok (tarandı: **0** dosya) |
+| **S52** | ⛔ **bekliyor** | Müzik nereden — 2 parça, `.m4a` 96 kbps mono, **ilk dalgadan sonra** yükleniyor |
+| **S53** | ✅ kapandı | **Efekt yoğunluğu ÜÇ kademe:** kapalı / düşük / tam (çarpan 0 / **0,4** / 1). İki kademe `prefers-reduced-motion`'ı ikili bir anahtara indirir ve §10'un "varsayılanı **düşük** yapar" cümlesinin karşılığı kalmazdı — "düşük" ancak arada bir kademe varsa var olabilir |
+| **S54** | ✅ kapandı | `prefers-reduced-motion` → **`low`**, `off` değil: medya sorgusunun adı `reduce`, `disable` değil. Ekran sarsıntısı **kapatılıyor** (sarsıntının "azaltılmış" hâli yok), ses değişmiyor (ses hareket değil). **Oyuncunun açık seçimi sistem tercihini eziyor** — ayrı test |
+| **S55** | ✅ kapandı | **Ekran sarsıntısı 2× hızda AÇIK kalıyor**, hit-stop'un aksine. §10 hit-stop için açıkça "kapalı" diyor, sarsıntı için demiyor. Sarsıntı okunurluğu bozmuyor: kamerayı en çok 8 px oynatıyor ve süresi zaten oyun zamanıyla yarıya iniyor. Hit-stop ise **akışı durdurduğu** için 2×'te asıl sorunu o çıkarıyor |
 
 ## M7 — Harita 2-3, denge geçişi, yayın
 

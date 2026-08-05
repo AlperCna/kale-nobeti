@@ -477,3 +477,59 @@ Haydutlar kışlası olsa bile karşılanıyor. Takviye'nin 2 geçici askeri bun
 | Test | **531** / 27 dosya · 1,81 sn (M4: 430 / 23) |
 | İlk indirme | **0,39 MB** (değişmedi) |
 | Bekçi | **9/9** ✓ |
+
+## 12. Juice ve ayarlar (M6 — kısmi)
+
+### Ekran sarsıntısı (§10)
+
+| Ölçüm | Değer |
+|---|---|
+| Süre aralığı | 0,12-0,25 sn (şiddete göre) |
+| Sönüm | üstel, k=5 → sonda genlik başlangıcın %0,7'si |
+| Salınım | 34 Hz |
+| Canlı genlik dizisi (yatay darbe) | 3,05 → 2,80 → 2,10 → 1,31 → 0,64 |
+| Dik eksende kayma | **0** (yönlü) |
+| Kapalıyken | **{0, 0}**, `active = false` |
+
+### Hit-stop (§10)
+
+| Ölçüm | Değer |
+|---|---|
+| 1× hızda | **80 ms** |
+| **2× hızda** | **0 ms** — devre dışı |
+| Üst sınır | 80 ms (`trigger(500)` → 80) |
+| Üst üste vuruş | uzatmıyor, en uzunu kazanıyor |
+
+### Parçacıklar (§10)
+
+| Ölçüm | Değer |
+|---|---|
+| `maxParticles` | **300** |
+| Canlı tepe (10 dalga) | **34** |
+| Efekt kapalıyken tepe | **0** |
+| Efekt ölçeği tam/düşük/kapalı | 1 / **0,4** / 0 |
+
+**Ayrı havuz yok** — Phaser'ın parçacık sistemi zaten havuzlu
+(`research/02` §7).
+
+### Ayarlar ve kalıcılık
+
+| İddia | Ölçüm |
+|---|---|
+| Sayfa yenilendikten sonra korunuyor | ✅ `effects: low`, `screenShake: false` |
+| Başlangıçta uygulanıyor | ✅ `shake.enabled = false` |
+| M7 SaveSystem alanını ezmiyor | ✅ `unlockedMaps: 3` korundu |
+| Gizli sekmede çökmüyor | ✅ bellek yedeği |
+| Yazma hatası bildirimi | **1 kez** (3 yazma denemesinde) |
+
+### Paket ve test (M6 kod kısmı sonu)
+
+| Ölçüm | Değer |
+|---|---|
+| Test | **569** / 29 dosya (M5: 531 / 27) |
+| İlk indirme | **0,39 MB** (hedef ≤ 5 MB) |
+| `.ogg` dosyası | **0** |
+| Bekçi | **9/9** ✓ (k.8 izin listesine çevrildi) |
+
+**Not:** sanat ve ses varlıkları henüz yok; nihai paket boyutu `P01`-`P04`
+ve `T11` girdileriyle yeniden ölçülecek.

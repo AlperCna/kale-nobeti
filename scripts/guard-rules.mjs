@@ -68,20 +68,40 @@ const sonuclar = [];
 // ---------------------------------------------------------------------
 // 1 — Ham `delta` (TIER 1 kural 8)
 //
-// İzinli: GameClock.ts (saatin kendisi) ve GameScene.ts'te TAM 2 satır
-// (update imzası + clock.tick çağrısı). Üçüncü satır sızıntı demektir.
+// İzinli: GameClock.ts (saatin kendisi) ve GameScene.ts'te **sayılı değil,
+// ADLI** üç satır.
+//
+// M6'ya kadar kural "GameScene'de en fazla 2 satır" biçimindeydi. Hit-stop
+// gelince üçüncü meşru kullanım doğdu (duraklattığı saatle kendini ölçemez)
+// ve sayıyı 3'e çıkarmak bekçiyi zayıflatırdı: dördüncü bir SIZINTI da
+// serbest kalırdı, üstelik izinli satırlardan birinin değişmesi
+// görülmezdi.
+//
+// Sayım yerine **izin listesi**: her satır tam olarak beklenen ifadeyle
+// eşleşmeli. Böylece hem yeni bir kullanım hem de mevcut birinin değişmesi
+// yakalanıyor.
 // ---------------------------------------------------------------------
 {
   let ihlalVar = false;
+  /** GameScene'de ham `delta` geçmesine izin verilen tam ifadeler. */
+  const DELTA_IZIN = [
+    // `update`'in Phaser imzası — kaçınılmaz.
+    /^update\(_time:\s*number,\s*delta:\s*number\):\s*void\s*\{$/,
+    // Saati ilerletmek: ham `delta`nın var olma sebebi.
+    /^this\.clock\.tick\(delta\);$/,
+    // Hit-stop **oyun zamanını durduran** katman; sayacı durdurduğu saatle
+    // ölçseydi hiç bitmezdi (`fx/HitStop.ts` başlığındaki gerekçe).
+    /^const donduruldu = this\.hitStop\.update\(delta\);$/,
+  ];
   for (const dosya of dosyalar) {
     if (/GameClock\.(ts|test\.ts)$/.test(dosya)) continue;
     const hits = kodSatirlari(readFileSync(dosya, 'utf8')).filter((s) => /\bdelta\b/.test(s.metin));
-    const izinli = /GameScene\.ts$/.test(dosya) ? 2 : 0;
-    if (hits.length > izinli) {
+    const gameScene = /GameScene\.ts$/.test(dosya);
+    for (const h of hits) {
+      const duz = h.metin.trim();
+      if (gameScene && DELTA_IZIN.some((r) => r.test(duz))) continue;
       ihlalVar = true;
-      for (const h of hits.slice(izinli)) {
-        ihlal('k.8 ', dosya, h.no, `ham delta (izinli: ${izinli})`);
-      }
+      ihlal('k.8 ', dosya, h.no, gameScene ? 'ham delta (izin listesinde yok)' : 'ham delta');
     }
   }
   sonuclar.push(['k.8  ham delta yalnız GameClock/GameScene', !ihlalVar]);

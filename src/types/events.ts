@@ -18,6 +18,13 @@ export interface GameEvents {
   'speed:changed': { readonly scale: Speed };
   /** S06 onaylandı. ESC/boşluk duraklatması yayıyor. */
   'game:paused': { readonly paused: boolean };
+
+  /**
+   * Kayıt başarısız — **yalnız bir kez** yayılıyor (TIER 1 kural 10:
+   * "kayıt başarısızsa oyuncuya bir kez bildirilir"). Gizli sekmede
+   * ayarlar kalıcı olmuyor; oyun çalışmaya devam ediyor (M6).
+   */
+  'save:failed': { readonly once: boolean };
 }
 
 export type GameEventName = keyof GameEvents;
