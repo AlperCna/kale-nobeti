@@ -42,9 +42,12 @@ describe('Boss ölçeklemesi — zırh düşer, HP türetilir', () => {
     expect(BOSS_ARMOR_BY_MAP['degirmen-gecidi']).toBe(OGRE_SEF.armor);
   });
 
-  it('zırh haritayla DÜŞÜYOR: 10 → 5 → 3', () => {
+  it('zırh haritayla DÜŞÜYOR: 10 → 5 → 2', () => {
+    // Harita 3'ün zırhı 3'ten 2'ye indi: referans tahta artık kışla satın
+    // alıyor (§5 Trol) ve kışla bir kule noktasını işgal ediyor, tavan
+    // düşüyor. Regresyon bandı testi bunu yakaladı.
     expect(BOSS_ARMOR_BY_MAP['tas-kopru']).toBe(5);
-    expect(BOSS_ARMOR_BY_MAP['kul-ovasi']).toBe(3);
+    expect(BOSS_ARMOR_BY_MAP['kul-ovasi']).toBe(2);
   });
 
   it('**boss HP’si MONOTON ARTIYOR** — zorluk eğrisi korunuyor', () => {

@@ -34,7 +34,14 @@
  * |---|---|---|---|
  * | 1 Değirmen Geçidi | 10 | 761 | **700** (§5'in belgelenmiş değeri) |
  * | 2 Taş Köprü | 5 | 890 | **712** |
- * | 3 Kül Ovası | 3 | 977 | **781** |
+ * | 3 Kül Ovası | **2** | 925 | **740** |
+ *
+ * **Harita 3'ün zırhı 3'ten 2'ye indi** çünkü referans tahta artık bir
+ * kışla satın alıyor (§5: Trol'ün cevabı kışla) ve kışla bir kule
+ * noktasını işgal ediyor — tavan 977'den 881'e düştü, türetilen HP 705
+ * olup harita 2'nin 712'sinin **altına** indi ve monotonluk bozuldu.
+ * Regresyon bandı testi bunu **yakaladı**; sayı elle değil ölçümle
+ * düzeltildi.
  *
  * Harita 1'in türetilmiş değeri 718; §5'in yazdığı **700 aynen korunuyor**
  * (fark %2,5) — yani belgelenmiş sayı değişmiyor, yalnız 2 ve 3 türetiliyor.
@@ -56,13 +63,13 @@ import { OGRE_SEF } from './enemies';
 
 /**
  * Harita kimliğine göre boss zırhı. **Ölçülerek seçildi** — bkz. dosya
- * başlığındaki tablo; 10/5/3 kombinasyonu boss HP'sini monoton artan
- * yapan ve harita 1'in 700'ünü koruyan tek üçlü.
+ * başlığındaki tablo; **10/5/2** boss HP'sini monoton artan
+ * yapan ve harita 1'in 700'ünü koruyan kombinasyon.
  */
 export const BOSS_ARMOR_BY_MAP: Readonly<Record<string, number>> = {
   'degirmen-gecidi': 10,
   'tas-kopru': 5,
-  'kul-ovasi': 3,
+  'kul-ovasi': 2,
 };
 
 /**
@@ -78,7 +85,7 @@ export const BOSS_ARMOR_BY_MAP: Readonly<Record<string, number>> = {
 export const BOSS_HP_BY_MAP: Readonly<Record<string, number>> = {
   'degirmen-gecidi': 700, // §5'in belgelenmiş değeri (türetme 718 diyor)
   'tas-kopru': 712,
-  'kul-ovasi': 781,
+  'kul-ovasi': 740,
 };
 
 /** Türetilen değerin kabul edilebilir sapma payı (regresyon bandı, §12). */
