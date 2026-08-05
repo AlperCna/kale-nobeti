@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { OKCU, TOP, TOWERS, getTower } from './towers';
 import { GOBLIN, ORK_SAVASCI, ENEMIES, getEnemy } from './enemies';
-import { COVERAGE_REFERENCE_RANGE } from './maps';
+import { COVERAGE_REFERENCE_RANGE, MAP_1 } from './maps';
 
 /**
  * Test sabitleri **elle yazılı ve kaynağı belirtilmiş** — veri dosyasından
@@ -149,9 +149,13 @@ describe('enemies.ts — GAME-DESIGN §5 tablosu', () => {
     }
   });
 
-  it('M2 kadrosu iki düşman, ikisi de harita 1 kadrosunda', () => {
-    expect(ENEMIES).toHaveLength(2);
+  it('M3 kadrosu üç düşman, üçü de harita 1 kadrosunda', () => {
+    // M2'de iki düşman vardı; Kurt Binicisi M3'ün dalga kompozisyonu için
+    // eklendi (hız kavramı, §5).
+    expect(ENEMIES).toHaveLength(3);
     expect(getEnemy('goblin')).toBe(GOBLIN);
+    for (const e of ENEMIES) expect(MAP_1.enemyRoster).toContain(e.id);
     expect(getEnemy('trol')).toBeUndefined(); // M4
+    expect(getEnemy('harpi')).toBeUndefined(); // M4 — uçan hareketiyle
   });
 });

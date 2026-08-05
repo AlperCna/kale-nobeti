@@ -54,6 +54,18 @@ export interface DevHooks {
   hoverSpot: (spotIndex: number) => void;
   /** Hasar sayısı üretip rengini/ölçeğini döndürür — iki renk kuralı sınaması. */
   showDamage: (amount: number, floored: boolean) => { tint: number; scale: number; text: string };
+
+  // --- M3 ---
+  gold: () => number;
+  wavePhase: () => string;
+  waveNumber: () => number;
+  prepRemaining: () => number;
+  startWaveEarly: () => number;
+  gameOver: () => { won: boolean; lives: number; stars: number };
+  /** T1 → T2. @returns Yükseltilebildiyse `true`. */
+  upgradeTower: (spotIndex: number) => boolean;
+  /** @returns İade edilen altın. */
+  sellTower: (spotIndex: number) => number;
 }
 
 type Global = { __kn?: Partial<DevHooks> };

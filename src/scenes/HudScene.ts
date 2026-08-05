@@ -3,6 +3,9 @@ import type { GameScene } from './GameScene';
 import type { Speed } from '../types/common';
 import { t } from '../util/i18n';
 import { devHooks } from '../util/devHooks';
+import { HudReadout } from '../fx/HudReadout';
+import { WaveTelegraph } from '../fx/WaveTelegraph';
+import { ensureNumberFont } from '../fx/numberFont';
 
 const INK = 0x14203a;
 const PARCHMENT = 0xe4d3a8;
@@ -36,22 +39,116 @@ export class HudScene extends Phaser.Scene {
 
   #overlay?: Phaser.GameObjects.Container;
 
+  /** Değişen sayılar ayrı dosyada — `HudReadout` başlığındaki gerekçe. */
+  #readout?: HudReadout;
+  #telegraph?: WaveTelegraph;
+  #earlyBtn?: Phaser.GameObjects.Rectangle;
+  #earlyLabel?: Phaser.GameObjects.Text;
+  #bitti = false;
+
   constructor() {
     super('Hud');
   }
 
   create(): void {
+    this.#bitti = false;
+    ensureNumberFont(this);
     this.#createSpeedButton();
+    this.#createLabels();
+    this.#readout = new HudReadout(this, MARGIN, MARGIN);
+    this.#telegraph = new WaveTelegraph(this, MARGIN + 150, MARGIN + 78);
+    this.#createEarlyStartButton();
     this.#createPauseOverlay();
     this.#bindKeys();
 
     const dev = devHooks();
-    if (dev !== undefined) dev.paused = false;
+    if (dev !== undefined) {
+      dev.paused = false;
+      dev.startWaveEarly = () => this.#game().startWaveEarly();
+      dev.gold = () => this.#game().gold;
+      dev.wavePhase = () => this.#game().wavePhase;
+      dev.waveNumber = () => this.#game().waveNumber;
+      dev.prepRemaining = () => this.#game().prepRemainingSec ?? -1;
+    }
   }
 
   update(): void {
     const dev = devHooks();
     if (dev !== undefined) dev.hudFrames = (dev.hudFrames ?? 0) + 1;
+
+    const game = this.#game();
+    this.#readout?.update({
+      gold: game.gold,
+      lives: game.lives,
+      prepRemainingSec: game.prepRemainingSec,
+      waveNumber: game.waveNumber,
+      totalWaves: game.totalWaves,
+    });
+    this.#telegraph?.show(game.upcomingWave);
+
+    const erkenAcik = game.earlyStartAvailable;
+    this.#earlyBtn?.setVisible(erkenAcik);
+    this.#earlyLabel?.setVisible(erkenAcik);
+
+    this.#oyunSonuKontrol(game);
+  }
+
+  /**
+   * Kazanma / kaybetme geçişi (`M3-T11`).
+   *
+   * **S31 kararı: kaybetme ANINDA.** Can 0'a inince dalga sonu beklenmiyor.
+   * Gerekçe: dalga sonunu beklemek oyuncuya kaybettiğini bildiği bir dalgayı
+   * izletmek demek; tower defense'te en sık şikâyet edilen ölü zaman bu.
+   */
+  #oyunSonuKontrol(game: GameScene): void {
+    if (this.#bitti) return;
+
+    const kaybetti = game.lives <= 0;
+    const kazandi = game.wavePhase === 'done' && game.lives > 0;
+    if (!kaybetti && !kazandi) return;
+
+    this.#bitti = true;
+    this.scene.stop('Game');
+    this.scene.start('GameOver', { won: kazandi, lives: game.lives });
+  }
+
+  #game(): GameScene {
+    return this.scene.get('Game') as GameScene;
+  }
+
+  /** Statik etiketler — bir kez yazılıyor, `setText` yok (TIER 1 k.7). */
+  #createLabels(): void {
+    const stil = { fontFamily: 'Spectral, serif', fontSize: '16px', color: '#8A7250' };
+    this.add.text(MARGIN + 92, MARGIN + 4, t('gold'), stil);
+    this.add.text(MARGIN + 92, MARGIN + 38, t('lives'), stil);
+    this.add.text(MARGIN + 92, MARGIN + 72, t('wave'), stil);
+  }
+
+  /**
+   * Erken başlatma butonu — **dalga 4'ten itibaren** görünür (§6).
+   * Etiket sabit; kazanılacak bonus değişken olduğu için yazılmıyor.
+   */
+  #createEarlyStartButton(): void {
+    const x = this.scale.width / 2;
+    const y = this.scale.height - MARGIN - 26;
+
+    this.#earlyBtn = this.add
+      .rectangle(x, y, 180, 52, PARCHMENT)
+      .setStrokeStyle(2, GOLD)
+      .setInteractive({ useHandCursor: true })
+      .setVisible(false);
+    this.#earlyLabel = this.add
+      .text(x, y, t('startWave'), {
+        fontFamily: 'Spectral, serif',
+        fontSize: '18px',
+        color: '#14203A',
+      })
+      .setOrigin(0.5)
+      .setVisible(false);
+
+    this.#earlyBtn.on('pointerup', () => {
+      this.#game().startWaveEarly();
+    });
   }
 
   // -------------------------------------------------------------------

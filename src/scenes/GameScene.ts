@@ -3,7 +3,9 @@ import { GameClock } from '../systems/GameClock';
 import { EventBus } from '../systems/EventBus';
 import { PathSystem } from '../systems/PathSystem';
 import { PathMover } from '../systems/movers';
-import { SpawnSystem } from '../systems/SpawnSystem';
+import { WaveManager } from '../systems/WaveManager';
+import type { WavePhase } from '../systems/WaveManager';
+import { EconomySystem } from '../systems/EconomySystem';
 import { TowerSystem } from '../systems/TowerSystem';
 import { ProjectileSystem } from '../systems/ProjectileSystem';
 import { SpotOccupancy, findSpotAt } from '../systems/buildSpots';
@@ -16,17 +18,12 @@ import { Pool } from '../util/pool';
 import { coveredSegments } from '../util/coverage';
 import { MAP_1, COVERAGE_REFERENCE_RANGE } from '../data/maps';
 import { OKCU, TOP, TOWERS } from '../data/towers';
-import { GOBLIN } from '../data/enemies';
-import {
-  POOL_PREALLOC,
-  STARTING_LIVES,
-  M1_GECICI_DOGMA_ARALIGI_SN,
-  GECICI_MERMI_HIZI,
-  MERMI_ISABET_YARICAPI,
-} from '../data/balance';
+import { POOL_PREALLOC, GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI } from '../data/balance';
+import { MAP1_WAVES } from '../data/waves';
 import { devHooks } from '../util/devHooks';
 import type { TowerDef } from '../types/tower';
 import type { Vec2 } from '../types/common';
+import type { Wave } from '../types/wave';
 
 /**
  * Greybox palet — `GAME-DESIGN.md` §2. Arka plan görseli ve sprite'lar M6'da;
@@ -59,7 +56,8 @@ export class GameScene extends Phaser.Scene {
   readonly clock = new GameClock();
   readonly bus = new EventBus();
 
-  #spawner?: SpawnSystem<Enemy>;
+  #waves?: WaveManager<Enemy>;
+  #eco?: EconomySystem;
   #towers?: TowerSystem;
   #projectiles?: ProjectileSystem<Enemy, Projectile>;
   #damageTexts?: DamageTextSystem;
@@ -70,9 +68,49 @@ export class GameScene extends Phaser.Scene {
   #menu?: Phaser.GameObjects.Container;
   #hoveredSpot = -1;
   #mermiTepe = 0;
+  readonly #towerBySpot = new Map<number, Tower>();
 
   constructor() {
     super('Game');
+  }
+
+  // ------------------------------------------------- HUD'un okuduğu durum
+
+  get gold(): number {
+    return this.#eco?.gold ?? 0;
+  }
+
+  get lives(): number {
+    return this.#eco?.lives ?? 0;
+  }
+
+  get wavePhase(): WavePhase {
+    return this.#waves?.phase ?? 'prep';
+  }
+
+  get waveNumber(): number {
+    return this.#waves?.waveNumber ?? 1;
+  }
+
+  get totalWaves(): number {
+    return MAP1_WAVES.length;
+  }
+
+  get prepRemainingSec(): number | null {
+    return this.#waves?.phase === 'prep' ? (this.#waves.prepRemainingSec ?? 0) : null;
+  }
+
+  get upcomingWave(): Wave | undefined {
+    return this.#waves?.upcomingWave;
+  }
+
+  get earlyStartAvailable(): boolean {
+    return this.#waves?.earlyStartAvailable ?? false;
+  }
+
+  /** @returns Kazanılan bonus altın. */
+  startWaveEarly(): number {
+    return this.#waves?.startWaveEarly() ?? 0;
   }
 
   create(): void {
@@ -148,12 +186,15 @@ export class GameScene extends Phaser.Scene {
       m?.activate();
     }, this.bus);
 
-    this.#spawner = new SpawnSystem(enemyPool, mover, this.bus, {
-      def: GOBLIN,
-      hpMultiplier: MAP_1.hpMultiplier,
-      intervalSeconds: M1_GECICI_DOGMA_ARALIGI_SN,
-      startingLives: STARTING_LIVES,
-    });
+    this.#eco = new EconomySystem(MAP_1, this.bus);
+    this.#waves = new WaveManager(
+      enemyPool,
+      mover,
+      this.bus,
+      this.#eco,
+      MAP1_WAVES,
+      MAP_1.hpMultiplier,
+    );
 
     this.#occupancy = new SpotOccupancy(MAP_1.buildSpots.length);
     this.#setupInput();
@@ -170,9 +211,18 @@ export class GameScene extends Phaser.Scene {
     // Yani `on` kullanılsaydı her yeniden başlatma kalıcı bir dinleyici
     // daha eklerdi ve `bus.clear()` N. kapanışta N kez çağrılırdı.
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      enemyPool.releaseAll();
-      mermiHavuzu.releaseAll();
-      sayiHavuzu.releaseAll();
+      // **Havuzlar burada `releaseAll` edilmiyor.** İlk yazımda ediliyordu
+      // ve sahne yeniden başlatılınca çöküyordu:
+      //   TypeError: Cannot read properties of null (reading 'chars')
+      //   at GetBitmapTextSize → DamageText.resetForPool → setText
+      // Sebep: `shutdown` sırasında Phaser görüntü listesini çoktan
+      // yıkmış oluyor; yıkılmış bir `BitmapText`e `setText` çağırmak
+      // font verisine dokunuyor ve o veri artık yok.
+      //
+      // Zaten gereksizdi: havuzlar `create()` içinde kuruluyor, yeniden
+      // başlatmada yenileri yaratılıyor ve eskiler sahneyle birlikte
+      // toplanıyor. Sıfırlamanın koruduğu şey (ölü hedef referansı) yalnız
+      // **yaşayan** bir havuzda anlamlı.
       this.bus.clear();
       const d = devHooks();
       if (d !== undefined) d.clearCount = (d.clearCount ?? 0) + 1;
@@ -192,7 +242,7 @@ export class GameScene extends Phaser.Scene {
     this.clock.tick(delta);
     const sd = this.clock.scaledDelta;
 
-    this.#spawner?.update(sd);
+    this.#waves?.update(sd);
     const dusmanlar = this.#enemyPool?.activeItems() ?? [];
     this.#towers?.update(sd, dusmanlar);
     this.#projectiles?.update(sd, dusmanlar);
@@ -217,6 +267,7 @@ export class GameScene extends Phaser.Scene {
     // ikinci kez öldürmesin (odaklanma kaybı M3'te ölçülecek, ama çift
     // sayım hiçbir zaman doğru değil).
     e.alive = false;
+    if (e.def !== null) this.#eco?.award(e.def);
     this.bus.emit('enemy:killed', { id: e.id, gold: e.def?.gold ?? 0 });
     this.#enemyPool?.release(e);
   }
@@ -240,8 +291,12 @@ export class GameScene extends Phaser.Scene {
 
     this.input.on(Phaser.Input.Events.POINTER_DOWN, (p: Phaser.Input.Pointer) => {
       const i = findSpotAt({ x: p.worldX, y: p.worldY }, MAP_1.buildSpots);
-      if (i < 0 || this.#occupancy?.isOccupied(i) === true) {
+      if (i < 0) {
         this.#closeMenu();
+        return;
+      }
+      if (this.#occupancy?.isOccupied(i) === true) {
+        this.#openSellMenu(i);
         return;
       }
       this.#openMenu(i);
@@ -316,19 +371,102 @@ export class GameScene extends Phaser.Scene {
 
     TOWERS.forEach((def, i) => {
       const bx = (i - (TOWERS.length - 1) / 2) * 92;
-      // 88×44 — Platform dokunmatik hedef alt sınırı.
-      const arka = this.add
-        .rectangle(bx, 0, 88, 44, SPOT_COLOR)
-        .setStrokeStyle(2, GOLD_COLOR)
-        .setInteractive({ useHandCursor: true });
-      const etiket = this.add
-        .text(bx, 0, def.id === 'okcu' ? 'Okçu' : 'Top', {
-          fontFamily: 'Spectral, serif',
-          fontSize: '18px',
-          color: '#14203A',
-        })
-        .setOrigin(0.5);
+      const maliyet = def.tiers[0].cost;
+      const alinabilir = this.#eco?.canAfford(maliyet) === true;
 
+      this.#menuButonu(
+        kap,
+        bx,
+        `${def.id === 'okcu' ? 'Okçu' : 'Top'} ${maliyet}`,
+        alinabilir,
+        () => this.#placeTower(spotIndex, def),
+      );
+    });
+
+    this.#menu = kap;
+  }
+
+  /**
+   * Dolu noktaya tıklayınca: **yükselt** ve **sat**.
+   *
+   * ## Yükseltme neden M3'te (plan M4 diyordu)
+   *
+   * Plan "Olmayan: Tier 2-3" diyordu ama aynı taşın bitiş durumu
+   * "Harita 1 ... bitirilebiliyor" istiyordu. `waveSim` ile ölçüldü:
+   *
+   * | Tahta | sızan | kalan can |
+   * |---|---|---|
+   * | T2 dahil (referans tahta) | 1 | **19/20** |
+   * | Yalnız T1 | 30 | **kayıp** |
+   *
+   * Yani yükseltme olmadan harita geçilemiyor ve iki plan maddesi aynı
+   * anda doğru olamıyor. T2 satırları `towers.ts`'te zaten var, kademe
+   * `TowerSystem`'de zaten destekli — eksik olan tek şey menü butonuydu.
+   * T3 dalları M4'te kalıyor.
+   */
+  #openSellMenu(spotIndex: number): void {
+    this.#closeMenu();
+    const spot = MAP_1.buildSpots[spotIndex];
+    const kule = this.#towerBySpot.get(spotIndex);
+    if (spot === undefined || kule === undefined) return;
+
+    const kap = this.add.container(
+      Phaser.Math.Clamp(spot.x, 140, this.scale.width - 140),
+      Phaser.Math.Clamp(spot.y - 56, 40, this.scale.height - 40),
+    );
+
+    const iade = this.#eco?.sellRefund(this.#eco.spentAt(spotIndex)) ?? 0;
+    if (kule.tierIndex === 0) {
+      const maliyet = kule.def.tiers[1].cost;
+      this.#menuButonu(kap, -48, `↑ ${maliyet}`, this.#eco?.canAfford(maliyet) === true, () =>
+        this.#upgradeTower(spotIndex),
+      );
+      this.#menuButonu(kap, 48, `Sat +${iade}`, true, () => this.#sellTower(spotIndex));
+    } else {
+      this.#menuButonu(kap, 0, `Sat +${iade}`, true, () => this.#sellTower(spotIndex));
+    }
+    this.#menu = kap;
+  }
+
+  /** T1 → T2. Maliyet **kümülatif** yazılıyor; satış iadesi toplamın %70'i. */
+  #upgradeTower(spotIndex: number): boolean {
+    const kule = this.#towerBySpot.get(spotIndex);
+    if (kule === undefined || kule.tierIndex !== 0) return false;
+
+    const maliyet = kule.def.tiers[1].cost;
+    if (this.#eco?.buyAt(spotIndex, maliyet) !== true) return false;
+
+    kule.tierIndex = 1;
+    // Hedef düşürülüyor: yeni kademenin menzili farklı, eski hedef
+    // menzil dışında kalmış olabilir.
+    kule.target = null;
+    kule.setScale(1.18); // greybox: yükseltilmiş kule gözle ayırt edilebilsin
+    this.#closeMenu();
+    return true;
+  }
+
+  /** 88×44 — Platform dokunmatik hedef alt sınırı. */
+  #menuButonu(
+    kap: Phaser.GameObjects.Container,
+    bx: number,
+    metin: string,
+    etkin: boolean,
+    onClick: () => void,
+  ): void {
+    const arka = this.add
+      .rectangle(bx, 0, 88, 44, etkin ? SPOT_COLOR : 0x6b6558)
+      .setStrokeStyle(2, GOLD_COLOR);
+    if (etkin) arka.setInteractive({ useHandCursor: true });
+
+    const etiket = this.add
+      .text(bx, 0, metin, {
+        fontFamily: 'Spectral, serif',
+        fontSize: '16px',
+        color: etkin ? '#14203A' : '#3A3A3A',
+      })
+      .setOrigin(0.5);
+
+    if (etkin) {
       arka.on(
         Phaser.Input.Events.POINTER_DOWN,
         (
@@ -339,14 +477,12 @@ export class GameScene extends Phaser.Scene {
         ) => {
           // Sahne dinleyicisi aynı tıklamayla menüyü kapatmasın.
           olay.stopPropagation();
-          this.#placeTower(spotIndex, def);
+          onClick();
         },
       );
+    }
 
-      kap.add([arka, etiket]);
-    });
-
-    this.#menu = kap;
+    kap.add([arka, etiket]);
   }
 
   #closeMenu(): void {
@@ -356,14 +492,36 @@ export class GameScene extends Phaser.Scene {
 
   #placeTower(spotIndex: number, def: TowerDef): boolean {
     const spot = MAP_1.buildSpots[spotIndex];
+    if (spot === undefined) return false;
+
+    const maliyet = def.tiers[0].cost;
+    // **Önce para, sonra yer.** Ters sıra olsaydı parası yetmeyen oyuncu
+    // noktayı kilitler ve o nokta boşa giderdi.
+    if (this.#eco?.canAfford(maliyet) !== true) return false;
     // Doluluk defteri **tek yerde**: `SpotOccupancy`. `TowerSystem` kendi
     // kontrolünü yapmıyor — aynı defteri iki yerde tutmak sessizce ayrışır.
-    if (spot === undefined || this.#occupancy?.occupy(spotIndex) !== true) return false;
+    if (this.#occupancy?.occupy(spotIndex) !== true) return false;
+    this.#eco.buyAt(spotIndex, maliyet);
 
     const kule = new Tower(this, spotIndex, spot.x, spot.y, def, TOWER_COLORS[def.id] ?? GOLD_COLOR);
+    this.#towerBySpot.set(spotIndex, kule);
     this.#towers?.add(kule);
     this.#closeMenu();
     return true;
+  }
+
+  /** Kule satışı — harcanan **toplamın** %70'i (`GAME-DESIGN.md` §4.5). */
+  #sellTower(spotIndex: number): number {
+    const kule = this.#towerBySpot.get(spotIndex);
+    if (kule === undefined) return 0;
+
+    const iade = this.#eco?.sellAt(spotIndex) ?? 0;
+    this.#towers?.remove(spotIndex);
+    this.#occupancy?.free(spotIndex);
+    this.#towerBySpot.delete(spotIndex);
+    kule.destroy(true);
+    this.#closeMenu();
+    return iade;
   }
 
   // ------------------------------------------------------------------- çizim
@@ -448,7 +606,7 @@ export class GameScene extends Phaser.Scene {
     };
     dev.enemyActive = () => enemyPool.activeCount;
     dev.enemyCapacity = () => enemyPool.capacity;
-    dev.lives = () => this.#spawner?.lives ?? -1;
+    dev.lives = () => this.#eco?.lives ?? -1;
     dev.pathLength = () => path.totalLength;
     dev.coverage = () => MAP_1.coverage;
     dev.coverageAverage = () => this.#ortalamaKapsama();
@@ -464,6 +622,8 @@ export class GameScene extends Phaser.Scene {
       const son = sayiHavuzu.activeItems().at(-1);
       return { tint: son?.tintTopLeft ?? -1, scale: son?.scaleX ?? -1, text: son?.text ?? '' };
     };
+    dev.upgradeTower = (spotIndex: number) => this.#upgradeTower(spotIndex);
+    dev.sellTower = (spotIndex: number) => this.#sellTower(spotIndex);
     dev.hoverSpot = (spotIndex: number) => {
       this.#hoveredSpot = spotIndex;
       this.#drawHover();

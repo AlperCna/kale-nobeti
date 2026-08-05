@@ -7,8 +7,9 @@ Bunları tek tek çözmeye çalışmak iki gün kod yazmamak demek.
 
 | Durum | Sayı |
 |---|---|
-| ☑ Kapandı | 19 (S01, S02, S06, S08, S10, S11, S12, S13, S14, S15, S16, S17, S25, S26, S27, S50, S56, S59, S63) |
-| ☐ Varsayılanla geçilebilir | 45 |
+| ☑ Kapandı | 27 (S01, S02, S06, S08, S10-S18, S21, S25-S33, S50, S56, S59, S63) |
+| ☐ Varsayılanla geçilebilir | 37 |
+| ⚠️ Yeni denge bulgusu | 2 (S34, S35) |
 | **⛔ Bloke edici** | **0** |
 
 **Kod yazmaya başlamak için beklenen hiçbir şey yok.**
@@ -22,6 +23,8 @@ Bunları tek tek çözmeye çalışmak iki gün kod yazmamak demek.
 |---|---|
 | **S13** | **Keskin dönüş, kalıcı.** Yay eklenmiyor — `L` ve kapsama keskin dönüşle ölçüldü, yay onları geçersiz kılar; viraj noktalarının çift kapsaması bilinçli bir yerleşim kolu. Görsel bedeli M6'da dönüş tween'iyle kapatılır (yalnız görüntü) |
 | **S15** | **İki kademeli ölçüm.** Birincil: geliştirme makinesi 60 FPS. İkincil (yayın öncesi zorunlu): Chrome DevTools 4× CPU kısıtlamasında ≥ 30 FPS. 4 GB Chromebook elde yok; uydurma sayı yerine **tekrarlanabilir vekil** seçildi ve vekil olduğu yazıldı |
+| **S18** | Yer tutucu bitmap font `0-9 + - . %`; dosya değil, bir kez üretilen doku (M2 bölümü) |
+| **S21** | Mermi hedefi ölürse son bilinen konuma gidiyor; alan hasarlıysa yine patlıyor (M2 bölümü) |
 | **S25** | `ReferenceBoard` **türetiliyor**, uydurulmuyor — `M3-T07` ekonomi tablosundan algoritmayla üretiyor |
 | **S26** | Düştü — `dalgaSüresi` artık tanımlanmıyor, **ölçülüyor** (`M3-T09` başsız simülasyon) |
 | **S27** | Düştü — `aktiflikOranı` hiç hesaplanmıyor; simülasyon gerçek aktifliği zaten yaşıyor |
@@ -98,26 +101,33 @@ doğuyor (`x = -60`) — 60 px'i `L`'ye dahil. Ayrıntı:
 
 ## M2 — Kule, mermi, hedefleme
 
-| # | Soru | Neden önemli | Bloke | Varsayılan |
-|---|---|---|---|---|
-| S18 | Yer tutucu bitmap font hangi karakter kümesi? | Hasar sayıları `BitmapText` olmak zorunda ama nihai font M6'da | `M2-T08` | `0-9 + - . %` |
-| S19 | Kule seçim menüsü biçimi — liste, radyal, kartuş? | `GAME-DESIGN.md` §2 "altın kartuş" diyor ama seçim menüsü için değil | `M2-T04` | İki butonlu düz liste |
-| S20 | **Mermi uçuş hızı kaç px/sn?** | Dokümanda hiçbir yerde yok. Yavaş mermi hızlı düşmanı ıskalar → denge etkisi | `M2-T06` | `600 px/sn`, `// GEÇİCİ — S20` |
-| S21 | Mermi havadayken hedef ölürse — kaybolsun mu, son konuma gitsin mi? | Alan hasarlı mermilerde fark yaratıyor | `M2-T06` | Son konuma gider, sönümlenir |
-| S22 | Patlama hasarı merkeze uzaklığa göre azalıyor mu? | Top ailesinin gerçek gücünü belirliyor | `M2-T09` | Sabit, azalma yok |
-| S23 | Kule dönüş animasyonu var mı? Varsa dönerken ateş edebiliyor mu? | `research/01` "dönüş vergisi" %15-20 etkin DPS kaybı diyor | `M2-T05` | Dönüş yok, anında ateş |
-| S24 | Aynı düşmana aynı anda kaç mermi gidebilir? | Sınırsızsa odaklanma kaybı (`research/01` §10) gerçek oluyor; Kısıt B'deki `× 0.75` bunun karşılığı | `M2-T07` | Sınır yok |
+**S18 ve S21 kapandı; S19, S22, S23 varsayılanla uygulandı; S20 ve S24
+hâlâ açık ve ikisi de M3'ün girdisi.**
+
+| # | Durum | Ayrıntı |
+|---|---|---|
+| **S18** | ✅ kapandı | Karakter kümesi `0-9 + - . %`. Font **dosya değil**, `create`'te bir kez üretilen doku + `RetroFont.Parse` — doğrulanamayan ikili dosya uydurmak yerine. M6'da gerçek dosyayla değişecek, `NUMBER_FONT_KEY` aynı kalıyor |
+| **S21** | ✅ kapandı | Mermi havadayken hedef ölürse **son bilinen konuma gidip sönümleniyor**; alan hasarlıysa oraya varınca **yine de patlıyor** (top mermisi boşa gitmiyor). Üç ayrı test |
+| **S19** | ☐ varsayılan uygulandı | İki butonlu düz liste, 88×44 px. §2'deki "altın kartuş" biçimi M6'da |
+| **S22** | ☐ varsayılan uygulandı | Patlama hasarı merkeze uzaklığa göre **azalmıyor**. M3 denge sağlamaları bu varsayımla koşacak; değişirse Top ailesinin tavanı değişir |
+| **S23** | ☐ varsayılan uygulandı | Kule dönmüyor, anında ateş ediyor. `research/01` "dönüş vergisi"ni %15-20 etkin DPS kaybı olarak ölçmüştü — eklenirse **tüm Kısıt A tavanları yeniden bakılmalı** |
+| **S20** | ⚠️ **açık** | Mermi hızı `600 px/sn`, `data/balance.ts` içinde `GECICI_MERMI_HIZI` olarak işaretli. Dokümanda hiçbir yerde yok. En hızlı düşmanın (Kurt Binicisi 110) 5,5 katı; menzil 150'de uçuş süresi ≤ 0,25 sn — yani M2 ölçümlerinde ıskalama üretmiyor |
+| **S24** | ⚠️ **açık — M3 girdisi** | Aynı hedefe mermi sınırı **yok**. `research/01` §10'daki odaklanma kaybının (overkill) kaynağı bu ve Kısıt B'deki `× 0,75` çarpanının karşılığı. `M3-T09` başsız simülasyonu bunu **ölçecek**; ölçmeden sınır konmuyor |
 
 ## M3 — Ekonomi, dalgalar, denge sağlamaları
 
-| # | Soru | Neden önemli | Bloke | Varsayılan |
-|---|---|---|---|---|
-| S28 | `SPAWN_K` ve `REST_K` sabitleri | §7 tempo formülünün sayıları yok | `M3-T01`, `M3-T05` | Geçici değer, işaretli |
-| S29 | Dalga 1 otomatik mi başlıyor, oyuncu mu başlatıyor? | İlk izlenim ve öğretici akış | `M3-T04` | Oyuncu başlatır |
-| S30 | 10 dalganın bütçeden üretilen kompozisyonunu kim rötuşlayacak? | §7 "üretilir ve sonra elle rötuşlanır" diyor | `M3-T02` | Üretilen hali rötuşsuz kullanılır |
-| S31 | Kaybetme: can 0 olunca anında mı, dalga sonunda mı? | Anlık kaybetme sert; dalga sonu daha affedici | `M3-T11` | Anında |
-| S32 | 3 yıldız için kayıt formatı M3'te mi hazırlanacak? | Eşikler S59'da ama şema erken lazım olabilir | `M3-T11` | M7'ye bırakılır |
-| S33 | Boss dalgasında refakat var mı? §7 "refakatsiz gelir **veya** sonra gönderilir" diyor, seçim yapılmamış | `first` hedeflemesi refakati vurursa boss serbest yürüyor (`research/01` §10) | `M3-T02`, `M4-T09` | Refakatsiz |
+**S28-S33'ün altısı da kapandı; M3 iki YENİ denge bulgusu üretti (S34, S35).**
+
+| # | Durum | Ayrıntı |
+|---|---|---|
+| **S28** | ✅ kapandı | **`REST_K` düştü:** §7'nin `dalgaSonrasıBekleme = REST_K × dalgaBoyu` satırı §6'nın açık "20 sn hazırlık sayacı" ile çelişiyordu; açık sayı kazandı. **`SPAWN_K = 24`, ölçülerek** seçildi (8 farklı değer × 10 dalga simüle edildi, `M3-SONUC.md` §2). Formülün asıl anlamı da bulundu: `(n−1)×K/n ≈ K`, yani `SPAWN_K` **dalganın doğum penceresi** — dalga boyundan bağımsız |
+| **S29** | ✅ kapandı | Hazırlık sayacı dolunca dalga **otomatik** başlıyor; erken başlatma bir seçenek. §6'nın bonus formülü (`kalanSaniye × …`) zaten sayacın işlediğini varsayıyor |
+| **S30** | ✅ kapandı | Kompozisyon bütçeden üretiliyor, rötuş kuralı koda yazıldı: dalga 1-2 yalnız Goblin, Ork Savaşçı 3'te (zırh), Kurt Binicisi 5'te (hız), **nefes dalgalarında yeni tip tanıtılmıyor**. `waves.test.ts` üçünü de bağlıyor |
+| **S31** | ✅ kapandı | **Kaybetme anında.** Can 0'a inince dalga sonu beklenmiyor; beklemek oyuncuya kaybettiğini bildiği bir dalgayı izletmek olurdu |
+| **S32** | ✅ kapandı | Eşikler zaten `GAME-DESIGN.md` §9'da vardı (S59'da eklenmişti): 20 → ★★★, 15-19 → ★★, ≤14 → ★. `GameOverScene` uyguluyor. Soru bayattı |
+| **S33** | ✅ kapandı | §7 zaten cevaplıyor: "**Boss refakatsiz gelir**" — aksi hâlde `first` hedeflemesi bütün ateşi refakate yönlendirir. M4'te uygulanacak |
+| **S34** | ⚠️ **yeni** | **8 nokta dalga 6'da doluyor, §6 "4-5" diyor.** Ölçüldü: karışık tahta (4 Okçu + 4 Top = 720) dalga 6 başında karşılanabiliyor (gelir 727); en ucuz tahta (8 Okçu = 560) dalga 5'te. Ayrıca **toplam gelir 1614, §6 "~1850" diyor** (%13 düşük). İki sapmanın da sebebi aynı: harita 1 kadrosu şu an 3 düşman; Harpi (9 altın) ve Ogre Şef (60 altın) M4'te giriyor. **M4'te yeniden ölçülecek** |
+| **S35** | ⚠️ **yeni** | **Yükseltme M3'e alındı.** Plan "Olmayan: Tier 2-3" diyordu ama aynı taşın bitiş durumu "harita bitirilebiliyor" istiyordu. Ölçüm: T2 dahil tahta 19/20 canla bitiriyor, **yalnız T1 ile 30 sızıntı → oyun kayıp**. İki plan maddesi aynı anda doğru olamıyordu; ölçüm karar verdi. T3 dalları M4'te kaldı |
 
 ## M4 — Tam set, yükseltme, bilgi paneli
 
