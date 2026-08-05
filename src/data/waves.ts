@@ -73,20 +73,47 @@ function grup(
   };
 }
 
-/** `[düşman, adet]` çiftlerinden dalga kurar; `startAt` gruplar arası artar. */
-function dalgaKur(index: number, parcalar: ReadonlyArray<readonly [EnemyId, number]>): Wave {
+/**
+ * `[düşman, adet]` çiftlerinden dalga kurar; `startAt` gruplar arası artar.
+ *
+ * @param ekGecikme İlk gruptan sonraki gruplara eklenecek gecikme (sn).
+ *   Boss dalgasında refakati geciktirmek için (§7).
+ */
+function dalgaKur(
+  index: number,
+  parcalar: ReadonlyArray<readonly [EnemyId, number]>,
+  ekGecikme = 0,
+): Wave {
   const toplamDusman = parcalar.reduce((t, [, c]) => t + c, 0);
   const aralik = spawnDelayFor(toplamDusman);
 
   let t = 0;
   const groups: WaveGroup[] = [];
-  for (const [enemy, count] of parcalar) {
+  parcalar.forEach(([enemy, count], i) => {
     groups.push(grup(enemy, count, t, toplamDusman));
     // Sonraki grup, bu grubun son düşmanı doğduktan sonra başlıyor.
-    t = Math.round((t + count * aralik) * 100) / 100;
-  }
+    t = Math.round((t + count * aralik + (i === 0 ? ekGecikme : 0)) * 100) / 100;
+  });
   return { index, groups };
 }
+
+/**
+ * Boss dalgasının refakat gecikmesi. Birim: saniye.
+ *
+ * `GAME-DESIGN.md` §7: "**Boss refakatsiz gelir** veya refakat boss'tan
+ * *sonra* gönderilir — aksi halde `first` hedeflemesi bütün ateşi refakate
+ * yönlendirir ve boss serbest yürür."
+ *
+ * **S33: ikinci seçenek uygulandı.** Refakatsiz gelmek dalga bütçesini
+ * yarıya düşürürdü (boss 25 puan, bütçe 52) ve dalga 10 dalga 9'dan
+ * hafif olurdu. Refakat 8 sn sonra gönderiliyor; boss o sürede 224 px
+ * öne geçiyor ve `first` hedeflemesi onu seçiyor.
+ *
+ * Refakat sonunda boss'u geçiyor (ork 45 px/sn vs boss 28) — o noktadan
+ * sonra `strongest` hedeflemesi gerekiyor, ki §5 karşı-oyun tablosu zaten
+ * boss için onu söylüyor.
+ */
+export const BOSS_REFAKAT_GECIKMESI_SN = 8;
 
 export const MAP1_WAVES: readonly Wave[] = [
   dalgaKur(1, [['goblin', 10]]), // bütçe 10 → 10 puan
@@ -105,30 +132,39 @@ export const MAP1_WAVES: readonly Wave[] = [
     ['kurtBinicisi', 3],
   ]), // bütçe 21 → 23 puan (+%9,5)
   dalgaKur(6, [
-    ['goblin', 7],
-    ['orkSavasci', 6],
+    ['goblin', 5],
+    ['orkSavasci', 4],
     ['kurtBinicisi', 2],
-  ]), // bütçe 25 → 25 puan
+    ['harpi', 2],
+  ]), // bütçe 25 → 25 puan. HARPİ tanıtılıyor: uçan kavramı.
   dalgaKur(7, [
     ['goblin', 8],
     ['orkSavasci', 5],
     ['kurtBinicisi', 2],
-  ]), // NEFES, bütçe 25 → 24 puan
+  ]), // NEFES, bütçe 25 → 24 puan. Yeni tip yok.
   dalgaKur(8, [
+    ['goblin', 6],
+    ['orkSavasci', 7],
+    ['kurtBinicisi', 3],
+    ['harpi', 2],
+  ]), // bütçe 36 → 35 puan
+  dalgaKur(9, [
     ['goblin', 8],
     ['orkSavasci', 8],
     ['kurtBinicisi', 4],
-  ]), // bütçe 36 → 36 puan
-  dalgaKur(9, [
-    ['goblin', 9],
-    ['orkSavasci', 9],
-    ['kurtBinicisi', 5],
-  ]), // bütçe 43 → 42 puan
-  dalgaKur(10, [
-    ['goblin', 8],
-    ['orkSavasci', 10],
-    ['kurtBinicisi', 8],
-  ]), // bütçe 52 → 52 puan
+    ['harpi', 3],
+  ]), // bütçe 43 → 45 puan (+%4,7)
+  // BOSS DALGASI — boss ÖNCE, refakat 8 sn sonra (§7, S33).
+  dalgaKur(
+    10,
+    [
+      ['ogreSef', 1],
+      ['orkSavasci', 4],
+      ['kurtBinicisi', 4],
+      ['harpi', 2],
+    ],
+    BOSS_REFAKAT_GECIKMESI_SN,
+  ), // bütçe 52 → 51 puan (boss 25 + refakat 26)
 ];
 
 /** Bir dalganın puan toplamı — `budget(n)` ile karşılaştırılıyor. */

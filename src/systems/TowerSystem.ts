@@ -14,6 +14,7 @@
 import type { Targetable } from '../types/enemy';
 import type { TowerRuntime, TowerTier } from '../types/tower';
 import type { EventBus } from './EventBus';
+import { tierAt } from '../data/towers';
 import { isTargetStillValid, selectTarget } from './TargetingSystem';
 
 const MS_TO_S = 1 / 1000;
@@ -22,8 +23,7 @@ const MS_TO_S = 1 / 1000;
 export type FireHandler = (tower: TowerRuntime, tier: TowerTier, target: Targetable) => void;
 
 export function currentTier(t: TowerRuntime): TowerTier {
-  // noUncheckedIndexedAccess: tiers demeti iki elemanlı, yine de korunuyor.
-  return t.def.tiers[t.tierIndex] ?? t.def.tiers[0];
+  return tierAt(t.def, t.tierIndex);
 }
 
 export class TowerSystem {

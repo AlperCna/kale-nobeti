@@ -7,6 +7,9 @@
 
 import type { DamageType, Targetable } from './enemy';
 
+/** Kademe indeksi: 0 = T1, 1 = T2, 2 = T3a, 3 = T3b. */
+export type TierIndex = 0 | 1 | 2 | 3;
+
 /** `GAME-DESIGN.md` §4 — dört aile. M2'de yalnız ilk ikisi kuruluyor. */
 export type TowerId = 'okcu' | 'top' | 'buyu' | 'kisla';
 
@@ -18,6 +21,21 @@ export type TowerId = 'okcu' | 'top' | 'buyu' | 'kisla';
  * her karede değişir ve kule dönüş animasyonu titrer.
  */
 export type TargetMode = 'first' | 'last' | 'strongest' | 'weakest' | 'closest';
+
+/**
+ * Kule etkisi — süreli veya anlık. `GAME-DESIGN.md` §4.1-§4.3.
+ *
+ * Ayrık birleşim: her etkinin kendi alanları var, ortak "value" alanı yok.
+ * Böylece `kind` kontrolü yapıldığında derleyici doğru alanları biliyor
+ * ve yeni bir etki eklendiğinde `switch` eksik kalırsa hata veriyor.
+ */
+export type TowerEffect =
+  /** Kundakçı: 4 HP/sn, 4 sn (§4.1). */
+  | { readonly kind: 'burn'; readonly dps: number; readonly seconds: number }
+  /** Buz %50 / 2,5 sn; Barut Fıçısı %40 / 2 sn (§4.2, §4.3). */
+  | { readonly kind: 'slow'; readonly factor: number; readonly seconds: number }
+  /** Yıldırım: 3 hedefe, her sıçramada `× falloff` (§4.3). */
+  | { readonly kind: 'chain'; readonly targets: number; readonly falloff: number };
 
 /** Tek bir kule kademesi. `GAME-DESIGN.md` §4.1-§4.4 tablolarının bir satırı. */
 export interface TowerTier {
@@ -36,6 +54,9 @@ export interface TowerTier {
    * `0` = hiç vuramaz ve hedef listesinden **elenir** (`GAME-DESIGN.md` §4.2).
    */
   readonly airMultiplier: 0 | 0.5 | 1;
+  /** Yalnız T3 dallarında: kullanıcıya görünen dal adı. */
+  readonly branchName?: string;
+  readonly effect?: TowerEffect;
 }
 
 /**
@@ -50,8 +71,8 @@ export interface TowerRuntime {
   readonly x: number;
   readonly y: number;
   readonly def: TowerDef;
-  /** `0` = T1, `1` = T2. T3 dalları M4'te ayrışacak. */
-  tierIndex: 0 | 1;
+  /** `0` = T1, `1` = T2, `2` = T3a, `3` = T3b. */
+  tierIndex: TierIndex;
   targetMode: TargetMode;
   /** Bir sonraki atışa kalan süre. Birim: **saniye**. */
   cooldownLeft: number;

@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { budget, spawnDelayFor, MAP1_WAVES, wavePoints, waveEnemyCount } from './waves';
+import {
+  budget,
+  spawnDelayFor,
+  MAP1_WAVES,
+  wavePoints,
+  waveEnemyCount,
+  BOSS_REFAKAT_GECIKMESI_SN,
+} from './waves';
 import { BALANCE, POOL_PREALLOC, SPAWN_K } from './balance';
 import { MAP_1 } from './maps';
 import { getEnemy } from './enemies';
@@ -101,11 +108,30 @@ describe('MAP1_WAVES — Harita 1 dalgaları', () => {
     }
   });
 
-  it('yalnız M2/M3 kadrosu: Goblin, Ork Savaşçı, Kurt Binicisi', () => {
-    // Harpi M4'te (uçan hareketi), Ogre Şef de M4'te — dalga 10 burada
-    // boss dalgası değil.
+  it('harita 1 kadrosunun BEŞİ de kullanılıyor (§5)', () => {
     const kullanilan = new Set(MAP1_WAVES.flatMap((w) => w.groups.map((g) => g.enemy)));
-    expect([...kullanilan].sort()).toEqual(['goblin', 'kurtBinicisi', 'orkSavasci']);
+    expect([...kullanilan].sort()).toEqual(
+      ['goblin', 'harpi', 'kurtBinicisi', 'ogreSef', 'orkSavasci'].sort(),
+    );
+  });
+
+  it('dalga 10 BOSS dalgası, refakat bossʼtan SONRA (§7, S33)', () => {
+    const w = MAP1_WAVES[9]!;
+    const boss = w.groups[0]!;
+    expect(boss.enemy).toBe('ogreSef');
+    expect(boss.count).toBe(1);
+    expect(boss.startAt).toBe(0);
+    // Refakat gecikmeli — first hedeflemesi boss'u seçsin diye.
+    for (let i = 1; i < w.groups.length; i++) {
+      expect(w.groups[i]!.startAt).toBeGreaterThanOrEqual(BOSS_REFAKAT_GECIKMESI_SN);
+    }
+  });
+
+  it('boss yalnız dalga 10ʼda', () => {
+    for (const w of MAP1_WAVES) {
+      const bossVar = w.groups.some((g) => g.enemy === 'ogreSef');
+      expect(bossVar, `dalga ${w.index}`).toBe(w.index === 10);
+    }
   });
 
   it('startAt değerleri her dalgada ARTAN', () => {

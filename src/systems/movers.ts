@@ -47,6 +47,50 @@ export class PathMover implements Mover {
 }
 
 /**
+ * **Uçan düşmanlar** — `flyerPaths` üstünde düz gider (`GAME-DESIGN.md` §5).
+ *
+ * `Mover` arayüzünü uyguluyor, yani **`Enemy` sınıfı hiç değişmedi.**
+ * `DEPENDENCIES.md` §2'nin hareket stratejisini M1'de ayırmasının sebebi
+ * tam olarak buydu: uçan desteği için `Enemy`'ye `if (flying)` dalı
+ * eklemek gerekseydi entity yarılırdı.
+ *
+ * Uçan **engellenemez** — `blockedBy` burada hiç okunmuyor (§5).
+ */
+export class LineMover implements Mover {
+  private readonly path: PathSystem;
+
+  constructor(line: readonly Vec2[]) {
+    // Uçan hattı da bir waypoint dizisi; tek fark yolu değil havayı izlemesi.
+    // Aynı `PathSystem`i kullanmak `remainingDistance` semantiğini de
+    // ortaklaştırıyor — `first`/`last` hedeflemesi ikisinde de aynı anlama
+    // geliyor (kaleye kalan mesafe).
+    this.path = new PathSystem(line);
+  }
+
+  step(e: EnemyState, scaledDelta: number): void {
+    if (!e.alive) return;
+    // `blockedBy` KONTROL EDİLMİYOR: uçan engellenemez (§5).
+    e.progress = this.path.advance(e.progress, e.speed * scaledDelta * MS_TO_S);
+  }
+
+  remainingDistance(e: EnemyState): number {
+    return e.progress.remainingDistance;
+  }
+
+  positionAt(e: EnemyState): Vec2 {
+    return this.path.positionAt(e.progress);
+  }
+
+  reachedEnd(e: EnemyState): boolean {
+    return this.path.reachedEnd(e.progress);
+  }
+
+  spawnProgress(): PathProgress {
+    return this.path.start();
+  }
+}
+
+/**
  * Havuza dönen düşmanın mantıksal durumunu sıfırlar (TIER 1 kural 3).
  *
  * `Enemy.resetForPool` bunu çağırıp üstüne görsel durumu (tint, alpha,

@@ -14,7 +14,7 @@ import type { Wave } from '../types/wave';
 import type { SpotCoverage } from '../util/coverage';
 import { BALANCE } from '../data/balance';
 import { getEnemy } from '../data/enemies';
-import { OKCU, TOP, getTower } from '../data/towers';
+import { BUYU, OKCU, TOP, getTower } from '../data/towers';
 import { applyDamage } from './combat';
 
 // --------------------------------------------------------------- Kısıt A
@@ -124,7 +124,19 @@ export function cumulativeGold(
  * yolu iki kez gören noktada en çok işe yarıyor.
  */
 function kuleSecimi(sira: number): TowerDef {
-  return sira % 2 === 0 ? TOP : OKCU;
+  // Üçlü döngü → 8 noktada 3 Top, 3 Büyü, 2 Okçu.
+  // Bu **tam olarak** `research/01` §4'ün referans tahtası (ΣDPS 84) ve
+  // §5 karşı-oyun tablosunun dediği: kalabalığa Top, **zırhlıya Büyü**,
+  // uçana Okçu.
+  //
+  // M3'te Büyü henüz yoktu ve döngü Top/Okçu ikilisiydi; boss (zırh 10)
+  // kadroya girince Kısıt A kırıldı — Okçu T2 boss'a 1,95 DPS veriyor ve
+  // Büyüsüz tahta 371 hasarda kalıyordu (gereken 805). Ölçüm, tahtanın
+  // eksik olduğunu söyledi.
+  const sirada = sira % 3;
+  if (sirada === 0) return TOP;
+  if (sirada === 1) return BUYU;
+  return OKCU;
 }
 
 /**
@@ -138,8 +150,9 @@ function kuleSecimi(sira: number): TowerDef {
 function karsilanabilirKule(sira: number, butce: number): TowerDef | undefined {
   const tercih = kuleSecimi(sira);
   if (butce >= tercih.tiers[0].cost) return tercih;
-  const digeri = tercih === TOP ? OKCU : TOP;
-  return butce >= digeri.tiers[0].cost ? digeri : undefined;
+  // Ucuzdan pahalıya dene — gerçek oyuncu elindekiyle alabildiğini alır.
+  const sirali = [OKCU, BUYU, TOP].filter((d) => d !== tercih);
+  return sirali.find((d) => butce >= d.tiers[0].cost);
 }
 
 /**

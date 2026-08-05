@@ -24,7 +24,22 @@ export type EnemyId =
   | 'saman'
   | 'trol'
   | 'orumcekAna'
-  | 'ogreSef';
+  | 'ogreSef'
+  /** Bölünmeden çıkar; kadroda ve dalga bütçesinde yer almaz (§5). */
+  | 'orumcekYavrusu';
+
+/**
+ * Düşman özel yetenekleri. `GAME-DESIGN.md` §5 "Özellik" sütunu.
+ *
+ * Ayrık birleşim: her yeteneğin kendi alanları var, ortak "value" yok.
+ */
+export type EnemyAbility =
+  /** Şaman: yakındakilere 8 HP/sn. **Yarıçap dokümanda yok — S37.** */
+  | { readonly kind: 'heal'; readonly hps: number; readonly radius: number }
+  /** Trol: 6 HP/sn kendini yeniler. */
+  | { readonly kind: 'regen'; readonly hps: number }
+  /** Örümcek Ana: ölünce 3× yavru. */
+  | { readonly kind: 'split'; readonly count: number; readonly childId: EnemyId };
 
 /**
  * `GAME-DESIGN.md` §3: iki hasar tipi, iki savunma tipi. Kule
@@ -53,6 +68,7 @@ export interface EnemyDef {
   readonly leakDamage: number;
   /** Uçar mı — yolu takip etmez, engellenemez (§5). */
   readonly flying: boolean;
+  readonly ability?: EnemyAbility;
 }
 
 /**
