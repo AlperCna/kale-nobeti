@@ -36,6 +36,19 @@ export interface MapDef {
    * Denge testleri (Kısıt A) bunu kullanıyor.
    */
   readonly coverage: readonly SpotCoverage[];
+  /**
+   * **Kol başına** kapsama — `paths` ile aynı sırada.
+   *
+   * Ayrık yolda `coverage` (toplam) yanıltıcı: iki kol ortak gövdeyi
+   * paylaşıyorsa aynı fiziksel yol iki kez sayılıyor. Ama bir düşman
+   * **tek** kol yürüyor, yani Kısıt A'nın tavanı o kolun kapsamasına
+   * bağlı. `GAME-DESIGN.md` §9 "ayrık yol uyarısı": *"Kısıt A hesabı her
+   * kol için ayrı yapılır. Toplam DPS yanıltıcıdır — kolun yalnızca onu
+   * gören kuleleri sayılır."*
+   *
+   * Tek yollu haritada tek elemanlı ve `coverage` ile aynı.
+   */
+  readonly branchCoverage: readonly (readonly SpotCoverage[])[];
 }
 
 /** `waves` alanı M3'te `MapDef`'e eklenir; M1'de dalga kavramı yok. */

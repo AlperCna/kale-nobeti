@@ -8,14 +8,15 @@
 
 import type { EnemyDef } from '../types/enemy';
 import type { MapDef } from '../types/map';
-import type { TowerDef } from '../types/tower';
+import type { TierIndex, TowerDef } from '../types/tower';
 import type { BoardTower, ReferenceBoard } from '../types/board';
 import type { Wave } from '../types/wave';
 import type { SpotCoverage } from '../util/coverage';
 import { BALANCE } from '../data/balance';
 import { getEnemy } from '../data/enemies';
-import { BUYU, OKCU, TOP, getTower } from '../data/towers';
+import { BUYU, OKCU, TOP, getTower, tierAt } from '../data/towers';
 import { applyDamage } from './combat';
+import { measureCoverage } from '../util/coverage';
 
 // --------------------------------------------------------------- Kısıt A
 
@@ -26,8 +27,8 @@ import { applyDamage } from './combat';
  * değil. Okçu T2 (10 hasar) boss'a (zırh 10) saniyede 10 değil **1,95**
  * veriyor; farkı yaratan bu.
  */
-export function effectiveDps(def: TowerDef, tier: 0 | 1, enemy: EnemyDef): number {
-  const t = def.tiers[tier];
+export function effectiveDps(def: TowerDef, tier: TierIndex, enemy: EnemyDef): number {
+  const t = tierAt(def, tier);
   const ucanCarpani = enemy.flying ? t.airMultiplier : 1;
   if (ucanCarpani === 0) return 0; // kule bu düşmana hiç vuramıyor
   const vurus = applyDamage(t.damage * ucanCarpani, def.damageType, enemy);
@@ -66,7 +67,7 @@ export function ceilingA(
     if (dps === 0) continue;
 
     const kapsama =
-      coverageByRange(def.tiers[bt.tier].range).find((c) => c.spotIndex === bt.spotIndex)
+      coverageByRange(tierAt(def, bt.tier).range).find((c) => c.spotIndex === bt.spotIndex)
         ?.coveredPx ?? 0;
     toplam += dps * kapsama;
   }
@@ -105,7 +106,8 @@ export function cumulativeGold(
       if (e === undefined) continue;
       toplam += Math.round(e.gold * map.goldMultiplier) * g.count;
     }
-    toplam += BALANCE.waveEndBonus(w.index);
+    // S70 — bonus da harita çarpanıyla (EconomySystem.awardWaveEnd gerekçesi).
+    toplam += Math.round(BALANCE.waveEndBonus(w.index) * map.goldMultiplier);
     if (withEarlyBonus && w.index >= BALANCE.earlyBonusFrom) {
       toplam += BALANCE.prepSeconds * Math.ceil(w.index / 2);
     }
@@ -206,8 +208,9 @@ export function buildReferenceBoards(
       harcanan += maliyet;
     }
 
-    // 2) Nokta kalmadıysa yükselt — en pahalı karşılanabilirden başlayarak.
+    // 2) Nokta kalmadıysa yükselt: önce hepsi T2, sonra T3.
     if (kuleler.every((k) => k.spotIndex !== undefined) && kuleler.length === sirali.length) {
+      // 2a) T1 → T2
       for (let i = 0; i < kuleler.length; i++) {
         const k = kuleler[i];
         if (k === undefined || k.tier !== 0) continue;
@@ -216,6 +219,34 @@ export function buildReferenceBoards(
         const maliyet = def.tiers[1].cost;
         if (kullanilabilir < maliyet) continue;
         kuleler[i] = { ...k, tier: 1 };
+        kullanilabilir -= maliyet;
+        harcanan += maliyet;
+      }
+
+      // 2b) T2 → T3. **M7'de eklendi.**
+      //
+      // Bu daldan önce tahta T2'de takılıyordu ve Kısıt A harita 2-3'te
+      // kimsenin sahip olmayacağı bir tahtayı ölçüyordu: oyuncunun elinde
+      // 2129/2959 altın varken tahtaya harcanan çok daha azdı. Boss
+      // tavanın %192'si (harita 2) ve %292'si (harita 3) çıkıyordu —
+      // **ölçüm hatası**, denge hatası değil.
+      //
+      // **Dal seçimi (§4.2 kısıtı):** Top ailesinin ilk kulesi **Barut
+      // Fıçısı** (T3b) alıyor, sonrakiler **Havan** (T3a). Havan uçana
+      // vuramıyor ve üç haritanın da kadrosunda Harpi var; hepsini Havan
+      // yapmak tahtanın Top kısmını harpi dalgasında tamamen ölü
+      // bırakırdı. Diğer aileler T3a alıyor (hasar dalı).
+      let topT3Sayisi = 0;
+      for (let i = 0; i < kuleler.length; i++) {
+        const k = kuleler[i];
+        if (k === undefined || k.tier !== 1) continue;
+        const def = getTower(k.towerId);
+        if (def === undefined) continue;
+        const dal: TierIndex = def.id === 'top' && topT3Sayisi === 0 ? 3 : 2;
+        const maliyet = tierAt(def, dal).cost;
+        if (kullanilabilir < maliyet) continue;
+        if (def.id === 'top') topT3Sayisi++;
+        kuleler[i] = { ...k, tier: dal };
         kullanilabilir -= maliyet;
         harcanan += maliyet;
       }
@@ -234,4 +265,112 @@ export function buildReferenceBoards(
 /** 8 yapı noktasının **ilk kez** tamamen dolduğu dalga. Yoksa `-1`. */
 export function spotsFullAtWave(boards: readonly ReferenceBoard[], spotCount: number): number {
   return boards.find((b) => b.towers.length >= spotCount)?.waveIndex ?? -1;
+}
+
+/**
+ * Bir kolun kapsama ölçerini üretir.
+ *
+ * `ceilingA`'nın beklediği `coverageByRange` biçiminde, ama yalnız
+ * `branchIndex` numaralı yolu görüyor.
+ */
+export function branchCoverageFn(
+  map: MapDef,
+  branchIndex: number,
+): (range: number) => readonly SpotCoverage[] {
+  const kol = map.paths[branchIndex];
+  if (kol === undefined) return () => [];
+  return (range: number) => measureCoverage([kol], map.buildSpots, range);
+}
+
+/**
+ * **Kısıt A, kol başına** — `GAME-DESIGN.md` §9 "ayrık yol uyarısı".
+ *
+ * > Harita 2 ve 3'te Kısıt A hesabı **her kol için ayrı** yapılır. Toplam
+ * > DPS yanıltıcıdır — kolun yalnızca onu gören kuleleri sayılır.
+ *
+ * Neden yanıltıcı: bir düşman **tek** kol yürüyor. Diğer kolu savunan
+ * kuleler ona hiç ateş etmiyor ama toplam hesapta sayılıyorlar. Harita 2'de
+ * kollar 480 px ayrık ve 150 px menzilli bir kule ikisini birden göremiyor
+ * — yani toplam tavan, gerçekte var olmayan bir savunmayı vaat ediyor.
+ *
+ * @returns Her kol için bir tavan; **en zayıf kol** belirleyici.
+ */
+export function ceilingAPerBranch(
+  board: ReferenceBoard,
+  enemy: EnemyDef,
+  map: MapDef,
+): number[] {
+  return map.paths.map((_, i) => ceilingA(board, branchCoverageFn(map, i), enemy, map));
+}
+
+/**
+ * Ayrık yolda Kısıt A'nın **gerçek** tavanı: en zayıf kol.
+ *
+ * Düşman hangi kolu seçeceğini oyuncuya sormuyor; savunma en zayıf koldan
+ * yarılır. Ortalama veya toplam almak "iki koldan biri boş olabilir"
+ * gerçeğini gizler.
+ */
+export function ceilingAWeakestBranch(
+  board: ReferenceBoard,
+  enemy: EnemyDef,
+  map: MapDef,
+): number {
+  const kollar = ceilingAPerBranch(board, enemy, map);
+  return kollar.length === 0 ? 0 : Math.min(...kollar);
+}
+
+// ------------------------------------------------- Boss HP'si (research/01 §12)
+
+/**
+ * Boss'un tavana oranı — `research/01` §12 ve `GAME-DESIGN.md` §5.
+ * Hedef band %75-85; türetme ortayı alıyor.
+ */
+export const BOSS_CEILING_RATIO = 0.8;
+
+/**
+ * **Boss HP'si haritadan türetilir** — `700 × hpMultiplier` DEĞİL.
+ *
+ * ## Neden
+ *
+ * M7'de ölçüldü: `700 × hpMultiplier` harita 2'de 1120, harita 3'te 1820
+ * ediyor ve o haritalarda **karşılanabilir hiçbir tahta** bu kadarını
+ * indiremiyor. Kısıt A oranları %165 ve %282 çıkıyordu — yani boss
+ * öldürülemez. Sebep basit: HP çarpanı 1,6/2,6 ile büyüyor ama savunma
+ * öyle büyümüyor — ayrık yolda **en zayıf kol** yalnız noktaların bir
+ * kısmını görüyor ve tavan harita 1'inkinin bile altına düşebiliyor.
+ *
+ * `research/01` §12 bunu önceden söylemişti: *"boss HP'si `enemies.ts`
+ * içinde sabit olmasın; `balance.ts` içinde ölçülen kapsama + referans
+ * tahtadan türetilsin."*
+ *
+ * ## Döngüsellik yok
+ *
+ * Tavan boss'un **hızına ve savunmasına** bağlı, HP'sine değil. Yani
+ * `ceilingA` hesaplanırken boss HP'si hiç kullanılmıyor.
+ *
+ * ## Kısıt A boss için tautolojiye dönüyor — yerine ne var
+ *
+ * §12 uyarıyor: HP `0,80 × tavan` olarak tanımlanırsa `tavan > HP × 1,15`
+ * testi `tavan > 0,92 × tavan` olur ve **her zaman** geçer. Bu yüzden boss
+ * Kısıt A'dan çıkarılıyor ve yerine iki gerçek sağlama geliyor:
+ * `bossAffordable` (tahta karşılanıyor mu) ve `BOSS_HP_BAND` regresyon
+ * bandı — ikisi de `balanceChecks.test.ts` içinde.
+ *
+ * @param board Dalga 10 referans tahtası (muhafazakâr taban).
+ */
+export function deriveBossHp(map: MapDef, board: ReferenceBoard, boss: EnemyDef): number {
+  const tavan = ceilingAWeakestBranch(board, boss, map);
+  return Math.round(BOSS_CEILING_RATIO * tavan);
+}
+
+/**
+ * Boss dalgasının tahtası **karşılanabiliyor mu** — türetmenin dayandığı
+ * asıl varsayım ve tautolojik olmayan kısım.
+ */
+export function bossAffordable(
+  map: MapDef,
+  waves: readonly Wave[],
+  board: ReferenceBoard,
+): boolean {
+  return cumulativeGold(map, waves, 10, false) >= board.cumulativeCost;
 }

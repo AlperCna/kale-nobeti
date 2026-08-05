@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { MAP_1, MAPS, COVERAGE_REFERENCE_RANGE } from './maps';
+import { MAP_1, MAP_2, MAP_3, MAPS, COVERAGE_REFERENCE_RANGE } from './maps';
 import { measureCoverage, pathLength, spotsCoveringFlyerPaths } from '../util/coverage';
 
 describe('MAP_1 — GAME-DESIGN §9 tablosuna uygunluk', () => {
@@ -116,8 +116,148 @@ describe('MAP_1 — denge hedefleri', () => {
 });
 
 describe('MAPS', () => {
-  it('M1 sonunda tek harita var', () => {
-    expect(MAPS).toHaveLength(1);
+  it('M7 sonunda ÜÇ harita var, §9 sırasında', () => {
+    // M1'de bu test "tek harita" diyordu — o bir taş durumuydu, kalıcı
+    // bir kural değil. M7 üçünü de getiriyor (§9 tablosu).
+    expect(MAPS).toHaveLength(3);
     expect(MAPS[0]).toBe(MAP_1);
+    expect(MAPS[1]).toBe(MAP_2);
+    expect(MAPS[2]).toBe(MAP_3);
+  });
+
+  it('kimlikler benzersiz — kayıt anahtarı bunlara dayanıyor', () => {
+    expect(new Set(MAPS.map((m) => m.id)).size).toBe(MAPS.length);
+  });
+});
+
+// ---------------------------------------------------------------------
+// M7 — Harita 2 ve 3
+// ---------------------------------------------------------------------
+
+describe('Harita 2 ve 3 — GAME-DESIGN.md §9 tablosu', () => {
+  it('§9 tablosunun her hücresi', () => {
+    expect(MAP_2.id).toBe('tas-kopru');
+    expect(MAP_2.buildSpots).toHaveLength(10);
+    expect(MAP_2.paths).toHaveLength(2); // Y ayrımı
+    expect(MAP_2.hpMultiplier).toBe(1.6);
+    expect(MAP_2.goldMultiplier).toBe(1.6);
+    expect(MAP_2.startGold).toBe(340);
+
+    expect(MAP_3.id).toBe('kul-ovasi');
+    expect(MAP_3.buildSpots).toHaveLength(12);
+    expect(MAP_3.paths).toHaveLength(2); // iki giriş
+    expect(MAP_3.hpMultiplier).toBe(2.6);
+    expect(MAP_3.goldMultiplier).toBe(2.6);
+    expect(MAP_3.startGold).toBe(400);
+  });
+
+  it('altın çarpanı HP çarpanına EŞİT — §9', () => {
+    for (const m of MAPS) expect(m.goldMultiplier).toBe(m.hpMultiplier);
+  });
+
+  it('kadrolar §5 tablosuyla eşleşiyor — mekanik erken, uç örneği geç', () => {
+    // Harita 2 = harita 1 + Zırhlı Ork, Şaman
+    for (const e of MAP_1.enemyRoster) expect(MAP_2.enemyRoster).toContain(e);
+    expect(MAP_2.enemyRoster).toContain('zirhliOrk');
+    expect(MAP_2.enemyRoster).toContain('saman');
+    expect(MAP_2.enemyRoster).not.toContain('trol');
+    expect(MAP_2.enemyRoster).not.toContain('orumcekAna');
+
+    // Harita 3 = harita 2 + Trol, Örümcek Ana
+    for (const e of MAP_2.enemyRoster) expect(MAP_3.enemyRoster).toContain(e);
+    expect(MAP_3.enemyRoster).toContain('trol');
+    expect(MAP_3.enemyRoster).toContain('orumcekAna');
+    // Yavru kadroda sayılmaz ama bölünmeden doğabilmesi için listede olmalı.
+    expect(MAP_3.enemyRoster).toContain('orumcekYavrusu');
+  });
+
+  it('zorluk MONOTON artıyor', () => {
+    expect(MAP_1.hpMultiplier).toBeLessThan(MAP_2.hpMultiplier);
+    expect(MAP_2.hpMultiplier).toBeLessThan(MAP_3.hpMultiplier);
+    expect(MAP_1.buildSpots.length).toBeLessThan(MAP_2.buildSpots.length);
+    expect(MAP_2.buildSpots.length).toBeLessThan(MAP_3.buildSpots.length);
+    expect(MAP_1.startGold).toBeLessThan(MAP_2.startGold);
+    expect(MAP_2.startGold).toBeLessThan(MAP_3.startGold);
+  });
+});
+
+describe('§9 kapsama bandı — KOL BAŞINA (ayrık yol uyarısı)', () => {
+  /**
+   * §9: geçerli aralık geometri bandı (285-315) ile boss bandının
+   * (275-311) kesişimi = **285-311 px**.
+   *
+   * Ayrık yolda **kol başına** ölçülüyor: iki kol ortak gövdeyi
+   * paylaşıyorsa toplam ölçüm aynı fiziksel yolu iki kez sayıyor. İlk
+   * tasarımda harita 2 toplamda 487,5 çıkmıştı — kol başına 299,8.
+   */
+  const kolOrtalamasi = (kaps: readonly { coveredPx: number }[]): number => {
+    // O kolu **hiç görmeyen** noktalar ortalamaya girmiyor: bir kolun
+    // savunmasız kalması yerleşim kararı, geometri hatası değil.
+    const goren = kaps.filter((c) => c.coveredPx > 0);
+    return goren.reduce((a, c) => a + c.coveredPx, 0) / goren.length;
+  };
+
+  it('üç haritanın HER KOLU 285-311 px bandında', () => {
+    for (const m of MAPS) {
+      m.branchCoverage.forEach((kol, i) => {
+        const ort = kolOrtalamasi(kol);
+        expect(ort, `${m.id} kol ${i}: ${ort.toFixed(1)}`).toBeGreaterThanOrEqual(285);
+        expect(ort, `${m.id} kol ${i}: ${ort.toFixed(1)}`).toBeLessThanOrEqual(311);
+      });
+    }
+  });
+
+  it('ölçülen değerler — değişirse M7-SONUC güncellenmeli', () => {
+    expect(kolOrtalamasi(MAP_1.branchCoverage[0]!)).toBeCloseTo(296.3, 0);
+    expect(kolOrtalamasi(MAP_2.branchCoverage[0]!)).toBeCloseTo(299.8, 0);
+    expect(kolOrtalamasi(MAP_2.branchCoverage[1]!)).toBeCloseTo(299.8, 0);
+    expect(kolOrtalamasi(MAP_3.branchCoverage[0]!)).toBeCloseTo(291.3, 0);
+    expect(kolOrtalamasi(MAP_3.branchCoverage[1]!)).toBeCloseTo(291.3, 0);
+  });
+
+  it('Y ayrımında iki kol SİMETRİK — biri diğerinden kolay değil', () => {
+    expect(kolOrtalamasi(MAP_2.branchCoverage[0]!)).toBeCloseTo(
+      kolOrtalamasi(MAP_2.branchCoverage[1]!),
+      3,
+    );
+    expect(kolOrtalamasi(MAP_3.branchCoverage[0]!)).toBeCloseTo(
+      kolOrtalamasi(MAP_3.branchCoverage[1]!),
+      3,
+    );
+  });
+
+  it('kollar 150 px menzille aynı anda GÖRÜLEMİYOR — gerçek bir seçim', () => {
+    // Harita 2: üst kol köşesini gören nokta alt kolu görmemeli.
+    const ust = MAP_2.branchCoverage[0]!;
+    const alt = MAP_2.branchCoverage[1]!;
+    const ikisiniDeGoren = ust.filter(
+      (c, i) => c.coveredPx > 0 && (alt[i]?.coveredPx ?? 0) > 0,
+    );
+    // Yalnız ortak gövde/kuyruk noktaları ikisini de görüyor (0,1,8,9).
+    expect(ikisiniDeGoren).toHaveLength(4);
+  });
+
+  it('coverage ELLE YAZILMADI — measureCoverage ile aynı', () => {
+    for (const m of MAPS) {
+      const yeniden = measureCoverage(m.paths, m.buildSpots, COVERAGE_REFERENCE_RANGE);
+      expect(m.coverage).toEqual(yeniden);
+    }
+  });
+});
+
+describe('Uçan hattı — M4-T06 kriteri (≥ %40 nokta)', () => {
+  it('üç harita da kriteri geçiyor', () => {
+    for (const m of MAPS) {
+      const kesen = measureCoverage(m.flyerPaths, m.buildSpots, COVERAGE_REFERENCE_RANGE).filter(
+        (c) => c.coveredPx > 0,
+      );
+      const oran = kesen.length / m.buildSpots.length;
+      expect(oran, `${m.id}: %${(oran * 100).toFixed(0)}`).toBeGreaterThanOrEqual(0.4);
+    }
+  });
+
+  it('her girişin bir uçan hattı var — harita 3’te iki giriş, iki hat', () => {
+    expect(MAP_2.flyerPaths).toHaveLength(1);
+    expect(MAP_3.flyerPaths).toHaveLength(2);
   });
 });

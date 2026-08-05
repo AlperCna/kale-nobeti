@@ -6,13 +6,21 @@
  * (`M3-T07`, S25).
  */
 
-import type { TargetMode, TowerId } from './tower';
+import type { TargetMode, TierIndex, TowerId } from './tower';
 
 export interface BoardTower {
   readonly spotIndex: number;
   readonly towerId: TowerId;
-  /** `0` = T1, `1` = T2. T3 M4'te. */
-  readonly tier: 0 | 1;
+  /**
+   * `0` = T1, `1` = T2, `2` = T3a, `3` = T3b.
+   *
+   * **M7'de T3'e açıldı.** M3-M6 boyunca `0 | 1` idi ve Kısıt A harita
+   * 2-3'te **kimsenin sahip olmayacağı** bir tahtayı ölçüyordu: oyuncunun
+   * elinde 2129/2959 altın varken tahta T2'de kalıyordu. Sonuç boss'un
+   * tavanın %192'si (harita 2) ve %292'si (harita 3) çıkmasıydı —
+   * ölçüm hatası, denge hatası değil.
+   */
+  readonly tier: TierIndex;
   /**
    * Hedefleme modu. Verilmezse `first` (oyunun varsayılanı, §4.5).
    *
