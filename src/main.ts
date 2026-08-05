@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { BootScene } from './scenes/BootScene';
 import { PreloadScene } from './scenes/PreloadScene';
 import { MenuScene } from './scenes/MenuScene';
+import { LevelSelectScene } from './scenes/LevelSelectScene';
 import { GameScene } from './scenes/GameScene';
 import { HudScene } from './scenes/HudScene';
 import { GameOverScene } from './scenes/GameOverScene';
@@ -36,7 +37,15 @@ const config: Phaser.Types.Core.GameConfig = {
   // görünür — kapatılıyor.
   banner: false,
 
-  scene: [BootScene, PreloadScene, MenuScene, GameScene, HudScene, GameOverScene],
+  scene: [
+    BootScene,
+    PreloadScene,
+    MenuScene,
+    LevelSelectScene,
+    GameScene,
+    HudScene,
+    GameOverScene,
+  ],
 };
 
 const game = new Phaser.Game(config);

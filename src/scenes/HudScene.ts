@@ -153,7 +153,7 @@ export class HudScene extends Phaser.Scene {
 
     this.#bitti = true;
     this.scene.stop('Game');
-    this.scene.start('GameOver', { won: kazandi, lives: game.lives });
+    this.scene.start('GameOver', { won: kazandi, lives: game.lives, mapId: game.map.id });
   }
 
   /**

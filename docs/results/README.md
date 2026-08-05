@@ -70,7 +70,7 @@ tahminle verilir."
 | M4 | [M4-SONUC.md](M4-SONUC.md) | 2026-08-05 | ~2 sa 40 dk |
 | M5 | [M5-SONUC.md](M5-SONUC.md) | 2026-08-05 | ~1 sa 50 dk |
 | M6 | [M6-SONUC.md](M6-SONUC.md) | 2026-08-05 | ~50 dk (yalnız kod kısmı) |
-| M7 | — | — | — |
+| M7 | [M7-SONUC.md](M7-SONUC.md) | 2026-08-06 | ~3 sa (kısmi) |
 
 ## Sonuç dosyası plana geri besler
 

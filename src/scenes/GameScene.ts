@@ -33,11 +33,12 @@ import { ensureNumberFont } from '../fx/numberFont';
 import { TowerInfoPanel } from '../fx/TowerInfoPanel';
 import { Pool } from '../util/pool';
 import { coveredSegments, measureCoverage } from '../util/coverage';
-import { MAP_1, COVERAGE_REFERENCE_RANGE } from '../data/maps';
+import { MAP_1, getMap, COVERAGE_REFERENCE_RANGE } from '../data/maps';
+import type { MapDef } from '../types/map';
 import { TOWERS, getTower, tierAt } from '../data/towers';
 import { getEnemy, ENEMIES } from '../data/enemies';
 import { POOL_PREALLOC, GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI } from '../data/balance';
-import { MAP1_WAVES } from '../data/waves';
+import { MAP1_WAVES, wavesFor } from '../data/waves';
 import { devHooks } from '../util/devHooks';
 import type { TargetMode, TierIndex, TowerDef } from '../types/tower';
 import type { Mover } from '../types/enemy';
@@ -159,8 +160,28 @@ export class GameScene extends Phaser.Scene {
   /** Tıkla-hedefle bekleyen yetenek; `null` = yok. */
   #pendingAbility: AbilityId | null = null;
 
+  /**
+   * **Oynanan harita.** M7'ye kadar `MAP_1` sabitti; 32 yerde doğrudan
+   * geçiyordu ve harita 2-3 veri olarak var olduğu hâlde oynanamıyordu.
+   *
+   * `init()` her sahne başlatmasında koşuyor (bekçi kural 10), yani
+   * seçim yeniden başlatmada da taze.
+   */
+  #map: MapDef = MAP_1;
+  #waveList: readonly Wave[] = MAP1_WAVES;
+
   constructor() {
     super('Game');
+  }
+
+  /** Seviye seçim ekranı `{ mapId }` gönderiyor; yoksa harita 1. */
+  init(data?: { mapId?: string }): void {
+    this.#map = (data?.mapId !== undefined ? getMap(data.mapId) : undefined) ?? MAP_1;
+    this.#waveList = wavesFor(this.#map.id);
+  }
+
+  get map(): MapDef {
+    return this.#map;
   }
 
   // ------------------------------------------------- HUD'un okuduğu durum
@@ -182,7 +203,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   get totalWaves(): number {
-    return MAP1_WAVES.length;
+    return this.#waveList.length;
   }
 
   get prepRemainingSec(): number | null {
@@ -240,7 +261,7 @@ export class GameScene extends Phaser.Scene {
     this.#kayitUyarildi = false;
     this.shake.enabled = this.settings.state.screenShake;
 
-    const yol = MAP_1.paths[0] ?? [];
+    const yol = this.#map.paths[0] ?? [];
     const path = new PathSystem(yol);
     const mover = new PathMover(path);
     ensureNumberFont(this);
@@ -255,7 +276,7 @@ export class GameScene extends Phaser.Scene {
       this,
       this.scale.width - 262,
       this.scale.height - 222,
-      ENEMIES.filter((e) => MAP_1.enemyRoster.includes(e.id)),
+      ENEMIES.filter((e) => this.#map.enemyRoster.includes(e.id)),
     );
 
     // TIER 1 kural 3: `Group` burada, sahne tarafında — görüntü listesi ve
@@ -357,21 +378,21 @@ export class GameScene extends Phaser.Scene {
 
     // Uçanlar `flyerPaths` üstünde düz gidiyor (§5). Seçim burada; `Enemy`
     // hangi hareketle geldiğini bilmiyor (`DEPENDENCIES.md` §2).
-    const ucanMover = new LineMover(MAP_1.flyerPaths[0] ?? yol);
+    const ucanMover = new LineMover(this.#map.flyerPaths[0] ?? yol);
     const moverFor = (def: { flying: boolean }): Mover => (def.flying ? ucanMover : mover);
 
-    this.#eco = new EconomySystem(MAP_1, this.bus);
-    this.#abilities = new EnemyAbilitySystem(enemyPool, MAP_1.hpMultiplier, getEnemy);
+    this.#eco = new EconomySystem(this.#map, this.bus);
+    this.#abilities = new EnemyAbilitySystem(enemyPool, this.#map.hpMultiplier, getEnemy);
     this.#waves = new WaveManager(
       enemyPool,
       moverFor,
       this.bus,
       this.#eco,
-      MAP1_WAVES,
-      MAP_1.hpMultiplier,
+      this.#waveList,
+      this.#map.hpMultiplier,
     );
 
-    this.#occupancy = new SpotOccupancy(MAP_1.buildSpots.length);
+    this.#occupancy = new SpotOccupancy(this.#map.buildSpots.length);
     this.#setupInput();
 
     this.bus.on('life:lost', ({ remaining }) => {
@@ -561,7 +582,7 @@ export class GameScene extends Phaser.Scene {
       k.marker.setPosition(k.rally.x, k.rally.y).setVisible(true).setAlpha(secili ? 1 : 0.45);
 
       if (!secili) continue;
-      const spot = MAP_1.buildSpots[spotIndex];
+      const spot = this.#map.buildSpots[spotIndex];
       if (spot === undefined) continue;
 
       // Toplanma menzili (kural 6) — kesikli, kule menzil halkasıyla aynı dil.
@@ -574,7 +595,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   #placeBarracks(spotIndex: number): boolean {
-    const spot = MAP_1.buildSpots[spotIndex];
+    const spot = this.#map.buildSpots[spotIndex];
     if (spot === undefined) return false;
 
     const kademe = barracksTierAt(KISLA, 0);
@@ -585,7 +606,7 @@ export class GameScene extends Phaser.Scene {
     const marker = this.add.circle(0, 0, 7, RALLY_COLOR, 0.9).setStrokeStyle(2, INK_COLOR);
     const kayit = {
       tier: 0 as 0 | 1 | 2 | 3,
-      rally: defaultRally(spot, MAP_1.paths[0] ?? []),
+      rally: defaultRally(spot, this.#map.paths[0] ?? []),
       soldiers: [] as Soldier[],
       marker,
     };
@@ -606,7 +627,7 @@ export class GameScene extends Phaser.Scene {
   /** Kademenin gerektirdiği kadar askeri havuzdan alıp doğurur. */
   #askerleriKur(spotIndex: number): void {
     const k = this.#barracksBySpot.get(spotIndex);
-    const spot = MAP_1.buildSpots[spotIndex];
+    const spot = this.#map.buildSpots[spotIndex];
     if (k === undefined || spot === undefined) return;
 
     const kademe = barracksTierAt(KISLA, k.tier);
@@ -641,10 +662,10 @@ export class GameScene extends Phaser.Scene {
   /** Toplanma noktasını taşır — kural 6 kısıtlarından geçirerek. */
   #setRally(spotIndex: number, istenen: Vec2): void {
     const k = this.#barracksBySpot.get(spotIndex);
-    const spot = MAP_1.buildSpots[spotIndex];
+    const spot = this.#map.buildSpots[spotIndex];
     if (k === undefined || spot === undefined) return;
 
-    k.rally = clampRally(spot, istenen, MAP_1.paths[0] ?? [], k.rally);
+    k.rally = clampRally(spot, istenen, this.#map.paths[0] ?? [], k.rally);
     const kademe = barracksTierAt(KISLA, k.tier);
     k.soldiers.forEach((s, i) => {
       const yayilma = (i - (kademe.soldierCount - 1) / 2) * 14;
@@ -909,7 +930,7 @@ export class GameScene extends Phaser.Scene {
         this.#setRally(this.#draggingRally, { x: p.worldX, y: p.worldY });
         return;
       }
-      const i = findSpotAt({ x: p.worldX, y: p.worldY }, MAP_1.buildSpots);
+      const i = findSpotAt({ x: p.worldX, y: p.worldY }, this.#map.buildSpots);
       if (i === this.#hoveredSpot) return;
       this.#hoveredSpot = i;
       this.#drawHover();
@@ -940,7 +961,7 @@ export class GameScene extends Phaser.Scene {
         }
       }
 
-      const i = findSpotAt(nokta, MAP_1.buildSpots);
+      const i = findSpotAt(nokta, this.#map.buildSpots);
       if (i < 0) {
         this.#closeMenu();
         return;
@@ -966,7 +987,7 @@ export class GameScene extends Phaser.Scene {
     g.clear();
 
     const i = this.#hoveredSpot;
-    const spot = i >= 0 ? MAP_1.buildSpots[i] : undefined;
+    const spot = i >= 0 ? this.#map.buildSpots[i] : undefined;
     if (spot === undefined) return;
 
     const menzil = COVERAGE_REFERENCE_RANGE;
@@ -974,7 +995,7 @@ export class GameScene extends Phaser.Scene {
     // Kapsanan yol vurgusu — `coveredSegments` ile, yani ekranda görünen
     // çizgi ile `MapDef.coverage` içindeki sayı aynı hesaptan geliyor.
     g.lineStyle(10, GOLD_COLOR, 0.55);
-    for (const p of coveredSegments(MAP_1.paths[0] ?? [], spot, menzil)) {
+    for (const p of coveredSegments(this.#map.paths[0] ?? [], spot, menzil)) {
       g.beginPath();
       g.moveTo(p.a.x, p.a.y);
       g.lineTo(p.b.x, p.b.y);
@@ -984,7 +1005,7 @@ export class GameScene extends Phaser.Scene {
     // Menzil uçan hattını kesiyorsa o parça da vurgulanıyor (§5) — oyuncu
     // "bu nokta harpiyi görüyor mu" sorusunu bakarak cevaplayabilsin.
     g.lineStyle(8, 0x3e5ca8, 0.5); // lapis — uçan
-    for (const uc of MAP_1.flyerPaths) {
+    for (const uc of this.#map.flyerPaths) {
       for (const p of coveredSegments(uc, spot, menzil)) {
         g.beginPath();
         g.moveTo(p.a.x, p.a.y);
@@ -1025,7 +1046,7 @@ export class GameScene extends Phaser.Scene {
 
     // Soluk kesikli altın çizgi (§5).
     g.lineStyle(3, GOLD_COLOR, 0.45);
-    for (const hat of MAP_1.flyerPaths) {
+    for (const hat of this.#map.flyerPaths) {
       for (let i = 0; i < hat.length - 1; i++) {
         const a = hat[i];
         const b = hat[i + 1];
@@ -1073,7 +1094,7 @@ export class GameScene extends Phaser.Scene {
    */
   #openMenu(spotIndex: number): void {
     this.#closeMenu();
-    const spot = MAP_1.buildSpots[spotIndex];
+    const spot = this.#map.buildSpots[spotIndex];
     if (spot === undefined) return;
 
     const kap = this.add.container(
@@ -1135,7 +1156,7 @@ export class GameScene extends Phaser.Scene {
       return;
     }
     this.#closeMenu();
-    const spot = MAP_1.buildSpots[spotIndex];
+    const spot = this.#map.buildSpots[spotIndex];
     const kule = this.#towerBySpot.get(spotIndex);
     if (spot === undefined || kule === undefined) return;
 
@@ -1229,7 +1250,7 @@ export class GameScene extends Phaser.Scene {
 
     const tier = tierAt(kule.def, kule.tierIndex);
     const kapsama =
-      measureCoverage(MAP_1.paths, MAP_1.buildSpots, tier.range).find(
+      measureCoverage(this.#map.paths, this.#map.buildSpots, tier.range).find(
         (c) => c.spotIndex === spotIndex,
       )?.coveredPx ?? 0;
 
@@ -1322,7 +1343,7 @@ export class GameScene extends Phaser.Scene {
    */
   #openBarracksMenu(spotIndex: number): void {
     this.#closeMenu();
-    const spot = MAP_1.buildSpots[spotIndex];
+    const spot = this.#map.buildSpots[spotIndex];
     const k = this.#barracksBySpot.get(spotIndex);
     if (spot === undefined || k === undefined) return;
 
@@ -1365,7 +1386,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   #placeTower(spotIndex: number, def: TowerDef): boolean {
-    const spot = MAP_1.buildSpots[spotIndex];
+    const spot = this.#map.buildSpots[spotIndex];
     if (spot === undefined) return false;
 
     const maliyet = def.tiers[0].cost;
@@ -1415,7 +1436,7 @@ export class GameScene extends Phaser.Scene {
     g.fillStyle(PATH_COLOR, 1);
     for (const p of yol) g.fillCircle(p.x, p.y, PATH_WIDTH / 2);
 
-    for (const s of MAP_1.buildSpots) {
+    for (const s of this.#map.buildSpots) {
       g.fillStyle(SPOT_COLOR, 1);
       g.fillCircle(s.x, s.y, SPOT_RADIUS);
       g.lineStyle(3, GOLD_COLOR, 1);
@@ -1423,7 +1444,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     // Kale — mürekkep zemin üstünde mürekkep kare görünmez, altın kontur şart.
-    const c = MAP_1.castle;
+    const c = this.#map.castle;
     g.fillStyle(CASTLE_COLOR, 1);
     g.fillRect(c.x - CASTLE_SIZE / 2, c.y - CASTLE_SIZE / 2, CASTLE_SIZE, CASTLE_SIZE);
     g.lineStyle(4, GOLD_COLOR, 1);
@@ -1442,15 +1463,15 @@ export class GameScene extends Phaser.Scene {
     if (!import.meta.env.DEV) return;
 
     const stil = { fontFamily: 'monospace', fontSize: '16px', color: '#D4A032' };
-    MAP_1.coverage.forEach((c, i) => {
-      const s = MAP_1.buildSpots[i];
+    this.#map.coverage.forEach((c, i) => {
+      const s = this.#map.buildSpots[i];
       if (s === undefined) return;
       this.add
         .text(s.x, s.y - SPOT_RADIUS - 14, `${Math.round(c.coveredPx)}`, stil)
         .setOrigin(0.5, 1);
     });
 
-    const L = MAP_1.paths.reduce(
+    const L = this.#map.paths.reduce(
       (t, p) => t + (p.length > 1 ? new PathSystem(p).totalLength : 0),
       0,
     );
@@ -1463,7 +1484,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   #ortalamaKapsama(): number {
-    const c = MAP_1.coverage;
+    const c = this.#map.coverage;
     if (c.length === 0) return 0;
     return c.reduce((t, x) => t + x.coveredPx, 0) / c.length;
   }
@@ -1486,7 +1507,7 @@ export class GameScene extends Phaser.Scene {
     dev.enemyCapacity = () => enemyPool.capacity;
     dev.lives = () => this.#eco?.lives ?? -1;
     dev.pathLength = () => path.totalLength;
-    dev.coverage = () => MAP_1.coverage;
+    dev.coverage = () => this.#map.coverage;
     dev.coverageAverage = () => this.#ortalamaKapsama();
 
     dev.projectileActive = () => mermiHavuzu.activeCount;
