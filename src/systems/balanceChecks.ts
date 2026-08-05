@@ -411,3 +411,46 @@ export function bossAffordable(
 ): boolean {
   return cumulativeGold(map, waves, 10, false) >= board.cumulativeCost;
 }
+
+/**
+ * **Kısıt A'nın yapısal kör noktası: kışla.**
+ *
+ * `ceilingA` yalnız **kulelerin** verebileceği hasarı topluyor — tanımı bu
+ * (`GAME-DESIGN.md` §6). Askerlerin DPS'i ve daha önemlisi **engellemenin
+ * kazandırdığı süre** hesaba girmiyor.
+ *
+ * Bu, §5'in cevabını açıkça kışla olarak verdiği düşmanlar için tavanı
+ * sistematik olarak **düşük** gösteriyor. M5'te ölçüldü: tek Haydutlar
+ * kışlası bir Trol'ün kule menzilinde geçirdiği süreyi **%68** uzatıyor,
+ * iki Paladin kışlası Trol'ü öldürüyor.
+ *
+ * Çözüm Kısıt A'ya asker DPS'i eklemek **değil** — o, "kulelerin
+ * verebileceği hasar" tanımını bozardı ve `research/01` §2'nin
+ * yerleşimden bağımsızlık özelliğini kaybettirirdi (askerler yer
+ * değiştiriyor). Bunun yerine bu düşmanlar **Kısıt B ile doğrulanıyor**;
+ * `kisitB.test.ts` sızıntıyı düşman tipine göre kırıyor.
+ *
+ * ## Ölçüm neyi gösterdi
+ *
+ * | Düşman | Kısıt A (harita 3) | Kısıt B sızıntı |
+ * |---|---|---|
+ * | Trol | **%116,6** (kalıyor) | ×3 |
+ * | Ork Savaşçı | %39,9 (geçiyor) | **×11** |
+ *
+ * Yani iki sağlama farklı şeyleri ölçüyor ve **biri diğerinin yerine
+ * geçmiyor**: Kısıt A tek düşmanın tankiliğini, Kısıt B dalganın debisini.
+ * Trol'ü Kısıt A'da "kalıyor" diye işaretlemek onu olduğundan zor
+ * gösteriyor; Ork Savaşçı'yı "geçiyor" diye işaretlemek de olduğundan
+ * kolay.
+ */
+export const KISLA_ILE_DOGRULANAN: readonly EnemyDef['id'][] = ['trol'];
+
+/**
+ * Kısıt A'nın bu düşman için **anlamlı** olup olmadığı.
+ *
+ * `false` ise sayı yine hesaplanıyor ve raporlanıyor — gizlenmiyor — ama
+ * eşiği geçmemesi tek başına bir kusur sayılmıyor; doğrulama Kısıt B'de.
+ */
+export function ceilingAApplies(enemyId: EnemyDef['id']): boolean {
+  return !KISLA_ILE_DOGRULANAN.includes(enemyId);
+}

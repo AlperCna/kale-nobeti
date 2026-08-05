@@ -33,7 +33,7 @@ import { EFFECT_SCALE, DEFAULT_SETTINGS, reducedMotionDefaults } from './systems
 import { SHAKE_MIN_SEC, SHAKE_MAX_SEC } from './fx/ScreenShake';
 import { HITSTOP_MIN_MS, HITSTOP_MAX_MS } from './fx/HitStop';
 import { applyDamage } from './systems/combat';
-import { buildReferenceBoards, ceilingAPerBranch, effectiveHp, effectiveDps, BOSS_CEILING_RATIO, cumulativeGold, spotsFullAtWave } from './systems/balanceChecks';
+import { buildReferenceBoards, ceilingAPerBranch, effectiveHp, effectiveDps, BOSS_CEILING_RATIO, cumulativeGold, spotsFullAtWave, KISLA_ILE_DOGRULANAN } from './systems/balanceChecks';
 import { simulateAllWaves } from './systems/waveSim';
 import { measureCoverage } from './util/coverage';
 
@@ -119,7 +119,8 @@ it('dokum', () => {
       }).filter(Boolean),
       kisitB: { sizanAdet: sim.reduce((t, r) => t + r.leakedCount, 0),
         sizanHp: Math.round(sim.reduce((t, r) => t + r.leakedHp, 0)),
-        dalga: sim.map((r) => r.leakedCount) },
+        dalga: sim.map((r) => r.leakedCount),
+        kirilim: sim.reduce((acc, r) => { for (const [id, v] of Object.entries(r.leakedByEnemy)) acc[id] = (acc[id] ?? 0) + v; return acc; }, {}) },
       dalgalar: w.map((x) => ({ index: x.index, butce: budget(x.index), puan: wavePoints(x),
         adet: waveEnemyCount(x), aralik: +spawnDelayFor(waveEnemyCount(x)).toFixed(2),
         gruplar: x.groups.map((g) => ({ enemy: g.enemy, count: g.count, spawnPoint: g.spawnPoint, startAt: g.startAt })) })),
@@ -136,7 +137,7 @@ it('dokum', () => {
       budgetBase: BALANCE.budgetBase, budgetGrowth: BALANCE.budgetGrowth, spawnK: SPAWN_K,
       waveEndBonus: [1, 5, 10].map((n) => ({ n, v: BALANCE.waveEndBonus(n) })) },
     havuz: { ...POOL_PREALLOC }, mermiHizi: GECICI_MERMI_HIZI, isabetYaricapi: MERMI_ISABET_YARICAPI,
-    bossOran: BOSS_CEILING_RATIO, bossTolerans: BOSS_HP_TOLERANCE,
+    bossOran: BOSS_CEILING_RATIO, bossTolerans: BOSS_HP_TOLERANCE, kislaIle: [...KISLA_ILE_DOGRULANAN],
     kapsamaMenzil: COVERAGE_REFERENCE_RANGE,
     ayarlar: { efektOlcek: EFFECT_SCALE, varsayilan: DEFAULT_SETTINGS, azaltilmis: reducedMotionDefaults() },
     juice: { shakeMin: SHAKE_MIN_SEC, shakeMax: SHAKE_MAX_SEC, hitStopMin: HITSTOP_MIN_MS, hitStopMax: HITSTOP_MAX_MS },
@@ -476,9 +477,14 @@ function olustur() {
       m.kisitA.map((k) => [
         DUSMAN_ADI[k.id] ?? k.id, n(k.eHp), n(k.tavan),
         ...(m.kollar > 1 ? [k.kollar.join(' / ')] : []),
-        `${yuzde(k.oran)}${k.oran > 87 ? ' ✗' : ''}`,
+        `${yuzde(k.oran)}${k.oran > 87 ? (D.kislaIle.includes(k.id) ? ' ⓑ' : ' ✗') : ''}`,
       ])), '');
   }
+  y(`**ⓑ = Kışla ile doğrulanan.** Kısıt A yalnız **kulelerin** verebileceği`);
+  y(`hasarı topluyor (tanımı bu) — askerlerin DPS'i ve engellemenin kazandırdığı`);
+  y(`süre girmiyor. §5 Trol'ün cevabını açıkça kışla olarak verdiği için Kısıt A`);
+  y(`onu olduğundan **zor** gösteriyor; doğrulaması Kısıt B'de.`, '');
+
   y('', `### Kısıt B — başsız simülasyon`, '');
   y(`Dalgayı gerçekten çalıştırıp **sızan HP'yi ölçüyor.** Formül değil,`);
   y(`çünkü girdileri (dalga süresi, aktiflik oranı) statik veriden hesaplanamaz.`);
@@ -490,6 +496,18 @@ function olustur() {
       HARITA_ADI[m.id] ?? m.id, `**${n(m.kisitB.sizanAdet)}**`, n(m.kisitB.sizanHp),
       m.kisitB.dalga.map((v, i) => `d${i + 1}:${v}`).join(' '),
     ])), '');
+  y('', `**Hangi düşman sızıyor** — toplam sayı *neyin* sızdığını söylemiyor ve`);
+  y(`bu ikisi farklı düzeltmeler gerektiriyor:`, '');
+  y(tablo(['Harita', 'Sızan düşmanlar (çok → az)'],
+    D.haritalar.map((m) => [HARITA_ADI[m.id] ?? m.id,
+      Object.entries(m.kisitB.kirilim).sort((a, b) => b[1] - a[1])
+        .map(([id, adet]) => `${DUSMAN_ADI[id] ?? id} ×${adet}`).join(' · ') || '**hiç yok**'])), '');
+  y(`**Kısıt A ile Kısıt B aynı şeyi ölçmüyor.** Kısıt A *tek* düşman için`);
+  y(`("bir Ork Savaşçı öldürülebilir mi"), Kısıt B *dalga* için ("on bir tanesi`);
+  y(`aynı anda gelirse"). Ölçüm bunu net gösteriyor: harita 3'te en çok sızan`);
+  y(`**Ork Savaşçı** ama Kısıt A'da %39,9 ile rahat geçiyor; **Trol** ise Kısıt`);
+  y(`A'da kalıyor ama yalnız ×3 sızıyor. İkisi de gerekli.`, '');
+  y(`**Boss hiçbir haritada sızmıyor** — türetmenin uçtan uca sağlaması.`, '');
   y('', `### Referans tahta — türetiliyor, uydurulmuyor`, '');
   y(`"Dalga N'de makul bir oyuncunun sahip olacağı kule dizilimi." Ekonomiden`);
   y(`türetiliyor: kapsaması yüksek nokta önce doluyor, sonra T2, sonra T3.`);
