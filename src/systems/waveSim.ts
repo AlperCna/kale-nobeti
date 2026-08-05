@@ -29,6 +29,9 @@ import type { Poolable } from '../util/pool';
 import { Pool } from '../util/pool';
 import { GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI, POOL_PREALLOC } from '../data/balance';
 import { getTower } from '../data/towers';
+import { KISLA, barracksTierAt, SOLDIER_SPEED } from '../data/barracks';
+import { defaultRally, spawnSoldier, stepSoldiers } from './BarracksSystem';
+import type { SoldierState } from '../types/barracks';
 import { EconomySystem } from './EconomySystem';
 import { EventBus } from './EventBus';
 import { PathSystem } from './PathSystem';
@@ -198,7 +201,7 @@ export function simulateWave(
       y: spot.y,
       def,
       tierIndex: bt.tier,
-      targetMode: 'first',
+      targetMode: bt.targetMode ?? 'first',
       cooldownLeft: 0,
       target: null,
     });
@@ -216,6 +219,55 @@ export function simulateWave(
       leakedCount++;
     },
   );
+  // --- Kışlalar (M5'ten taşınan borç) -------------------------------------
+  //
+  // Kışla `TowerSystem`'e girmiyor; askerleri ayrı bir listede yaşıyor ve
+  // `BarracksSystem.stepSoldiers` ile ilerliyor. O fonksiyon zaten
+  // Phaser'sız (TIER 1 kural 11), yani burada yeni mantık değil **kablolama**
+  // var — dokuz engelleme kuralı canlı oyunla **aynı** koddan geliyor.
+  interface SimKisla {
+    readonly soldiers: SoldierState[];
+    readonly respawnSeconds: number;
+  }
+  const kislalar: SimKisla[] = [];
+  for (const bb of board.barracks ?? []) {
+    const spot = map.buildSpots[bb.spotIndex];
+    if (spot === undefined) continue;
+    const kademe = barracksTierAt(KISLA, bb.tier);
+    // Toplanma noktası: yola en yakın nokta. Kışlanın üstü **olamaz** —
+    // yapı noktaları yoldan `pathSnapMax`'ten uzak (M5-SONUC §5).
+    const rally = defaultRally(spot, map.paths[0] ?? []);
+    const askerler: SoldierState[] = [];
+    for (let i = 0; i < kademe.soldierCount; i++) {
+      const s: SoldierState = {
+        x: 0,
+        y: 0,
+        hp: 0,
+        maxHp: 0,
+        dps: 0,
+        engagedWith: null,
+        home: { x: 0, y: 0 },
+        rally: { x: 0, y: 0 },
+        state: 'dead',
+        respawnLeft: 0,
+        shield: 0,
+        evasion: 0,
+        lifetimeLeft: Number.POSITIVE_INFINITY,
+        speed: SOLDIER_SPEED,
+        alive: false,
+      };
+      const yayilma = (i - (kademe.soldierCount - 1) / 2) * 14;
+      spawnSoldier(s, spot, { x: rally.x + yayilma, y: rally.y }, {
+        hp: kademe.soldierHp,
+        dps: kademe.soldierDps,
+        evasion: kademe.evasion ?? 0,
+        speed: SOLDIER_SPEED,
+      });
+      askerler.push(s);
+    }
+    kislalar.push({ soldiers: askerler, respawnSeconds: kademe.respawnSeconds });
+  }
+
   // Hazırlık aşamasını atla — ölçülen şey dalganın kendisi.
   wm.startWaveEarly();
 
@@ -224,6 +276,22 @@ export function simulateWave(
     wm.update(stepMs);
     const dusmanlar = enemyPool.activeItems();
     if (dusmanlar.length > peakEnemies) peakEnemies = dusmanlar.length;
+    // Kışla kulelerden **önce**: engellenen düşman aynı adımda duruyor,
+    // yani kule ona ateş ederken doğru konumda oluyor (canlı oyunla
+    // aynı sıra — `GameScene.update`).
+    for (const k of kislalar) stepSoldiers(k.soldiers, dusmanlar, stepMs, k.respawnSeconds);
+    // Askerlerin öldürdüğü düşmanların muhasebesi: `stepSoldiers` yalnız
+    // `hp` düşürüyor, ölüm defterini tutmak çağıranın işi (canlı oyunda da
+    // öyle — `GameScene.#hasarUygula`).
+    if (kislalar.length > 0) {
+      for (const e of dusmanlar) {
+        if (e.alive && e.hp <= 0) {
+          e.alive = false;
+          killedCount++;
+          enemyPool.release(e);
+        }
+      }
+    }
     towers.update(stepMs, dusmanlar);
     projectiles.update(stepMs, dusmanlar);
     adim++;
