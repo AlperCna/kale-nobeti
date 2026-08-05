@@ -57,6 +57,57 @@ export function pointToSegmentDistSq(p: Vec2, a: Vec2, b: Vec2): number {
 }
 
 /**
+ * Segment üzerindeki en yakın **nokta** (mesafe değil, konum).
+ *
+ * `pointToSegmentDistSq` aynı izdüşümü hesaplayıp mesafeyi döndürüyor;
+ * burası konumu döndürüyor. Toplanma noktasının yola yapışması
+ * (`GAME-DESIGN.md` §4.4 kural 6) buna ihtiyaç duyuyor — mesafeyi bilmek
+ * "yola 40 px'ten yakın mı" sorusunu yanıtlıyor ama "nereye yapışacak"
+ * sorusunu yanıtlamıyor.
+ */
+export function closestPointOnSegment(p: Vec2, a: Vec2, b: Vec2): Vec2 {
+  const abx = b.x - a.x;
+  const aby = b.y - a.y;
+  const uzunlukKare = abx * abx + aby * aby;
+  if (uzunlukKare === 0) return { x: a.x, y: a.y };
+
+  const t = ((p.x - a.x) * abx + (p.y - a.y) * aby) / uzunlukKare;
+  const kirpik = t < 0 ? 0 : t > 1 ? 1 : t;
+  return { x: a.x + abx * kirpik, y: a.y + aby * kirpik };
+}
+
+/**
+ * Çok segmentli bir yol üzerindeki en yakın nokta ve karesel mesafesi.
+ *
+ * Karesel döner (TIER 1 kural 9) — çağıran taraf `pathSnapMax` ile
+ * karşılaştırırken o eşiğin karesini kullanıyor.
+ */
+export function closestPointOnPath(
+  p: Vec2,
+  path: readonly Vec2[],
+): { point: Vec2; distSq: number } {
+  if (path.length === 0) return { point: { x: p.x, y: p.y }, distSq: 0 };
+  if (path.length === 1) {
+    const tek = path[0]!;
+    return { point: { x: tek.x, y: tek.y }, distSq: distSq(p, tek) };
+  }
+
+  let enIyi = { x: path[0]!.x, y: path[0]!.y };
+  let enIyiKare = Number.POSITIVE_INFINITY;
+  for (let i = 0; i < path.length - 1; i++) {
+    const a = path[i]!;
+    const b = path[i + 1]!;
+    const nokta = closestPointOnSegment(p, a, b);
+    const kare = distSq(p, nokta);
+    if (kare < enIyiKare) {
+      enIyiKare = kare;
+      enIyi = nokta;
+    }
+  }
+  return { point: enIyi, distSq: enIyiKare };
+}
+
+/**
  * `from`'dan `to`'ya açı. Birim: radyan, `-π`…`π`.
  * Düşmanın yönelmesi ve kule dönüşü için.
  */

@@ -148,9 +148,9 @@ Tahta: `topT2@3 buyuT2@5 okcuT2@1 topT2@2 buyuT1@0 okcuT1@4 topT1@6 buyuT1@7`
 | Örümcek Yavrusu | 381 | 30 | %7,9 | ✓ |
 | **Ogre Şef** | **761** | **700** | **%92,0** | **✗** |
 
-Sekizi rahat geçiyor. **Boss tek başına payı tutturmuyor** — S43.
+Sekizi rahat geçiyor. **Boss tek başına payı tutturmuyor** — S65.
 
-### S43 — boss tam sınırda
+### S65 — boss tam sınırda
 
 | Tahta | Nokta dolma | Tavan | Boss oranı | %15 payı |
 |---|---|---|---|---|
@@ -252,4 +252,4 @@ yüzden çöküyordu, artık kör kaldığı kapsamı yazıp devam ediyor.
 | Kışla + 9 engelleme kuralı | M5 kapsamı; Trol satırının tam cevabı |
 | Meteor/yetenekler | M5 kapsamı; boss satırının tam cevabı |
 | Kurt Binicisi tehdidinin keskinleştirilmesi | Harita 2-3 işi (M7) |
-| Boss payının yeniden değerlendirilmesi (S43) | Üç bağlı büyüklük M7'de birlikte bakılacak |
+| Boss payının yeniden değerlendirilmesi (S65) | Üç bağlı büyüklük M7'de birlikte bakılacak |

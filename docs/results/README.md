@@ -68,7 +68,7 @@ tahminle verilir."
 | M2 | [M2-SONUC.md](M2-SONUC.md) | 2026-08-05 | ~1 sa 50 dk |
 | M3 | [M3-SONUC.md](M3-SONUC.md) | 2026-08-05 | ~2 sa 20 dk |
 | M4 | [M4-SONUC.md](M4-SONUC.md) | 2026-08-05 | ~2 sa 40 dk |
-| M5 | — | — | — |
+| M5 | [M5-SONUC.md](M5-SONUC.md) | 2026-08-05 | ~1 sa 50 dk |
 | M6 | — | — | — |
 | M7 | — | — | — |
 

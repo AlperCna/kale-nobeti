@@ -6,6 +6,8 @@ import {
   pointToSegmentDistSq,
   angleTo,
   segmentCircleOverlapLength,
+  closestPointOnSegment,
+  closestPointOnPath,
 } from './math';
 
 describe('distSq', () => {
@@ -185,5 +187,57 @@ describe('segmentCircleOverlapLength', () => {
     expect(
       segmentCircleOverlapLength({ x: 0, y: 0 }, { x: 100, y: 100 }, { x: 50, y: 50 }, 10),
     ).toBeCloseTo(20, 9);
+  });
+});
+
+describe('closestPointOnSegment / closestPointOnPath (M5 — kural 6)', () => {
+  it('segment üstündeki dik izdüşüm', () => {
+    const p = closestPointOnSegment({ x: 5, y: 10 }, { x: 0, y: 0 }, { x: 10, y: 0 });
+    expect(p.x).toBeCloseTo(5, 9);
+    expect(p.y).toBeCloseTo(0, 9);
+  });
+
+  it('segment DIŞINA düşen izdüşüm uç noktaya kırpılıyor', () => {
+    const p = closestPointOnSegment({ x: 50, y: 10 }, { x: 0, y: 0 }, { x: 10, y: 0 });
+    expect(p.x).toBeCloseTo(10, 9);
+  });
+
+  it('sıfır uzunluklu segment — sıfıra bölme yok', () => {
+    const p = closestPointOnSegment({ x: 5, y: 5 }, { x: 1, y: 1 }, { x: 1, y: 1 });
+    expect(p).toEqual({ x: 1, y: 1 });
+  });
+
+  it('çok segmentli yolda EN YAKIN segment seçiliyor', () => {
+    const yol = [
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+      { x: 100, y: 100 },
+    ];
+    const r = closestPointOnPath({ x: 95, y: 60 }, yol);
+    expect(r.point.x).toBeCloseTo(100, 9);
+    expect(r.point.y).toBeCloseTo(60, 9);
+    expect(r.distSq).toBeCloseTo(25, 9);
+  });
+
+  it('mesafe KARESEL dönüyor — TIER 1 kural 9', () => {
+    const r = closestPointOnPath({ x: 0, y: 3 }, [
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+    ]);
+    expect(r.distSq).toBeCloseTo(9, 9); // 3² — kök alınmamış
+  });
+
+  it('boş ve tek noktalı yol çökmüyor', () => {
+    expect(closestPointOnPath({ x: 4, y: 4 }, []).distSq).toBe(0);
+    expect(closestPointOnPath({ x: 4, y: 0 }, [{ x: 0, y: 0 }]).distSq).toBeCloseTo(16, 9);
+  });
+
+  it('pointToSegmentDistSq ile TUTARLI — iki fonksiyon ayrışamaz', () => {
+    const a = { x: 3, y: 7 };
+    const b = { x: 40, y: -12 };
+    for (const p of [{ x: 0, y: 0 }, { x: 20, y: 20 }, { x: -30, y: 5 }, { x: 60, y: 60 }]) {
+      const nokta = closestPointOnSegment(p, a, b);
+      expect(distSq(p, nokta)).toBeCloseTo(pointToSegmentDistSq(p, a, b), 9);
+    }
   });
 });

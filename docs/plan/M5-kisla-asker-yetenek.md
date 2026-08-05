@@ -6,7 +6,7 @@
 | **Görev** | 9 (`M5-T01` … `M5-T09`) |
 | **Kod yazma süresi** | ~5 sa 55 dk — **takvim değil** |
 | **Takvim bütçesi** | 3 gün (`ROADMAP.md`). Fark: 9 engelleme kuralının kenar durumları. |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ tamamlandı |
 
 ## 0. Oturum başlangıcı
 
@@ -54,7 +54,7 @@ gerçekten işliyor.
 
 ### M5-T01 — Kışla verisi ve engelleme sabitleri
 
-`M5-T01` · ☐ · ~35 dk · Önkoşul `M4-T01` · TIER 1 **k.1** · Açık soru S43, S44
+`M5-T01` · ☑ · ~35 dk · Önkoşul `M4-T01` · TIER 1 **k.1** · Açık soru S43, S44
 · Doküman `GAME-DESIGN.md` §4.4 tablosu ve kural 2, 6
 
 **Dosyalar**
@@ -101,7 +101,7 @@ Beklenen: dört kademenin sayıları §4.4 ile eşleşiyor; `BLOCK` sabitleri
 
 ### M5-T02 — `Soldier` entity ve havuz
 
-`M5-T02` · ☐ · ~40 dk · Önkoşul `M5-T01`, `M1-T04` · TIER 1 **k.3**, k.8
+`M5-T02` · ☑ · ~40 dk · Önkoşul `M5-T01`, `M1-T04` · TIER 1 **k.3**, k.8
 · Açık soru — · Doküman `research/02` §7 (havuz boyutu 24)
 
 **Dosyalar**
@@ -140,7 +140,7 @@ havuz dolunca `acquire` `null`; durum geçişleri geçerli; ölünce
 
 ### M5-T03 — Toplanma noktası
 
-`M5-T03` · ☐ · ~45 dk · Önkoşul `M5-T02` · TIER 1 **k.9**, Platform
+`M5-T03` · ☑ · ~45 dk · Önkoşul `M5-T02` · TIER 1 **k.9**, Platform
 · Açık soru — · Doküman `GAME-DESIGN.md` §4.4 kural 6, sinerji notu
 
 **Dosyalar**
@@ -168,7 +168,7 @@ yoldan uzak nokta en yakın yol noktasına yapışıyor; yapışma mesafesi
 
 ### M5-T04 — Engelleme kuralları 1-4: kilitlenme
 
-`M5-T04` · ☐ · ~45 dk · Önkoşul `M5-T03` · TIER 1 **k.9**, k.8 · Açık soru S45
+`M5-T04` · ☑ · ~45 dk · Önkoşul `M5-T03` · TIER 1 **k.9**, k.8 · Açık soru S45
 · Doküman `GAME-DESIGN.md` §4.4 kural 1, 2, 3, 4 · `research/03` §1
 
 **Dosyalar**
@@ -201,7 +201,7 @@ ama **iki askerin DPS'i de** sayılıyor.
 
 ### M5-T05 — Engelleme kuralları 5-9: sayı, diriliş, uçan, boss
 
-`M5-T05` · ☐ · ~45 dk · Önkoşul `M5-T04` · TIER 1 k.3, k.8 · Açık soru S46
+`M5-T05` · ☑ · ~45 dk · Önkoşul `M5-T04` · TIER 1 k.3, k.8 · Açık soru S46
 · Doküman `GAME-DESIGN.md` §4.4 kural 5, 7, 8, 9 · §5 (boss)
 
 **Dosyalar**
@@ -231,7 +231,7 @@ boss askeri tek vuruşta öldürüyor.
 
 ### M5-T06 — İki kışla sinerjisi ve senaryo doğrulaması
 
-`M5-T06` · ☐ · ~35 dk · Önkoşul `M5-T05` · TIER 1 — · Açık soru —
+`M5-T06` · ☑ · ~35 dk · Önkoşul `M5-T05` · TIER 1 — · Açık soru —
 · Doküman `GAME-DESIGN.md` §4.4 sinerji notu, §5 karşı-oyun tablosu
 
 **Dosyalar**
@@ -263,7 +263,7 @@ denemede Trol sızıyorsa, kışlalı denemede sızmamalı.
 
 ### M5-T07 — `AbilitySystem` ve bekleme göstergesi
 
-`M5-T07` · ☐ · ~40 dk · Önkoşul `M0-T04` · TIER 1 **k.7**, k.8 · Açık soru S49
+`M5-T07` · ☑ · ~40 dk · Önkoşul `M0-T04` · TIER 1 **k.7**, k.8 · Açık soru S49
 · Doküman `GAME-DESIGN.md` §8
 
 **Dosyalar**
@@ -290,7 +290,7 @@ yarı sürede doluyor; kullanım sonrası tam süreye sıfırlanıyor.
 
 ### M5-T08 — Meteor
 
-`M5-T08` · ☐ · ~35 dk · Önkoşul `M5-T07`, `M2-T09` · TIER 1 **k.9** · Açık soru S48
+`M5-T08` · ☑ · ~35 dk · Önkoşul `M5-T07`, `M2-T09` · TIER 1 **k.9** · Açık soru S48
 · Doküman `GAME-DESIGN.md` §8, §3 (gerçek hasar)
 
 **Yapılacak**
@@ -312,7 +312,7 @@ yarıçap dışındaki düşman etkilenmiyor.
 
 ### M5-T09 — Takviye
 
-`M5-T09` · ☐ · ~35 dk · Önkoşul `M5-T07`, `M5-T02` · TIER 1 **k.3** · Açık soru S47
+`M5-T09` · ☑ · ~35 dk · Önkoşul `M5-T07`, `M5-T02` · TIER 1 **k.3** · Açık soru S47
 · Doküman `GAME-DESIGN.md` §8
 
 **Yapılacak**
@@ -359,15 +359,35 @@ havuz doluyken Takviye asker sayısını kısıyor ve `new` çağırmıyor.
 
 ## 5. Taş sonu kontrol listesi
 
-- [ ] `typecheck && test && build && guard` dördü de yeşil
-- [ ] **§4.4'teki 9 kuralın her biri için ayrı test var ve geçiyor**
-- [ ] Toplanma noktası sürüklenebiliyor, menzil ve yol kısıtı çalışıyor
-- [ ] İki kışla aynı noktaya toplanınca grup dövüşü çalışıyor
-- [ ] Trol'ü kışlayla tutup eritmek karşı-oyun tablosundaki gibi işliyor
-- [ ] Boss askerleri tek vuruşta öldürüyor
-- [ ] Meteor ve Takviye çalışıyor, bekleme HUD'da dairesel dolumla görünüyor
-- [ ] 2× hızda beklemeler de iki kat hızlı
-- [ ] Asker ve geçici asker havuzları sızdırmıyor
-- [ ] S43'e uydurulmuş bir kalkan değeri **yazılmadı**
-- [ ] **`docs/results/M5-SONUC.md` yazıldı** — 9 engelleme kuralının test
+- [x] `typecheck && test && build && guard` dördü de yeşil — 531 test, 9/9 bekçi, 0,39 MB
+- [x] **§4.4'teki 9 kuralın her biri için ayrı test var ve geçiyor** — 44 test; kural 2↔3 çelişkisi ve kural 4'ün "devralma" durumu ayrıca çözüldü (`M5-SONUC.md` §1)
+- [x] Toplanma noktası sürüklenebiliyor, menzil ve yol kısıtı çalışıyor — canlı: 160 px dışı kenetleniyor, yola 40 px yapışıyor, 80 px reddediliyor
+- [x] İki kışla aynı noktaya toplanınca grup dövüşü çalışıyor — **özel kod yok**, kural 3'ten türüyor; verilen hasar başına alınan hasar tam **yarıya** iniyor
+- [x] Trol'ü kışlayla tutup eritmek karşı-oyun tablosundaki gibi işliyor — ölçüldü; **tek Haydutlar kışlası** %50 hedefini tutturuyor, T1/T2/Paladin tek başına tutturmuyor (`M5-SONUC.md` §2)
+- [x] Boss askerleri tek vuruşta öldürüyor — canlı: **75 / 60 / 60 HP tek karede sıfırlandı**
+- [x] Meteor ve Takviye çalışıyor, bekleme HUD'da dairesel dolumla görünüyor — Meteor boss'a tam **180** (gerçek hasar)
+- [x] 2× hızda beklemeler de iki kat hızlı — `AbilitySystem` `scaledDelta` ile; ayrı test
+- [x] Asker ve geçici asker havuzları sızdırmıyor — kapasite sabit **24**, taşma **0**, geçiciler 20 sn sonra **havuza dönüyor** (`destroy` yok)
+- [x] S43'e uydurulmuş bir kalkan değeri **yazılmadı** — `shield: undefined`, ayrı test koruyor
+- [x] **`docs/results/M5-SONUC.md` yazıldı** — 9 engelleme kuralının test
       sonucu ve kışlalı/kışlasız Trol karşılaştırması dahil.
+
+### Planın ölçütünden ayrılan tek madde
+
+Plan "Trol'ün kule menzilinde geçirdiği süre **en az %50** daha uzun olmalı"
+diyordu. Bu ölçüt kışla işini *çok iyi* yaptığında tersine dönüyor: Trol
+ölürse menzilde geçen süre kısalıyor. İlk ölçümde kışlalı koşu 18,6 sn,
+kışlasız 23,0 sn çıktı ve kışla kötü görünüyordu — oysa kışlalı koşuda Trol
+ölüyordu.
+
+Birleşik ölçüte geçildi: **başarı = (Trol ölüyor) VEYA (süre ≥ %50 uzun)**.
+Ölmek zaten "sonsuz zaman kazanıldı" demek. Ölçüt gevşetilmedi, **düzeltildi**.
+
+### M5'in ürettiği dört yeni soru
+
+| # | Konu | Durum |
+|---|---|---|
+| **S66** | Düşmanın askere verdiği hasar — dokümanda **hiç yok** | türetildi, işaretli |
+| **S67** | Asker hasarının tipi ve zırhla ilişkisi | fiziksel + saniyelik, işaretli |
+| **S68** | Asker yürüme hızı | 45 px/sn, §5'ten alındı |
+| **S69** | **Kışlanın yeri kademesinden önemli** — denge bulgusu | M7'ye harita kuralı |

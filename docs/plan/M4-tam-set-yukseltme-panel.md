@@ -442,7 +442,7 @@ S37, S38, S39 denge etkisi olan **eksik sayılar** — uydurulmadı.
 - [x] Bilgi paneli **seçili düşmana karşı etkin DPS** gösteriyor — panel değerleri 12×10 matrisle birebir uyuştu
 - [x] Beş hedefleme modu kule başına seçilebiliyor
 - [x] Geçici sayılar (S37, S38) kodda işaretli — `EnemyAbilitySystem.ts:57`, `enemies.ts:132`
-- [x] Boss HP'sinde geçicilik yorumu var — `enemies.ts` `OGRE_SEF`, S43 ölçümüyle güncellendi
+- [x] Boss HP'sinde geçicilik yorumu var — `enemies.ts` `OGRE_SEF`, S65 ölçümüyle güncellendi
 - [x] **`docs/results/M4-SONUC.md` yazıldı** — karşı-oyun tablosunun 7
       senaryosu ve uçan hattını kesen nokta sayısı dahil.
 

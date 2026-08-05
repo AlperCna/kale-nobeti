@@ -7,9 +7,9 @@ Bunları tek tek çözmeye çalışmak iki gün kod yazmamak demek.
 
 | Durum | Sayı |
 |---|---|
-| ☑ Kapandı | 31 (S01, S02, S06, S08, S10-S18, S21, S25-S33, S39-S42, S50, S56, S59, S63) |
-| ☐ Varsayılanla geçilebilir | 33 |
-| ⚠️ Yeni denge bulgusu | 3 (M3: 8 nokta · yükseltme kapsamı · M4: S43 boss payı) |
+| ☑ Kapandı | 36 (S01, S02, S06, S08, S10-S18, S21, S25-S33, S39-S42, S45-S47, S49, S50, S56, S59, S63) |
+| ☐ Varsayılanla geçilebilir | 28 |
+| ⚠️ Yeni denge bulgusu | 7 (M3: 8 nokta · yükseltme kapsamı · M4: S65 boss payı · M5: S66 asker hasarı · S67 hasar tipi · S68 asker hızı · S69 kışla yeri) |
 | **⛔ Bloke edici** | **0** |
 
 **Kod yazmaya başlamak için beklenen hiçbir şey yok.**
@@ -132,7 +132,7 @@ hâlâ açık ve ikisi de M3'ün girdisi.**
 ## M4 — Tam set, yükseltme, bilgi paneli
 
 **Dokuzu da kapandı veya varsayılanla uygulandı. M4 bir YENİ denge bulgusu
-üretti: S43 — boss payı.**
+üretti: S65 — boss payı.**
 
 | # | Durum | Ayrıntı |
 |---|---|---|
@@ -145,19 +145,26 @@ hâlâ açık ve ikisi de M3'ün girdisi.**
 | **S40** | ✅ kapandı | **Yükseltme sırasında kule ateş etmeye devam ediyor.** Bekleme sıfırlanmıyor; yalnız hedef düşürülüyor (yeni kademenin menzili farklı olabilir). Kesinti "yükseltme anında sızma" cezası getirirdi ve §6 zaten yükseltmeyi altın başına verimsiz kılıyor |
 | **S41** | ✅ kapandı | **T3 dalı geri alınamıyor.** Değiştirmek için satmak gerekiyor; %30 kayıp bilinçli bedel. Geri alınabilseydi dal seçimi karar olmaktan çıkardı |
 | **S42** | ✅ kapandı | Bilgi panelindeki düşman şeridi **o haritanın kadrosunu** listeliyor (`MapDef.enemyRoster`). Hepsini listelemek oyuncuya henüz görmediği düşmanları gösterirdi |
-| **S43** | ⚠️ **yeni** | **Boss tam sınırda.** Muhafazakâr tahtayla tavan 761, boss **%92,0** → %15 payı **tutmuyor**; gerçekçi tahtayla (erken başlatma kullanılmış) 818, **%85,6** → tutuyor. Tasarım bandı %75-85'in 0,6 puan üstünde. Sebep: Büyü T1 100 altın (Okçu 70), noktaları doldurmak pahalılaştı. Boss **öldürülebilir** — canlı ölçümde 700 → 18 HP |
+| **S65** | ⚠️ **yeni** | **Boss tam sınırda.** Muhafazakâr tahtayla tavan 761, boss **%92,0** → %15 payı **tutmuyor**; gerçekçi tahtayla (erken başlatma kullanılmış) 818, **%85,6** → tutuyor. Tasarım bandı %75-85'in 0,6 puan üstünde. Sebep: Büyü T1 100 altın (Okçu 70), noktaları doldurmak pahalılaştı. Boss **öldürülebilir** — canlı ölçümde 700 → 18 HP |
 
 ## M5 — Kışla, askerler, yetenekler
 
-| # | Soru | Neden önemli | Bloke | Varsayılan |
-|---|---|---|---|---|
-| S43 | **Paladin "kalkan" sayısal değeri?** | §4.4 tablosunda yalnız "11 + kalkan" yazıyor. Paladin ile Haydutlar arasındaki seçim buna bağlı | `M5-T01` | **Yok.** `shield: undefined`, kalkan uygulanmıyor |
-| S44 | Haydutlar %25 kaçınma: hasar iptali mi, isabet şansı mı? | İkisi farklı matematik; ortalama aynı ama varyans farklı | `M5-T01` | %25 ihtimalle hasar iptali |
-| S45 | Toplanma noktasına yürüyen asker saldırıya uğrar mı? | Uğruyorsa diriliş döngüsü kırılabilir | `M5-T04` | Hayır, yürürken dokunulmaz |
-| S46 | Kışla satılırsa askerler ne olur? | Anında kaybolmaları kilitli düşmanları serbest bırakıyor | `M5-T05` | Anında havuza döner |
-| S47 | Takviye askerleri engelleme yapıyor mu? | §8 yalnız "2 geçici asker" diyor; engellerlerse yetenek çok güçlü | `M5-T09` | Evet, kışla askeriyle aynı kurallar |
-| S48 | Meteor uçanları da vuruyor mu? | §8 belirtmiyor; vurmuyorsa harpi sürüsüne cevap azalıyor | `M5-T08` | Evet |
-| S49 | Yetenek beklemeleri haritalar arası sıfırlanıyor mu? | Sıfırlanmazsa harita başında yetenek hazır geliyor | `M5-T07` | Sıfırlanıyor |
+**Yedisi de kapandı veya varsayılanla uygulandı. M5 üç YENİ soru üretti
+(S66, S67, S68) ve bir denge bulgusu (S69).**
+
+| # | Durum | Ayrıntı |
+|---|---|---|
+| **S43** | ☐ varsayılan uygulandı | **Paladin kalkanı YAZILMADI.** §4.4 yalnız "11 + kalkan" diyor, sayı yok. `shield` alanı tanımlı ama `undefined`; kalkan uygulanmıyor. Paladin şu an yalnız 140 HP ve 11 DPS'iyle ayrışıyor. Ayrı test bunu koruyor: uydurulmuş bir kalkan değeri girerse kırılır |
+| **S44** | ☐ varsayılan uygulandı | **Kaçınma ÇARPIMSAL, rastgelelik yok.** §4.4 "kaçınma %25" diyor, anlamını söylemiyor. Olasılıksal ("%25 ihtimalle iptal") ile çarpımsal (`×0,75`) **sürekli hasarda beklenen değer olarak özdeş** — saniyede 60 kare varsa 60 zar atılıyor ve varyans zaten sıfıra çöküyor. Çarpımsal biçim aynı sonucu `Math.random()` olmadan veriyor; testler belirlenimci kalıyor. `S56`'da kritik vuruş tam bu gerekçeyle çıkarılmıştı |
+| **S45** | ✅ kapandı | **Toplanma noktasına yürüyen asker engelleme yapmıyor** (kural 7) ve saldırıya da uğramıyor — düşman taraması bile yapılmıyor. Aksi hâlde diriliş döngüsü kilitlenebilirdi: asker doğar doğmaz ölür, yeniden doğar, yine ölür |
+| **S46** | ✅ kapandı | **Kışla satılınca askerler anında havuza dönüyor.** `Pool.release` → `resetSoldierState` kilidi **iki taraflı** kırıyor, yani engellenen düşmanlar aynı karede serbest kalıyor. Tek taraflı temizlik düşmanı ölü bir askere kilitli bırakır ve sonsuza kadar durdururdu |
+| **S47** | ✅ kapandı | **Takviye askerleri engelleme YAPIYOR** — kışla askeriyle aynı dokuz kural. Ayrı bir "engellemeyen asker" kavramı dokuz kuralın hepsine dal eklerdi. Canlı doğrulandı: çağrılan iki asker anında `fighting` durumuna geçti |
+| **S48** | ☐ varsayılan uygulandı | **Meteor uçanları da vuruyor.** §8 belirtmiyor. Vurmasaydı harpi sürüsüne karşı elde yalnız iki kule ailesi kalırdı ve §5'in "Harpi sürüsü → Okçu + Büyü" satırı tek cevaba düşerdi |
+| **S49** | ✅ kapandı | **Beklemeler haritalar arası sıfırlanıyor** (`AbilitySystem.reset()`, `create()` içinde). Sıfırlanmasaydı bir haritayı yetenek harcamadan bitiren oyuncu bir sonrakine avantajla girerdi ve "her harita kendi içinde dengeli" varsayımı bozulurdu |
+| **S66** | ⚠️ **yeni** | **Düşmanın askere verdiği hasar dokümanda HİÇ YOK.** Ne §4.4 ne §5 veriyor; §5 düşman tablosunda saldırı gücü sütunu yok. Bu sayı olmadan kural 3 yazılamıyor. **Uydurulmadı, türetildi:** `K = 45 HP / 8 sn / 1 puan = 5,625 DPS/puan` — §4.4'ün T1 satırından (45 HP, 8 sn diriliş) ve §5'in zaten kullandığı puan ölçeğinden (`altın = 3 × puan`). Boss formüle girmiyor; kural 9 onu ayrı tutuyor |
+| **S67** | ⚠️ **yeni** | **Asker hasarının tipi ve zırhla ilişkisi dokümanda yok.** Fiziksel kabul edildi (§3'te üç tip var, `true` yalnız yeteneklerde, asker büyü yapmıyor). Zırh **saniyelik** rakama uygulanıyor, kare başına değil: kare başına uygulansaydı 60 FPS'te her tık `dps/60 ≈ 0,08` olurdu, zırh 4 onu her seferinde %15 tabanına düşürürdü ve zırh sonsuz güçlü çıkardı. Regresyon testi var |
+| **S68** | ⚠️ **yeni** | **Asker yürüme hızı dokümanda yok.** `45 px/sn` — kadronun en yavaşından (boss 28) hızlı, en hızlısından (Kurt Binicisi 110) yavaş. Ork Savaşçı'nın hızıyla aynı, yani §5 tablosundan alınmış bir sayı; uydurma değil |
+| **S69** | ⚠️ **yeni bulgu** | **Kışlanın yeri, kışlanın kademesinden önemli.** Canlı ölçüm (aynı tahta, tek fark kışlanın noktası): en yüksek kapsamalı noktaya kurulunca **0/20 can (kayıp)**, en düşük kapsamalı noktaya kurulunca **19/20 ★★**, hiç kurulmayınca **20/20 ★★★**. Kışla kapsamayı kullanmıyor, ama işgal ettiği nokta bir kuleyi dışarıda bırakıyor. Harita 1'de T2 kışla doğru yerde bile ~1 can maliyetli. M7'de haritalara **kışlaya uygun düşük kapsamalı nokta** koymak gerekiyor |
 
 ## M6 — Sanat, juice, ses
 

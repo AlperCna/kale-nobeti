@@ -14,6 +14,16 @@ import { SpotOccupancy, findSpotAt } from '../systems/buildSpots';
 import { Enemy } from '../entities/Enemy';
 import { Projectile } from '../entities/Projectile';
 import { Tower } from '../entities/Tower';
+import { Soldier } from '../entities/Soldier';
+import {
+  clampRally,
+  defaultRally,
+  spawnSoldier,
+  stepSoldiers,
+} from '../systems/BarracksSystem';
+import { AbilitySystem } from '../systems/AbilitySystem';
+import { KISLA, barracksTierAt, BLOCK, SOLDIER_SPEED } from '../data/barracks';
+import type { AbilityId } from '../types/ability';
 import { DamageText, DamageTextSystem } from '../fx/DamageText';
 import { ensureNumberFont } from '../fx/numberFont';
 import { TowerInfoPanel } from '../fx/TowerInfoPanel';
@@ -53,7 +63,13 @@ const TOWER_COLORS: Readonly<Record<string, number>> = {
   okcu: 0x3e5ca8,
   top: 0x2f4a3c,
   buyu: 0x7a4a8a,
+  kisla: 0x8a5a2a,
 };
+
+/** Asker (M5). Düşmandan küçük; TIER 1 kural 6: ayrım renge dayanmıyor. */
+const SOLDIER_SIZE = 14;
+const SOLDIER_COLOR = 0x3e6ca8; // Mavi — dost tarafı
+const RALLY_COLOR = 0x3e6ca8;
 
 /** Beş hedefleme modu (`GAME-DESIGN.md` §4.5). Varsayılan `first`. */
 const TARGET_MODES: readonly TargetMode[] = ['first', 'last', 'strongest', 'weakest', 'closest'];
@@ -99,6 +115,30 @@ export class GameScene extends Phaser.Scene {
   #selectedSpot = -1;
   #mermiTepe = 0;
   readonly #towerBySpot = new Map<number, Tower>();
+
+  // ------------------------------------------------------------ kışla (M5)
+
+  #soldierPool?: Pool<Soldier>;
+  #rallyGfx?: Phaser.GameObjects.Graphics;
+  /** Sürüklenen toplanma noktasının kışlası; `-1` = sürükleme yok. */
+  #draggingRally = -1;
+  /**
+   * Yapı noktası → kışla kademesi + toplanma noktası + askerleri.
+   *
+   * Kule defterinden (`#towerBySpot`) **ayrı**: kışla bir `TowerDef` değil,
+   * `TowerSystem`'e girmiyor (hasar vermiyor, menzili yok). Doluluk defteri
+   * yine ortak — `SpotOccupancy` tek adres.
+   */
+  readonly #barracksBySpot = new Map<
+    number,
+    { tier: 0 | 1 | 2 | 3; rally: Vec2; soldiers: Soldier[]; marker: Phaser.GameObjects.Arc }
+  >();
+
+  // --------------------------------------------------------- yetenekler (M5)
+
+  readonly abilities = new AbilitySystem();
+  /** Tıkla-hedefle bekleyen yetenek; `null` = yok. */
+  #pendingAbility: AbilityId | null = null;
 
   constructor() {
     super('Game');
@@ -159,6 +199,12 @@ export class GameScene extends Phaser.Scene {
     this.#flyerHintOn = false;
     this.#mermiTepe = 0;
     this.#menu = undefined;
+    // M5: kışla ve yetenek durumu da yeniden başlatmada sıfırlanıyor —
+    // aynı tuzak (alan başlatıcısı bir kez, `create` her seferinde).
+    this.#barracksBySpot.clear();
+    this.#draggingRally = -1;
+    this.#pendingAbility = null;
+    this.abilities.reset(); // S49 — beklemeler haritalar arası sıfırlanıyor
 
     const yol = MAP_1.paths[0] ?? [];
     const path = new PathSystem(yol);
@@ -217,6 +263,21 @@ export class GameScene extends Phaser.Scene {
     );
 
     this.#damageTexts = new DamageTextSystem(sayiHavuzu);
+
+    // Asker havuzu — `research/02` §7 tablosu 24 diyor. Kışla askerleri ve
+    // Takviye'nin geçici askerleri **aynı** havuzdan geliyor: ikisi de
+    // `SoldierState`, ayrım yalnız `lifetimeLeft`.
+    const askerGrup = this.add.group({ runChildUpdate: false });
+    this.#soldierPool = new Pool<Soldier>(
+      () => {
+        const s = new Soldier(this, SOLDIER_SIZE, SOLDIER_COLOR);
+        askerGrup.add(s);
+        return s;
+      },
+      POOL_PREALLOC.soldier,
+      (k) => this.#havuzDoldu('asker', k),
+    );
+    this.#rallyGfx = this.add.graphics();
 
     this.#projectiles = new ProjectileSystem<Enemy, Projectile>(
       mermiHavuzu,
@@ -312,6 +373,10 @@ export class GameScene extends Phaser.Scene {
     const dusmanlar = this.#enemyPool?.activeItems() ?? [];
     this.#abilities?.update(sd);
     this.#etkileriIsle(sd, dusmanlar);
+    // Kışla, kulelerden **önce**: engellenen düşman aynı karede duruyor,
+    // yani kule ona ateş ederken doğru konumda oluyor.
+    this.#kislalariIsle(sd, dusmanlar);
+    this.abilities.tick(sd);
     this.#towers?.update(sd, dusmanlar);
     this.#projectiles?.update(sd, dusmanlar);
     this.#damageTexts?.update(sd);
@@ -364,6 +429,263 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
+  // ------------------------------------------------------------ kışla (M5)
+
+  /**
+   * Tüm kışlaların askerlerini bir kare ilerletir.
+   *
+   * Dokuz engelleme kuralı `BarracksSystem`'de ve `node`'da test edilmiş
+   * durumda; burada kalan tek şey Phaser tarafı: konum, görünürlük,
+   * ölmüş/ömrü dolmuş askerin havuza dönüşü.
+   */
+  #kislalariIsle(scaledDelta: number, dusmanlar: readonly Enemy[]): void {
+    // Takviye'nin geçici askerleri hiçbir kışlaya ait değil ama **aynı**
+    // dokuz kurala tabi (S47). Diriliş süresi anlamsız — ölünce zaten
+    // `expired` olup havuza dönüyorlar.
+    if (this.#gecici.length > 0) {
+      const { expired } = stepSoldiers(this.#gecici, dusmanlar, scaledDelta, 0);
+      for (const s of expired) {
+        const i = this.#gecici.indexOf(s as Soldier);
+        if (i >= 0) this.#gecici.splice(i, 1);
+        this.#soldierPool?.release(s as Soldier);
+      }
+      for (const s of this.#gecici) {
+        s.setPosition(s.x, s.y);
+        s.refreshVisual();
+      }
+    }
+
+    if (this.#barracksBySpot.size === 0) return;
+
+    for (const [, k] of this.#barracksBySpot) {
+      const kademe = barracksTierAt(KISLA, k.tier);
+      const { expired } = stepSoldiers(k.soldiers, dusmanlar, scaledDelta, kademe.respawnSeconds);
+
+      // Ömrü dolan **geçici** asker havuza döner. Kışla askeri burada
+      // görünmez — `lifetimeLeft` sonsuz olduğu için `expired`'a girmiyor.
+      for (const s of expired) {
+        const i = k.soldiers.indexOf(s as Soldier);
+        if (i >= 0) k.soldiers.splice(i, 1);
+        this.#soldierPool?.release(s as Soldier);
+      }
+
+      for (const s of k.soldiers) {
+        s.setPosition(s.x, s.y);
+        // Ölü asker gizleniyor ama havuza DÖNMÜYOR: diriliş sayacı
+        // `BarracksSystem` içinde işliyor ve nesne o sayacı taşıyor.
+        s.setVisible(s.state !== 'dead');
+        if (s.state !== 'dead') s.refreshVisual();
+      }
+    }
+    // **`#drawRally()` BURADA ÇAĞRILMIYOR.** İlk yazımda çağrılıyordu ve
+    // dalga 10'un kare maliyetini 0,95 ms'ten 3,5 ms'e çıkardı (canlı
+    // ölçüm): her karede `Graphics.clear()` + kesikli çember + kesikli
+    // çizgi yeniden üretmek demekti. `#drawHover` zaten aynı sebeple
+    // yalnız hover değiştiğinde çiziliyor; toplanma noktası da yalnız
+    // **değiştiğinde** çiziliyor (kurma, satma, seçim, sürükleme).
+  }
+
+  /** Seçili kışlanın toplanma noktası ve menzil halkası. */
+  #drawRally(): void {
+    const g = this.#rallyGfx;
+    if (g === undefined) return;
+    g.clear();
+
+    for (const [spotIndex, k] of this.#barracksBySpot) {
+      const secili = spotIndex === this.#selectedSpot || spotIndex === this.#draggingRally;
+      k.marker.setPosition(k.rally.x, k.rally.y).setVisible(true).setAlpha(secili ? 1 : 0.45);
+
+      if (!secili) continue;
+      const spot = MAP_1.buildSpots[spotIndex];
+      if (spot === undefined) continue;
+
+      // Toplanma menzili (kural 6) — kesikli, kule menzil halkasıyla aynı dil.
+      g.lineStyle(2, RALLY_COLOR, 0.5);
+      this.#dashedCircle(g, spot, BLOCK.rallyRange, RALLY_COLOR, 2);
+      // Kışla → toplanma noktası bağı.
+      g.lineStyle(2, RALLY_COLOR, 0.7);
+      this.#dashedLine(g, spot, k.rally, 8);
+    }
+  }
+
+  #placeBarracks(spotIndex: number): boolean {
+    const spot = MAP_1.buildSpots[spotIndex];
+    if (spot === undefined) return false;
+
+    const kademe = barracksTierAt(KISLA, 0);
+    if (this.#eco?.canAfford(kademe.cost) !== true) return false;
+    if (this.#occupancy?.occupy(spotIndex) !== true) return false;
+    this.#eco.buyAt(spotIndex, kademe.cost);
+
+    const marker = this.add.circle(0, 0, 7, RALLY_COLOR, 0.9).setStrokeStyle(2, INK_COLOR);
+    const kayit = {
+      tier: 0 as 0 | 1 | 2 | 3,
+      rally: defaultRally(spot, MAP_1.paths[0] ?? []),
+      soldiers: [] as Soldier[],
+      marker,
+    };
+    this.#barracksBySpot.set(spotIndex, kayit);
+    this.#askerleriKur(spotIndex);
+    this.#drawRally();
+
+    // Kışla gövdesi — kule ile aynı görsel dil, ama `TowerSystem`'e girmiyor.
+    this.add
+      .rectangle(spot.x, spot.y, 26, 26, TOWER_COLORS['kisla'] ?? GOLD_COLOR)
+      .setStrokeStyle(2, GOLD_COLOR)
+      .setData('kislaSpot', spotIndex);
+
+    this.#closeMenu();
+    return true;
+  }
+
+  /** Kademenin gerektirdiği kadar askeri havuzdan alıp doğurur. */
+  #askerleriKur(spotIndex: number): void {
+    const k = this.#barracksBySpot.get(spotIndex);
+    const spot = MAP_1.buildSpots[spotIndex];
+    if (k === undefined || spot === undefined) return;
+
+    const kademe = barracksTierAt(KISLA, k.tier);
+
+    // Fazlalık varsa havuza döner (yükseltmede asker sayısı değişebiliyor).
+    while (k.soldiers.length > kademe.soldierCount) {
+      const s = k.soldiers.pop();
+      if (s !== undefined) this.#soldierPool?.release(s);
+    }
+
+    while (k.soldiers.length < kademe.soldierCount) {
+      const s = this.#soldierPool?.acquire();
+      if (s === null || s === undefined) break; // havuz doldu — `new` yok
+      k.soldiers.push(s);
+    }
+
+    k.soldiers.forEach((s, i) => {
+      // Askerler toplanma noktası çevresine yayılıyor; üst üste binmeleri
+      // engelleme mantığını bozmaz ama görsel olarak tek asker gibi durur.
+      const yayilma = (i - (kademe.soldierCount - 1) / 2) * 14;
+      spawnSoldier(s, spot, { x: k.rally.x + yayilma, y: k.rally.y }, {
+        hp: kademe.soldierHp,
+        dps: kademe.soldierDps,
+        evasion: kademe.evasion ?? 0,
+        speed: SOLDIER_SPEED,
+      });
+      s.spotIndex = spotIndex;
+      s.activate();
+    });
+  }
+
+  /** Toplanma noktasını taşır — kural 6 kısıtlarından geçirerek. */
+  #setRally(spotIndex: number, istenen: Vec2): void {
+    const k = this.#barracksBySpot.get(spotIndex);
+    const spot = MAP_1.buildSpots[spotIndex];
+    if (k === undefined || spot === undefined) return;
+
+    k.rally = clampRally(spot, istenen, MAP_1.paths[0] ?? [], k.rally);
+    const kademe = barracksTierAt(KISLA, k.tier);
+    k.soldiers.forEach((s, i) => {
+      const yayilma = (i - (kademe.soldierCount - 1) / 2) * 14;
+      s.rally = { x: k.rally.x + yayilma, y: k.rally.y };
+      // Kilitli asker toplanma noktasına hemen koşmuyor; kilit kırılınca
+      // (kural 4) 'idle' oluyor ve yeni noktaya yöneliyor.
+    });
+    this.#drawRally();
+  }
+
+  #sellBarracks(spotIndex: number): number {
+    const k = this.#barracksBySpot.get(spotIndex);
+    if (k === undefined) return 0;
+
+    const iade = this.#eco?.sellAt(spotIndex) ?? 0;
+    // **S46:** kışla satılınca askerler anında havuza döner. `release`
+    // `resetSoldierState`'i çağırıyor, o da kilidi **iki taraflı** kırıyor —
+    // yani engellenen düşmanlar aynı karede serbest kalıyor.
+    for (const s of k.soldiers) this.#soldierPool?.release(s);
+    k.marker.destroy();
+    this.#barracksBySpot.delete(spotIndex);
+    this.#occupancy?.free(spotIndex);
+
+    for (const o of this.children.list) {
+      if (o.getData?.('kislaSpot') === spotIndex) o.destroy();
+    }
+    this.#closeMenu();
+    this.#drawRally();
+    return iade;
+  }
+
+  #upgradeBarracks(spotIndex: number, hedef: 0 | 1 | 2 | 3): boolean {
+    const k = this.#barracksBySpot.get(spotIndex);
+    if (k === undefined) return false;
+
+    const kademe = barracksTierAt(KISLA, hedef);
+    if (this.#eco?.canAfford(kademe.cost) !== true) return false;
+    this.#eco.buyAt(spotIndex, kademe.cost);
+    k.tier = hedef;
+    // Yükseltme askerleri **tazeliyor**: yeni HP ile doğuyorlar. Kule
+    // tarafında bekleme sıfırlanmıyordu (S40); burada karşılığı yok,
+    // asker zaten sürekli bir varlık.
+    this.#askerleriKur(spotIndex);
+    this.#closeMenu();
+    return true;
+  }
+
+  // --------------------------------------------------------- yetenekler (M5)
+
+  /** HUD'dan çağrılıyor: yetenek seçildi, sıradaki tık hedefi belirliyor. */
+  armAbility(id: AbilityId): boolean {
+    if (!this.abilities.ready(id)) return false;
+    this.#pendingAbility = this.#pendingAbility === id ? null : id;
+    return this.#pendingAbility !== null;
+  }
+
+  get pendingAbility(): AbilityId | null {
+    return this.#pendingAbility;
+  }
+
+  /** @returns Yetenek kullanıldıysa `true` — tık kule menüsüne gitmiyor. */
+  #tryCastAbility(at: Vec2): boolean {
+    const id = this.#pendingAbility;
+    if (id === null) return false;
+    this.#pendingAbility = null;
+
+    const dusmanlar = this.#enemyPool?.activeItems() ?? [];
+    if (id === 'meteor') {
+      const r = this.abilities.castMeteor(at, dusmanlar);
+      if (r === null) return true;
+      // Ölenleri işle — `castMeteor` yalnız `hp` düşürüyor, ölüm
+      // muhasebesi (altın, olay, bölünme, havuz) sahnenin işi.
+      for (const e of dusmanlar) {
+        if (e.alive && e.hp <= 0) this.#hasarUygula(e, 0);
+      }
+      this.#meteorEfekti(at);
+      return true;
+    }
+
+    this.abilities.castReinforcements(at, () => {
+      const s = this.#soldierPool?.acquire() ?? null;
+      if (s !== null) {
+        s.spotIndex = -1;
+        s.activate();
+        this.#gecici.push(s);
+      }
+      return s;
+    });
+    return true;
+  }
+
+  /** Takviye'nin geçici askerleri — hiçbir kışlaya ait değiller. */
+  readonly #gecici: Soldier[] = [];
+
+  #meteorEfekti(at: Vec2): void {
+    const g = this.add.graphics();
+    g.fillStyle(0xd4632a, 0.5);
+    g.fillCircle(at.x, at.y, 90);
+    this.tweens.add({
+      targets: g,
+      alpha: 0,
+      duration: 400,
+      onComplete: () => g.destroy(),
+    });
+  }
+
   #havuzDoldu(ad: string, kapasite: number): void {
     const d = devHooks();
     if (d !== undefined) d.poolExhausted = (d.poolExhausted ?? 0) + 1;
@@ -375,14 +697,43 @@ export class GameScene extends Phaser.Scene {
 
   #setupInput(): void {
     this.input.on(Phaser.Input.Events.POINTER_MOVE, (p: Phaser.Input.Pointer) => {
+      // Toplanma noktası sürükleniyorsa hover'a bakılmıyor (M5-T03).
+      if (this.#draggingRally >= 0) {
+        this.#setRally(this.#draggingRally, { x: p.worldX, y: p.worldY });
+        return;
+      }
       const i = findSpotAt({ x: p.worldX, y: p.worldY }, MAP_1.buildSpots);
       if (i === this.#hoveredSpot) return;
       this.#hoveredSpot = i;
       this.#drawHover();
     });
 
+    this.input.on(Phaser.Input.Events.POINTER_UP, () => {
+      this.#draggingRally = -1;
+    });
+
     this.input.on(Phaser.Input.Events.POINTER_DOWN, (p: Phaser.Input.Pointer) => {
-      const i = findSpotAt({ x: p.worldX, y: p.worldY }, MAP_1.buildSpots);
+      const nokta = { x: p.worldX, y: p.worldY };
+
+      // 1) Bekleyen yetenek her şeyin önünde — tıkla-hedefle (§8).
+      if (this.#tryCastAbility(nokta)) {
+        this.#closeMenu();
+        return;
+      }
+
+      // 2) Seçili kışlanın toplanma işaretçisine basıldıysa sürükleme başlar.
+      const secili = this.#barracksBySpot.get(this.#selectedSpot);
+      if (secili !== undefined) {
+        const dx = nokta.x - secili.rally.x;
+        const dy = nokta.y - secili.rally.y;
+        // Tutma alanı 44×44 px (CLAUDE.md Platform) → yarıçap 22.
+        if (dx * dx + dy * dy <= 22 * 22) {
+          this.#draggingRally = this.#selectedSpot;
+          return;
+        }
+      }
+
+      const i = findSpotAt(nokta, MAP_1.buildSpots);
       if (i < 0) {
         this.#closeMenu();
         return;
@@ -523,8 +874,11 @@ export class GameScene extends Phaser.Scene {
       Phaser.Math.Clamp(spot.y - 56, 40, this.scale.height - 40),
     );
 
+    // Dört aile: üç kule + kışla (§4). Kışla ayrı tip olduğu için ayrı
+    // buton — `TOWERS` dizisine sokmak `TowerDef` sözleşmesini bozardı.
+    const toplam = TOWERS.length + 1;
     TOWERS.forEach((def, i) => {
-      const bx = (i - (TOWERS.length - 1) / 2) * 96;
+      const bx = (i - (toplam - 1) / 2) * 84;
       const maliyet = def.tiers[0].cost;
       const alinabilir = this.#eco?.canAfford(maliyet) === true;
 
@@ -536,6 +890,15 @@ export class GameScene extends Phaser.Scene {
         () => this.#placeTower(spotIndex, def),
       );
     });
+
+    const kislaMaliyet = barracksTierAt(KISLA, 0).cost;
+    this.#menuButonu(
+      kap,
+      (TOWERS.length - (toplam - 1) / 2) * 84,
+      `Kışla ${kislaMaliyet}`,
+      this.#eco?.canAfford(kislaMaliyet) === true,
+      () => this.#placeBarracks(spotIndex),
+    );
 
     this.#menu = kap;
   }
@@ -559,6 +922,11 @@ export class GameScene extends Phaser.Scene {
    * T3 dalları M4'te kalıyor.
    */
   #openSellMenu(spotIndex: number): void {
+    // Kışla ayrı menü — kademe adları ve toplanma ipucu farklı.
+    if (this.#barracksBySpot.has(spotIndex)) {
+      this.#openBarracksMenu(spotIndex);
+      return;
+    }
     this.#closeMenu();
     const spot = MAP_1.buildSpots[spotIndex];
     const kule = this.#towerBySpot.get(spotIndex);
@@ -739,11 +1107,54 @@ export class GameScene extends Phaser.Scene {
     kap.add([arka, etiket]);
   }
 
+  /**
+   * Kışla menüsü: yükselt / dal seç / sat.
+   *
+   * Menü açıkken kışla **seçili** sayılıyor, yani toplanma noktası ve
+   * menzil halkası çiziliyor ve işaretçi sürüklenebiliyor (M5-T03).
+   */
+  #openBarracksMenu(spotIndex: number): void {
+    this.#closeMenu();
+    const spot = MAP_1.buildSpots[spotIndex];
+    const k = this.#barracksBySpot.get(spotIndex);
+    if (spot === undefined || k === undefined) return;
+
+    this.#selectedSpot = spotIndex;
+    const kap = this.add.container(
+      Phaser.Math.Clamp(spot.x, 140, this.scale.width - 140),
+      Phaser.Math.Clamp(spot.y - 56, 40, this.scale.height - 40),
+    );
+    const iade = this.#eco?.sellRefund(this.#eco.spentAt(spotIndex)) ?? 0;
+
+    if (k.tier === 0) {
+      const m = barracksTierAt(KISLA, 1).cost;
+      this.#menuButonu(kap, -48, `↑ ${m}`, this.#eco?.canAfford(m) === true, () =>
+        this.#upgradeBarracks(spotIndex, 1),
+      );
+      this.#menuButonu(kap, 48, `Sat +${iade}`, true, () => this.#sellBarracks(spotIndex));
+    } else if (k.tier === 1) {
+      const [a, b] = KISLA.branches;
+      this.#menuButonu(kap, -96, `${a.branchName} ${a.cost}`, this.#eco?.canAfford(a.cost) === true, () =>
+        this.#upgradeBarracks(spotIndex, 2),
+      );
+      this.#menuButonu(kap, 0, `${b.branchName} ${b.cost}`, this.#eco?.canAfford(b.cost) === true, () =>
+        this.#upgradeBarracks(spotIndex, 3),
+      );
+      this.#menuButonu(kap, 96, `Sat +${iade}`, true, () => this.#sellBarracks(spotIndex));
+    } else {
+      this.#menuButonu(kap, 0, `Sat +${iade}`, true, () => this.#sellBarracks(spotIndex));
+    }
+
+    this.#menu = kap;
+    this.#drawRally();
+  }
+
   #closeMenu(): void {
     this.#menu?.destroy(true);
     this.#menu = undefined;
     this.#selectedSpot = -1;
     this.#infoPanel?.hide();
+    this.#drawRally();
   }
 
   #placeTower(spotIndex: number, def: TowerDef): boolean {
@@ -900,6 +1311,58 @@ export class GameScene extends Phaser.Scene {
     dev.hoverSpot = (spotIndex: number) => {
       this.#hoveredSpot = spotIndex;
       this.#drawHover();
+    };
+
+    // --- M5 ---
+    dev.placeBarracks = (spotIndex: number) => this.#placeBarracks(spotIndex);
+    dev.upgradeBarracks = (spotIndex: number, tier: number) =>
+      this.#upgradeBarracks(spotIndex, tier as 0 | 1 | 2 | 3);
+    dev.sellBarracks = (spotIndex: number) => this.#sellBarracks(spotIndex);
+    dev.setRally = (spotIndex: number, x: number, y: number) => {
+      this.#setRally(spotIndex, { x, y });
+      return this.#barracksBySpot.get(spotIndex)?.rally ?? { x: -1, y: -1 };
+    };
+    dev.rallyOf = (spotIndex: number) =>
+      this.#barracksBySpot.get(spotIndex)?.rally ?? { x: -1, y: -1 };
+    dev.soldiers = () => {
+      const hepsi: Soldier[] = [...this.#gecici];
+      for (const [, k] of this.#barracksBySpot) hepsi.push(...k.soldiers);
+      return hepsi.map((s) => ({
+        spotIndex: s.spotIndex,
+        state: s.state,
+        hp: s.hp,
+        engaged: s.engagedWith !== null,
+        x: s.x,
+        y: s.y,
+      }));
+    };
+    dev.soldierActive = () => this.#soldierPool?.activeCount ?? -1;
+    dev.soldierCapacity = () => this.#soldierPool?.capacity ?? -1;
+    dev.blockedEnemies = () =>
+      (this.#enemyPool?.activeItems() ?? []).filter((e) => e.blockedBy !== null).length;
+    dev.abilityReady = (id: string) => this.abilities.ready(id as AbilityId);
+    dev.abilityProgress = (id: string) => this.abilities.progress(id as AbilityId);
+    dev.castMeteor = (x: number, y: number) => {
+      this.#pendingAbility = 'meteor';
+      const oncesi = this.abilities.cooldownLeft('meteor');
+      const dusmanlar = this.#enemyPool?.activeItems() ?? [];
+      const r = this.abilities.castMeteor({ x, y }, dusmanlar);
+      this.#pendingAbility = null;
+      if (r !== null) for (const e of dusmanlar) if (e.alive && e.hp <= 0) this.#hasarUygula(e, 0);
+      void oncesi;
+      return r;
+    };
+    dev.castReinforcements = (x: number, y: number) => {
+      const r = this.abilities.castReinforcements({ x, y }, () => {
+        const s = this.#soldierPool?.acquire() ?? null;
+        if (s !== null) {
+          s.spotIndex = -1;
+          s.activate();
+          this.#gecici.push(s);
+        }
+        return s;
+      });
+      return r?.length ?? -1;
     };
   }
 }
