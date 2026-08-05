@@ -97,9 +97,34 @@ export class EconomySystem {
     return iade;
   }
 
-  /** Dalga bitiş bonusu `30 + 5n` (§6). */
+  /**
+   * Dalga bitiş bonusu `30 + 5n` (§6), **harita altın çarpanıyla**.
+   *
+   * ## Çarpan neden buraya da uygulanıyor (S70)
+   *
+   * §9 altın çarpanını açık bir gerekçeyle koymuş: *"Eskiden yalnız HP
+   * ölçekleniyordu; altın ve kule maliyetleri sabit kaldığı için harita
+   * 3'te altın/HP oranı %38'e düşüyordu."* Ama çarpan yalnız **öldürme
+   * altınına** uygulanıyordu; dalga bitiş bonusu haritadan bağımsız sabit
+   * 575 kalıyordu.
+   *
+   * M7'de ölçüldü — §9'un niyeti gerçekleşmiyordu:
+   *
+   * | Harita | HP çarpanı | Toplam gelir çarpanı |
+   * |---|---|---|
+   * | 1 | ×1,0 | ×1,00 |
+   * | 2 | ×1,6 | **×1,33** |
+   * | 3 | ×2,6 | **×1,85** |
+   *
+   * Sonuç: harita 2'de boss Kısıt A tavanının %192'si, harita 3'te %292'si
+   * çıkıyordu — yani öldürülemez. Çarpanı bonusa da uygulamak §9'un yazılı
+   * gerekçesini yerine getiriyor; yeni bir sayı uydurmuyor.
+   *
+   * Başlangıç altını §9'da tek tek verildiği için (280/340/400)
+   * **değiştirilmedi**; kalan küçük fark ondan geliyor.
+   */
   awardWaveEnd(waveNo: number): number {
-    const b = BALANCE.waveEndBonus(waveNo);
+    const b = Math.round(BALANCE.waveEndBonus(waveNo) * this.map.goldMultiplier);
     this.earn(b);
     return b;
   }

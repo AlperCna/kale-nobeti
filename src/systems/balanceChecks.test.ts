@@ -6,8 +6,10 @@ import {
   effectiveDps,
   effectiveHp,
   spotsFullAtWave,
+  ceilingAPerBranch,
+  ceilingAWeakestBranch,
 } from './balanceChecks';
-import { MAP_1 } from '../data/maps';
+import { MAP_1, MAP_2, MAP_3 } from '../data/maps';
 import { MAP1_WAVES } from '../data/waves';
 import { ENEMIES, GOBLIN, ORK_SAVASCI } from '../data/enemies';
 import { BUYU, OKCU, TOP } from '../data/towers';
@@ -240,5 +242,93 @@ describe('Ekonomi karşılanabilirliği — M3-T10', () => {
     const toplam = cumulativeGold(MAP_1, MAP1_WAVES, 10);
     expect(toplam).toBe(1602);
     expect(toplam).toBeLessThan(1850);
+  });
+});
+
+// ---------------------------------------------------------------------
+// M7-T03 — Ayrık yolda Kısıt A kol başına
+// ---------------------------------------------------------------------
+
+describe('M7-T03 — Kısıt A ayrık yolda KOL BAŞINA (§9 uyarısı)', () => {
+  /** Harita 2'nin üst kolunu gören noktalara Okçu T2 koyan tahta. */
+  const ustKolTahtasi: ReferenceBoard = {
+    waveIndex: 10,
+    cumulativeCost: 0,
+    // 2, 3, 4 üst kolun noktaları (bkz. maps.ts yorumları).
+    towers: [2, 3, 4].map((spotIndex) => ({ spotIndex, towerId: 'okcu' as const, tier: 1 as const })),
+  };
+
+  it('iki kol AYRI hesaplanıyor ve farklı çıkıyor', () => {
+    const [ust, alt] = ceilingAPerBranch(ustKolTahtasi, GOBLIN, MAP_2);
+    expect(ust).toBeGreaterThan(0);
+    expect(alt).toBe(0); // alt kolu gören kule yok
+    expect(ust).not.toBe(alt);
+  });
+
+  it('bir kola hiç kule yoksa o kolun tavanı 0 — savunmasız', () => {
+    expect(ceilingAPerBranch(ustKolTahtasi, GOBLIN, MAP_2)[1]).toBe(0);
+  });
+
+  it('**toplam DPS yanıltıcı**: toplam tavan en zayıf koldan BÜYÜK', () => {
+    // §9'un uyarısının sayısal kanıtı. Toplam hesap, gerçekte var olmayan
+    // bir savunmayı vaat ediyor.
+    const toplam = ceilingA(
+      ustKolTahtasi,
+      (r) => measureCoverage(MAP_2.paths, MAP_2.buildSpots, r),
+      GOBLIN,
+      MAP_2,
+    );
+    const enZayif = ceilingAWeakestBranch(ustKolTahtasi, GOBLIN, MAP_2);
+    expect(toplam).toBeGreaterThan(enZayif);
+    expect(enZayif).toBe(0);
+  });
+
+  it('en zayıf kol belirleyici — ortalama DEĞİL', () => {
+    const kollar = ceilingAPerBranch(ustKolTahtasi, GOBLIN, MAP_2);
+    const ortalama = kollar.reduce((a, b) => a + b, 0) / kollar.length;
+    expect(ceilingAWeakestBranch(ustKolTahtasi, GOBLIN, MAP_2)).toBeLessThan(ortalama);
+  });
+
+  it('iki kolu da savunan tahtada iki tavan da pozitif', () => {
+    const dengeli: ReferenceBoard = {
+      waveIndex: 10,
+      cumulativeCost: 0,
+      towers: [2, 3, 5, 6].map((spotIndex) => ({
+        spotIndex,
+        towerId: 'okcu' as const,
+        tier: 1 as const,
+      })),
+    };
+    const kollar = ceilingAPerBranch(dengeli, GOBLIN, MAP_2);
+    for (const k of kollar) expect(k).toBeGreaterThan(0);
+  });
+
+  it('tek yollu haritada kol hesabı toplamla AYNI', () => {
+    const tahta: ReferenceBoard = {
+      waveIndex: 10,
+      cumulativeCost: 0,
+      towers: [{ spotIndex: 3, towerId: 'okcu', tier: 1 }],
+    };
+    const kol = ceilingAPerBranch(tahta, GOBLIN, MAP_1);
+    expect(kol).toHaveLength(1);
+    expect(kol[0]).toBeCloseTo(
+      ceilingA(tahta, (r) => measureCoverage(MAP_1.paths, MAP_1.buildSpots, r), GOBLIN, MAP_1),
+      6,
+    );
+  });
+
+  it('harita 3’ün iki girişi de ayrı hesaplanıyor', () => {
+    const solTahta: ReferenceBoard = {
+      waveIndex: 10,
+      cumulativeCost: 0,
+      towers: [0, 1, 2].map((spotIndex) => ({
+        spotIndex,
+        towerId: 'okcu' as const,
+        tier: 1 as const,
+      })),
+    };
+    const [sol, sag] = ceilingAPerBranch(solTahta, GOBLIN, MAP_3);
+    expect(sol).toBeGreaterThan(0);
+    expect(sag).toBe(0); // sağ giriş savunmasız
   });
 });

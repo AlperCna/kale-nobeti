@@ -6,9 +6,12 @@ import {
   wavePoints,
   waveEnemyCount,
   BOSS_REFAKAT_GECIKMESI_SN,
+  MAP2_WAVES,
+  MAP3_WAVES,
+  wavesFor,
 } from './waves';
 import { BALANCE, POOL_PREALLOC, SPAWN_K } from './balance';
-import { MAP_1 } from './maps';
+import { MAP_1, MAP_2, MAP_3 } from './maps';
 import { getEnemy } from './enemies';
 
 describe('budget — GAME-DESIGN §7 formülü', () => {
@@ -205,5 +208,114 @@ describe('BALANCE — GAME-DESIGN §6 sabitleri', () => {
     expect(BALANCE.earlyBonusFrom).toBe(4);
     expect(BALANCE.focusLoss).toBe(0.75);
     expect(BALANCE.safetyMargin).toBe(1.15);
+  });
+});
+
+// ---------------------------------------------------------------------
+// M7 — Harita 2 ve 3'ün dalgaları
+// ---------------------------------------------------------------------
+
+describe('M7 — 30 dalga: bütçe, kadro, giriş', () => {
+  const HARITALAR = [
+    { map: MAP_1, waves: MAP1_WAVES },
+    { map: MAP_2, waves: MAP2_WAVES },
+    { map: MAP_3, waves: MAP3_WAVES },
+  ];
+
+  it('üç haritanın da 10 dalgası var — toplam 30', () => {
+    for (const { waves } of HARITALAR) expect(waves).toHaveLength(10);
+    expect(HARITALAR.reduce((t, h) => t + h.waves.length, 0)).toBe(30);
+  });
+
+  it('her dalga bütçesine %15 pay içinde — §7', () => {
+    for (const { map, waves } of HARITALAR) {
+      waves.forEach((w, i) => {
+        const hedef = budget(i + 1);
+        const puan = wavePoints(w);
+        const sapma = Math.abs(puan - hedef) / hedef;
+        expect(sapma, `${map.id} dalga ${i + 1}: ${puan} vs bütçe ${hedef}`).toBeLessThanOrEqual(
+          0.15,
+        );
+      });
+    }
+  });
+
+  it('**kadro dışı düşman YOK** — §5 tanıtım sırası korunuyor', () => {
+    for (const { map, waves } of HARITALAR) {
+      for (const w of waves) {
+        for (const g of w.groups) {
+          expect(map.enemyRoster, `${map.id} dalga ${w.index}: ${g.enemy}`).toContain(g.enemy);
+        }
+      }
+    }
+  });
+
+  it('`spawnPoint` geçerli bir yol indeksi — S58', () => {
+    for (const { map, waves } of HARITALAR) {
+      for (const w of waves) {
+        for (const g of w.groups) {
+          expect(g.spawnPoint).toBeGreaterThanOrEqual(0);
+          expect(g.spawnPoint, `${map.id} dalga ${w.index}`).toBeLessThan(map.paths.length);
+        }
+      }
+    }
+  });
+
+  it('**iki girişin ikisi de kullanılıyor** — biri ölü kod değil', () => {
+    for (const { map, waves } of HARITALAR) {
+      const kullanilan = new Set(waves.flatMap((w) => w.groups.map((g) => g.spawnPoint)));
+      expect(kullanilan.size, `${map.id}`).toBe(map.paths.length);
+    }
+  });
+
+  it('boss yalnız dalga 10’da ve haritada BİR tane', () => {
+    for (const { map, waves } of HARITALAR) {
+      waves.forEach((w, i) => {
+        const boss = w.groups.filter((g) => g.enemy === 'ogreSef');
+        if (i === 9) {
+          expect(boss).toHaveLength(1);
+          expect(boss[0]!.count, `${map.id}`).toBe(1);
+        } else {
+          expect(boss, `${map.id} dalga ${i + 1}`).toHaveLength(0);
+        }
+      });
+    }
+  });
+
+  it('harita 3’te boss ile refakati AYRI kapılardan geliyor', () => {
+    const son = MAP3_WAVES[9]!;
+    const boss = son.groups.find((g) => g.enemy === 'ogreSef')!;
+    const refakat = son.groups.filter((g) => g.enemy !== 'ogreSef');
+    expect(refakat.some((g) => g.spawnPoint !== boss.spawnPoint)).toBe(true);
+  });
+
+  it('yeni düşman NEFES dalgasında tanıtılmıyor — §7', () => {
+    // Nefes dalgaları (4, 7) tanıdık düşmanlarla geçiyor.
+    for (const { map, waves } of HARITALAR) {
+      for (const n of [4, 7]) {
+        const oncekiler = new Set(
+          waves.slice(0, n - 1).flatMap((w) => w.groups.map((g) => g.enemy)),
+        );
+        for (const g of waves[n - 1]!.groups) {
+          expect(oncekiler, `${map.id} dalga ${n}: ${g.enemy} yeni`).toContain(g.enemy);
+        }
+      }
+    }
+  });
+
+  it('dalga başına düşman sayısı havuz kapasitesini aşmıyor', () => {
+    for (const { map, waves } of HARITALAR) {
+      for (const w of waves) {
+        expect(waveEnemyCount(w), `${map.id} dalga ${w.index}`).toBeLessThanOrEqual(
+          POOL_PREALLOC.enemy,
+        );
+      }
+    }
+  });
+
+  it('wavesFor harita kimliğini doğru eşliyor', () => {
+    expect(wavesFor('degirmen-gecidi')).toBe(MAP1_WAVES);
+    expect(wavesFor('tas-kopru')).toBe(MAP2_WAVES);
+    expect(wavesFor('kul-ovasi')).toBe(MAP3_WAVES);
   });
 });
