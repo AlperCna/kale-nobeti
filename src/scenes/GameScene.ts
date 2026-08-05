@@ -22,6 +22,10 @@ import {
   stepSoldiers,
 } from '../systems/BarracksSystem';
 import { AbilitySystem } from '../systems/AbilitySystem';
+import { ScreenShake } from '../fx/ScreenShake';
+import { HitStop } from '../fx/HitStop';
+import { Settings } from '../systems/Settings';
+import { LocalStore } from '../util/storage';
 import { KISLA, barracksTierAt, BLOCK, SOLDIER_SPEED } from '../data/barracks';
 import type { AbilityId } from '../types/ability';
 import { DamageText, DamageTextSystem } from '../fx/DamageText';
@@ -70,6 +74,9 @@ const TOWER_COLORS: Readonly<Record<string, number>> = {
 const SOLDIER_SIZE = 14;
 const SOLDIER_COLOR = 0x3e6ca8; // Mavi — dost tarafı
 const RALLY_COLOR = 0x3e6ca8;
+
+/** §10: "Aynı anda en fazla 300 parçacık (havuzlu)." */
+const PARTICLE_MAX = 300;
 
 /** Beş hedefleme modu (`GAME-DESIGN.md` §4.5). Varsayılan `first`. */
 const TARGET_MODES: readonly TargetMode[] = ['first', 'last', 'strongest', 'weakest', 'closest'];
@@ -135,6 +142,18 @@ export class GameScene extends Phaser.Scene {
   >();
 
   // --------------------------------------------------------- yetenekler (M5)
+
+  // ------------------------------------------------------------ juice (M6)
+
+  /** §10 — yönlü sarsıntı. Kamerayı sahne kaydırıyor, sınıf yalnız vektör üretiyor. */
+  readonly shake = new ScreenShake();
+  /** §10 — 60-80 ms, 2× hızda devre dışı. */
+  readonly hitStop = new HitStop();
+  /** TIER 1 kural 6 + 10. */
+  readonly settings = new Settings(new LocalStore(() => this.#kayitUyar()));
+  #particles?: Phaser.GameObjects.Particles.ParticleEmitter;
+  #vignette?: Phaser.GameObjects.Graphics;
+  #kayitUyarildi = false;
 
   readonly abilities = new AbilitySystem();
   /** Tıkla-hedefle bekleyen yetenek; `null` = yok. */
@@ -205,6 +224,11 @@ export class GameScene extends Phaser.Scene {
     this.#draggingRally = -1;
     this.#pendingAbility = null;
     this.abilities.reset(); // S49 — beklemeler haritalar arası sıfırlanıyor
+    // M6 juice durumu da yeniden başlatmada sıfırlanıyor.
+    this.shake.reset();
+    this.hitStop.reset();
+    this.#kayitUyarildi = false;
+    this.shake.enabled = this.settings.state.screenShake;
 
     const yol = MAP_1.paths[0] ?? [];
     const path = new PathSystem(yol);
@@ -278,15 +302,29 @@ export class GameScene extends Phaser.Scene {
       (k) => this.#havuzDoldu('asker', k),
     );
     this.#rallyGfx = this.add.graphics();
+    this.#kurJuice();
 
     this.#projectiles = new ProjectileSystem<Enemy, Projectile>(
       mermiHavuzu,
       (e, sonuc, x, y) => {
         this.#damageTexts?.spawn(x, y - ENEMY_SIZE, sonuc.dealt, sonuc.floored);
+        // §10: sarsıntı YALNIZ top patlaması, boss vuruşu ve can kaybında.
+        // Okçu atışı sarsmıyor — kural metninde adı geçen karşı örnek.
+        if (e.def?.id === 'ogreSef' && sonuc.dealt > 0) {
+          this.hitStop.trigger(80, this.clock.scale);
+          this.shake.trigger(x - e.x || 1, y - e.y, 0.5);
+        }
+        this.#particleBurst(x, y, x - e.x, y - e.y, 4);
         this.#hasarUygula(e, sonuc.dealt);
       },
       // Süreli etkiler isabet anında uygulanıyor (yanma, yavaşlatma).
       (e, effect) => applyEffect(e.effects, effect),
+      // §10: ekran sarsıntısı **yalnız** top patlamasında (ve boss vuruşu,
+      // can kaybı). Yön yukarı — patlama zeminden geliyor.
+      (x, y, r) => {
+        this.shake.trigger(0, 1, Math.min(1, r / 90));
+        this.#particleBurst(x, y, 0, -1, 16);
+      },
     );
 
     this.#towers = new TowerSystem((kule, tier, hedef) => {
@@ -327,6 +365,9 @@ export class GameScene extends Phaser.Scene {
     this.#setupInput();
 
     this.bus.on('life:lost', ({ remaining }) => {
+      // §10: can kaybında vermilyon vinyet nabzı + yönlü sarsıntı.
+      this.#vinyetNabzi();
+      this.shake.trigger(0, 1, 0.8);
       // Kaybetme ekranı M3'te. Şimdilik yalnız geliştirme çıktısı.
       if (import.meta.env.DEV) console.info(`[can] kalan ${remaining}`);
     });
@@ -367,7 +408,10 @@ export class GameScene extends Phaser.Scene {
    */
   update(_time: number, delta: number): void {
     this.clock.tick(delta);
-    const sd = this.clock.scaledDelta;
+    // **Hit-stop oyun zamanını sıfırlıyor** (§10). Sayacı duvar saatiyle
+    // işliyor — durdurduğu saatle kendini ölçseydi hiç bitmezdi.
+    const donduruldu = this.hitStop.update(delta);
+    const sd = donduruldu ? 0 : this.clock.scaledDelta;
 
     this.#waves?.update(sd);
     const dusmanlar = this.#enemyPool?.activeItems() ?? [];
@@ -384,6 +428,11 @@ export class GameScene extends Phaser.Scene {
 
     const aktifMermi = this.#projectiles?.activeCount ?? 0;
     if (aktifMermi > this.#mermiTepe) this.#mermiTepe = aktifMermi;
+
+    // §10 ekran sarsıntısı — kamerayı sahne kaydırıyor.
+    this.shake.update(sd);
+    const kayma = this.shake.offset;
+    this.cameras.main.setScroll(kayma.x, kayma.y);
 
     const dev = devHooks();
     if (dev !== undefined) dev.gameFrames = (dev.gameFrames ?? 0) + 1;
@@ -404,10 +453,16 @@ export class GameScene extends Phaser.Scene {
     if (e.def !== null) this.#eco?.award(e.def);
     this.bus.emit('enemy:killed', { id: e.id, gold: e.def?.gold ?? 0 });
 
+    // §10 juice — hit-stop yalnız ölümde ve boss hasarında; sarsıntı
+    // **her ölümde değil** (§10: "her okçu atışında sarsıntı olmaz").
+    this.hitStop.trigger(e.def?.id === 'ogreSef' ? 80 : 60, this.clock.scale);
+    this.#particleBurst(e.x, e.y, 0, -1, 10);
+    if (e.def?.id === 'ogreSef') this.shake.trigger(0, 1, 1);
+
     // Bölünme havuza DÖNMEDEN önce — yavrular annenin `progress`'ini
     // devralıyor ve `release` onu sıfırlıyor.
     this.#abilities?.splitOnDeath(e);
-    this.#enemyPool?.release(e);
+    this.#olumEfekti(e);
   }
 
   /** Yanma hasarı ve yavaşlatma çarpanı — `effects.ts` saf tarafı. */
@@ -684,6 +739,148 @@ export class GameScene extends Phaser.Scene {
       duration: 400,
       onComplete: () => g.destroy(),
     });
+  }
+
+  // -------------------------------------------------------------- juice (M6)
+
+  /**
+   * Parçacık dokusu ve vinyet — `GAME-DESIGN.md` §10.
+   *
+   * Doku **çalışma zamanında** üretiliyor: M6'nın atlası (`M6-P03`/`P04`)
+   * henüz yok ve tek beyaz piksel için bir varlık dosyası eklemek paketi
+   * büyütür. `numberFont.ts` aynı yolu izliyor.
+   */
+  #kurJuice(): void {
+    const ad = 'kn-parcacik';
+    if (!this.textures.exists(ad)) {
+      const doku = this.textures.createCanvas(ad, 4, 4);
+      const ctx = doku?.getContext();
+      if (ctx !== undefined && ctx !== null) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, 4, 4);
+        doku?.refresh();
+      }
+    }
+
+    // §10: "Aynı anda en fazla 300 parçacık (havuzlu)."
+    // `research/02` §7: Phaser'ın parçacık sistemi **zaten havuzlu**,
+    // ayrı havuz yazmak TIER 1 kural 3'ün istediği şey değil.
+    this.#particles = this.add.particles(0, 0, ad, {
+      lifespan: 420,
+      speed: { min: 40, max: 140 },
+      scale: { start: 1.1, end: 0 },
+      alpha: { start: 1, end: 0 },
+      // §10: "ilk kare parlak altın/vermilyon, hızla koyu duman/toza sönüm"
+      tint: [0xd4a032, 0xb03a2e, 0x6b5a3e],
+      maxParticles: PARTICLE_MAX,
+      emitting: false,
+    });
+    this.#particles.setDepth(50);
+
+    // §10 can kaybı: ekran kenarında vermilyon vinyet nabzı, 400 ms.
+    this.#vignette = this.add.graphics().setDepth(60).setAlpha(0);
+    const g = this.#vignette;
+    const w = this.scale.width;
+    const h = this.scale.height;
+    const kalinlik = 90;
+    g.fillStyle(0xb03a2e, 1);
+    g.fillRect(0, 0, w, kalinlik);
+    g.fillRect(0, h - kalinlik, w, kalinlik);
+    g.fillRect(0, 0, kalinlik, h);
+    g.fillRect(w - kalinlik, 0, kalinlik, h);
+  }
+
+  /**
+   * §10 squash & stretch: "düşman ölürken **1,3× yatay ezilme** +
+   * kaybolma, **120 ms**".
+   *
+   * ## Havuz sözleşmesi nasıl korunuyor (TIER 1 kural 3)
+   *
+   * Efekt, düşman havuza dönmeden önce oynatılmak zorunda — nesne aynı
+   * nesne. Yani `release` **120 ms geciktiriliyor**. Bu güvenli, çünkü
+   * `alive` zaten `false`: hedefleme onu eliyor, `Mover` ilerletmiyor,
+   * mermiler ıskalıyor.
+   *
+   * **Ama havuz baskısı altında gecikme kapatılıyor.** Serbest yuva 8'in
+   * altına inerse efekt atlanıp nesne anında iade ediliyor: 60'lık havuzda
+   * her ölümü 120 ms tutmak yoğun dalgada `acquire`'ı `null` döndürürdü ve
+   * bir görsel süs yüzünden **düşman doğmazdı**. Kural 3'ün "havuz sessizce
+   * büyümez" tavizi bu yönde ödenmez.
+   */
+  #olumEfekti(e: Enemy): void {
+    const havuz = this.#enemyPool;
+    if (havuz === undefined) return;
+
+    const olcek = this.settings.effectScale;
+    if (olcek <= 0 || havuz.freeCount < 8) {
+      havuz.release(e);
+      return;
+    }
+
+    this.tweens.add({
+      targets: e,
+      scaleX: 1.3,
+      scaleY: 0.6,
+      alpha: 0,
+      duration: 120,
+      ease: 'Quad.easeOut',
+      // Süre **oyun zamanına** bağlı: `tweens.timeScale` `GameClock`
+      // tarafından yazılıyor (TIER 1 kural 8), yani 2× hızda 60 ms.
+      onComplete: () => havuz.release(e),
+    });
+  }
+
+  /** §10: can kaybında 400 ms vermilyon nabız. */
+  #vinyetNabzi(): void {
+    const g = this.#vignette;
+    if (g === undefined) return;
+    // Vinyet **efekt yoğunluğundan bağımsız**: bir geri bildirim değil,
+    // bir uyarı. TIER 1 kural 6 "erişilebilirlik tabanı" istiyor ve can
+    // kaybının görülmemesi tabanın altına düşmek olurdu.
+    this.tweens.killTweensOf(g);
+    g.setAlpha(0);
+    this.tweens.add({
+      targets: g,
+      alpha: { from: 0, to: 0.35 },
+      duration: 130,
+      yoyo: true,
+      hold: 40,
+      ease: 'Quad.easeOut',
+      onComplete: () => g.setAlpha(0),
+    });
+  }
+
+  /**
+   * TIER 1 kural 10 son cümlesi: "Kayıt başarısızsa oyuncuya **bir kez**
+   * bildirilir." Gizli sekmede ayarlar kalıcı olmuyor; oyun çalışmaya
+   * devam ediyor ama oyuncu bunu bilmeli.
+   */
+  #kayitUyar(): void {
+    if (this.#kayitUyarildi) return;
+    this.#kayitUyarildi = true;
+    this.bus.emit('save:failed', { once: true });
+  }
+
+  /**
+   * §10 parçacıkları. **Ayrı havuz YOK** — Phaser'ın parçacık sistemi zaten
+   * havuzlu (`research/02` §7: "ömrü biten parçacık yok edilmez, havuza
+   * döner"). Sınır `maxParticles` ile veriliyor.
+   */
+  #particleBurst(x: number, y: number, dirX: number, dirY: number, adet: number): void {
+    const e = this.#particles;
+    if (e === undefined) return;
+
+    const olcek = this.settings.effectScale;
+    if (olcek <= 0) return; // TIER 1 k.6 — efekt kapalı
+
+    // §10 "2× hızda parçacık yoğunluğu yarıya iner": okunurluk için.
+    const hizBolen = this.clock.scale === 2 ? 2 : 1;
+    const n = Math.max(1, Math.round((adet * olcek) / hizBolen));
+
+    const aci = Math.atan2(dirY, dirX);
+    e.setParticleTint(0xd4a032);
+    e.emitParticle(n, x, y);
+    void aci;
   }
 
   #havuzDoldu(ad: string, kapasite: number): void {
@@ -1170,6 +1367,10 @@ export class GameScene extends Phaser.Scene {
     if (this.#occupancy?.occupy(spotIndex) !== true) return false;
     this.#eco.buyAt(spotIndex, maliyet);
 
+    // §10 kule yerleşimi: toz halkası. (40 ms zoom M6-T10'un görsel
+    // yarısı; kamera kaydırması sarsıntıyla çakışmasın diye eklenmedi.)
+    this.#particleBurst(spot.x, spot.y, 0, -1, 14);
+
     const kule = new Tower(this, spotIndex, spot.x, spot.y, def, TOWER_COLORS[def.id] ?? GOLD_COLOR);
     this.#towerBySpot.set(spotIndex, kule);
     this.#towers?.add(kule);
@@ -1351,6 +1552,21 @@ export class GameScene extends Phaser.Scene {
       if (r !== null) for (const e of dusmanlar) if (e.alive && e.hp <= 0) this.#hasarUygula(e, 0);
       void oncesi;
       return r;
+    };
+    // --- M6 ---
+    dev.shakeOffset = () => this.shake.offset;
+    dev.shakeActive = () => this.shake.active;
+    dev.triggerShake = (dx: number, dy: number, g: number) => { this.shake.trigger(dx, dy, g); };
+    dev.hitStopActive = () => this.hitStop.active;
+    dev.triggerHitStop = (ms: number) => { this.hitStop.trigger(ms, this.clock.scale); return this.hitStop.remainingMs; };
+    dev.particleCount = () => this.#particles?.getAliveParticleCount() ?? -1;
+    dev.settings = () => ({ ...this.settings.state, scale: this.settings.effectScale });
+    dev.setSetting = (k: string, v: unknown) => {
+      if (k === "effects") this.settings.set("effects", v as "off" | "low" | "full");
+      else this.settings.set(k as "sound" | "screenShake", v as boolean);
+      this.shake.enabled = this.settings.state.screenShake;
+      if (!this.shake.enabled) this.shake.reset();
+      return { ...this.settings.state };
     };
     dev.castReinforcements = (x: number, y: number) => {
       const r = this.abilities.castReinforcements({ x, y }, () => {

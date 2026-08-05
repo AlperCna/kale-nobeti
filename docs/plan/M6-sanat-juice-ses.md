@@ -6,7 +6,7 @@
 | **Görev** | 12 kod görevi + 4 üretim bloğu |
 | **Kod yazma süresi** | ~8 sa — **takvim değil** |
 | **Takvim bütçesi** | **3-4 hafta** (S50 = özgün silüet) |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ▶ **5/12** — varlıktan bağımsız kod bitti, üretim blokları bekliyor |
 
 > ## ⚠️ Bu taşa dakika tahmini verilmiyor
 >
@@ -236,7 +236,7 @@ gri tonlamalı ekran görüntüsünde de ayırt edilebiliyor (renk körlüğü t
 
 ### M6-T07 — `ScreenShake`
 
-`M6-T07` · ☐ · ~35 dk · Önkoşul `M0-T04` · TIER 1 **k.6**, k.8 · Açık soru S55
+`M6-T07` · ☑ · ~35 dk · Önkoşul `M0-T04` · TIER 1 **k.6**, k.8 · Açık soru S55
 · Doküman `GAME-DESIGN.md` §10
 
 **Yapılacak**
@@ -258,7 +258,7 @@ kamera hiç oynamıyor; sönüm üstel.
 
 ### M6-T08 — `HitStop`
 
-`M6-T08` · ☐ · ~35 dk · Önkoşul `M0-T04` · TIER 1 k.8 · Açık soru S55
+`M6-T08` · ☑ · ~35 dk · Önkoşul `M0-T04` · TIER 1 k.8 · Açık soru S55
 · Doküman `GAME-DESIGN.md` §10
 
 **Yapılacak**
@@ -278,7 +278,7 @@ aşmıyor.
 
 ### M6-T09 — Parçacıklar
 
-`M6-T09` · ☐ · ~40 dk · Önkoşul `M6-T02` · TIER 1 **k.3**, k.6, k.8 · Açık soru S53
+`M6-T09` · ☑ · ~40 dk · Önkoşul `M6-T02` · TIER 1 **k.3**, k.6, k.8 · Açık soru S53
 · Doküman `GAME-DESIGN.md` §10 · `research/02` §7
 
 **Yapılacak**
@@ -301,7 +301,7 @@ efekt yoğunluğu kapalıyken hiç parçacık yok ve oyun **hâlâ okunur**.
 
 ### M6-T10 — Altın uçuşu, vinyet, dalga sonu sayacı
 
-`M6-T10` · ☐ · ~40 dk · Önkoşul `M6-T01`, `M6-T09` · TIER 1 k.3, k.7, k.8
+`M6-T10` · ☑ · ~40 dk · Önkoşul `M6-T01`, `M6-T09` · TIER 1 k.3, k.7, k.8
 · Açık soru — · Doküman `GAME-DESIGN.md` §10
 
 **Yapılacak**
@@ -354,7 +354,7 @@ indirmede yer alıyorsa.
 
 ### M6-T12 — Ayarlar menüsü ve erişilebilirlik
 
-`M6-T12` · ☐ · ~40 dk · Önkoşul `M6-T07`, `M6-T09`, `M6-T11` · TIER 1 **k.6**, k.10
+`M6-T12` · ☑ · ~40 dk · Önkoşul `M6-T07`, `M6-T09`, `M6-T11` · TIER 1 **k.6**, k.10
 · Açık soru S53, S54 · Doküman `GAME-DESIGN.md` §10 · `CLAUDE.md` TIER 1 k.6, k.10
 
 **Yapılacak**

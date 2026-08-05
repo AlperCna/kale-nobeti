@@ -7,6 +7,7 @@ import { HudReadout } from '../fx/HudReadout';
 import { WaveTelegraph } from '../fx/WaveTelegraph';
 import { ensureNumberFont } from '../fx/numberFont';
 import { AbilityButtons } from '../fx/AbilityButtons';
+import { SettingsPanel } from '../fx/SettingsPanel';
 
 const INK = 0x14203a;
 const PARCHMENT = 0xe4d3a8;
@@ -50,6 +51,9 @@ export class HudScene extends Phaser.Scene {
   /** İki yetenek butonu + dairesel bekleme dolumu (§8, M5-T07). */
   #abilityButtons?: AbilityButtons;
 
+  /** Ayarlar paneli (M6-T12) — duraklatma perdesinin üstünde. */
+  #settingsPanel?: SettingsPanel;
+
   constructor() {
     super('Hud');
   }
@@ -68,6 +72,20 @@ export class HudScene extends Phaser.Scene {
       this.scale.height - MARGIN - 46,
       (id) => this.#game().armAbility(id),
     );
+    this.#settingsPanel = new SettingsPanel(this, this.#game().settings, () => {
+      // Ayar değişince oyuna anında yansı — sarsıntı bayrağı ve ses.
+      const g = this.#game();
+      g.shake.enabled = g.settings.state.screenShake;
+      if (!g.settings.state.screenShake) g.shake.reset();
+      this.sound.mute = !g.settings.state.sound;
+    });
+    // Başlangıçta da uygula: kayıtlı tercih ve prefers-reduced-motion.
+    {
+      const g = this.#game();
+      g.shake.enabled = g.settings.state.screenShake;
+      this.sound.mute = !g.settings.state.sound;
+    }
+    this.#createSettingsButton();
     this.#createPauseOverlay();
     this.#bindKeys();
 
@@ -121,6 +139,26 @@ export class HudScene extends Phaser.Scene {
     this.#bitti = true;
     this.scene.stop('Game');
     this.scene.start('GameOver', { won: kazandi, lives: game.lives });
+  }
+
+  /**
+   * Ayarlar butonu — sağ üst. Duraklatma gerektirmiyor: §10'un istediği
+   * ayarlar (sarsıntı, efekt, ses) oyun sürerken de değiştirilebilmeli,
+   * çünkü etkileri ancak oyun akarken görülüyor.
+   */
+  #createSettingsButton(): void {
+    const x = this.scale.width - MARGIN - BTN / 2;
+    const y = MARGIN + BTN / 2 + BTN + 12;
+    const btn = this.add
+      .rectangle(x, y, BTN, BTN, PARCHMENT)
+      .setStrokeStyle(2, GOLD)
+      .setInteractive({ useHandCursor: true });
+    this.add
+      .text(x, y, '⚙', { fontFamily: 'Spectral, serif', fontSize: '24px', color: '#14203A' })
+      .setOrigin(0.5);
+    btn.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => {
+      this.#settingsPanel?.setVisible(!(this.#settingsPanel?.visible ?? false));
+    });
   }
 
   #game(): GameScene {
@@ -249,6 +287,7 @@ export class HudScene extends Phaser.Scene {
   #togglePause(): void {
     this.#paused = !this.#paused;
     this.#overlay?.setVisible(this.#paused);
+    if (!this.#paused) this.#settingsPanel?.setVisible(false);
 
     const game = this.scene.get('Game') as GameScene;
     if (this.#paused) {

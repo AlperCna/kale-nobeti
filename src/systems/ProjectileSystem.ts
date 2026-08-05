@@ -56,6 +56,12 @@ export class ProjectileSystem<E extends Targetable, T extends ProjectileState<E>
     private readonly pool: Pool<T>,
     private readonly onDamage: DamageHandler<E>,
     private readonly onEffect?: EffectHandler<E>,
+    /**
+     * Patlama gerçekleşti — konum ve yarıçap. `GAME-DESIGN.md` §10 ekran
+     * sarsıntısını **yalnız top patlamasında** istiyor; sistemin kendisi
+     * kamerayı bilmiyor, sahneye haber veriyor (TIER 1 kural 11).
+     */
+    private readonly onExplode?: (x: number, y: number, radius: number) => void,
   ) {}
 
   get activeCount(): number {
@@ -149,6 +155,7 @@ export class ProjectileSystem<E extends Targetable, T extends ProjectileState<E>
 
     if (m.splashRadius > 0) {
       this.#patlat(m, enemies);
+      this.onExplode?.(m.x, m.y, m.splashRadius);
     } else if (m.effect?.kind === 'chain') {
       this.#zincirle(m, enemies, m.effect.targets, m.effect.falloff);
     } else if (m.target !== null) {

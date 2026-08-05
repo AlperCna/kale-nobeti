@@ -104,6 +104,18 @@ export interface DevHooks {
   /** @returns Meteor'un vurduğu düşman sayısı ve toplam hasar. */
   castMeteor: (x: number, y: number) => { hit: number; totalDamage: number } | null;
   castReinforcements: (x: number, y: number) => number;
+
+  // --- M6 ---
+  shakeOffset: () => { x: number; y: number };
+  shakeActive: () => boolean;
+  triggerShake: (dx: number, dy: number, strength: number) => void;
+  hitStopActive: () => boolean;
+  /** @returns Kalan hit-stop süresi (ms). */
+  triggerHitStop: (ms: number) => number;
+  /** Yaşayan parçacık sayısı — §10 tavanı 300. */
+  particleCount: () => number;
+  settings: () => { sound: boolean; screenShake: boolean; effects: string; scale: number };
+  setSetting: (key: string, value: unknown) => { sound: boolean; screenShake: boolean; effects: string };
 }
 
 type Global = { __kn?: Partial<DevHooks> };
