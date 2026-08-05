@@ -401,10 +401,17 @@ function olustur() {
   ]), '');
   y(`**Altın çarpanı = HP çarpanı.** Gerekçe §9'da yazılı: eskiden yalnız HP`);
   y(`ölçekleniyordu ve harita 3'te altın/HP oranı %38'e düşüyordu.`, '');
-  y(`> ⚠️ **Bilinen açık (S72):** başlangıç altını sütunu (${D.haritalar.map((m) => n(m.startGold)).join('/')})`);
-  y(`> bu çarpanı **izlemiyor** — ×${n(D.haritalar[1].hpMultiplier)} ve ×${n(D.haritalar[2].hpMultiplier)} yerine ×1,21 ve ×1,43 ile büyüyor.`);
-  y(`> Ölçülen sonuç: dalga 1 tahtası üç haritada da 3-4 kule ama goblin efektif`);
-  y(`> HP'si ${D.haritalar.map((m) => Math.round(45 * m.hpMultiplier)).join('/')}. Erken dalga sızıntısının kaynağı bu.`, '');
+  y(`**Başlangıç altını da çarpanı izliyor** — S72, kapandı. §9 tablosu`);
+  y(`280/340/400 diyordu ama 340 ve 400 çarpanı izlemiyordu (×1,21 ve ×1,43,`);
+  y(`oysa HP ×1,6 ve ×2,6). Ölçülen sonuç: dalga 1 tahtası üç haritada da 3-4`);
+  y(`kule, ama goblin efektif HP'si ${D.haritalar.map((m) => Math.round(45 * m.hpMultiplier)).join('/')}. §9'un kendi gerekçesi`);
+  y(`("altın/HP oranı düşmesin") başlangıç altınına da uygulandı:`, '');
+  y(tablo(['Harita', '§9 tablosu', 'Kullanılan', 'Dalga 1 sızıntısı (önce → sonra)'], [
+    ['1 · Değirmen Geçidi', '280', `**${n(D.haritalar[0].startGold)}**`, '0 → 0'],
+    ['2 · Taş Köprü', '340', `**${n(D.haritalar[1].startGold)}** = 280 × 1,6`, '**4 → 0**'],
+    ['3 · Kül Ovası', '400', `**${n(D.haritalar[2].startGold)}** = 280 × 2,6`, '**7 → 0**'],
+  ]), '');
+  y(`Toplam sızıntı: harita 2'de 13 → ${n(D.haritalar[1].kisitB.sizanAdet)}, harita 3'te 43 → ${n(D.haritalar[2].kisitB.sizanAdet)}.`, '');
 
   // ---------------------------------------------------------------- 11
   y('---', '', '## 11. Dalgalar', '');

@@ -202,7 +202,13 @@ export const MAP_2: MapDef = {
   castle: MAP2_KALE,
   hpMultiplier: 1.6,
   goldMultiplier: 1.6, // = hpMultiplier (§9)
-  startGold: 340,
+  // S72 — §9 tablosu 340 diyor; **280 × 1,6 = 448** kullanılıyor.
+  // Gerekçe §9'un kendi cümlesi: altın çarpanı "altın/HP oranı düşmesin"
+  // diye var. Çarpan öldürme altınına ve (S70'te) dalga bonusuna
+  // uygulanıyordu ama başlangıç altınına uygulanmıyordu — ölçülen sonuç:
+  // dalga 1 tahtası üç haritada da 3-4 kule, ama goblin efektif HP'si
+  // 45/72/117. Erken dalga sızıntısının kaynağı buydu.
+  startGold: Math.round(280 * 1.6),
   // §5 kadro tablosu: harita 1 + Zırhlı Ork, Şaman.
   enemyRoster: ['goblin', 'orkSavasci', 'kurtBinicisi', 'harpi', 'zirhliOrk', 'saman', 'ogreSef'],
   // ELLE YAZILMAZ — CLAUDE.md Mimari kuralı.
@@ -285,7 +291,8 @@ export const MAP_3: MapDef = {
   castle: MAP3_KALE,
   hpMultiplier: 2.6,
   goldMultiplier: 2.6, // = hpMultiplier (§9)
-  startGold: 400,
+  // S72 — §9 tablosu 400 diyor; **280 × 2,6 = 728** (yukarıdaki gerekçe).
+  startGold: Math.round(280 * 2.6),
   // §5: + Trol, Örümcek Ana. Örümcek yavrusu kadroda sayılmaz (bölünmeden
   // çıkıyor) ama doğabilmesi için listede olmak zorunda.
   enemyRoster: [

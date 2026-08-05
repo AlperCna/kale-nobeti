@@ -141,14 +141,18 @@ describe('Harita 2 ve 3 — GAME-DESIGN.md §9 tablosu', () => {
     expect(MAP_2.paths).toHaveLength(2); // Y ayrımı
     expect(MAP_2.hpMultiplier).toBe(1.6);
     expect(MAP_2.goldMultiplier).toBe(1.6);
-    expect(MAP_2.startGold).toBe(340);
+    // S72 — §9 tablosu 340/400 diyor ama altın çarpanını izlemiyordu.
+    // §9'un kendi gerekçesi ("altın/HP oranı düşmesin") başlangıç altınına
+    // da uygulandı: 280 × çarpan. Ölçülen etki: dalga 1 sızıntısı
+    // harita 2'de 4→0, harita 3'te 7→0.
+    expect(MAP_2.startGold).toBe(448);
 
     expect(MAP_3.id).toBe('kul-ovasi');
     expect(MAP_3.buildSpots).toHaveLength(12);
     expect(MAP_3.paths).toHaveLength(2); // iki giriş
     expect(MAP_3.hpMultiplier).toBe(2.6);
     expect(MAP_3.goldMultiplier).toBe(2.6);
-    expect(MAP_3.startGold).toBe(400);
+    expect(MAP_3.startGold).toBe(728);
   });
 
   it('altın çarpanı HP çarpanına EŞİT — §9', () => {
@@ -169,6 +173,12 @@ describe('Harita 2 ve 3 — GAME-DESIGN.md §9 tablosu', () => {
     expect(MAP_3.enemyRoster).toContain('orumcekAna');
     // Yavru kadroda sayılmaz ama bölünmeden doğabilmesi için listede olmalı.
     expect(MAP_3.enemyRoster).toContain('orumcekYavrusu');
+  });
+
+  it('S72 — başlangıç altını çarpanı İZLİYOR', () => {
+    for (const m of MAPS) {
+      expect(m.startGold, m.id).toBe(Math.round(MAP_1.startGold * m.hpMultiplier));
+    }
   });
 
   it('zorluk MONOTON artıyor', () => {
