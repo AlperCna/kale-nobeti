@@ -159,6 +159,40 @@ function karsilanabilirKule(sira: number, butce: number): TowerDef | undefined {
 }
 
 /**
+ * Kışlanın kurulacağı yapı noktası.
+ *
+ * **En düşük TOPLAM kapsamalı nokta** — S69: kışla kapsamayı kullanmıyor
+ * ama işgal ettiği nokta bir kuleyi dışarıda bırakıyor.
+ *
+ * ## Denenen ve ÖLÇÜMLE ELENEN alternatif
+ *
+ * Harita 3'te kışla kol 1'e ait bir noktaya düşüyordu (kol 0'da 7 kule,
+ * kol 1'de 6) ve dalga tasarımı Ork Savaşçı gruplarını (d2, d4, d7) tam
+ * da o zayıf kola gönderiyordu. "Kolları dengele" hipotezi mantıklı
+ * görünüyordu: kışlayı **ortak** bir noktaya alıp 6/6 yapmak.
+ *
+ * **Ölçüm hipotezi çürüttü:** kollar 6/6 oldu ama sızıntı **25 → 35**
+ * çıktı ve Ork Savaşçı ×11'den ×14'e yükseldi. Sebep: ortak nokta iki
+ * kolu birden görüyor, onu kışlaya vermek **her iki kolu** zayıflatıyor.
+ * Asimetrik 7/6, simetrik 6/6'dan iyi.
+ *
+ * Yani bağlayıcı değişken kol **dengesi** değil, kol başına **toplam
+ * kule sayısı**.
+ */
+function kislaNoktasiSec(map: MapDef): number | undefined {
+  // **En düşük TOPLAM kapsama.** Ölçülerek seçildi, bkz. yukarıdaki not.
+  let enIyi: number | undefined;
+  let enAz = Number.POSITIVE_INFINITY;
+  for (const c of map.coverage) {
+    if (c.coveredPx < enAz) {
+      enAz = c.coveredPx;
+      enIyi = c.spotIndex;
+    }
+  }
+  return enIyi;
+}
+
+/**
  * Referans tahtaları **türetir** — elle yazılmaz (S25).
  *
  * Harcama kuralı `GAME-DESIGN.md` §6: **önce yapı noktalarını doldur,
@@ -203,7 +237,7 @@ export function buildReferenceBoards(
    * noktaya kurmak 20/20 canı 0/20'ye çeviriyordu.
    */
   const kislaAlinacak = map.enemyRoster.includes('trol');
-  const kislaNoktasi = kislaAlinacak ? tumSirali[tumSirali.length - 1] : undefined;
+  const kislaNoktasi = kislaAlinacak ? kislaNoktasiSec(map) : undefined;
   const sirali = tumSirali.filter((i) => i !== kislaNoktasi);
   let kislaKuruldu = false;
   const kislalar: BoardBarracks[] = [];
