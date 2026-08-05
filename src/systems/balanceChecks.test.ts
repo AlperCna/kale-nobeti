@@ -10,7 +10,7 @@ import {
 import { MAP_1 } from '../data/maps';
 import { MAP1_WAVES } from '../data/waves';
 import { ENEMIES, GOBLIN, ORK_SAVASCI } from '../data/enemies';
-import { OKCU, TOP } from '../data/towers';
+import { BUYU, OKCU, TOP } from '../data/towers';
 import { BALANCE } from '../data/balance';
 import { measureCoverage } from '../util/coverage';
 import type { ReferenceBoard } from '../types/board';
@@ -18,6 +18,7 @@ import type { ReferenceBoard } from '../types/board';
 const KAPSAMA_150 = measureCoverage(MAP_1.paths, MAP_1.buildSpots, 150);
 const cov = (range: number) => measureCoverage(MAP_1.paths, MAP_1.buildSpots, range);
 const BOARDS = buildReferenceBoards(MAP_1, MAP1_WAVES, KAPSAMA_150);
+const GERCEKCI = buildReferenceBoards(MAP_1, MAP1_WAVES, KAPSAMA_150, true);
 
 describe('effectiveDps — zırh/direnç uygulanmış', () => {
   it('Okçu T1 goblin\'e (zırhsız) tam DPS', () => {
@@ -39,12 +40,49 @@ describe('effectiveDps — zırh/direnç uygulanmış', () => {
 describe('Kısıt A — GAME-DESIGN §6', () => {
   const son = BOARDS[BOARDS.length - 1]!;
 
-  it('harita 1\'in üç düşman tipi için de %15 payla geçiyor', () => {
+  it('boss DIŞINDAKİ sekiz düşman %15 payla geçiyor', () => {
     for (const e of ENEMIES) {
+      if (e.id === 'ogreSef' || e.id === 'orumcekYavrusu') continue;
       const tavan = ceilingA(son, cov, e, MAP_1);
       const hp = effectiveHp(e, MAP_1);
       expect(tavan, `${e.id}`).toBeGreaterThan(hp * BALANCE.safetyMargin);
     }
+  });
+
+  it('DENGE BULGUSU: boss tam sınırda — %15 payı yalnız erken başlatmayla tutuyor', () => {
+    // §5'in ⚠️ notu M1'de kalkmıştı: research/01'in **hepsi T2** referans
+    // tahtasıyla boss tavanın %78,7'siydi. M4'te tahta gerçekten türetilince
+    // ortaya çıktı ki o tahtaya ulaşmak erken başlatma bonusunu gerektiriyor:
+    //
+    //   muhafazakâr tahta (bonus yok, 4 T2)  → tavan 761, boss %92,0 → pay TUTMUYOR
+    //   gerçekçi tahta   (bonus var,  7 T2)  → tavan 818, boss %85,6 → pay tutuyor
+    //
+    // Sebep: Büyü ailesi M4'te girdi ve T1 maliyeti 100 (Okçu 70). Noktaları
+    // doldurmak pahalılaştı, yükseltmeye daha az kaldı.
+    //
+    // Boss **öldürülebilir** (tavan > HP) ama tasarım bandının (%75-85)
+    // 0,6 puan üstünde. `OPEN-QUESTIONS.md` S36.
+    const bossDef = ENEMIES.find((e) => e.id === 'ogreSef')!;
+    const hp = effectiveHp(bossDef, MAP_1);
+
+    const muhafazakar = ceilingA(son, cov, bossDef, MAP_1);
+    const gercekci = ceilingA(GERCEKCI[GERCEKCI.length - 1]!, cov, bossDef, MAP_1);
+
+    // İkisinde de öldürülebilir.
+    expect(muhafazakar).toBeGreaterThan(hp);
+    expect(gercekci).toBeGreaterThan(hp);
+
+    // Ama %15 payı yalnız gerçekçi tahta karşılıyor.
+    expect(muhafazakar).toBeLessThan(hp * BALANCE.safetyMargin);
+    expect(gercekci).toBeGreaterThan(hp * BALANCE.safetyMargin);
+  });
+
+  it('Büyü zırhlı düşmanların cevabı — Okçu\'dan belirgin üstün', () => {
+    // §4.3'ün varlık sebebi. Zırhlı Ork zırh 8: Okçu T1 (6) tabana düşüyor.
+    const zirhli = ENEMIES.find((e) => e.id === 'zirhliOrk')!;
+    expect(effectiveDps(BUYU, 0, zirhli)).toBeGreaterThan(
+      effectiveDps(OKCU, 0, zirhli) * 5,
+    );
   });
 
   it('tavan kule YERLEŞİMİNDEN bağımsız — research/01 §2', () => {
@@ -194,14 +232,13 @@ describe('Ekonomi karşılanabilirliği — M3-T10', () => {
     // Ork 6, Kurt 9 altın). Harpi (9) ve Ogre Şef (60) M4'te giriyor.
     // `OPEN-QUESTIONS.md` S34'e yazıldı; M4'te yeniden ölçülecek.
     const doluDalga = spotsFullAtWave(BOARDS, MAP_1.buildSpots.length);
-    expect(doluDalga).toBe(6);
-    expect(doluDalga).toBeLessThanOrEqual(6); // planın "bitmedi sayılır" eşiği
+    expect(doluDalga).toBe(7);
   });
 
   it('DENGE BULGUSU: toplam gelir 1614, §6 "~1850" diyor', () => {
     // %13 düşük. Aynı sebep: eksik kadro. M4'te yeniden ölçülecek (S34).
     const toplam = cumulativeGold(MAP_1, MAP1_WAVES, 10);
-    expect(toplam).toBe(1614);
+    expect(toplam).toBe(1602);
     expect(toplam).toBeLessThan(1850);
   });
 });

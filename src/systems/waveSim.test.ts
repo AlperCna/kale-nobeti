@@ -58,46 +58,46 @@ describe('Kısıt B — 10 dalga referans tahtaya karşı', () => {
   const gercekci = simulateAllWaves(MAP1_WAVES, GERCEKCI, MAP_1);
   const muhafazakar = simulateAllWaves(MAP1_WAVES, BOARDS, MAP_1);
 
-  it('gerçekçi tahtayla harita GEÇİLEBİLİR — can 20\'nin çok altına inmiyor', () => {
-    // Ham "leakedHp === 0" iddiası ölçümle tutmadı ve **doğru iddia da o
-    // değil**: 20 can veriliyorsa amaç sıfır sızıntı değil, geçilebilirlik.
-    // §9 yıldız tablosu zaten bunu söylüyor (20 → ★★★, 15-19 → ★★).
-    const toplamSizan = gercekci.reduce((t, r) => t + r.leakedCount, 0);
-    expect(toplamSizan).toBeLessThanOrEqual(3);
-    expect(BALANCE.startLives - toplamSizan).toBeGreaterThan(15); // ★★ üstü
+  it('HİÇBİR dalga sızdırmıyor — ★★★ ile bitiyor', () => {
+    // M3'te bu iddia tutmuyordu (1 sızıntı) ve test "geçilebilirlik"
+    // olarak gevşetilmişti. **M4'te tuttu**: Büyü ailesi girince referans
+    // tahta zırhlı düşmanlara gerçek cevap kazandı ve tahta on dalgayı
+    // temiz geçiyor. Gevşetilen iddia geri sıkılaştırıldı.
+    gercekci.forEach((r, i) => {
+      expect(r.leakedCount, `dalga ${i + 1}`).toBe(0);
+    });
+    expect(BALANCE.startLives).toBe(20); // ★★★
   });
 
-  it('muhafazakâr tahtayla bile harita kaybedilmiyor', () => {
-    // Oyuncu hiç erken başlatmasa da 20 canı bitirmiyor.
+  it('muhafazakâr tahta da temiz — erken başlatma ZORUNLU değil', () => {
+    // Oyuncu hiç erken başlatmasa bile on dalgayı sızıntısız geçiyor.
     const toplamSizan = muhafazakar.reduce((t, r) => t + r.leakedCount, 0);
-    expect(toplamSizan).toBeLessThan(BALANCE.startLives);
+    expect(toplamSizan).toBe(0);
   });
 
-  it('erken başlatma bonusu ÖLÇÜLEBİLİR fark yaratıyor', () => {
-    // §6: "geç oyunda gerçek bir karar". Ölçüm bunu doğruluyor.
-    const g = gercekci.reduce((t, r) => t + r.leakedHp, 0);
-    const m = muhafazakar.reduce((t, r) => t + r.leakedHp, 0);
+  it('erken başlatma bonusu dalgaları HIZLANDIRIYOR', () => {
+    // §6: "geç oyunda gerçek bir karar". Sızıntı ikisinde de sıfır olduğu
+    // için fark artık orada değil — **dalga süresinde**. Daha çok T2 →
+    // düşmanlar daha erken ölüyor → dalga daha kısa.
+    const g = gercekci.reduce((t, r) => t + r.durationSec, 0);
+    const m = muhafazakar.reduce((t, r) => t + r.durationSec, 0);
     expect(g).toBeLessThan(m);
   });
 
-  it('ilk iki dalga hiç sızdırmıyor — öğretici dalgalar temiz', () => {
-    expect(gercekci[0]!.leakedCount).toBe(0);
-    expect(gercekci[1]!.leakedCount).toBe(0);
+  it('BOSS dalgası geçiliyor — boss ölüyor', () => {
+    const boss = gercekci[9]!;
+    expect(boss.leakedCount).toBe(0);
+    // 1 boss + 10 refakat.
+    expect(boss.killedCount).toBe(11);
   });
 
-  it('son dört dalga sızdırmıyor — tahta rampayı yakalıyor', () => {
-    for (let i = 6; i < 10; i++) {
-      expect(gercekci[i]!.leakedCount, `dalga ${i + 1}`).toBe(0);
-    }
-  });
-
-  it('düşmanların ezici çoğunluğu ölüyor', () => {
+  it('TÜM düşmanlar ölüyor', () => {
     const toplamDusman = MAP1_WAVES.reduce(
       (t, w) => t + w.groups.reduce((s, g) => s + g.count, 0),
       0,
     );
     const oldurulen = gercekci.reduce((t, r) => t + r.killedCount, 0);
-    expect(oldurulen / toplamDusman).toBeGreaterThan(0.98);
+    expect(oldurulen).toBe(toplamDusman);
   });
 
   it('tepe düşman sayısı havuz kapasitesinin altında', () => {
