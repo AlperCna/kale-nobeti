@@ -8,7 +8,7 @@
  * TIER 1 kural 1: sayı yok; `BALANCE` ve `waves.ts`'ten geliyor.
  */
 
-import type { EnemyDef, Mover, SpawnableEnemy } from '../types/enemy';
+import type { EnemyDef, EnemyId, Mover, SpawnableEnemy } from '../types/enemy';
 import type { Wave } from '../types/wave';
 import type { Poolable } from '../util/pool';
 import type { Pool } from '../util/pool';
@@ -66,6 +66,7 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
     private readonly eco: EconomySystem,
     private readonly waves: readonly Wave[],
     private readonly hpMultiplier: number,
+    private readonly resolveEnemy: (id: EnemyId) => EnemyDef | undefined = getEnemy,
     /**
      * Bir düşman kaleye vardığında, havuza dönmeden **önce** çağrılır.
      * `M3-T09` sızan HP'yi buradan ölçüyor.
@@ -153,7 +154,7 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
     // sessizce atlanmıyor.
     const kuyruk: Bekleyen[] = [];
     for (const g of wave.groups) {
-      const def = getEnemy(g.enemy);
+      const def = this.resolveEnemy(g.enemy);
       if (def === undefined) continue;
       for (let i = 0; i < g.count; i++) {
         kuyruk.push({ def, at: g.startAt + i * g.spawnDelay });
