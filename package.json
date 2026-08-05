@@ -6,11 +6,12 @@
   "description": "Fantastik ortaçağ temalı, tarayıcıda çalışan tower defense oyunu",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/report-size.mjs",
+    "build": "vite build && node scripts/report-size.mjs && node scripts/kurallar.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "guard": "node scripts/guard-rules.mjs"
+    "guard": "node scripts/guard-rules.mjs",
+    "kurallar": "node scripts/kurallar.mjs"
   },
   "dependencies": {
     "phaser": "^3.90.0"
