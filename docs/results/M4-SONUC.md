@@ -34,8 +34,9 @@ sızıntıyla yanıtlanıyor.
 | 6 | Kurt Binicisi ×10 | Buz / Barut Fıçısı yavaşlatma | Üçü de temizliyor: Top 12,9 · Büyü 14,5 · Okçu 18,3 sn | ⚠️ **tehdit keskin değil** |
 | 7 | Ogre Şef ×1 | Büyü + Top, `strongest`, Meteor | Okçu **sızdırıyor, 499 HP kalıyor** (1,95 DPS). Büyü 27,3 sn, Top 29,9 sn | ✅ **geçti** (Meteor M5) |
 
-**Beşi geçti, üçü kısmi** (5 ve 7 M5 bağımlılığı yüzünden kısmi değil —
-tablonun kule kısmı çalışıyor, eksik olan mekanik henüz yazılmadı).
+**Dördü geçti, üçü kısmi.** 5 ve 7 "geçti" sayıldı çünkü tablonun **kule**
+kısmı ölçüldü ve çalışıyor; eksik olan mekanik (kışla, Meteor) M5 kapsamında
+ve henüz yazılmadı — bu bir başarısızlık değil, sıradaki iş.
 
 ### 4. satır tablonun en keskin kanıtı
 

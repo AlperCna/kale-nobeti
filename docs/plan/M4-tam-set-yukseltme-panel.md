@@ -434,7 +434,7 @@ S37, S38, S39 denge etkisi olan **eksik sayılar** — uydurulmadı.
 
 - [x] `typecheck && test && build && guard` dördü de yeşil — 430 test, 9/9 bekçi, 0,39 MB
 - [x] Üç aile T1→T2→T3a/T3b yükseltilebiliyor — canlı doğrulandı
-- [x] **Karşı-oyun tablosundaki (§5) her tehdidin cevabı çalışıyor** — 7 senaryo `simulateWave` ile ölçüldü: **5 geçti, 3'ü kısmi**. Ayrıntı ve kısmi olanların gerekçesi `docs/results/M4-SONUC.md` §1
+- [x] **Karşı-oyun tablosundaki (§5) her tehdidin cevabı çalışıyor** — 7 senaryo `simulateWave` ile ölçüldü: **4 geçti, 3'ü kısmi**. Ayrıntı ve kısmi olanların gerekçesi `docs/results/M4-SONUC.md` §1
 - [x] Yanlış kule kurmak oyunu kilitlemiyor, sadece verimsizleştiriyor — 8 Okçu T2 ile zırhlı ork dalgası 7 sızıntı veriyor ama dalga ilerliyor; hiçbir senaryoda kilitlenme yok
 - [x] Harpi ayrı hattan geliyor, hat hazırlıkta görünüyor, ≥3 nokta kesiyor — **7-8 nokta** (hedefin 2,3-2,7 katı); ipucu dalga 6/8/9/10'da açık, 5/7'de kapalı
 - [x] Şaman iyileştiriyor, Trol yenileniyor, Örümcek bölünüyor — `EnemyAbilitySystem.test.ts`, 22 test
