@@ -341,10 +341,19 @@ Kaynak: `src/data/balance.ts` · `GAME-DESIGN.md` §6
 **Altın çarpanı = HP çarpanı.** Gerekçe §9'da yazılı: eskiden yalnız HP
 ölçekleniyordu ve harita 3'te altın/HP oranı %38'e düşüyordu.
 
-> ⚠️ **Bilinen açık (S72):** başlangıç altını sütunu (280/340/400)
-> bu çarpanı **izlemiyor** — ×1,6 ve ×2,6 yerine ×1,21 ve ×1,43 ile büyüyor.
-> Ölçülen sonuç: dalga 1 tahtası üç haritada da 3-4 kule ama goblin efektif
-> HP'si 45/72/117. Erken dalga sızıntısının kaynağı bu.
+**Başlangıç altını da çarpanı izliyor** — S72, kapandı. §9 tablosu
+280/340/400 diyordu ama 340 ve 400 çarpanı izlemiyordu (×1,21 ve ×1,43,
+oysa HP ×1,6 ve ×2,6). Ölçülen sonuç: dalga 1 tahtası üç haritada da 3-4
+kule, ama goblin efektif HP'si 45/72/117. §9'un kendi gerekçesi
+("altın/HP oranı düşmesin") başlangıç altınına da uygulandı:
+
+| Harita | §9 tablosu | Kullanılan | Dalga 1 sızıntısı (önce → sonra) |
+|---|---|---|---|
+| 1 · Değirmen Geçidi | 280 | **280** | 0 → 0 |
+| 2 · Taş Köprü | 340 | **448** = 280 × 1,6 | **4 → 0** |
+| 3 · Kül Ovası | 400 | **728** = 280 × 2,6 | **7 → 0** |
+
+Toplam sızıntı: harita 2'de 13 → 8, harita 3'te 43 → 25.
 
 ---
 
@@ -425,8 +434,8 @@ Kaynak: `src/data/maps.ts` · `GAME-DESIGN.md` §9
 | Harita | Yol | Nokta | HP/Altın çarpanı | Başlangıç altını | Uçan hattı | Kadro |
 |---|---|---|---|---|---|---|
 | 1 · Değirmen Geçidi | 1 kol | 8 | ×1 | 280 | 1 hat, 7/8 nokta kesiyor | 5 tip |
-| 2 · Taş Köprü | 2 kol | 10 | ×1,6 | 340 | 1 hat, 5/10 nokta kesiyor | 7 tip |
-| 3 · Kül Ovası | 2 kol | 12 | ×2,6 | 400 | 2 hat, 6/12 nokta kesiyor | 10 tip |
+| 2 · Taş Köprü | 2 kol | 10 | ×1,6 | 448 | 1 hat, 5/10 nokta kesiyor | 7 tip |
+| 3 · Kül Ovası | 2 kol | 12 | ×2,6 | 728 | 2 hat, 6/12 nokta kesiyor | 10 tip |
 
 
 ### Kapsanan yol — asıl denge kolu
@@ -494,29 +503,29 @@ Ayrık yolda **en zayıf kol** belirleyici — düşman hangi kolu seçeceğini 
 
 | Düşman | Efektif HP | Tavan | Kollar | Oran |
 |---|---|---|---|---|
-| Goblin | 72 | 548 | 605 / 548 | %13,1 |
-| Ork Savaşçı | 176 | 688 | 736 / 688 | %25,6 |
-| Kurt Binicisi | 96 | 290 | 315 / 290 | %33,1 |
-| Harpi | 112 | 175 | 357 / 175 | %64,2 |
-| Zırhlı Ork | 256 | 621 | 621 / 661 | %41,2 |
-| Şaman | 208 | 691 | 733 / 691 | %30,1 |
-| Ogre Şef (boss) | 712 | 890 | 890 / 915 | %80 |
+| Goblin | 72 | 605 | 605 / 616 | %11,9 |
+| Ork Savaşçı | 176 | 736 | 736 / 778 | %23,9 |
+| Kurt Binicisi | 96 | 315 | 315 / 327 | %30,4 |
+| Harpi | 112 | 229 | 357 / 229 | %49 |
+| Zırhlı Ork | 256 | 621 | 621 / 768 | %41,2 |
+| Şaman | 208 | 733 | 733 / 749 | %28,4 |
+| Ogre Şef (boss) | 712 | 890 | 890 / 1024 | %80 |
 
 
 **3 · Kül Ovası** — dalga 10 tahtası (muhafazakâr):
 
 | Düşman | Efektif HP | Tavan | Kollar | Oran |
 |---|---|---|---|---|
-| Goblin | 117 | 528 | 685 / 528 | %22,1 |
-| Ork Savaşçı | 286 | 649 | 866 / 649 | %44 |
-| Kurt Binicisi | 156 | 277 | 364 / 277 | %56,3 |
-| Harpi | 182 | 331 | 355 / 331 | %54,9 |
-| Zırhlı Ork | 416 | 574 | 855 / 574 | %72,4 |
-| Şaman | 338 | 628 | 799 / 628 | %53,8 |
-| Trol | 1040 | 892 | 1227 / 892 | %116,6 ✗ |
-| Örümcek Ana | 390 | 581 | 747 / 581 | %67,2 |
-| Örümcek Yavrusu | 78 | 352 | 457 / 352 | %22,1 |
-| Ogre Şef (boss) | 740 | 925 | 1223 / 925 | %80 |
+| Goblin | 117 | 528 | 761 / 528 | %22,1 |
+| Ork Savaşçı | 286 | 649 | 973 / 649 | %44 |
+| Kurt Binicisi | 156 | 277 | 407 / 277 | %56,3 |
+| Harpi | 182 | 331 | 468 / 331 | %54,9 |
+| Zırhlı Ork | 416 | 574 | 1006 / 574 | %72,4 |
+| Şaman | 338 | 628 | 907 / 628 | %53,8 |
+| Trol | 1040 | 892 | 1398 / 892 | %116,6 ✗ |
+| Örümcek Ana | 390 | 581 | 838 / 581 | %67,2 |
+| Örümcek Yavrusu | 78 | 352 | 507 / 352 | %22,1 |
+| Ogre Şef (boss) | 740 | 925 | 1396 / 925 | %80 |
 
 
 ### Kısıt B — başsız simülasyon
@@ -531,8 +540,8 @@ Simülasyon **canlı oyunla aynı kodu** kullanıyor: aynı
 | Harita | Sızan düşman | Sızan HP | Dalga dağılımı |
 |---|---|---|---|
 | 1 · Değirmen Geçidi | **0** | 0 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:0 |
-| 2 · Taş Köprü | **13** | 509 | d1:4 d2:1 d3:1 d4:2 d5:1 d6:2 d7:1 d8:0 d9:1 d10:0 |
-| 3 · Kül Ovası | **43** | 5334 | d1:7 d2:5 d3:3 d4:4 d5:3 d6:6 d7:4 d8:2 d9:8 d10:1 |
+| 2 · Taş Köprü | **8** | 384 | d1:0 d2:0 d3:1 d4:2 d5:1 d6:1 d7:1 d8:0 d9:2 d10:0 |
+| 3 · Kül Ovası | **25** | 3299 | d1:0 d2:2 d3:3 d4:3 d5:2 d6:4 d7:2 d8:1 d9:7 d10:1 |
 
 
 ### Referans tahta — türetiliyor, uydurulmuyor
@@ -545,8 +554,8 @@ kapsamalı** noktaya kuruluyor.
 | Harita | Nokta dolma | Altın (muhafazakâr) | Altın (gerçekçi) | Dalga 10 tahtası |
 |---|---|---|---|---|
 | 1 · Değirmen Geçidi | dalga 7 | 1602 | 2122 | 8 kule (1350 altın) |
-| 2 · Taş Köprü | dalga 6 | 2474 | 2994 | 10 kule (2060 altın) |
-| 3 · Kül Ovası | dalga -1 | 3879 | 4399 | 11 kule + 1 kışla (3180 altın) |
+| 2 · Taş Köprü | dalga 5 | 2582 | 3102 | 10 kule (2210 altın) |
+| 3 · Kül Ovası | dalga -1 | 4207 | 4727 | 11 kule + 1 kışla (3590 altın) |
 
 ---
 
