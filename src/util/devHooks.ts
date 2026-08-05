@@ -63,9 +63,20 @@ export interface DevHooks {
   startWaveEarly: () => number;
   gameOver: () => { won: boolean; lives: number; stars: number };
   /** T1 → T2. @returns Yükseltilebildiyse `true`. */
-  upgradeTower: (spotIndex: number) => boolean;
+  upgradeTower: (spotIndex: number, tier?: number) => boolean;
   /** @returns İade edilen altın. */
   sellTower: (spotIndex: number) => number;
+
+  // --- M4 ---
+  /** Kuleyi seçip bilgi panelini açar. @returns Panel görünür mü. */
+  selectTower: (spotIndex: number) => boolean;
+  /** Açık paneldeki bir düşmana karşı **etkin** DPS. */
+  infoDps: (enemyId: string) => number;
+  setTargetMode: (spotIndex: number, mod: string) => string;
+  towerTier: (spotIndex: number) => number;
+  flyerHintOn: () => boolean;
+  enemyKinds: () => string[];
+  enemySpeedFactors: () => number[];
 }
 
 type Global = { __kn?: Partial<DevHooks> };

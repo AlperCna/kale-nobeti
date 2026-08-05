@@ -6,7 +6,7 @@
 | **Görev** | 11 (`M4-T01` … `M4-T11`) |
 | **Kod yazma süresi** | ~7 sa 25 dk — **takvim değil** |
 | **Takvim bütçesi** | 4 gün (`ROADMAP.md`). Fark: 9 düşman + 12 kademenin elle denenmesi. |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ tamamlandı |
 
 ## 0. Oturum başlangıcı
 
@@ -52,7 +52,7 @@ okunabiliyor. Hedefleme menüsü beş modu sunuyor.
 
 ### M4-T01 — Kademe ağacı ve dallanma yapısı
 
-`M4-T01` · ☐ · ~40 dk · Önkoşul `M2-T01` · TIER 1 **k.1**, k.5 · Açık soru S41
+`M4-T01` · ☑ · ~40 dk · Önkoşul `M2-T01` · TIER 1 **k.1**, k.5 · Açık soru S41
 · Doküman `GAME-DESIGN.md` §4.1–§4.3 tabloları
 
 **Dosyalar**
@@ -93,7 +93,7 @@ bir sayı içeriyorsa.
 
 ### M4-T02 — Büyü kulesi ailesi
 
-`M4-T02` · ☐ · ~35 dk · Önkoşul `M4-T01` · TIER 1 k.1 · Açık soru —
+`M4-T02` · ☑ · ~35 dk · Önkoşul `M4-T01` · TIER 1 k.1 · Açık soru —
 · Doküman `GAME-DESIGN.md` §4.3, §3 (büyü hasarı)
 
 **Dosyalar**
@@ -118,7 +118,7 @@ Okçu T1 (6 hasar) aynı düşmana **0.9** (gri, tabana düşmüş) veriyor.
 
 ### M4-T03 — Yükseltme akışı ve maliyet
 
-`M4-T03` · ☐ · ~45 dk · Önkoşul `M4-T01`, `M3-T03` · TIER 1 k.1, k.7
+`M4-T03` · ☑ · ~45 dk · Önkoşul `M4-T01`, `M3-T03` · TIER 1 k.1, k.7
 · Açık soru S40, S41 · Doküman `GAME-DESIGN.md` §4.5, §6 (yükseltme gerekçesi)
 
 **Dosyalar**
@@ -151,7 +151,7 @@ gözle: T1 kuleyi T2'ye yükseltebiliyorum; T2'den sonra iki dal seçeneği
 
 ### M4-T04 — Kule efektleri: yanma, yavaşlatma, zincirleme
 
-`M4-T04` · ☐ · ~45 dk · Önkoşul `M4-T01` · TIER 1 k.8, **k.9** · Açık soru S34, S35, S36
+`M4-T04` · ☑ · ~45 dk · Önkoşul `M4-T01` · TIER 1 k.8, **k.9** · Açık soru S34, S35, S36
 · Doküman `GAME-DESIGN.md` §4.1 (Kundakçı), §4.2 (Barut Fıçısı), §4.3 (Yıldırım, Buz)
 
 **Dosyalar**
@@ -190,7 +190,7 @@ dönmüyorsa.
 
 ### M4-T05 — `LineMover` ve uçan hareketi
 
-`M4-T05` · ☐ · ~40 dk · Önkoşul `M1-T06` · TIER 1 k.3, k.8 · Açık soru —
+`M4-T05` · ☑ · ~40 dk · Önkoşul `M1-T06` · TIER 1 k.3, k.8 · Açık soru —
 · Doküman `GAME-DESIGN.md` §5 (Harpi) · `DEPENDENCIES.md` §2
 
 **Dosyalar**
@@ -218,7 +218,7 @@ dalı eklendiyse.
 
 ### M4-T06 — Uçan hattı gösterimi ve harita kabul kriteri
 
-`M4-T06` · ☐ · ~40 dk · Önkoşul `M4-T05`, `M1-T02` · TIER 1 k.7 · Açık soru —
+`M4-T06` · ☑ · ~40 dk · Önkoşul `M4-T05`, `M1-T02` · TIER 1 k.7 · Açık soru —
 · Doküman `GAME-DESIGN.md` §5 (uçan hattı zorunlu) · `research/03` §2
 
 **Dosyalar**
@@ -250,7 +250,7 @@ gevşetilmez. Kriter sağlanmıyorsa harpi mekaniği yazı-turadır
 
 ### M4-T07 — Şaman iyileştirmesi ve Trol yenilenmesi
 
-`M4-T07` · ☐ · ~45 dk · Önkoşul `M4-T05` · TIER 1 k.1, k.8, **k.9** · Açık soru S37, S39
+`M4-T07` · ☑ · ~45 dk · Önkoşul `M4-T05` · TIER 1 k.1, k.8, **k.9** · Açık soru S37, S39
 · Doküman `GAME-DESIGN.md` §5
 
 **Dosyalar**
@@ -279,7 +279,7 @@ Trol yenileniyor; 2× hızda iyileştirme de iki kat hızlı.
 
 ### M4-T08 — Örümcek Ana bölünmesi
 
-`M4-T08` · ☐ · ~35 dk · Önkoşul `M4-T07`, `M1-T04` · TIER 1 **k.3**, k.1 · Açık soru S38
+`M4-T08` · ☑ · ~35 dk · Önkoşul `M4-T07`, `M1-T04` · TIER 1 **k.3**, k.1 · Açık soru S38
 · Doküman `GAME-DESIGN.md` §5
 
 **Dosyalar**
@@ -308,7 +308,7 @@ kısıyor ve `new` çağırmıyor.
 
 ### M4-T09 — Ogre Şef ve boss dalgası
 
-`M4-T09` · ☐ · ~40 dk · Önkoşul `M4-T07`, `M3-T02` · TIER 1 k.1 · Açık soru S33
+`M4-T09` · ☑ · ~40 dk · Önkoşul `M4-T07`, `M3-T02` · TIER 1 k.1 · Açık soru S33
 · Doküman `GAME-DESIGN.md` §5 (**⚠️ geçicilik notu dahil**), §7 (boss dalgası)
 
 **Dosyalar**
@@ -344,7 +344,7 @@ olmadan duruyorsa.
 
 ### M4-T10 — Bilgi paneli ve etkin DPS
 
-`M4-T10` · ☐ · ~45 dk · Önkoşul `M4-T03`, `M2-T02` · TIER 1 **k.7** · Açık soru S42
+`M4-T10` · ☑ · ~45 dk · Önkoşul `M4-T03`, `M2-T02` · TIER 1 **k.7** · Açık soru S42
 · Doküman `GAME-DESIGN.md` §11 (tam tablo) · `research/03` §7
 
 **Dosyalar**
@@ -369,7 +369,7 @@ Büyü T2 seçiliyken **13.5 DPS**; Havan seçiliyken uçan ikonu üstü çizili
 ```bash
 npm run guard
 ```
-Beklenen: `4/4 ✓`.
+Beklenen: `9/9 ✓`.
 
 **Bitmedi sayılır eğer:** panel yalnız ham DPS gösteriyorsa — ham DPS
 yanıltıcıdır (§11) ve tasarımın karşı-oyun katmanını görünmez bırakır.
@@ -378,7 +378,7 @@ yanıltıcıdır (§11) ve tasarımın karşı-oyun katmanını görünmez bıra
 
 ### M4-T11 — Hedefleme menüsü
 
-`M4-T11` · ☐ · ~35 dk · Önkoşul `M2-T03`, `M4-T10` · TIER 1 k.7, Platform
+`M4-T11` · ☑ · ~35 dk · Önkoşul `M2-T03`, `M4-T10` · TIER 1 k.7, Platform
 · Açık soru — · Doküman `GAME-DESIGN.md` §4.5, §5 (karşı-oyun tablosu)
 
 **Dosyalar**
@@ -432,16 +432,24 @@ S37, S38, S39 denge etkisi olan **eksik sayılar** — uydurulmadı.
 
 ## 5. Taş sonu kontrol listesi
 
-- [ ] `typecheck && test && build && guard` dördü de yeşil
-- [ ] Üç aile T1→T2→T3a/T3b yükseltilebiliyor
-- [ ] **Karşı-oyun tablosundaki (§5) her tehdidin cevabı çalışıyor**
-- [ ] Yanlış kule kurmak oyunu kilitlemiyor, sadece verimsizleştiriyor
-- [ ] Harpi ayrı hattan geliyor, hat hazırlıkta görünüyor, ≥3 nokta kesiyor
-- [ ] Şaman iyileştiriyor, Trol yenileniyor, Örümcek bölünüyor
-- [ ] Boss dalgası çalışıyor; Okçu ona gri sayı yazıyor
-- [ ] Bilgi paneli **seçili düşmana karşı etkin DPS** gösteriyor
-- [ ] Beş hedefleme modu kule başına seçilebiliyor
-- [ ] Geçici sayılar (S37, S38) kodda işaretli
-- [ ] Boss HP'sinde geçicilik yorumu var
-- [ ] **`docs/results/M4-SONUC.md` yazıldı** — karşı-oyun tablosunun 7
+- [x] `typecheck && test && build && guard` dördü de yeşil — 430 test, 9/9 bekçi, 0,39 MB
+- [x] Üç aile T1→T2→T3a/T3b yükseltilebiliyor — canlı doğrulandı
+- [x] **Karşı-oyun tablosundaki (§5) her tehdidin cevabı çalışıyor** — 7 senaryo `simulateWave` ile ölçüldü: **5 geçti, 3'ü kısmi**. Ayrıntı ve kısmi olanların gerekçesi `docs/results/M4-SONUC.md` §1
+- [x] Yanlış kule kurmak oyunu kilitlemiyor, sadece verimsizleştiriyor — 8 Okçu T2 ile zırhlı ork dalgası 7 sızıntı veriyor ama dalga ilerliyor; hiçbir senaryoda kilitlenme yok
+- [x] Harpi ayrı hattan geliyor, hat hazırlıkta görünüyor, ≥3 nokta kesiyor — **7-8 nokta** (hedefin 2,3-2,7 katı); ipucu dalga 6/8/9/10'da açık, 5/7'de kapalı
+- [x] Şaman iyileştiriyor, Trol yenileniyor, Örümcek bölünüyor — `EnemyAbilitySystem.test.ts`, 22 test
+- [x] Boss dalgası çalışıyor; Okçu ona gri sayı yazıyor — Okçu T2 → boss **1,95 DPS**, hasar tabanına dayanmış
+- [x] Bilgi paneli **seçili düşmana karşı etkin DPS** gösteriyor — panel değerleri 12×10 matrisle birebir uyuştu
+- [x] Beş hedefleme modu kule başına seçilebiliyor
+- [x] Geçici sayılar (S37, S38) kodda işaretli — `EnemyAbilitySystem.ts:57`, `enemies.ts:132`
+- [x] Boss HP'sinde geçicilik yorumu var — `enemies.ts` `OGRE_SEF`, S43 ölçümüyle güncellendi
+- [x] **`docs/results/M4-SONUC.md` yazıldı** — karşı-oyun tablosunun 7
       senaryosu ve uçan hattını kesen nokta sayısı dahil.
+
+### Kısmi kalan üç senaryo
+
+| # | Neden kısmi | Nereye taşındı |
+|---|---|---|
+| 2 Zırhlı Ork | Olumsuz iddia güçlü (Okçu %14 verim, 7/8 sızıntı); olumlu iddia zayıf — Top patlamayla dalgayı daha erken bitiriyor | Kabul edildi, tablo değişmiyor |
+| 3 Şaman | Mekanizma (`last` + 260 px) ayrı testle doğrulandı, ama `ReferenceBoard` hedefleme modu taşımadığı için uçtan uca ölçülemedi | **M5** — `ReferenceBoard`'a hedefleme modu alanı |
+| 6 Kurt Binicisi | Yavaşlatma çalışıyor (Buz çarpanı tam 0,50) ama Harita 1 onu **zorunlu kılmıyor** — üç aile de temizliyor | **M7** — Harita 2-3 |

@@ -2,7 +2,9 @@ import Phaser from 'phaser';
 import { GameClock } from '../systems/GameClock';
 import { EventBus } from '../systems/EventBus';
 import { PathSystem } from '../systems/PathSystem';
-import { PathMover } from '../systems/movers';
+import { LineMover, PathMover } from '../systems/movers';
+import { EnemyAbilitySystem } from '../systems/EnemyAbilitySystem';
+import { applyEffect, speedMultiplier, stepEffects } from '../systems/effects';
 import { WaveManager } from '../systems/WaveManager';
 import type { WavePhase } from '../systems/WaveManager';
 import { EconomySystem } from '../systems/EconomySystem';
@@ -14,14 +16,17 @@ import { Projectile } from '../entities/Projectile';
 import { Tower } from '../entities/Tower';
 import { DamageText, DamageTextSystem } from '../fx/DamageText';
 import { ensureNumberFont } from '../fx/numberFont';
+import { TowerInfoPanel } from '../fx/TowerInfoPanel';
 import { Pool } from '../util/pool';
-import { coveredSegments } from '../util/coverage';
+import { coveredSegments, measureCoverage } from '../util/coverage';
 import { MAP_1, COVERAGE_REFERENCE_RANGE } from '../data/maps';
-import { OKCU, TOP, TOWERS } from '../data/towers';
+import { TOWERS, getTower, tierAt } from '../data/towers';
+import { getEnemy, ENEMIES } from '../data/enemies';
 import { POOL_PREALLOC, GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI } from '../data/balance';
 import { MAP1_WAVES } from '../data/waves';
 import { devHooks } from '../util/devHooks';
-import type { TowerDef } from '../types/tower';
+import type { TargetMode, TierIndex, TowerDef } from '../types/tower';
+import type { Mover } from '../types/enemy';
 import type { Vec2 } from '../types/common';
 import type { Wave } from '../types/wave';
 
@@ -44,7 +49,27 @@ const CASTLE_SIZE = 56;
 const PROJECTILE_RADIUS = 5;
 
 /** Kule gövde renkleri — aile ayrımı renge **ek olarak** şekille de yapılıyor. */
-const TOWER_COLORS: Readonly<Record<string, number>> = { okcu: 0x3e5ca8, top: 0x2f4a3c };
+const TOWER_COLORS: Readonly<Record<string, number>> = {
+  okcu: 0x3e5ca8,
+  top: 0x2f4a3c,
+  buyu: 0x7a4a8a,
+};
+
+/** Beş hedefleme modu (`GAME-DESIGN.md` §4.5). Varsayılan `first`. */
+const TARGET_MODES: readonly TargetMode[] = ['first', 'last', 'strongest', 'weakest', 'closest'];
+const TOWER_LABEL: Readonly<Record<string, string>> = {
+  okcu: 'Okçu',
+  top: 'Top',
+  buyu: 'Büyü',
+};
+
+const MODE_LABEL: Readonly<Record<TargetMode, string>> = {
+  first: 'İlk',
+  last: 'Son',
+  strongest: 'Güçlü',
+  weakest: 'Zayıf',
+  closest: 'Yakın',
+};
 
 /**
  * Oyun alanı. Saatin sahibi.
@@ -62,11 +87,16 @@ export class GameScene extends Phaser.Scene {
   #projectiles?: ProjectileSystem<Enemy, Projectile>;
   #damageTexts?: DamageTextSystem;
   #enemyPool?: Pool<Enemy>;
+  #abilities?: EnemyAbilitySystem<Enemy>;
 
   #occupancy?: SpotOccupancy;
   #hoverGfx?: Phaser.GameObjects.Graphics;
+  #flyerGfx?: Phaser.GameObjects.Graphics;
+  #flyerHintOn = false;
   #menu?: Phaser.GameObjects.Container;
+  #infoPanel?: TowerInfoPanel;
   #hoveredSpot = -1;
+  #selectedSpot = -1;
   #mermiTepe = 0;
   readonly #towerBySpot = new Map<number, Tower>();
 
@@ -114,6 +144,22 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
+    // **Alan başlatıcıları yalnız BİR KEZ koşuyor; `create()` her yeniden
+    // başlatmada.** Phaser sahne örneğini yeniden kullanıyor, yani
+    // `#towerBySpot` önceki oyunun (yok edilmiş) kulelerini taşıyordu —
+    // yeni oyunda dolu nokta gibi görünüyor, yükseltme yok edilmiş bir
+    // nesneyi değiştiriyordu. Canlı testte yakalandı.
+    //
+    // Bu, M0'daki `once`/`on` hatasıyla aynı sınıf: "kurucuda bir kez"
+    // ile "her `create`'te" karıştırılınca sızıntı **çökme değil, yanlış
+    // durum** olarak görünüyor.
+    this.#towerBySpot.clear();
+    this.#hoveredSpot = -1;
+    this.#selectedSpot = -1;
+    this.#flyerHintOn = false;
+    this.#mermiTepe = 0;
+    this.#menu = undefined;
+
     const yol = MAP_1.paths[0] ?? [];
     const path = new PathSystem(yol);
     const mover = new PathMover(path);
@@ -122,7 +168,15 @@ export class GameScene extends Phaser.Scene {
     // Harita **bir kez** çiziliyor. `update`'te yeniden çizmek her karede
     // yeni geometri üretmek demek; Graphics'in maliyeti orada.
     this.#drawMap(yol);
+    this.#flyerGfx = this.add.graphics();
     this.#hoverGfx = this.add.graphics();
+    // Bilgi paneli: harita 1 kadrosunun düşmanları (S42).
+    this.#infoPanel = new TowerInfoPanel(
+      this,
+      this.scale.width - 262,
+      this.scale.height - 222,
+      ENEMIES.filter((e) => MAP_1.enemyRoster.includes(e.id)),
+    );
 
     // TIER 1 kural 3: `Group` burada, sahne tarafında — görüntü listesi ve
     // sahne kapanınca toplanma onun işi. Havuz *muhasebesi* `util/pool.ts`
@@ -164,10 +218,15 @@ export class GameScene extends Phaser.Scene {
 
     this.#damageTexts = new DamageTextSystem(sayiHavuzu);
 
-    this.#projectiles = new ProjectileSystem<Enemy, Projectile>(mermiHavuzu, (e, sonuc, x, y) => {
-      this.#damageTexts?.spawn(x, y - ENEMY_SIZE, sonuc.dealt, sonuc.floored);
-      this.#hasarUygula(e, sonuc.dealt);
-    });
+    this.#projectiles = new ProjectileSystem<Enemy, Projectile>(
+      mermiHavuzu,
+      (e, sonuc, x, y) => {
+        this.#damageTexts?.spawn(x, y - ENEMY_SIZE, sonuc.dealt, sonuc.floored);
+        this.#hasarUygula(e, sonuc.dealt);
+      },
+      // Süreli etkiler isabet anında uygulanıyor (yanma, yavaşlatma).
+      (e, effect) => applyEffect(e.effects, effect),
+    );
 
     this.#towers = new TowerSystem((kule, tier, hedef) => {
       // Uçan çarpanı **mermiye girmeden önce** uygulanıyor: o kulenin
@@ -182,14 +241,21 @@ export class GameScene extends Phaser.Scene {
         speed: GECICI_MERMI_HIZI, // GEÇİCİ — S20
         splashRadius: tier.splashRadius ?? 0,
         hitRadius: MERMI_ISABET_YARICAPI,
+        effect: tier.effect,
       });
       m?.activate();
     }, this.bus);
 
+    // Uçanlar `flyerPaths` üstünde düz gidiyor (§5). Seçim burada; `Enemy`
+    // hangi hareketle geldiğini bilmiyor (`DEPENDENCIES.md` §2).
+    const ucanMover = new LineMover(MAP_1.flyerPaths[0] ?? yol);
+    const moverFor = (def: { flying: boolean }): Mover => (def.flying ? ucanMover : mover);
+
     this.#eco = new EconomySystem(MAP_1, this.bus);
+    this.#abilities = new EnemyAbilitySystem(enemyPool, MAP_1.hpMultiplier, getEnemy);
     this.#waves = new WaveManager(
       enemyPool,
-      mover,
+      moverFor,
       this.bus,
       this.#eco,
       MAP1_WAVES,
@@ -244,9 +310,12 @@ export class GameScene extends Phaser.Scene {
 
     this.#waves?.update(sd);
     const dusmanlar = this.#enemyPool?.activeItems() ?? [];
+    this.#abilities?.update(sd);
+    this.#etkileriIsle(sd, dusmanlar);
     this.#towers?.update(sd, dusmanlar);
     this.#projectiles?.update(sd, dusmanlar);
     this.#damageTexts?.update(sd);
+    this.#updateFlyerHint();
 
     const aktifMermi = this.#projectiles?.activeCount ?? 0;
     if (aktifMermi > this.#mermiTepe) this.#mermiTepe = aktifMermi;
@@ -269,7 +338,30 @@ export class GameScene extends Phaser.Scene {
     e.alive = false;
     if (e.def !== null) this.#eco?.award(e.def);
     this.bus.emit('enemy:killed', { id: e.id, gold: e.def?.gold ?? 0 });
+
+    // Bölünme havuza DÖNMEDEN önce — yavrular annenin `progress`'ini
+    // devralıyor ve `release` onu sıfırlıyor.
+    this.#abilities?.splitOnDeath(e);
     this.#enemyPool?.release(e);
+  }
+
+  /** Yanma hasarı ve yavaşlatma çarpanı — `effects.ts` saf tarafı. */
+  #etkileriIsle(scaledDelta: number, dusmanlar: readonly Enemy[]): void {
+    for (const e of dusmanlar) {
+      if (!e.alive) continue;
+      const yanma = stepEffects(e.effects, scaledDelta);
+      e.speedFactor = speedMultiplier(e.effects);
+      if (yanma > 0) {
+        // Yanma **gerçek hasar**: zırh/direnç uygulanmıyor (§4.1'de yanma
+        // ayrı bir kanal olarak tanımlı, vuruşun kendisi değil).
+        //
+        // **Hasar sayısı ÇIKMIYOR.** Yanma her karede tik atıyor; saniyede
+        // 60 sayı üretmek 60'lık havuzu tek yanan düşmanla doldururdu ve
+        // gerçek vuruşların sayısı görünmez olurdu. M6'da yanan düşmana
+        // turuncu bir tint verilecek — bilgi kaybolmuyor, kanal değişiyor.
+        this.#hasarUygula(e, yanma);
+      }
+    }
   }
 
   #havuzDoldu(ad: string, kapasite: number): void {
@@ -331,10 +423,72 @@ export class GameScene extends Phaser.Scene {
       g.strokePath();
     }
 
+    // Menzil uçan hattını kesiyorsa o parça da vurgulanıyor (§5) — oyuncu
+    // "bu nokta harpiyi görüyor mu" sorusunu bakarak cevaplayabilsin.
+    g.lineStyle(8, 0x3e5ca8, 0.5); // lapis — uçan
+    for (const uc of MAP_1.flyerPaths) {
+      for (const p of coveredSegments(uc, spot, menzil)) {
+        g.beginPath();
+        g.moveTo(p.a.x, p.a.y);
+        g.lineTo(p.b.x, p.b.y);
+        g.strokePath();
+      }
+    }
+
     // Kesikli altın çember + mürekkep dış kontur.
     // Kontursuz çember yoğun dalgada kayboluyor (`GAME-DESIGN.md` §2).
     this.#dashedCircle(g, spot, menzil + 1.5, INK_COLOR, 3);
     this.#dashedCircle(g, spot, menzil, GOLD_COLOR, 2);
+  }
+
+  /**
+   * **Uçan hattı gösterimi** (`M4-T06`, `GAME-DESIGN.md` §5 — zorunlu).
+   *
+   * "Harpi yolu takip etmediği için, uçuş hattı kule menzillerinden
+   * geçmiyorsa harpi **garantili sızar** — oyuncunun hiçbir kararı bunu
+   * değiştiremez." Defense Grid'in çözümü: hazırlık aşamasında hattı göster.
+   *
+   * Hat **yalnız o dalgada uçan varsa** ve **yalnız hazırlıkta** görünüyor;
+   * dalga başlayınca sönüyor.
+   */
+  #updateFlyerHint(): void {
+    const g = this.#flyerGfx;
+    if (g === undefined) return;
+
+    const dalga = this.#waves?.upcomingWave;
+    const ucanVar =
+      dalga !== undefined &&
+      dalga.groups.some((gr) => getEnemy(gr.enemy)?.flying === true);
+
+    if (ucanVar === this.#flyerHintOn) return;
+    this.#flyerHintOn = ucanVar;
+    g.clear();
+    if (!ucanVar) return;
+
+    // Soluk kesikli altın çizgi (§5).
+    g.lineStyle(3, GOLD_COLOR, 0.45);
+    for (const hat of MAP_1.flyerPaths) {
+      for (let i = 0; i < hat.length - 1; i++) {
+        const a = hat[i];
+        const b = hat[i + 1];
+        if (a === undefined || b === undefined) continue;
+        this.#dashedLine(g, a, b, 18);
+      }
+    }
+  }
+
+  /** Kesikli düz çizgi — Phaser'da hazır yok. */
+  #dashedLine(g: Phaser.GameObjects.Graphics, a: Vec2, b: Vec2, parcaPx: number): void {
+    const uzunluk = Math.hypot(b.x - a.x, b.y - a.y);
+    const adet = Math.max(1, Math.floor(uzunluk / parcaPx));
+    for (let k = 0; k < adet; k += 2) {
+      const t0 = k / adet;
+      const t1 = Math.min(1, (k + 1) / adet);
+      g.beginPath();
+      g.moveTo(a.x + (b.x - a.x) * t0, a.y + (b.y - a.y) * t0);
+      g.lineTo(a.x + (b.x - a.x) * t1, a.y + (b.y - a.y) * t1);
+      g.strokePath();
+    }
   }
 
   /** Phaser'da hazır kesikli yay yok; parça parça çiziliyor. */
@@ -365,19 +519,19 @@ export class GameScene extends Phaser.Scene {
     if (spot === undefined) return;
 
     const kap = this.add.container(
-      Phaser.Math.Clamp(spot.x, 100, this.scale.width - 100),
+      Phaser.Math.Clamp(spot.x, 160, this.scale.width - 160),
       Phaser.Math.Clamp(spot.y - 56, 40, this.scale.height - 40),
     );
 
     TOWERS.forEach((def, i) => {
-      const bx = (i - (TOWERS.length - 1) / 2) * 92;
+      const bx = (i - (TOWERS.length - 1) / 2) * 96;
       const maliyet = def.tiers[0].cost;
       const alinabilir = this.#eco?.canAfford(maliyet) === true;
 
       this.#menuButonu(
         kap,
         bx,
-        `${def.id === 'okcu' ? 'Okçu' : 'Top'} ${maliyet}`,
+        `${TOWER_LABEL[def.id] ?? def.id} ${maliyet}`,
         alinabilir,
         () => this.#placeTower(spotIndex, def),
       );
@@ -416,31 +570,131 @@ export class GameScene extends Phaser.Scene {
     );
 
     const iade = this.#eco?.sellRefund(this.#eco.spentAt(spotIndex)) ?? 0;
+
     if (kule.tierIndex === 0) {
+      // T1 → T2, tek seçenek.
       const maliyet = kule.def.tiers[1].cost;
       this.#menuButonu(kap, -48, `↑ ${maliyet}`, this.#eco?.canAfford(maliyet) === true, () =>
-        this.#upgradeTower(spotIndex),
+        this.#upgradeTower(spotIndex, 1),
       );
       this.#menuButonu(kap, 48, `Sat +${iade}`, true, () => this.#sellTower(spotIndex));
+    } else if (kule.tierIndex === 1) {
+      // T2 → **iki dal**. `M4-T03`: dal seçimi zorunlu, kademe atlanamıyor.
+      const [a, b] = kule.def.branches;
+      this.#menuButonu(
+        kap,
+        -96,
+        `${a.branchName ?? '3a'} ${a.cost}`,
+        this.#eco?.canAfford(a.cost) === true,
+        () => this.#upgradeTower(spotIndex, 2),
+      );
+      this.#menuButonu(
+        kap,
+        0,
+        `${b.branchName ?? '3b'} ${b.cost}`,
+        this.#eco?.canAfford(b.cost) === true,
+        () => this.#upgradeTower(spotIndex, 3),
+      );
+      this.#menuButonu(kap, 96, `Sat +${iade}`, true, () => this.#sellTower(spotIndex));
     } else {
+      // T3 — son kademe. **Dal geri alınamıyor (S41)**; değiştirmek için
+      // satmak gerekiyor ve %30 kayıp bilinçli bir bedel.
       this.#menuButonu(kap, 0, `Sat +${iade}`, true, () => this.#sellTower(spotIndex));
     }
+
+    // Hedefleme modu seçici (`M4-T11`) — beş mod, kule başına.
+    TARGET_MODES.forEach((mod, i) => {
+      const bx = (i - (TARGET_MODES.length - 1) / 2) * 50;
+      const secili = kule.targetMode === mod;
+      const btn = this.add
+        .rectangle(bx, 52, 46, 44, secili ? GOLD_COLOR : SPOT_COLOR)
+        .setStrokeStyle(2, GOLD_COLOR)
+        .setInteractive({ useHandCursor: true });
+      const et = this.add
+        .text(bx, 52, MODE_LABEL[mod], {
+          fontFamily: 'Spectral, serif',
+          fontSize: '14px',
+          color: '#14203A',
+        })
+        .setOrigin(0.5);
+      btn.on(
+        Phaser.Input.Events.POINTER_DOWN,
+        (_p: unknown, _x: number, _y: number, olay: Phaser.Types.Input.EventData) => {
+          olay.stopPropagation();
+          this.#setTargetMode(spotIndex, mod);
+        },
+      );
+      kap.add([btn, et]);
+    });
+
+    this.#selectedSpot = spotIndex;
+    this.#showInfoPanel(spotIndex);
     this.#menu = kap;
   }
 
-  /** T1 → T2. Maliyet **kümülatif** yazılıyor; satış iadesi toplamın %70'i. */
-  #upgradeTower(spotIndex: number): boolean {
+  /**
+   * Hedefleme modu değişimi (`M4-T11`).
+   *
+   * **Mevcut hedef hemen düşürülüyor** — "bitmedi sayılır eğer: mod değişimi
+   * mevcut hedefi hemen güncellemiyorsa". Kule bir sonraki ateş karesinde
+   * yeni moda göre arama yapıyor.
+   */
+  #setTargetMode(spotIndex: number, mod: TargetMode): void {
     const kule = this.#towerBySpot.get(spotIndex);
-    if (kule === undefined || kule.tierIndex !== 0) return false;
+    if (kule === undefined) return;
+    kule.targetMode = mod;
+    kule.target = null;
+    this.#openSellMenu(spotIndex); // menüyü yeniden çiz (seçili mod değişti)
+  }
 
-    const maliyet = kule.def.tiers[1].cost;
+  /** `M4-T10` — bilgi paneli. */
+  #showInfoPanel(spotIndex: number): void {
+    const kule = this.#towerBySpot.get(spotIndex);
+    if (kule === undefined || this.#infoPanel === undefined) return;
+
+    const tier = tierAt(kule.def, kule.tierIndex);
+    const kapsama =
+      measureCoverage(MAP_1.paths, MAP_1.buildSpots, tier.range).find(
+        (c) => c.spotIndex === spotIndex,
+      )?.coveredPx ?? 0;
+
+    this.#infoPanel.show({
+      def: kule.def,
+      tier,
+      tierIndex: kule.tierIndex,
+      targetMode: kule.targetMode,
+      coveredPx: kapsama,
+      refund: this.#eco?.sellRefund(this.#eco.spentAt(spotIndex)) ?? 0,
+      nextTier: kule.tierIndex === 0 ? kule.def.tiers[1] : undefined,
+    });
+  }
+
+  /**
+   * Kademe yükseltme. Maliyet **kademenin kendi `cost`'u**, kümülatif değil
+   * (§4.1 tablosu). Satış iadesi ise harcanan **toplamın** %70'i (§4.5) —
+   * `EconomySystem.buyAt` toplamı yapı noktasına yazıyor.
+   *
+   * **S40: yükseltme sırasında kule ateş etmeye devam ediyor.** Bekleme
+   * süresi sıfırlanmıyor; yalnız hedef düşürülüyor çünkü yeni kademenin
+   * menzili farklı olabilir. Kesinti koymak "yükseltme anında sızma"
+   * gibi bir cezayı ücretsiz getirirdi ve §6 zaten yükseltmeyi altın
+   * başına verimsiz kılıyor — ikinci bir ceza gereksiz.
+   */
+  #upgradeTower(spotIndex: number, hedefKademe: TierIndex): boolean {
+    const kule = this.#towerBySpot.get(spotIndex);
+    if (kule === undefined) return false;
+    // T1'den yalnız T2'ye, T2'den yalnız dallara.
+    if (hedefKademe === 1 && kule.tierIndex !== 0) return false;
+    if (hedefKademe >= 2 && kule.tierIndex !== 1) return false;
+    if (hedefKademe === 0) return false;
+
+    const maliyet = tierAt(kule.def, hedefKademe).cost;
     if (this.#eco?.buyAt(spotIndex, maliyet) !== true) return false;
 
-    kule.tierIndex = 1;
-    // Hedef düşürülüyor: yeni kademenin menzili farklı, eski hedef
-    // menzil dışında kalmış olabilir.
+    kule.tierIndex = hedefKademe;
     kule.target = null;
-    kule.setScale(1.18); // greybox: yükseltilmiş kule gözle ayırt edilebilsin
+    // Greybox: kademe gözle ayırt edilebilsin.
+    kule.setScale(1 + hedefKademe * 0.12);
     this.#closeMenu();
     return true;
   }
@@ -488,6 +742,8 @@ export class GameScene extends Phaser.Scene {
   #closeMenu(): void {
     this.#menu?.destroy(true);
     this.#menu = undefined;
+    this.#selectedSpot = -1;
+    this.#infoPanel?.hide();
   }
 
   #placeTower(spotIndex: number, def: TowerDef): boolean {
@@ -615,15 +871,32 @@ export class GameScene extends Phaser.Scene {
     dev.projectilePeak = () => this.#mermiTepe;
     dev.damageTextActive = () => sayiHavuzu.activeCount;
     dev.towerCount = () => this.#towers?.towers.length ?? 0;
-    dev.placeTower = (spotIndex: number, towerId: string) =>
-      this.#placeTower(spotIndex, towerId === 'top' ? TOP : OKCU);
+    dev.placeTower = (spotIndex: number, towerId: string) => {
+      const def = getTower(towerId as TowerDef['id']);
+      return def !== undefined && this.#placeTower(spotIndex, def);
+    };
     dev.showDamage = (amount: number, floored: boolean) => {
       this.#damageTexts?.spawn(640, 360, amount, floored);
       const son = sayiHavuzu.activeItems().at(-1);
       return { tint: son?.tintTopLeft ?? -1, scale: son?.scaleX ?? -1, text: son?.text ?? '' };
     };
-    dev.upgradeTower = (spotIndex: number) => this.#upgradeTower(spotIndex);
+    dev.upgradeTower = (spotIndex: number, tier = 1) => this.#upgradeTower(spotIndex, tier as TierIndex);
     dev.sellTower = (spotIndex: number) => this.#sellTower(spotIndex);
+    dev.selectTower = (spotIndex: number) => {
+      this.#openSellMenu(spotIndex);
+      return this.#infoPanel?.visible ?? false;
+    };
+    dev.infoDps = (enemyId: string) => this.#infoPanel?.dpsFor(enemyId) ?? -1;
+    dev.setTargetMode = (spotIndex: number, mod: string) => {
+      this.#setTargetMode(spotIndex, mod as TargetMode);
+      return this.#towerBySpot.get(spotIndex)?.targetMode ?? '';
+    };
+    dev.towerTier = (spotIndex: number) => this.#towerBySpot.get(spotIndex)?.tierIndex ?? -1;
+    dev.flyerHintOn = () => this.#flyerHintOn;
+    dev.enemyKinds = () =>
+      (this.#enemyPool?.activeItems() ?? []).map((e) => e.def?.id ?? '?');
+    dev.enemySpeedFactors = () =>
+      (this.#enemyPool?.activeItems() ?? []).map((e) => e.speedFactor);
     dev.hoverSpot = (spotIndex: number) => {
       this.#hoveredSpot = spotIndex;
       this.#drawHover();

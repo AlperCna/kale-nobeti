@@ -21,6 +21,7 @@
  */
 
 import type { Targetable } from '../types/enemy';
+import type { TowerEffect } from '../types/tower';
 import type { ProjectileState } from '../types/projectile';
 import type { Poolable } from '../util/pool';
 import type { Pool } from '../util/pool';
@@ -30,6 +31,15 @@ import type { DamageResult } from './combat';
 
 const MS_TO_S = 1 / 1000;
 
+/**
+ * Zincirleme sıçrama yarıçapı (kare). Birim: px².
+ *
+ * Kule menzilinin yaklaşık yarısı (85 px). Dokümanda yok; zincir hedeften
+ * hedefe atladığı için kulenin menzili sınır olamaz, merminin isabet
+ * yarıçapı (12 px) ise çok küçük kalır.
+ */
+const ZINCIR_YARICAP_KARE = 85 * 85;
+
 /** Bir düşmanın hasar alması. Hasar sayısı üretimi çağıranın işi. */
 export type DamageHandler<E extends Targetable> = (
   enemy: E,
@@ -38,10 +48,14 @@ export type DamageHandler<E extends Targetable> = (
   y: number,
 ) => void;
 
+/** Süreli etkiyi düşmana uygular. `effects.ts` saf tarafı yapıyor. */
+export type EffectHandler<E extends Targetable> = (enemy: E, effect: TowerEffect) => void;
+
 export class ProjectileSystem<E extends Targetable, T extends ProjectileState<E> & Poolable> {
   constructor(
     private readonly pool: Pool<T>,
     private readonly onDamage: DamageHandler<E>,
+    private readonly onEffect?: EffectHandler<E>,
   ) {}
 
   get activeCount(): number {
@@ -61,6 +75,7 @@ export class ProjectileSystem<E extends Targetable, T extends ProjectileState<E>
     m.speed = init.speed;
     m.splashRadius = init.splashRadius;
     m.hitRadius = init.hitRadius;
+    m.effect = init.effect;
     m.alive = true;
     m.lastKnownX = init.target?.x ?? init.x;
     m.lastKnownY = init.target?.y ?? init.y;
@@ -134,11 +149,52 @@ export class ProjectileSystem<E extends Targetable, T extends ProjectileState<E>
 
     if (m.splashRadius > 0) {
       this.#patlat(m, enemies);
+    } else if (m.effect?.kind === 'chain') {
+      this.#zincirle(m, enemies, m.effect.targets, m.effect.falloff);
     } else if (m.target !== null) {
       this.#vur(m.target, m);
     }
     m.alive = false;
     this.pool.release(m);
+  }
+
+  /**
+   * **Yıldırım** — hedeften başlayarak en yakın düşmanlara sıçrıyor,
+   * her sıçramada hasar `× falloff` (`GAME-DESIGN.md` §4.3).
+   *
+   * `// GEÇİCİ — S36`: **aynı hedefe iki kez sıçramıyor.** Dokümanda
+   * yazmıyor; sıçrayabilseydi tek düşmanlı bir dalgada Yıldırım kendi
+   * hasarını üçe katlar ve zincirleme "kalabalık cevabı" olmaktan çıkıp
+   * tek hedef silahına dönüşürdü.
+   *
+   * Sıçrama menzili kulenin menzili değil; zincir hedeften hedefe
+   * atlıyor. Menzil sınırı olarak merminin kendi `hitRadius`ı çok küçük
+   * kalırdı — sıçrama yarıçapı kule menzilinin yarısı alındı.
+   */
+  #zincirle(m: T, enemies: readonly E[], targets: number, falloff: number): void {
+    const vurulan = new Set<E>();
+    let mevcut = m.target;
+    let hasar = m.damage;
+
+    for (let i = 0; i < targets; i++) {
+      if (mevcut === null) break;
+      this.#vur(mevcut, m, hasar);
+      vurulan.add(mevcut);
+
+      hasar *= falloff;
+      // Bir sonraki sıçrama: vurulmamış en yakın düşman.
+      let enYakin: E | null = null;
+      let enYakinKare = ZINCIR_YARICAP_KARE;
+      for (const e of enemies) {
+        if (!e.alive || e.def === null || vurulan.has(e)) continue;
+        const d = distSq(e, mevcut);
+        if (d < enYakinKare) {
+          enYakinKare = d;
+          enYakin = e;
+        }
+      }
+      mevcut = enYakin;
+    }
   }
 
   /**
@@ -159,10 +215,13 @@ export class ProjectileSystem<E extends Targetable, T extends ProjectileState<E>
     }
   }
 
-  #vur(e: E, m: T): void {
+  #vur(e: E, m: T, hasar = m.damage): void {
     if (e.def === null) return;
-    const sonuc = applyDamage(m.damage, m.damageType, e.def);
+    const sonuc = applyDamage(hasar, m.damageType, e.def);
     this.onDamage(e, sonuc, e.x, e.y);
+    // Süreli etki isabet anında uygulanıyor; zincirleme anlık olduğu için
+    // burada geçilmiyor.
+    if (m.effect !== undefined && m.effect.kind !== 'chain') this.onEffect?.(e, m.effect);
   }
 
   /** Sahne kapanışı / dalga sonu. */

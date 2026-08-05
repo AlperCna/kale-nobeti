@@ -54,7 +54,14 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
 
   constructor(
     private readonly pool: Pool<T>,
-    private readonly mover: Mover,
+    /**
+     * Düşman tipine göre hareket stratejisi seçer.
+     *
+     * Uçanlar `LineMover`, yürüyenler `PathMover` alıyor. Seçim burada
+     * çünkü `Enemy` sınıfı hangi hareketle geldiğini bilmiyor ve
+     * bilmemeli (`DEPENDENCIES.md` §2).
+     */
+    private readonly moverFor: (def: EnemyDef) => Mover,
     private readonly bus: EventBus,
     private readonly eco: EconomySystem,
     private readonly waves: readonly Wave[],
@@ -174,7 +181,7 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
         return;
       }
       this.#kuyruk.shift();
-      dusman.spawn(this.mover, bas.def, this.hpMultiplier);
+      dusman.spawn(this.moverFor(bas.def), bas.def, this.hpMultiplier);
       this.#spawnedThisWave++;
     }
   }

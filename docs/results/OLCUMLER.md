@@ -249,3 +249,108 @@ Yerleşimden bağımsızlık ayrı testle kanıtlandı (ters sırada aynı sonu�
 **C2 en değerli ölçüm:** başsız simülasyon ile gerçek Phaser döngüsü
 bağımsız yollardan aynı sayıya çıktı. Kısıt B'nin oyunu temsil ettiğinin
 kanıtı bu.
+
+## 10. Tam set (M4)
+
+### Karşı-oyun senaryoları — 8 nokta tek aile T2, `simulateWave`
+
+| Tehdit | Okçu | Top | Büyü |
+|---|---|---|---|
+| Goblin ×20 | 27,4 sn | **18,9 sn** | 22,7 sn |
+| Zırhlı Ork ×8 | **7 sızıntı / 984 HP** | 18,5 sn | 33,2 sn |
+| Şaman ×6 | 29,5 sn | **12,8 sn** | 34,8 sn |
+| Harpi ×10 | 20,8 sn | **10 sızıntı / 700 HP** | 14,7 sn |
+| Trol ×4 | **3 sızıntı / 738 HP** | 28,4 sn | 46,2 sn |
+| Kurt Binicisi ×10 | 18,3 sn | **12,9 sn** | 14,5 sn |
+| Ogre Şef ×1 | **1 sızıntı / 499 HP** | 29,9 sn | 27,3 sn |
+
+Yerleşim üç ölçümde de aynı (kapsamaya göre sıralı 8 nokta), tek değişken
+aile. **Neye bağlı:** `towers.ts`, `enemies.ts`, `combat.applyDamage`,
+`MAP_1.coverage`. **Koruyan:** `waveSim.test.ts`, `balanceChecks.test.ts`.
+
+### Etkin DPS — 12 kademe × 10 düşman
+
+Tam matris `M4-SONUC.md` §3. Karar besleyen uç değerler:
+
+| Ölçüm | Değer | Neden önemli |
+|---|---|---|
+| Top (T1/T2/Havan) → harpi | **0,00** | Karşı-oyun tablosunun en keskin satırı |
+| Barut Fıçısı → harpi | 9,00 | T3 dallanmasını gerçek seçime çeviren sayı |
+| Okçu T1 → trol | **2,20** | Trol yenilenmesinin (6 HP/sn) **altında** — tek kule Trol'ü hiç öldüremiyor |
+| Okçu T2 → trol | 7,80 | Net 1,80 |
+| Okçu T1/T2 → boss | 0,99 / 1,95 | Hasar tabanına (%15) dayanmış; ekranda gri sayı |
+| Büyü T2 → boss | 13,50 | Bilgi paneliyle **birebir** doğrulandı |
+| Büyü T2 → şaman | 10,80 | Büyü'nün en zayıf olduğu düşman (%40 büyü direnci) |
+| Havan → şaman | 21,60 | Ham DPS'te en yüksek — ama `first` onu seçemiyor (konum sorunu) |
+
+### Uçan hattını kesen yapı noktaları
+
+| Menzil | Kesen | Not |
+|---|---|---|
+| 150 | **7 / 8** | nokta 1 kör |
+| 170 | 7 / 8 | nokta 1 kör |
+| 190 | **8 / 8** | 1:99 px ile katılıyor |
+| 230 / 260 | 8 / 8 | tepe 6:459 / 6:519 |
+
+Hedef ≥3'tü (R4). **2,3-2,7 katı.** Harita 2-3'te yeniden ölçülecek.
+
+### Kısıt A — dalga 10 tahtası (muhafazakâr)
+
+| Düşman | Tavan | Etkin HP | Oran |
+|---|---|---|---|
+| Goblin | 571 | 45 | %7,9 |
+| Ork Savaşçı | 710 | 110 | %15,5 |
+| Kurt Binicisi | 301 | 60 | %19,9 |
+| Harpi | 252 | 70 | %27,7 |
+| Zırhlı Ork | 680 | 160 | %23,5 |
+| Şaman | 689 | 130 | %18,9 |
+| Trol | 988 | 400 | %40,5 |
+| Örümcek Ana | 632 | 150 | %23,7 |
+| Örümcek Yavrusu | 381 | 30 | %7,9 |
+| **Ogre Şef** | **761** | **700** | **%92,0** ✗ |
+
+### Boss payı — iki tahta (S43)
+
+| Tahta | Nokta dolma | Tavan | Boss oranı |
+|---|---|---|---|
+| Muhafazakâr | dalga 7 | 761 | **%92,0** |
+| Gerçekçi (erken başlatma) | dalga 6 | 818 | **%85,6** |
+
+Tasarım bandı %75-85. **Neye bağlı:** `towers.ts` maliyetleri (Büyü T1 = 100),
+`waves.ts` bütçesi, `MAP_1.coverage`, `OGRE_SEF.hp`. **Koruyan:**
+`balanceChecks.test.ts` Kısıt A. **Karar:** sayı değiştirilmedi, M7'de üç
+bağlı büyüklük birlikte bakılacak (`research/01` §12 türetme yönü).
+
+### Kümülatif altın (dalga 10 sonu)
+
+| Tahta | Altın |
+|---|---|
+| Muhafazakâr | 1602 |
+| Gerçekçi (erken başlatma) | 2122 |
+
+Fark **520 altın (%32)** — erken başlatma bonusunun geç oyundaki ağırlığı.
+
+### Canlı oyun (Phaser döngüsü elle sürülerek)
+
+| # | İddia | Ölçüm |
+|---|---|---|
+| L1 | 10 dalga bitiriliyor | **evet**, 19/20 can, ★★ |
+| L2 | Bilgi paneli ↔ matris uyumu | Okçu T2→boss **1,95**, Büyü T2→boss **13,50** — birebir |
+| L3 | Buz yavaşlatma çarpanı | tam **0,50** |
+| L4 | Harpi uçan hattı sapması | **0,31 px** |
+| L5 | Boss refakatsiz süre | **10,2 sn** |
+| L6 | Boss kalan HP | 700 → **18** (öldü) |
+| L7 | Uçan hattı ipucu | dalga 6/8/9/10 açık · 5/7 kapalı |
+| L8 | Dalga 10 kare maliyeti | ort **0,946 ms** · p95 **1,3** · maks **1,7** |
+
+**L8, M3'ün 1,93 ms'inin altında.** Efekt sistemi (yanma/yavaşlatma/zincir),
+düşman yetenekleri ve bilgi paneli kare maliyetini **artırmadı** — dalga 10'da
+aynı anda 11 birim var ve boss tek başına geliyor.
+
+### Paket ve test (M4 sonu)
+
+| Ölçüm | Değer |
+|---|---|
+| Test | **430** / 23 dosya · 1,56 sn |
+| İlk indirme | **0,39 MB** (sınır 8 MB) |
+| Bekçi | **9/9** ✓ (+1 taranamayan yol raporu) |

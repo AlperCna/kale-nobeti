@@ -90,6 +90,14 @@ export interface EnemyState {
   maxHp: number;
   /** Birim: px/sn. Harita çarpanı uygulanmış hâli. */
   speed: number;
+  /**
+   * Yavaşlatma çarpanı, 0..1. Efekt sistemi yazıyor, `Mover` okuyor.
+   *
+   * Ayrı alan olmasının sebebi sadelik: `Mover` etkiler modülüne
+   * bağlansaydı her hareket testi efekt sistemini de ayağa kaldırmak
+   * zorunda kalırdı. Tek sayı taşımak yeterli.
+   */
+  speedFactor: number;
   progress: PathProgress;
   /**
    * Kışla askeri tarafından engellenmiş mi (`DEPENDENCIES.md` §7).

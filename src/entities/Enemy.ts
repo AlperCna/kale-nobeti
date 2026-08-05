@@ -3,6 +3,7 @@ import type { EnemyDef, EnemyState, Mover } from '../types/enemy';
 import type { PathProgress } from '../types/path';
 import type { Poolable } from '../util/pool';
 import { resetEnemyState } from '../systems/movers';
+import { emptyEffects, resetEffects } from '../systems/effects';
 
 /**
  * Greybox düşman. Nihai sprite M6'da (`docs/research/06-sanat-yonu.md` §2:
@@ -22,6 +23,9 @@ export class Enemy extends Phaser.GameObjects.Rectangle implements Poolable, Ene
   maxHp = 0;
   /** Birim: px/sn. */
   speed = 0;
+  speedFactor = 1;
+  /** Süreli kule etkileri (yanma, yavaşlatma). */
+  readonly effects = emptyEffects();
   progress: PathProgress = { segmentIndex: 0, tInSegment: 0, remainingDistance: 0 };
   blockedBy: object | null = null;
   alive = false;
@@ -100,6 +104,7 @@ export class Enemy extends Phaser.GameObjects.Rectangle implements Poolable, Ene
    */
   resetForPool(): void {
     resetEnemyState(this);
+    resetEffects(this.effects);
     this.mover = null;
 
     this.scene?.tweens.killTweensOf(this);

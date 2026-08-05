@@ -36,6 +36,7 @@ import { PathMover, resetEnemyState } from './movers';
 import { ProjectileSystem } from './ProjectileSystem';
 import { TowerSystem } from './TowerSystem';
 import { WaveManager } from './WaveManager';
+import type { TowerEffect } from '../types/tower';
 
 export interface SimResult {
   /** Kaleye ulaşan düşmanların **kalan** HP toplamı. Birim: HP. */
@@ -56,6 +57,7 @@ class SimEnemy implements SpawnableEnemy, Poolable, Targetable {
   hp = 0;
   maxHp = 0;
   speed = 0;
+  speedFactor = 1;
   progress = { segmentIndex: 0, tInSegment: 0, remainingDistance: 0 };
   blockedBy: object | null = null;
   alive = false;
@@ -111,8 +113,10 @@ class SimProjectile implements ProjectileState<SimEnemy>, Poolable {
   damage = 0;
   damageType: ProjectileState['damageType'] = 'physical';
   speed = 0;
+  speedFactor = 1;
   splashRadius = 0;
   hitRadius = 0;
+  effect: TowerEffect | undefined = undefined;
   alive = false;
   lastKnownX = 0;
   lastKnownY = 0;
@@ -123,6 +127,7 @@ class SimProjectile implements ProjectileState<SimEnemy>, Poolable {
     this.speed = 0;
     this.splashRadius = 0;
     this.hitRadius = 0;
+    this.effect = undefined;
     this.alive = false;
     this.x = 0;
     this.y = 0;
@@ -179,6 +184,7 @@ export function simulateWave(
       speed: GECICI_MERMI_HIZI,
       splashRadius: tier.splashRadius ?? 0,
       hitRadius: MERMI_ISABET_YARICAPI,
+      effect: tier.effect,
     });
   });
 
@@ -200,7 +206,7 @@ export function simulateWave(
 
   const wm = new WaveManager(
     enemyPool,
-    mover,
+    () => mover,
     bus,
     eco,
     [wave],

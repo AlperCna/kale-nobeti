@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import type { Targetable } from '../types/enemy';
-import type { TargetMode, TowerDef, TowerRuntime } from '../types/tower';
+import type { TargetMode, TierIndex, TowerDef, TowerRuntime } from '../types/tower';
 
 /**
  * Greybox kule. Nihai sprite M6'da.
@@ -18,7 +18,7 @@ import type { TargetMode, TowerDef, TowerRuntime } from '../types/tower';
  * eklenirse denge sayıları yeniden bakılmalı.
  */
 export class Tower extends Phaser.GameObjects.Container implements TowerRuntime {
-  tierIndex: 0 | 1 = 0;
+  tierIndex: TierIndex = 0;
   targetMode: TargetMode = 'first';
   cooldownLeft = 0;
   target: Targetable | null = null;

@@ -3,6 +3,7 @@ import type { DamageType } from '../types/enemy';
 import type { Enemy } from './Enemy';
 import type { ProjectileState } from '../types/projectile';
 import type { Poolable } from '../util/pool';
+import type { TowerEffect } from '../types/tower';
 
 /**
  * Greybox mermi. **Havuzlu** — TIER 1 kural 3: oyun içinde asla `new` ile
@@ -19,6 +20,7 @@ export class Projectile extends Phaser.GameObjects.Arc implements ProjectileStat
   speed = 0;
   splashRadius = 0;
   hitRadius = 0;
+  effect: TowerEffect | undefined = undefined;
   alive = false;
   lastKnownX = 0;
   lastKnownY = 0;
@@ -50,6 +52,7 @@ export class Projectile extends Phaser.GameObjects.Arc implements ProjectileStat
     this.speed = 0;
     this.splashRadius = 0;
     this.hitRadius = 0;
+    this.effect = undefined;
     this.alive = false;
     this.lastKnownX = 0;
     this.lastKnownY = 0;
