@@ -20,7 +20,7 @@
  * TIER 1 kural 8: zaman tek kaynaktan — sabit `stepMs`.
  */
 
-import type { EnemyDef, Mover, SpawnableEnemy, Targetable } from '../types/enemy';
+import type { EnemyDef, EnemyId, Mover, SpawnableEnemy, Targetable } from '../types/enemy';
 import type { MapDef } from '../types/map';
 import type { ProjectileState } from '../types/projectile';
 import type { ReferenceBoard } from '../types/board';
@@ -51,6 +51,14 @@ export interface SimResult {
   readonly killedCount: number;
   /** Aynı anda ekranda görülen en yüksek düşman sayısı. */
   readonly peakEnemies: number;
+  /**
+   * **Hangi düşman** sızdı — tip başına adet.
+   *
+   * Toplam sayı "dalga sızdırdı" diyor ama *neyin* sızdığını söylemiyor.
+   * Denge kararı için gereken bilgi bu: Trol mü sızıyor yoksa yanındaki
+   * goblinler mi? İkisi tamamen farklı iki düzeltme gerektiriyor.
+   */
+  readonly leakedByEnemy: Readonly<Partial<Record<EnemyId, number>>>;
 }
 
 /** Sahnesiz düşman. `Enemy`'nin Phaser'sız ikizi. */
@@ -162,6 +170,7 @@ export function simulateWave(
 
   let leakedHp = 0;
   let leakedCount = 0;
+  const leakedByEnemy: Partial<Record<EnemyId, number>> = {};
   let killedCount = 0;
   let peakEnemies = 0;
 
@@ -219,6 +228,8 @@ export function simulateWave(
     (e) => {
       leakedHp += Math.max(0, e.hp);
       leakedCount++;
+      const id = e.def?.id;
+      if (id !== undefined) leakedByEnemy[id] = (leakedByEnemy[id] ?? 0) + 1;
     },
   );
   // --- Kışlalar (M5'ten taşınan borç) -------------------------------------
@@ -305,6 +316,7 @@ export function simulateWave(
     durationSec: (adim * stepMs) / 1000,
     killedCount,
     peakEnemies,
+    leakedByEnemy,
   };
 }
 

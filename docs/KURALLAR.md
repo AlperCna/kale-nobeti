@@ -522,10 +522,15 @@ Ayrık yolda **en zayıf kol** belirleyici — düşman hangi kolu seçeceğini 
 | Harpi | 182 | 331 | 468 / 331 | %54,9 |
 | Zırhlı Ork | 416 | 574 | 1006 / 574 | %72,4 |
 | Şaman | 338 | 628 | 907 / 628 | %53,8 |
-| Trol | 1040 | 892 | 1398 / 892 | %116,6 ✗ |
+| Trol | 1040 | 892 | 1398 / 892 | %116,6 ⓑ |
 | Örümcek Ana | 390 | 581 | 838 / 581 | %67,2 |
 | Örümcek Yavrusu | 78 | 352 | 507 / 352 | %22,1 |
 | Ogre Şef (boss) | 740 | 925 | 1396 / 925 | %80 |
+
+**ⓑ = Kışla ile doğrulanan.** Kısıt A yalnız **kulelerin** verebileceği
+hasarı topluyor (tanımı bu) — askerlerin DPS'i ve engellemenin kazandırdığı
+süre girmiyor. §5 Trol'ün cevabını açıkça kışla olarak verdiği için Kısıt A
+onu olduğundan **zor** gösteriyor; doğrulaması Kısıt B'de.
 
 
 ### Kısıt B — başsız simülasyon
@@ -542,6 +547,24 @@ Simülasyon **canlı oyunla aynı kodu** kullanıyor: aynı
 | 1 · Değirmen Geçidi | **0** | 0 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:0 |
 | 2 · Taş Köprü | **8** | 384 | d1:0 d2:0 d3:1 d4:2 d5:1 d6:1 d7:1 d8:0 d9:2 d10:0 |
 | 3 · Kül Ovası | **25** | 3299 | d1:0 d2:2 d3:3 d4:3 d5:2 d6:4 d7:2 d8:1 d9:7 d10:1 |
+
+
+**Hangi düşman sızıyor** — toplam sayı *neyin* sızdığını söylemiyor ve
+bu ikisi farklı düzeltmeler gerektiriyor:
+
+| Harita | Sızan düşmanlar (çok → az) |
+|---|---|
+| 1 · Değirmen Geçidi | **hiç yok** |
+| 2 · Taş Köprü | Zırhlı Ork ×4 · Ork Savaşçı ×2 · Harpi ×2 |
+| 3 · Kül Ovası | Ork Savaşçı ×11 · Zırhlı Ork ×4 · Örümcek Ana ×3 · Trol ×3 · Şaman ×2 · Harpi ×2 |
+
+**Kısıt A ile Kısıt B aynı şeyi ölçmüyor.** Kısıt A *tek* düşman için
+("bir Ork Savaşçı öldürülebilir mi"), Kısıt B *dalga* için ("on bir tanesi
+aynı anda gelirse"). Ölçüm bunu net gösteriyor: harita 3'te en çok sızan
+**Ork Savaşçı** ama Kısıt A'da %39,9 ile rahat geçiyor; **Trol** ise Kısıt
+A'da kalıyor ama yalnız ×3 sızıyor. İkisi de gerekli.
+
+**Boss hiçbir haritada sızmıyor** — türetmenin uçtan uca sağlaması.
 
 
 ### Referans tahta — türetiliyor, uydurulmuyor
