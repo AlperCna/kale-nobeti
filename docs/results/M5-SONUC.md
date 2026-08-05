@@ -276,6 +276,6 @@ bütçesinin (16,7 ms) çok altında.
 |---|---|
 | Haritalara **kışlaya uygun** düşük kapsamalı nokta koyma | S69 — M7, Harita 2-3 |
 | Paladin kalkanının sayısı | S43 — dokümanda yok, insan kararı |
-| `ReferenceBoard`'a hedefleme modu alanı | M4'ten taşınmıştı; kışla da tahtaya girmeli (`waveSim` kışlayı bilmiyor) |
-| Kışlanın Kısıt A/B'ye dahil edilmesi | `simulateWave` şu an yalnız kule tahtası kuruyor |
+| ~~`ReferenceBoard`'a hedefleme modu alanı~~ | ✅ **kapandı** — M7 öncesi kapanış turu |
+| ~~Kışlanın Kısıt B'ye dahil edilmesi~~ | ✅ **kapandı** — `ReferenceBoard.barracks` + `waveSim` kışlayı işletiyor (M7 öncesi kapanış turu) |
 | Asker sprite'ı ve dövüş animasyonu | M6 (şu an greybox kare) |

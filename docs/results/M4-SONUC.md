@@ -60,8 +60,12 @@ ulaşabilen kule gerekiyor. Ham DPS'e bakınca Havan (21,60) hem Keskin
 Nişancı'yı (15,60) hem Yıldırım'ı (12,60) geçiyor; ama Havan onu **seçemiyor**
 çünkü varsayılan `first` öne vuruyor. Mekanizma (`last` modu + 260 px menzil)
 ayrı testle doğrulandı; simülasyon hedefleme modunu taşımadığı için senaryo
-uçtan uca ölçülemedi. **M5'e taşınan iş:** `ReferenceBoard`'a hedefleme modu
-alanı.
+uçtan uca ölçülemedi.
+
+> **Kapandı (M7 öncesi kapanış turu).** `ReferenceBoard.targetMode` eklendi
+> ve `waveSim` onu uyguluyor. Ölçüldü: dört kuleyle `first`/`last`/`closest`
+> farklı sonuç veriyor; tek kuleyle beşi de aynı (menzilde tek düşman varken
+> her mod aynı hedefi seçer — kontrol grubu). `waveSimBoard.test.ts`.
 
 ### 6. satır bir tasarım bulgusu
 
@@ -248,7 +252,7 @@ yüzden çöküyordu, artık kör kaldığı kapsamı yazıp devam ediyor.
 
 | İş | Neden M4'te yapılmadı |
 |---|---|
-| `ReferenceBoard`'a hedefleme modu alanı | Şaman senaryosunun uçtan uca ölçülmesi buna bağlı (§1) |
+| ~~`ReferenceBoard`'a hedefleme modu alanı~~ | ✅ **kapandı** — M7 öncesi kapanış turu |
 | Kışla + 9 engelleme kuralı | M5 kapsamı; Trol satırının tam cevabı |
 | Meteor/yetenekler | M5 kapsamı; boss satırının tam cevabı |
 | Kurt Binicisi tehdidinin keskinleştirilmesi | Harita 2-3 işi (M7) |

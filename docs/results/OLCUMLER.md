@@ -530,6 +530,7 @@ Haydutlar kışlası olsa bile karşılanıyor. Takviye'nin 2 geçici askeri bun
 | İlk indirme | **0,39 MB** (hedef ≤ 5 MB) |
 | `.ogg` dosyası | **0** |
 | Bekçi | **10/10** ✓ (k.8 izin listesine çevrildi, mim. k.10 eklendi) |
+| Test (kapanış turu sonu) | **580** / 31 dosya |
 
 **Not:** sanat ve ses varlıkları henüz yok; nihai paket boyutu `P01`-`P04`
 ve `T11` girdileriyle yeniden ölçülecek.
@@ -575,3 +576,34 @@ Formül: `kalan fark × 0,18`, en az `1`, kare başına.
 
 60 FPS bütçesi 16,7 ms. Juice katmanı (sarsıntı, hit-stop, parçacık, vinyet,
 squash, toz, sayaç) ölçülebilir bir maliyet getirmedi.
+
+### M7 öncesi kapatılan iki borç
+
+**1. `ReferenceBoard.targetMode`** (M4'ten). Simülasyon her kuleyi `first`
+yapıyordu; §4.5'in beş modu Kısıt B'de hiç ölçülemiyordu.
+
+| Tahta | `first` | `last` | `closest` |
+|---|---|---|---|
+| **1 kule**, Ork ×8 | sızan 7 / 730 HP | 7 / 730 | 7 / 730 |
+| **4 kule**, Ork ×8 | 5 / **358** HP, öldü 3 | 5 / **374** HP | **4** / 360, öldü **4** |
+
+Tek kulede beş modun da aynı çıkması **kontrol grubu**: menzilde tek düşman
+varken her mod aynı hedefi seçer, yani 4 kuledeki fark gürültü değil.
+M4-SONUC §1'de "ölçülemedi" denen Şaman senaryosu artık ölçülüyor.
+
+**2. `ReferenceBoard.barracks`** (M5'ten). `simulateWave` kışlayı bilmiyordu;
+Kısıt B kışlalı tahtayı modelleyemiyordu — oysa S69 kışlanın **yerinin**
+sonucu 20/20'den 0/20'ye çevirdiğini ölçmüştü.
+
+| Sağlama | Sonuç |
+|---|---|
+| Kışla sızıntıyı azaltıyor | ✅ |
+| Asker öldürmesi `killedCount`a giriyor | ✅ `killed + leaked = 10` |
+| Haydutlar ≥ T1 | ✅ |
+| **Uçanlar etkilenmiyor** (kural 8 simülasyonda da) | ✅ sızıntı **birebir aynı** |
+| S69 yer etkisi simülasyonda da görünüyor | ✅ |
+| "10 dalga < 2 sn" şartı korunuyor | ✅ |
+
+Dokuz engelleme kuralı **canlı oyunla aynı koddan** geliyor
+(`BarracksSystem.stepSoldiers` zaten Phaser'sız) — simülasyona kopyalanan
+mantık yok, yalnız kablolama.
