@@ -13,9 +13,9 @@ Bunları tek tek çözmeye çalışmak iki gün kod yazmamak demek.
 
 | Durum | Sayı |
 |---|---|
-| ☑ Kapandı | 39 (S01, S02, S06, S08, S10-S18, S21, S25-S33, S39-S42, S45-S47, S49, S53-S56, S59, S63) |
-| ☐ Varsayılanla geçilebilir | 25 |
-| ⚠️ Yeni denge bulgusu | 7 (M3: 8 nokta · yükseltme kapsamı · M4: S65 boss payı · M5: S66 asker hasarı · S67 hasar tipi · S68 asker hızı · S69 kışla yeri) |
+| ☑ Kapandı | 43 (S01, S02, S06, S08, S10-S18, S21, S25-S33, S39-S42, S45-S47, S49, S53-S56, S57, S58, S59, S60, S62, S63, S73) |
+| ☐ Varsayılanla geçilebilir | 24 |
+| ⚠️ Yeni denge bulgusu | 11 (M3: 8 nokta · yükseltme kapsamı · M4: S65 boss payı · M5: S66 asker hasarı · S67 hasar tipi · S68 asker hızı · S69 kışla yeri · M7: S70 dalga bonusu ✅ · S72 başlangıç altını ✅ · S73 altın çarpanı ayrıştı ✅ · S74 Kısıt A kışlayı modellemiyor) |
 | **⛔ Bloke edici** | **3** — S50 sanat · S51 ses · S52 müzik. Üçü de **insan üretimi**; M6’nın 7 görevini bekletiyor, mimari veya denge kararı bekletmiyor |
 
 **Kod yazmaya başlamak için beklenen hiçbir şey yok.** M6’nın sanat ve ses
@@ -189,13 +189,21 @@ hâlâ açık ve ikisi de M3'ün girdisi.**
 
 ## M7 — Harita 2-3, denge geçişi, yayın
 
-| # | Soru | Neden önemli | Bloke | Varsayılan |
-|---|---|---|---|---|
-| S57 | Harita 2 ve 3'ün waypoint/yapı noktası koordinatları | S11/S12 ile aynı sorun, iki harita için daha | `M7-T01`, `M7-T02` | Geçici yerleşim |
-| S58 | Ayrık yolda hangi grup hangi kola gidiyor — rastgele mi, `spawnPoint` sabit mi, dönüşümlü mü? | Kısıt A kol başına hesaplanıyor; dağılım bilinmeden doğrulanamıyor | `M7-T01`, `M7-T02` | `spawnPoint` sabit, veride yazılı |
-| S60 | `SaveData` şeması | Sürüm alanı, göç stratejisi | `M7-T05` | `DATA-SCHEMAS.md` §9 taslağı |
-| S61 | Portal SDK entegrasyonu M7'de mi, sonra mı? | Poki `gameplayStart`/`gameplayStop` zorunlu kılıyor (`research/05` §1) | `M7-T10`, `M7-T11` | itch.io için gerekmez; portal başvurusunda eklenir |
-| S62 | Harita kilidi: yalnız bitirme mi, yıldız şartı var mı? | S59'a bağlı | `M7-T06` | Yalnız bitirme |
+**Beşi kapandı, biri açık kaldı (S61 — portal SDK, itch.io için gerekmiyor).
+M7 dört YENİ soru/bulgu üretti: S70, S72, S73 (kapandı) ve S74 (işaretlendi,
+Kısıt B ile doğrulanıyor).**
+
+| # | Durum | Ayrıntı |
+|---|---|---|
+| **S57** | ✅ kapandı | Harita 2-3 koordinatları **kapsama hedefinden türetildi** (M1'in yöntemi). Ayrık yolda bant **kol başına** ölçüldü — toplam ölçüm yanıltıcı, iki kol ortak gövdeyi paylaşınca aynı fiziksel yol iki kez sayılıyor (ilk denemede harita 2 toplamda 487,5 çıkmıştı). Ölçülen: h2 her iki kol 299,8 px, h3 her iki kol 291,3 px — beşi de 285-311 bandında |
+| **S58** | ✅ kapandı | `spawnPoint` **sabit ve veride yazılı**, rastgele veya dönüşümlü değil. Gerekçe: rastgele dağılım Kısıt A'yı doğrulanamaz yapardı (hangi kolun tavanına bakılacağı belli olmazdı) ve oyuncunun okuyabileceği bir örüntü yerine ezberlenmesi gereken bir sıra çıkardı |
+| **S60** | ✅ kapandı | `SaveData = { version: 1, stars: Record<mapId, 0\|1\|2\|3> }`. Tek anahtarda (`kale-nobeti-save-v1`) `Settings` ile birlikte yaşıyor; ikisi de yazarken diğerinin alanını koruyor. Bozuk JSON ve bilinmeyen sürüm sıfırdan başlatıyor, çökmüyor |
+| S61 | ☐ açık kaldı | Portal SDK entegrasyonu **yapılmadı** — itch.io yayını için gerekmiyor, portal başvurusunda eklenecek |
+| **S62** | ✅ kapandı | Harita kilidi **yalnız bitirmeye bağlı**, yıldız şartı yok. İlk harita hep açık; sonrakiler bir öncekinin ★ olsun yeter, kaç yıldız olduğu önemsiz |
+| **S70** | ⚠️ **yeni, kapandı** | **Dalga bitiş bonusu artık harita altın çarpanıyla çarpılıyor.** §9 çarpanı "altın/HP oranı düşmesin" diye koymuş ama üç gelir kaleminden yalnız birine (öldürme altını) uyguluyordu. Ölçülen gelir çarpanı ×1,33 / ×1,85 idi, HP ise ×1,6 / ×2,6 |
+| **S72** | ⚠️ **yeni, kapandı** | **Başlangıç altını da çarpanı izliyor** (280 × altın çarpanı). §9 tablosu 280/340/400 diyordu; 340 ve 400 çarpanı izlemiyordu (×1,21 / ×1,43). Ölçülen etki: dalga 1 sızıntısı h2'de 4→0, h3'te 7→0 |
+| **S73** | ⚠️ **yeni, kapandı** | **Altın çarpanı HP çarpanından ayrıştı** — harita 3'te 2,6 → 3,8. §9 "eşit" diyordu; ölçüm eşitliğin harita 3'te kendi gerekçesini karşılamadığını gösterdi (12 nokta tam yükseltilemiyordu, tahta 3820'de takılıyordu). Tarama: 3,8'de tahta maliyeti **doyuyor** (üstü fazladan kule almıyor) — sayı seçilmedi, tam yükseltme noktası olarak ölçüldü |
+| **S74** | ⚠️ **yeni, işaretlendi** | **Kısıt A kışlayı modellemiyor.** Formül yalnız kulelerin hasarını topluyor; §5'in cevabını kışla olarak verdiği düşmanlar (Trol) için tavan sistematik düşük çıkıyor. Çözüm Kısıt A'ya asker DPS'i eklemek **değil** — `research/01` §2'nin yerleşimden bağımsızlık özelliğini bozardı. `KISLA_ILE_DOGRULANAN` listesiyle işaretlendi, doğrulaması Kısıt B'de. Ölçüm bir yan bulgu da verdi: harita 3'te en çok sızan düşman Trol değil **Ork Savaşçı** (×11) çıkmıştı — S73 bunu da düzeltti |
 
 ## Taşlara bağlı olmayan
 
