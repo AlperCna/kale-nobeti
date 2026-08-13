@@ -400,6 +400,14 @@ Bu değer **kule yerleşiminden bağımsızdır** — kümelenseler de dağılsa
 toplam aynıdır. Yerleşim *ne zaman* hasar verildiğini değiştirir, *ne kadar*
 verildiğini değil.
 
+> **Kısıt A kışlayı modellemiyor.** Formül yalnız kulelerin verebileceği
+> hasarı topluyor; askerlerin DPS'i ve engellemenin kazandırdığı süre
+> girmiyor. §4.4'te cevabı açıkça kışla olan düşmanlar (Trol) için Kısıt A
+> tavanı **sistematik olarak düşük** çıkar. `src/systems/balanceChecks.ts`
+> içindeki `KISLA_ILE_DOGRULANAN` listesi bu düşmanları işaretliyor — sayı
+> gizlenmiyor, yalnız eşiği geçmemesi tek başına kusur sayılmıyor.
+> Doğrulaması Kısıt B'nin işi (M7, S74).
+
 **Kısıt B — dalga verimi** ("sürü sızar mı"):
 
 ```
@@ -489,16 +497,31 @@ kenar bir kez parlar.
 
 ## 9. Haritalar
 
-| # | Ad | Tema | Yol | Yapı noktası | Giriş | HP/Altın çarpanı | Başlangıç altını |
-|---|---|---|---|---|---|---|---|
-| 1 | Değirmen Geçidi | Yeşil vadi, değirmen | Tek yol, 2 keskin viraj | 8 | 1 | 1.0 | 280 |
-| 2 | Taş Köprü | Nehir, taş köprü, sis | Y şeklinde ikiye ayrılır, köprüde birleşir | 10 | 1 | 1.6 | 340 |
-| 3 | Kül Ovası | Yanmış toprak, volkanik | İki ayrı giriş, kalede birleşir | 12 | 2 | 2.6 | 400 |
+| # | Ad | Tema | Yol | Yapı noktası | Giriş | HP çarpanı | Altın çarpanı | Başlangıç altını |
+|---|---|---|---|---|---|---|---|---|
+| 1 | Değirmen Geçidi | Yeşil vadi, değirmen | Tek yol, 2 keskin viraj | 8 | 1 | 1,0 | 1,0 | 280 |
+| 2 | Taş Köprü | Nehir, taş köprü, sis | Y şeklinde ikiye ayrılır, köprüde birleşir | 10 | 1 | 1,6 | 1,6 | 448 |
+| 3 | Kül Ovası | Yanmış toprak, volkanik | İki ayrı giriş, kalede birleşir | 12 | 2 | 2,6 | **3,8** | **1064** |
 
-**Altın çarpanı HP çarpanına eşittir.** Eskiden yalnız HP ölçekleniyordu;
-altın ve kule maliyetleri sabit kaldığı için harita 3'te altın/HP oranı
-%38'e düşüyordu ve oyuncunun eline 12 noktayı doldurmaya bile yetmeyen para
-geçiyordu.
+**Altın çarpanı ≥ HP çarpanı** (M7, S70/S72/S73). Eskiden "eşit" kuralı
+vardı ve yalnız öldürme altınına uygulanıyordu; kule maliyetleri sabit
+kaldığı için harita 3'te altın/HP oranı %38'e düşüyordu ve oyuncunun eline
+12 noktayı doldurmaya bile yetmeyen para geçiyordu. M7'de üç şey ölçüldü ve
+düzeltildi:
+
+- **S70** — dalga bitiş bonusu da altın çarpanıyla çarpılıyor artık,
+  yalnız öldürme altını değil (`EconomySystem.awardWaveEnd`).
+- **S72** — başlangıç altını da çarpanı izliyor: `280 × altınÇarpanı`.
+  Önceki tablo (280/340/400) çarpanı izlemiyordu; dalga 1 tahtası her
+  haritada aynı sayıda kule alırken düşman HP'si haritayla büyüyordu ve
+  ilk dalgalar sızdırıyordu.
+- **S73** — harita 3'te altın çarpanı HP çarpanından **ayrıştı** (2,6 → 3,8).
+  Eşit tutulunca 12 nokta tam yükseltilemiyordu; tarama sonucu 3,8'de
+  tahta maliyeti **doyuyor** (üstü fazladan kule almıyor) — sayı seçilmedi,
+  tam yükseltme noktası olarak ölçüldü.
+
+Ölçülen sonuç: üç haritanın da 10 dalgası **geçilebilir** (kalan can
+sırasıyla 20/20, 12/20, 5/20 — ayrıntı `docs/results/M7-SONUC.md` §3).
 
 **Ayrık yol uyarısı:** harita 2 ve 3'te Kısıt A hesabı **her kol için ayrı**
 yapılır. Toplam DPS yanıltıcıdır — kolun yalnızca onu gören kuleleri sayılır.
@@ -586,8 +609,32 @@ interface MapDef {
   enemyRoster: EnemyId[];         // bu haritada çıkabilecek tipler
   /** util/coverage.ts ile üretilir, ELLE YAZILMAZ. Denge testleri kullanır. */
   readonly coverage: { spotIndex: number; coveredPx: number }[];
+  /** Ayrık yolda kol başına kapsama — `paths` ile aynı sırada. */
+  readonly branchCoverage: { spotIndex: number; coveredPx: number }[][];
 }
 ```
+
+### Boss'un harita başına ölçeklenmesi
+
+**Ogre Şef'in zırhı ve HP'si haritadan haritaya değişiyor** — `enemies.ts`
+içindeki 700/zırh 10 yalnız harita 1'in değeri. `700 × hpMultiplier`
+kullanılsaydı harita 2'de 1120, harita 3'te 1820 olurdu ve karşılanabilir
+hiçbir tahta bunu indiremezdi (M7'de ölçüldü: Kısıt A oranı %165 ve %282).
+
+`src/data/bossScaling.ts` her harita için ayrı zırh ve HP tutuyor:
+
+| Harita | Zırh | Boss HP | Tavanın oranı |
+|---|---|---|---|
+| 1 Değirmen Geçidi | 10 | 700 | %92,0 |
+| 2 Taş Köprü | 5 | 712 | %80,0 |
+| 3 Kül Ovası | 2 | 1023 | %80,0 |
+
+Zırhın haritayla düşmesi bilinçli: geç haritalarda altın daha çok noktaya
+bölündüğü için tahtanın ortalama kademesi düşüyor ve yüksek zırh o tahtayı
+hasar tabanına mahkûm ediyor. HP `0,80 × o haritanın en zayıf kol tavanı`
+olarak türetiliyor (`research/01` §12) ve regresyon bandıyla (±%6)
+korunuyor — ekonomi veya geometri değişirse test kırılır, sayı elle
+ayarlanmaz.
 
 ## 10. Juice — hissi taşıyan katman
 
