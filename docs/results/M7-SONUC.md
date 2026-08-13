@@ -31,8 +31,8 @@ başvurusu.
 | `M7-T07` 3 yıldız | ☑ | Eşikler tek adreste (`starsFor`), `GameOverScene` kopyalamıyor |
 | `M7-T08` 30 dalganın denge geçişi | ☑ | **Bu taşın asıl işi** — §3 |
 | `M7-T09` Boyut ve yükleme | ☑ **kısmi** | 0,39 MB ölçüldü; yükleme süresi sanat gelmeden anlamsız |
-| `M7-T10` Gizli sekme / portal | ☑ **kısmi** | Gizli sekme ✓; portal SDK **S61** (itch.io'da gerekmiyor) |
-| `M7-T11` itch.io + portal başvurusu | ⛔ | Hesap ve sanat varlıkları gerekiyor |
+| `M7-T10` Gizli sekme / portal | ☑ **kısmi** | Gizli sekme ✓; portal SDK **S61** (itch.io'da gerekmiyor); `base:'./'` **canlı doğrulandı** (§6) |
+| `M7-T11` itch.io + portal başvurusu | ⛔ **yalnız hesap + insan eylemi bekliyor** | Sanat/ses **blokaj değil** — `research/06` §2 "M5'in %60'ıyla da çıkılabilir" felsefesi greybox'la yayına izin veriyor; itch.io'nun kendi sıralama gerekçesi de ("kısıt yok, ilk geri bildirim") erken yayını teşvik ediyor. Brif hazır: `M7-itchio-yayin-brifi.md` |
 | `M7-P02` Denge oturumları | ⛔ | 3 kişiye oynatma — insan işi |
 
 ---
@@ -206,6 +206,13 @@ tutmuyordu, artık onu çağırıyor.
 | L3 | Kayıt `localStorage`'a yazılıyor | ✓ `{progress:{version:1,stars:{...}}}` |
 | L4 | Üç harita da doğru yükleniyor | ✓ altın 280/448/1064, nokta 8/10/12, kadro 5/7/10 |
 | L5 | Havuz sızdırmıyor | ✓ taşma 0 |
+| L6 | `dist/` **dört seviye** iç içe alt klasörden servis edilince çalışıyor | ✓ konsol sessiz, tüm varlıklar göreli yoldan 200, `<canvas>` render oldu, dev kancası üretimde sızmadı |
+
+**L6, itch.io yayınından önce hiç canlı test edilmemiş bir riski
+kapattı** — `M7-T11`'in kendi "bitmedi sayılır eğer" şartı ("itch.io'da
+beyaz ekran"). `base:'./'` statik olarak doğruydu ama gerçek bir
+sunucudan, gerçek bir derin yoldan hiç denenmemişti.
+Ayrıntı: `M7-itchio-yayin-brifi.md` §1.
 
 **L4 bir hata yakaladı:** `GameScene`'in 32 `MAP_1` atıfını değiştirirken
 `new EconomySystem(MAP_1, ...)` kaçmıştı (nokta yerine virgül). Harita 2
