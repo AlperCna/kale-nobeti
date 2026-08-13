@@ -320,6 +320,11 @@ gözle: gizli sekmede açılıyor ve çökmüyor; alt klasörden servis edilince
 `M7-T11` · ☐ · ~40 dk · Önkoşul `M7-T10` · TIER 1 — · Açık soru S61
 · Doküman `research/05` §3 (sıralama önerisi)
 
+**Somut yayın brifi:** [`M7-itchio-yayin-brifi.md`](M7-itchio-yayin-brifi.md)
+— zip hazırlama, itch.io sayfa ayarları, yayın sonrası kontrol listesi.
+`base:'./'` riski **canlı doğrulandı** (dört seviye iç içe alt klasörden
+servis, konsol sessiz, brif §1'de ayrıntı).
+
 **Yapılacak**
 - `research/05` §3 sıralaması: **itch.io** (kısıt yok, ilk geri bildirim) →
   **CrazyGames Basic Launch** (metrik toplama) → **Poki** (en sıkı, elle
