@@ -332,6 +332,10 @@ altın ikonu havuzu sızdırmıyor.
 `M6-T11` · ☐ · ~45 dk · Önkoşul `M0-T06` · TIER 1 **k.2** · Açık soru S51, S52
 · Doküman `GAME-DESIGN.md` §12 · `research/04` §2, §6 · `research/05` §1
 
+**Somut üretim brifi:** [`M6-ses-uretim-brifi.md`](M6-ses-uretim-brifi.md)
+— 12 ses efektinin tam listesi, dosya adları, müzik format/boyut kuralı,
+kaynak/lisans notu.
+
 **Yapılacak**
 - Her kule ailesinin ayrı atış sesi, **±%8 rastgele perde kayması**
   (tekdüzelik önler) (§12).
