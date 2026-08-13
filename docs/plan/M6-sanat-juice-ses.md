@@ -25,6 +25,10 @@
 `TASK-TEMPLATE.md`'nin 30-45 dk kuralı bunlara **geçerli değil**.
 Süreleri gün cinsinden; kabul kriterleri bir kod görevinin girdisi olabilmesi.
 
+**Somut üretim brifi:** [`M6-sanat-uretim-brifi.md`](M6-sanat-uretim-brifi.md)
+— palet uygulaması, tam varlık listesi, ölçek kuralları, öncelik sırası
+ve teslim yolu. Aşağıdaki tablo yalnız özet.
+
 | Kimlik | Çıktı | Süre | Tüketen görev |
 |---|---|---|---|
 | `M6-P01` | 3 harita arka planı, hedef boyutta | 3-5 gün | `M6-T03` |
