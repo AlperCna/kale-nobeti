@@ -3,9 +3,10 @@ import type { BlockableEnemy, SoldierState, SoldierStateName } from '../types/ba
 import type { Vec2 } from '../types/common';
 import type { Poolable } from '../util/pool';
 import { resetSoldierState } from '../systems/BarracksSystem';
+import { SOLDIER_FRAME } from '../data/spriteFrames';
 
 /**
- * Greybox asker. **Havuzlu** — TIER 1 kural 3.
+ * **Havuzlu** — TIER 1 kural 3.
  *
  * **İnce sınıf.** Dokuz engelleme kuralının tamamı `BarracksSystem`'de ve
  * `node`'da test edilmiş durumda (TIER 1 kural 11); burada yalnız Phaser'a
@@ -14,7 +15,7 @@ import { resetSoldierState } from '../systems/BarracksSystem';
  * `x`/`y` Phaser'ın kendi alanları; sistem onları doğrudan yazıyor —
  * `Projectile` ve `Enemy` ile aynı sözleşme.
  */
-export class Soldier extends Phaser.GameObjects.Rectangle implements SoldierState, Poolable {
+export class Soldier extends Phaser.GameObjects.Sprite implements SoldierState, Poolable {
   hp = 0;
   maxHp = 0;
   dps = 0;
@@ -32,18 +33,19 @@ export class Soldier extends Phaser.GameObjects.Rectangle implements SoldierStat
   /** Bu askeri çıkaran kışlanın yapı noktası; `-1` = Takviye askeri. */
   spotIndex = -1;
 
-  readonly #baseColor: number;
+  readonly #size: number;
 
-  constructor(scene: Phaser.Scene, size: number, color: number) {
-    super(scene, 0, 0, size, size, color);
-    this.#baseColor = color;
+  constructor(scene: Phaser.Scene, size: number) {
+    super(scene, 0, 0, 'atlas', SOLDIER_FRAME);
+    this.#size = size;
+    this.setDisplaySize(size, size);
     scene.add.existing(this);
     this.resetForPool();
   }
 
   /** Asker göründü — `spawnSoldier` alanları doldurduktan sonra. */
   activate(): void {
-    this.setActive(true).setVisible(true).setAlpha(1).setFillStyle(this.#baseColor);
+    this.setActive(true).setVisible(true).setAlpha(1);
   }
 
   /**
@@ -56,10 +58,11 @@ export class Soldier extends Phaser.GameObjects.Rectangle implements SoldierStat
   resetForPool(): void {
     resetSoldierState(this);
     this.spotIndex = -1;
-    this.setActive(false).setVisible(false).setAlpha(1).setFillStyle(this.#baseColor);
+    this.setActive(false).setVisible(false).setAlpha(1);
     this.setPosition(0, 0);
-    this.setScale(1);
+    this.setDisplaySize(this.#size, this.#size);
     this.setAngle(0);
+    this.clearTint();
   }
 
   /** Can oranına göre soluklaşır — greybox geri bildirim, M6'da can çubuğu. */

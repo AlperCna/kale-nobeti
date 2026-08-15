@@ -19,7 +19,7 @@ import { NUMBER_FONT_KEY } from './numberFont';
  */
 
 const GOLD = '#D4A032';
-const PARCHMENT = '#E4D3A8';
+const INK = '#14203A';
 const VERMILION = '#B03A2E';
 
 /** Etiketler statik; **`HudScene` çiziyor**, burada yalnız sayılar var. */
@@ -60,7 +60,9 @@ export class HudReadout {
 
     this.#gold = yap(0, 0, GOLD);
     this.#lives = yap(0, 34, VERMILION);
-    this.#wave = yap(0, 68, PARCHMENT);
+    // P02'den sonra sayaçların arkasında açık parşömen kart var (`HudScene`)
+    // — parşömen tonunda sayı üstünde kaybolurdu, mürekkep kullanılıyor.
+    this.#wave = yap(0, 68, INK);
     this.#countdown = scene.add
       .bitmapText(scene.scale.width / 2, 16, NUMBER_FONT_KEY, '')
       .setOrigin(0.5, 0)

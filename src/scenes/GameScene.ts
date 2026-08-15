@@ -34,8 +34,10 @@ import { TowerInfoPanel } from '../fx/TowerInfoPanel';
 import { Pool } from '../util/pool';
 import { coveredSegments, measureCoverage } from '../util/coverage';
 import { MAP_1, getMap, COVERAGE_REFERENCE_RANGE } from '../data/maps';
+import { PreloadScene } from './PreloadScene';
 import type { MapDef } from '../types/map';
 import { TOWERS, getTower, tierAt } from '../data/towers';
+import { towerFrameKey, FRAME_CARTOUCHE } from '../data/spriteFrames';
 import { getEnemy, ENEMIES } from '../data/enemies';
 import { POOL_PREALLOC, GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI } from '../data/balance';
 import { MAP1_WAVES, wavesFor } from '../data/waves';
@@ -50,8 +52,8 @@ import type { Wave } from '../types/wave';
  * M4 sonuna kadar oyun greybox'la tamamen oynanabilir olmalı
  * (`CLAUDE.md` Görsel yön, "Üretim kuralı").
  */
-const ENEMY_SIZE = 22;
-const ENEMY_COLOR = 0xb03a2e; // Vermilyon — düşman
+/** Savaş alanı gösterim boyutu — P04 brifinden "~30 px en uzun kenar" hedefinin karesel yaklaşımı. */
+const ENEMY_SIZE = 30;
 const PATH_COLOR = 0x8a7250; // Yol: parşömen ile mürekkep arası ara ton
 const PATH_WIDTH = 48;
 const SPOT_COLOR = 0xe4d3a8; // Parşömen
@@ -62,18 +64,11 @@ const GOLD_COLOR = 0xd4a032; // Altın varak
 const INK_COLOR = 0x14203a;
 const CASTLE_SIZE = 56;
 const PROJECTILE_RADIUS = 5;
-
-/** Kule gövde renkleri — aile ayrımı renge **ek olarak** şekille de yapılıyor. */
-const TOWER_COLORS: Readonly<Record<string, number>> = {
-  okcu: 0x3e5ca8,
-  top: 0x2f4a3c,
-  buyu: 0x7a4a8a,
-  kisla: 0x8a5a2a,
-};
+/** P03 brifi — kule/kışla gövdesi oyun içi gösterim boyutu (`Tower.ts` ile aynı). */
+const TOWER_DISPLAY_SIZE = 64;
 
 /** Asker (M5). Düşmandan küçük; TIER 1 kural 6: ayrım renge dayanmıyor. */
-const SOLDIER_SIZE = 14;
-const SOLDIER_COLOR = 0x3e6ca8; // Mavi — dost tarafı
+const SOLDIER_SIZE = 20;
 const RALLY_COLOR = 0x3e6ca8;
 
 /** §10: "Aynı anda en fazla 300 parçacık (havuzlu)." */
@@ -118,6 +113,8 @@ export class GameScene extends Phaser.Scene {
   #flyerGfx?: Phaser.GameObjects.Graphics;
   #flyerHintOn = false;
   #menu?: Phaser.GameObjects.Container;
+  /** Seçili kule/kışlanın üstündeki altın kartuş (P02) — yalnız menü açıkken. */
+  #cartouche?: Phaser.GameObjects.Image;
   #infoPanel?: TowerInfoPanel;
   #hoveredSpot = -1;
   #selectedSpot = -1;
@@ -139,7 +136,13 @@ export class GameScene extends Phaser.Scene {
    */
   readonly #barracksBySpot = new Map<
     number,
-    { tier: 0 | 1 | 2 | 3; rally: Vec2; soldiers: Soldier[]; marker: Phaser.GameObjects.Arc }
+    {
+      tier: 0 | 1 | 2 | 3;
+      rally: Vec2;
+      soldiers: Soldier[];
+      marker: Phaser.GameObjects.Arc;
+      govde: Phaser.GameObjects.Image;
+    }
   >();
 
   // --------------------------------------------------------- yetenekler (M5)
@@ -182,6 +185,18 @@ export class GameScene extends Phaser.Scene {
 
   get map(): MapDef {
     return this.#map;
+  }
+
+  /**
+   * Atlas + harita 1 arka planı burada, hep. Harita 2-3 tembel —
+   * yalnız o harita seçildiğinde (`M6-T03` kabul kriteri: ilk indirmede
+   * yalnız harita 1).
+   */
+  preload(): void {
+    PreloadScene.queueGame(this);
+    if (this.#map.id !== 'degirmen-gecidi') {
+      PreloadScene.queueLazy(this, this.#map.id);
+    }
   }
 
   // ------------------------------------------------- HUD'un okuduğu durum
@@ -239,6 +254,7 @@ export class GameScene extends Phaser.Scene {
     this.#flyerHintOn = false;
     this.#mermiTepe = 0;
     this.#menu = undefined;
+    this.#cartouche = undefined;
     // M5: kışla ve yetenek durumu da yeniden başlatmada sıfırlanıyor —
     // aynı tuzak (alan başlatıcısı bir kez, `create` her seferinde).
     this.#barracksBySpot.clear();
@@ -266,6 +282,9 @@ export class GameScene extends Phaser.Scene {
     const mover = new PathMover(path);
     ensureNumberFont(this);
 
+    // Arka plan da bir kez — yol/yapı noktaları onun ÜSTÜNE çiziliyor
+    // (P01 brifi: arka plan kendi yolunu çizmiyor, oyun kodu çiziyor).
+    this.add.image(this.scale.width / 2, this.scale.height / 2, `bg-${this.#map.id}`);
     // Harita **bir kez** çiziliyor. `update`'te yeniden çizmek her karede
     // yeni geometri üretmek demek; Graphics'in maliyeti orada.
     this.#drawMap(yol);
@@ -288,7 +307,7 @@ export class GameScene extends Phaser.Scene {
 
     const enemyPool = new Pool<Enemy>(
       () => {
-        const e = new Enemy(this, ENEMY_SIZE, ENEMY_COLOR);
+        const e = new Enemy(this, ENEMY_SIZE);
         dusmanGrup.add(e);
         return e;
       },
@@ -325,7 +344,7 @@ export class GameScene extends Phaser.Scene {
     const askerGrup = this.add.group({ runChildUpdate: false });
     this.#soldierPool = new Pool<Soldier>(
       () => {
-        const s = new Soldier(this, SOLDIER_SIZE, SOLDIER_COLOR);
+        const s = new Soldier(this, SOLDIER_SIZE);
         askerGrup.add(s);
         return s;
       },
@@ -604,21 +623,21 @@ export class GameScene extends Phaser.Scene {
     this.#eco.buyAt(spotIndex, kademe.cost);
 
     const marker = this.add.circle(0, 0, 7, RALLY_COLOR, 0.9).setStrokeStyle(2, INK_COLOR);
+    // Kışla gövdesi — kule ile aynı görsel dil (`towerFrameKey`), ama
+    // `TowerSystem`'e girmiyor, `Tower` sınıfını kullanmıyor.
+    const govde = this.add
+      .image(spot.x, spot.y, 'atlas', towerFrameKey('kisla', 0))
+      .setDisplaySize(TOWER_DISPLAY_SIZE, TOWER_DISPLAY_SIZE);
     const kayit = {
       tier: 0 as 0 | 1 | 2 | 3,
       rally: defaultRally(spot, this.#map.paths[0] ?? []),
       soldiers: [] as Soldier[],
       marker,
+      govde,
     };
     this.#barracksBySpot.set(spotIndex, kayit);
     this.#askerleriKur(spotIndex);
     this.#drawRally();
-
-    // Kışla gövdesi — kule ile aynı görsel dil, ama `TowerSystem`'e girmiyor.
-    this.add
-      .rectangle(spot.x, spot.y, 26, 26, TOWER_COLORS['kisla'] ?? GOLD_COLOR)
-      .setStrokeStyle(2, GOLD_COLOR)
-      .setData('kislaSpot', spotIndex);
 
     this.#closeMenu();
     return true;
@@ -686,12 +705,9 @@ export class GameScene extends Phaser.Scene {
     // yani engellenen düşmanlar aynı karede serbest kalıyor.
     for (const s of k.soldiers) this.#soldierPool?.release(s);
     k.marker.destroy();
+    k.govde.destroy();
     this.#barracksBySpot.delete(spotIndex);
     this.#occupancy?.free(spotIndex);
-
-    for (const o of this.children.list) {
-      if (o.getData?.('kislaSpot') === spotIndex) o.destroy();
-    }
     this.#closeMenu();
     this.#drawRally();
     return iade;
@@ -705,6 +721,7 @@ export class GameScene extends Phaser.Scene {
     if (this.#eco?.canAfford(kademe.cost) !== true) return false;
     this.#eco.buyAt(spotIndex, kademe.cost);
     k.tier = hedef;
+    k.govde.setFrame(towerFrameKey('kisla', hedef));
     // Yükseltme askerleri **tazeliyor**: yeni HP ile doğuyorlar. Kule
     // tarafında bekleme sıfırlanmıyordu (S40); burada karşılığı yok,
     // asker zaten sürekli bir varlık.
@@ -1224,6 +1241,7 @@ export class GameScene extends Phaser.Scene {
     });
 
     this.#selectedSpot = spotIndex;
+    this.#showCartouche(spot);
     this.#showInfoPanel(spotIndex);
     this.#menu = kap;
   }
@@ -1287,10 +1305,8 @@ export class GameScene extends Phaser.Scene {
     const maliyet = tierAt(kule.def, hedefKademe).cost;
     if (this.#eco?.buyAt(spotIndex, maliyet) !== true) return false;
 
-    kule.tierIndex = hedefKademe;
+    kule.setTier(hedefKademe);
     kule.target = null;
-    // Greybox: kademe gözle ayırt edilebilsin.
-    kule.setScale(1 + hedefKademe * 0.12);
     this.#closeMenu();
     return true;
   }
@@ -1348,6 +1364,7 @@ export class GameScene extends Phaser.Scene {
     if (spot === undefined || k === undefined) return;
 
     this.#selectedSpot = spotIndex;
+    this.#showCartouche(spot);
     const kap = this.add.container(
       Phaser.Math.Clamp(spot.x, 140, this.scale.width - 140),
       Phaser.Math.Clamp(spot.y - 56, 40, this.scale.height - 40),
@@ -1380,9 +1397,19 @@ export class GameScene extends Phaser.Scene {
   #closeMenu(): void {
     this.#menu?.destroy(true);
     this.#menu = undefined;
+    this.#cartouche?.destroy();
+    this.#cartouche = undefined;
     this.#selectedSpot = -1;
     this.#infoPanel?.hide();
     this.#drawRally();
+  }
+
+  /** Seçili kule/kışlanın üstüne altın kartuş (P02) — `#closeMenu` kaldırıyor. */
+  #showCartouche(spot: Vec2): void {
+    this.#cartouche?.destroy();
+    this.#cartouche = this.add
+      .image(spot.x, spot.y, 'atlas', FRAME_CARTOUCHE)
+      .setDisplaySize(TOWER_DISPLAY_SIZE + 16, TOWER_DISPLAY_SIZE + 16);
   }
 
   #placeTower(spotIndex: number, def: TowerDef): boolean {
@@ -1402,7 +1429,7 @@ export class GameScene extends Phaser.Scene {
     // yarısı; kamera kaydırması sarsıntıyla çakışmasın diye eklenmedi.)
     this.#particleBurst(spot.x, spot.y, 0, -1, 14);
 
-    const kule = new Tower(this, spotIndex, spot.x, spot.y, def, TOWER_COLORS[def.id] ?? GOLD_COLOR);
+    const kule = new Tower(this, spotIndex, spot.x, spot.y, def);
     this.#towerBySpot.set(spotIndex, kule);
     this.#towers?.add(kule);
     this.#closeMenu();

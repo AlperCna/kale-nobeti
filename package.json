@@ -11,12 +11,14 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "guard": "node scripts/guard-rules.mjs",
-    "kurallar": "node scripts/kurallar.mjs"
+    "kurallar": "node scripts/kurallar.mjs",
+    "prep-assets": "node scripts/prep-assets.mjs"
   },
   "dependencies": {
     "phaser": "^3.90.0"
   },
   "devDependencies": {
+    "sharp": "^0.35.3",
     "typescript": "^7.0.2",
     "vite": "^8.2.0",
     "vitest": "^4.1.10"

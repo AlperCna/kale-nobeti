@@ -4,6 +4,7 @@ import type { TargetMode, TowerDef, TowerTier } from '../types/tower';
 import { NUMBER_FONT_KEY } from './numberFont';
 import { effectiveDps } from '../systems/balanceChecks';
 import { applyDamage } from '../systems/combat';
+import { enemyFrameKey } from '../data/spriteFrames';
 
 /**
  * Kule bilgi paneli — `GAME-DESIGN.md` §11.
@@ -61,6 +62,7 @@ export class TowerInfoPanel {
   #tipRozeti: Phaser.GameObjects.Rectangle;
   #ucanIkon: Phaser.GameObjects.Rectangle;
   #ucanCizik: Phaser.GameObjects.Rectangle;
+  /** Seçili düşman halkası — sprite'ın kendisi değil, çevresindeki çerçeve. */
   readonly #ikonlar: Phaser.GameObjects.Rectangle[] = [];
 
   #state: TowerInfoState | null = null;
@@ -101,16 +103,20 @@ export class TowerInfoPanel {
     // Düşman ikonu şeridi — **S42: o haritanın kadrosu.** Hepsini
     // listelemek oyuncuya henüz görmediği düşmanları gösterirdi.
     roster.forEach((e, i) => {
+      const bx = 16 + i * 30;
+      const halka = scene.add
+        .rectangle(bx, 168, ICON + 6, ICON + 6, 0x000000, 0)
+        .setStrokeStyle(2, GOLD);
       const ikon = scene.add
-        .rectangle(16 + i * 30, 168, ICON, ICON, ikonRengi(e.id))
-        .setStrokeStyle(2, GOLD)
+        .image(bx, 168, 'atlas', enemyFrameKey(e.id))
+        .setDisplaySize(ICON, ICON)
         .setInteractive({ useHandCursor: true });
       ikon.on(Phaser.Input.Events.POINTER_OVER, () => {
         this.#seciliDusman = i;
         this.#dpsYaz();
       });
-      this.#ikonlar.push(ikon);
-      this.#kap.add(ikon);
+      this.#ikonlar.push(halka);
+      this.#kap.add([halka, ikon]);
     });
   }
 
@@ -185,22 +191,6 @@ export class TowerInfoPanel {
   get visible(): boolean {
     return this.#kap.visible;
   }
-}
-
-/** Greybox ikon renkleri — `WaveTelegraph` ile aynı palet. */
-function ikonRengi(id: string): number {
-  const harita: Readonly<Record<string, number>> = {
-    goblin: 0x2f4a3c,
-    orkSavasci: 0x8a7250,
-    kurtBinicisi: 0xb03a2e,
-    harpi: 0x3e5ca8,
-    ogreSef: 0xd4a032,
-    zirhliOrk: 0x6b6558,
-    saman: 0x7a4a8a,
-    trol: 0x4a7a4a,
-    orumcekAna: 0x8a3a6a,
-  };
-  return harita[id] ?? 0xffffff;
 }
 
 /** `effectiveDps` yeniden kullanılabilir olsun diye dışarı veriliyor. */

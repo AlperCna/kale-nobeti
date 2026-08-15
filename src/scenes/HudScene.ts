@@ -8,9 +8,10 @@ import { WaveTelegraph } from '../fx/WaveTelegraph';
 import { ensureNumberFont } from '../fx/numberFont';
 import { AbilityButtons } from '../fx/AbilityButtons';
 import { SettingsPanel } from '../fx/SettingsPanel';
+import { createParchmentButton, createParchmentFrame } from '../fx/ParchmentFrame';
+import { PreloadScene } from './PreloadScene';
 
 const INK = 0x14203a;
-const PARCHMENT = 0xe4d3a8;
 const GOLD = 0xd4a032;
 
 /** Dokunmatik hedef en az 44×44 px (CLAUDE.md Platform). */
@@ -44,7 +45,7 @@ export class HudScene extends Phaser.Scene {
   /** Değişen sayılar ayrı dosyada — `HudReadout` başlığındaki gerekçe. */
   #readout?: HudReadout;
   #telegraph?: WaveTelegraph;
-  #earlyBtn?: Phaser.GameObjects.Rectangle;
+  #earlyBtn?: Phaser.GameObjects.Container;
   #earlyLabel?: Phaser.GameObjects.Text;
   #bitti = false;
 
@@ -56,6 +57,20 @@ export class HudScene extends Phaser.Scene {
 
   constructor() {
     super('Hud');
+  }
+
+  /**
+   * `LevelSelectScene` `Game` ve `Hud`'u aynı tıklamada başlatıyor
+   * (`this.scene.start('Game', ...); this.scene.launch('Hud');`) —
+   * `Hud`'un kendi `preload()`'u olmazsa Phaser onu hemen `create()`'e
+   * geçirir, `GameScene.preload()`'daki atlas yüklemesi bitmeden.
+   * Canlı testte yakalandı: `corner`/`edge-strip`/`middle-texture`
+   * kareleri "yok" uyarısı veriyordu. `queueGame`'in kendi `exists()`
+   * koruması sayesinde burada tekrar çağırmak GameScene'inkiyle
+   * çakışmıyor — ikisinden hangisi önce biterse.
+   */
+  preload(): void {
+    PreloadScene.queueGame(this);
   }
 
   create(): void {
@@ -77,6 +92,10 @@ export class HudScene extends Phaser.Scene {
     this.#speed = 1;
     ensureNumberFont(this);
     this.#createSpeedButton();
+    // Altın/can/dalga sayaç kartı — P02 brifi "HUD sol üstte üç parşömen
+    // kart" (`docs/plan/M6-sanat-uretim-brifi.md`). Etiket+sayı bloğunun
+    // gerçek yerleşimini saran, ölçülmüş bir kutu.
+    createParchmentFrame(this, MARGIN + 96, MARGIN + 44, 216, 96, 16);
     this.#createLabels();
     this.#readout = new HudReadout(this, MARGIN, MARGIN);
     this.#telegraph = new WaveTelegraph(this, MARGIN + 150, MARGIN + 78);
@@ -164,10 +183,7 @@ export class HudScene extends Phaser.Scene {
   #createSettingsButton(): void {
     const x = this.scale.width - MARGIN - BTN / 2;
     const y = MARGIN + BTN / 2 + BTN + 12;
-    const btn = this.add
-      .rectangle(x, y, BTN, BTN, PARCHMENT)
-      .setStrokeStyle(2, GOLD)
-      .setInteractive({ useHandCursor: true });
+    const btn = createParchmentButton(this, x, y, BTN, BTN, 14);
     this.add
       .text(x, y, '⚙', { fontFamily: 'Spectral, serif', fontSize: '24px', color: '#14203A' })
       .setOrigin(0.5);
@@ -196,11 +212,7 @@ export class HudScene extends Phaser.Scene {
     const x = this.scale.width / 2;
     const y = this.scale.height - MARGIN - 26;
 
-    this.#earlyBtn = this.add
-      .rectangle(x, y, 180, 52, PARCHMENT)
-      .setStrokeStyle(2, GOLD)
-      .setInteractive({ useHandCursor: true })
-      .setVisible(false);
+    this.#earlyBtn = createParchmentButton(this, x, y, 180, 52, 14).setVisible(false);
     this.#earlyLabel = this.add
       .text(x, y, t('startWave'), {
         fontFamily: 'Spectral, serif',
