@@ -4,6 +4,7 @@ import { wavesFor } from '../data/waves';
 import { SaveSystem } from '../systems/SaveSystem';
 import { LocalStore } from '../util/storage';
 import { t } from '../util/i18n';
+import { PreloadScene } from './PreloadScene';
 
 const INK = 0x14203a;
 const PARCHMENT = 0xe4d3a8;
@@ -36,6 +37,18 @@ export class LevelSelectScene extends Phaser.Scene {
 
   constructor() {
     super('LevelSelect');
+  }
+
+  /**
+   * Bir sonraki tıklama `Game` + `Hud`'u **aynı anda** başlatıyor
+   * (`this.scene.start('Game', ...); this.scene.start('Hud');`, aşağıda).
+   * İkisi de atlas kullanıyor ama `Hud`'un kendi yükleme aşaması yok —
+   * burada, ikisi başlamadan önce, tek seferde yüklemek ikisi arasındaki
+   * yarışı (`Game` bitirmeden `Hud` `create()`'e geçip "kare yok"
+   * uyarısı vermesi, canlı testte yakalandı) kökten kapatıyor.
+   */
+  preload(): void {
+    PreloadScene.queueGame(this);
   }
 
   create(): void {

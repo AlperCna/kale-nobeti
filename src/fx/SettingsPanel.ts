@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import type { Settings, EffectLevel } from '../systems/Settings';
+import { createParchmentButton } from './ParchmentFrame';
 
-const PARCHMENT = 0xe4d3a8;
 const GOLD = 0xd4a032;
 const INK = 0x14203a;
 
@@ -88,10 +88,7 @@ export class SettingsPanel {
         })
         .setOrigin(0, 0.5),
     );
-    const buton = scene.add
-      .rectangle(GENISLIK / 2 - 74, y, 116, 44, PARCHMENT)
-      .setStrokeStyle(2, GOLD)
-      .setInteractive({ useHandCursor: true });
+    const buton = createParchmentButton(scene, GENISLIK / 2 - 74, y, 116, 44, 10);
     buton.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => {
       this.settings.cycleEffects();
       this.refresh();
@@ -131,10 +128,7 @@ export class SettingsPanel {
         })
         .setOrigin(0, 0.5),
     );
-    const buton = scene.add
-      .rectangle(GENISLIK / 2 - 74, y, 116, 44, PARCHMENT)
-      .setStrokeStyle(2, GOLD)
-      .setInteractive({ useHandCursor: true });
+    const buton = createParchmentButton(scene, GENISLIK / 2 - 74, y, 116, 44, 10);
     buton.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, onTap);
     this.#kok.add(buton);
 

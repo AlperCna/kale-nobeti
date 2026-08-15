@@ -1,24 +1,33 @@
 import Phaser from 'phaser';
 import type { AbilityId } from '../types/ability';
 import { ABILITIES } from '../data/abilities';
+import { createParchmentButton } from './ParchmentFrame';
+import { METEOR_FRAME, TAKVIYE_FRAME } from '../data/spriteFrames';
 
-const PARCHMENT = 0xe4d3a8;
 const GOLD = 0xd4a032;
 const INK = 0x14203a;
 
 /** Dokunmatik hedef en az 44×44 px (`CLAUDE.md` Platform). */
 const BTN = 64;
+const IKON_BOYUT = 40;
 
 const ETIKET: Readonly<Record<AbilityId, string>> = {
   meteor: 'Meteor',
   takviye: 'Takviye',
 };
 
+const IKON_KARE: Readonly<Record<AbilityId, string>> = {
+  meteor: METEOR_FRAME,
+  takviye: TAKVIYE_FRAME,
+};
+
 interface Buton {
   readonly id: AbilityId;
   readonly kok: Phaser.GameObjects.Container;
   readonly gfx: Phaser.GameObjects.Graphics;
-  readonly cerceve: Phaser.GameObjects.Rectangle;
+  /** Dinamik vurgu halkası — dolgu yok, yalnız kenar; `ParchmentFrame`'in
+   * `Container` olması `setStrokeStyle` taşımıyor, o yüzden ayrı. */
+  readonly halka: Phaser.GameObjects.Rectangle;
   /** Hazır olma anında bir kez parlıyor (§8) — iki kez parlamasın diye. */
   parladi: boolean;
 }
@@ -51,14 +60,19 @@ export class AbilityButtons {
       const bx = x + i * (BTN + 14);
       const kok = scene.add.container(bx, y);
 
-      const cerceve = scene.add
-        .rectangle(0, 0, BTN, BTN, PARCHMENT)
-        .setStrokeStyle(2, GOLD)
-        .setInteractive({ useHandCursor: true });
+      const cerceve = createParchmentButton(scene, 0, 0, BTN, BTN, 14);
       cerceve.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => this.onSelect(def.id));
 
-      // Dolum grafiği çerçevenin üstünde: bekleme sürerken butonu karartıyor.
+      const ikon = scene.add
+        .image(0, 0, 'atlas', IKON_KARE[def.id])
+        .setDisplaySize(IKON_BOYUT, IKON_BOYUT);
+
+      // Dolum grafiği ikonun üstünde: bekleme sürerken butonu karartıyor.
       const gfx = scene.add.graphics();
+
+      const halka = scene.add
+        .rectangle(0, 0, BTN, BTN, 0x000000, 0)
+        .setStrokeStyle(2, GOLD);
 
       const yazi = scene.add
         .text(0, BTN / 2 + 12, ETIKET[def.id], {
@@ -68,8 +82,8 @@ export class AbilityButtons {
         })
         .setOrigin(0.5);
 
-      kok.add([cerceve, gfx, yazi]);
-      this.#butonlar.push({ id: def.id, kok, gfx, cerceve, parladi: true });
+      kok.add([cerceve, ikon, gfx, halka, yazi]);
+      this.#butonlar.push({ id: def.id, kok, gfx, halka, parladi: true });
     });
   }
 
@@ -100,20 +114,20 @@ export class AbilityButtons {
       } else if (!b.parladi) {
         // §8: hazır olunca altın kenar **bir kez** parlar.
         b.parladi = true;
-        b.cerceve.setStrokeStyle(4, GOLD);
+        b.halka.setStrokeStyle(4, GOLD);
         b.kok.scene.tweens.add({
-          targets: b.cerceve,
+          targets: b.halka,
           scale: { from: 1.12, to: 1 },
           duration: 260,
           ease: 'Quad.easeOut',
-          onComplete: () => b.cerceve.setStrokeStyle(2, GOLD),
+          onComplete: () => b.halka.setStrokeStyle(2, GOLD),
         });
       }
 
       // Seçili yetenek belirgin: kalın altın kenar.
-      if (b.id === secili) b.cerceve.setStrokeStyle(4, GOLD);
-      else if (hazir && b.parladi) b.cerceve.setStrokeStyle(2, GOLD);
-      else b.cerceve.setStrokeStyle(2, INK);
+      if (b.id === secili) b.halka.setStrokeStyle(4, GOLD);
+      else if (hazir && b.parladi) b.halka.setStrokeStyle(2, GOLD);
+      else b.halka.setStrokeStyle(2, INK);
     }
   }
 }

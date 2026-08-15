@@ -4,11 +4,9 @@ import type { PathProgress } from '../types/path';
 import type { Poolable } from '../util/pool';
 import { resetEnemyState } from '../systems/movers';
 import { emptyEffects, resetEffects } from '../systems/effects';
+import { enemyFrameKey } from '../data/spriteFrames';
 
 /**
- * Greybox düşman. Nihai sprite M6'da (`docs/research/06-sanat-yonu.md` §2:
- * her varlığın önce tek renk silüeti yapılır).
- *
  * **Bu sınıf ince.** Hareket mantığı `Mover`'da, sıfırlamanın mantıksal
  * kısmı `resetEnemyState`'te — ikisi de Phaser'sız ve `node`'da test edilmiş
  * durumda (TIER 1 kural 11). Burada kalan tek şey Phaser'a bağlı olan kısım:
@@ -16,8 +14,15 @@ import { emptyEffects, resetEffects } from '../systems/effects';
  *
  * `PathSystem`'e **doğrudan atıf yok** — yalnız `Mover` biliniyor. Uçanlar
  * M4'te `LineMover` alacak ve bu dosya değişmeyecek (`DEPENDENCIES.md` §2).
+ *
+ * `Rectangle` değil `Sprite`: her düşman tipi atlas'ta farklı bir kareye
+ * sahip (P04). Havuzdaki nesne genel amaçlı — `spawn()` gerçek kareyi
+ * `def.id`'den çözüyor; `resetForPool()` sabit savaş alanı boyutuna
+ * (`#size`) dönüyor, çünkü kareler kendi arasında farklı doğal piksel
+ * boyutuna sahip (boss 96, yavru 40, geri kalan 64) — `setScale(1)` tek
+ * başına bunu düzeltmez.
  */
-export class Enemy extends Phaser.GameObjects.Rectangle implements Poolable, EnemyState {
+export class Enemy extends Phaser.GameObjects.Sprite implements Poolable, EnemyState {
   def: EnemyDef | null = null;
   hp = 0;
   maxHp = 0;
@@ -44,12 +49,16 @@ export class Enemy extends Phaser.GameObjects.Rectangle implements Poolable, Ene
 
   static #sonrakiId = 1;
 
-  readonly #baseColor: number;
+  /** Savaş alanı gösterim boyutu — kare değişse de sabit kalır. */
+  readonly #size: number;
 
-  constructor(scene: Phaser.Scene, size: number, color: number) {
-    super(scene, 0, 0, size, size, color);
+  constructor(scene: Phaser.Scene, size: number) {
+    // Kurucudaki kare geçici — havuz nesnesi henüz hiçbir düşmana ait değil.
+    // `spawn()` gerçek kareyi yazana kadar görünmez (`setVisible(false)`).
+    super(scene, 0, 0, 'atlas', enemyFrameKey('goblin'));
     this.id = Enemy.#sonrakiId++;
-    this.#baseColor = color;
+    this.#size = size;
+    this.setDisplaySize(size, size);
     scene.add.existing(this);
   }
 
@@ -69,6 +78,8 @@ export class Enemy extends Phaser.GameObjects.Rectangle implements Poolable, Ene
     this.blockedBy = null;
     this.alive = true;
     this.progress = mover.spawnProgress();
+    this.setFrame(enemyFrameKey(def.id));
+    this.setDisplaySize(this.#size, this.#size);
     this.setActive(true).setVisible(true);
     this.syncPosition();
   }
@@ -111,8 +122,8 @@ export class Enemy extends Phaser.GameObjects.Rectangle implements Poolable, Ene
     this.setActive(false).setVisible(false);
     this.setPosition(0, 0);
     this.setAlpha(1);
-    this.setScale(1);
     this.setAngle(0);
-    this.setFillStyle(this.#baseColor);
+    this.setDisplaySize(this.#size, this.#size);
+    this.clearTint();
   }
 }

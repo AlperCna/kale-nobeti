@@ -59,8 +59,16 @@ export class PreloadScene extends Phaser.Scene {
   // çağrılıyor ve aynı şekli paylaşıyor.
   // ---------------------------------------------------------------------
   static queueGame(scene: Phaser.Scene): void {
-    void scene;
-    // M6: atlas.png + atlas.json, ses efektleri (.m4a).
+    // `exists` koruması: `GameScene` yeniden başlatmada `preload()` tekrar
+    // koşuyor (kaybedince tekrar dene, harita seçimden dönüş) — koruma
+    // olmadan her seferinde ağdan yeniden istenirdi.
+    if (!scene.textures.exists('atlas')) {
+      scene.load.atlas('atlas', 'assets/atlas.png', 'assets/atlas.json');
+    }
+    if (!scene.textures.exists('bg-degirmen-gecidi')) {
+      scene.load.image('bg-degirmen-gecidi', 'assets/bg/degirmen-gecidi.webp');
+    }
+    // M6-T11: ses efektleri (.m4a) — ayrı, bu görevin kapsamı dışında.
   }
 
   // ---------------------------------------------------------------------
@@ -77,9 +85,13 @@ export class PreloadScene extends Phaser.Scene {
   // O harita seçildiğinde çağrılır.
   // ---------------------------------------------------------------------
   static queueLazy(scene: Phaser.Scene, mapId: string): void {
-    void scene;
-    void mapId;
-    // M6: bg/<mapId>.webp
+    // Harita 1 zaten `queueGame`'de yüklendi — M6-T03 kabul kriteri:
+    // "harita 2-3 tembel, ilk indirmede yalnız harita 1".
+    if (mapId === 'degirmen-gecidi') return;
+    const key = `bg-${mapId}`;
+    if (!scene.textures.exists(key)) {
+      scene.load.image(key, `assets/lazy/${mapId}.webp`);
+    }
   }
 
   /**
