@@ -19,6 +19,13 @@ const BAR_BG_COLOR = 0x2f4a3c; // "Yosun"
 const BAR_W = 400;
 const BAR_H = 12;
 
+/** M6-T11 — `docs/plan/M6-ses-uretim-brifi.md` §1'in 12 dosyası. */
+const SFX = [
+  'shot_okcu', 'shot_top', 'shot_buyu', 'enemy_death', 'gold',
+  'tower_place', 'tower_upgrade', 'error', 'wave_start', 'boss_intro',
+  'victory', 'defeat',
+];
+
 export class PreloadScene extends Phaser.Scene {
   #bar?: Phaser.GameObjects.Rectangle;
 
@@ -70,7 +77,11 @@ export class PreloadScene extends Phaser.Scene {
     if (!scene.textures.exists('bg-degirmen-gecidi')) {
       scene.load.image('bg-degirmen-gecidi', 'assets/bg/degirmen-gecidi.webp');
     }
-    // M6-T11: ses efektleri (.m4a) — ayrı, bu görevin kapsamı dışında.
+    for (const ad of SFX) {
+      if (!scene.cache.audio.exists(ad)) {
+        scene.load.audio(ad, `assets/audio/sfx/${ad}.m4a`);
+      }
+    }
   }
 
   // ---------------------------------------------------------------------

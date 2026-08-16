@@ -31,6 +31,7 @@ import type { AbilityId } from '../types/ability';
 import { DamageText, DamageTextSystem } from '../fx/DamageText';
 import { ensureNumberFont } from '../fx/numberFont';
 import { TowerInfoPanel } from '../fx/TowerInfoPanel';
+import { SoundSystem } from '../fx/SoundSystem';
 import { Pool } from '../util/pool';
 import { coveredSegments, measureCoverage } from '../util/coverage';
 import { MAP_1, getMap, COVERAGE_REFERENCE_RANGE } from '../data/maps';
@@ -115,6 +116,8 @@ export class GameScene extends Phaser.Scene {
   #menu?: Phaser.GameObjects.Container;
   /** Seçili kule/kışlanın üstündeki altın kartuş (P02) — yalnız menü açıkken. */
   #cartouche?: Phaser.GameObjects.Image;
+  /** M6-T11 — `HudScene` `soundSystem` getter'ıyla erişiyor (zafer/yenilgi). */
+  #soundSystem?: SoundSystem;
   #infoPanel?: TowerInfoPanel;
   #hoveredSpot = -1;
   #selectedSpot = -1;
@@ -187,6 +190,11 @@ export class GameScene extends Phaser.Scene {
     return this.#map;
   }
 
+  /** M6-T11 — `HudScene` zafer/yenilgi sesini bunun üzerinden çalıyor. */
+  get soundSystem(): SoundSystem | undefined {
+    return this.#soundSystem;
+  }
+
   /**
    * Atlas + harita 1 arka planı burada, hep. Harita 2-3 tembel —
    * yalnız o harita seçildiğinde (`M6-T03` kabul kriteri: ilk indirmede
@@ -255,6 +263,7 @@ export class GameScene extends Phaser.Scene {
     this.#mermiTepe = 0;
     this.#menu = undefined;
     this.#cartouche = undefined;
+    this.#soundSystem = undefined;
     // M5: kışla ve yetenek durumu da yeniden başlatmada sıfırlanıyor —
     // aynı tuzak (alan başlatıcısı bir kez, `create` her seferinde).
     this.#barracksBySpot.clear();
@@ -377,6 +386,8 @@ export class GameScene extends Phaser.Scene {
       },
     );
 
+    this.#soundSystem = new SoundSystem(this, this.bus, this.#waveList);
+
     this.#towers = new TowerSystem((kule, tier, hedef) => {
       // Uçan çarpanı **mermiye girmeden önce** uygulanıyor: o kulenin
       // özelliği, düşmanın savunması değil (`combat.ts` notu).
@@ -393,6 +404,7 @@ export class GameScene extends Phaser.Scene {
         effect: tier.effect,
       });
       m?.activate();
+      this.#soundSystem?.playTowerShot(kule.def.id);
     }, this.bus);
 
     // Uçanlar `flyerPaths` üstünde düz gidiyor (§5). Seçim burada; `Enemy`
@@ -1307,6 +1319,7 @@ export class GameScene extends Phaser.Scene {
 
     kule.setTier(hedefKademe);
     kule.target = null;
+    this.bus.emit('tower:upgraded', { spotIndex });
     this.#closeMenu();
     return true;
   }
@@ -1321,8 +1334,8 @@ export class GameScene extends Phaser.Scene {
   ): void {
     const arka = this.add
       .rectangle(bx, 0, 88, 44, etkin ? SPOT_COLOR : 0x6b6558)
-      .setStrokeStyle(2, GOLD_COLOR);
-    if (etkin) arka.setInteractive({ useHandCursor: true });
+      .setStrokeStyle(2, GOLD_COLOR)
+      .setInteractive({ useHandCursor: etkin });
 
     const etiket = this.add
       .text(bx, 0, metin, {
@@ -1332,21 +1345,25 @@ export class GameScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    if (etkin) {
-      arka.on(
-        Phaser.Input.Events.POINTER_DOWN,
-        (
-          _p: Phaser.Input.Pointer,
-          _x: number,
-          _y: number,
-          olay: Phaser.Types.Input.EventData,
-        ) => {
-          // Sahne dinleyicisi aynı tıklamayla menüyü kapatmasın.
-          olay.stopPropagation();
-          onClick();
-        },
-      );
-    }
+    // Devre dışıyken de tıklanabilir: M6-T11 "yetersiz altınla satın alma
+    // denenince" sesi (`purchase:denied`) ancak böyle tetiklenebiliyor.
+    arka.on(
+      Phaser.Input.Events.POINTER_DOWN,
+      (
+        _p: Phaser.Input.Pointer,
+        _x: number,
+        _y: number,
+        olay: Phaser.Types.Input.EventData,
+      ) => {
+        // Sahne dinleyicisi aynı tıklamayla menüyü kapatmasın.
+        olay.stopPropagation();
+        if (!etkin) {
+          this.bus.emit('purchase:denied', {});
+          return;
+        }
+        onClick();
+      },
+    );
 
     kap.add([arka, etiket]);
   }

@@ -171,6 +171,7 @@ export class HudScene extends Phaser.Scene {
     if (!kaybetti && !kazandi) return;
 
     this.#bitti = true;
+    game.soundSystem?.playOutcome(kazandi);
     this.scene.stop('Game');
     this.scene.start('GameOver', { won: kazandi, lives: game.lives, mapId: game.map.id });
   }
