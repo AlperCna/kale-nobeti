@@ -1,9 +1,9 @@
-# M6 — Sanat, juice, ses · SONUÇ (**kısmi — 10/12 görev**)
+# M6 — Sanat, juice, ses · SONUÇ (**kısmi — 11/12 görev**)
 
 | | |
 |---|---|
 | **Tarih** | 2026-08-05 (bu güncelleme: 2026-08-16) |
-| **Durum** | ⚠️ **kısmi.** 10 görev bitti; yalnız nihai bitmap font (`T01`) ve `T10`'un altın-uçuşu parçası açık — ikisi de artık insan üretimi değil, kod işi |
+| **Durum** | ⚠️ **kısmi.** 11 görev bitti; yalnız `T10`'un altın-uçuşu parçası açık — insan üretimi değil, kod işi (altın ikonu atlas'ta hazır, uçuş animasyonu yazılmadı) |
 | **Test** | 671 geçti / 34 dosya (M5: 531 / 27) |
 | **Bekçi** | 10/10 ✓ |
 | **İlk indirme** | 3,90 MB (hedef ≤ 5 MB — menü müziği tek başına 2,9 MB, bkz. not) |
@@ -18,6 +18,18 @@
 > payı daralttı. Aşağıdaki "neden yarım" ve "insana kalan iş" bölümleri
 > **o tarihteki** durumu anlatıyor, tarihsel kayıt olarak bırakıldı;
 > güncel görev tablosu §1'de.
+>
+> **2026-08-16 (T01):** HUD sayaç kartındaki rakamların kenarlığa
+> gömülmesi düzeltilirken (`HudScene.ts` düzen payı) fark edildi: yer
+> tutucu font `T01` bitene kadar kalmayı hak etmiyordu. Inter Tight'ın
+> değişken ağırlıklı `.ttf`'i (`google/fonts` deposundan, yalnız üretim
+> aracı — pakete girmiyor) `sharp`'ın gömülü pango/cairo metin çizimiyle
+> rasterize edildi (`scripts/prep-assets.mjs` → `sayiFontuUret`); yeni
+> harici bağımlılık **eklenmedi**, `sharp` zaten vardı. `numbers.png`
+> 287×32, 3,7 KB (hedef ≤15 KB), `numbers.xml` gerçek AngleCode BMFont.
+> Rakamlar tabular (sabit `xadvance`) — altın sayacı değiştikçe metin
+> genişliği oynamıyor. `numberFont.ts` artık çalışma zamanında üretmiyor,
+> `PreloadScene.queueGame` içinde yükleniyor.
 
 > ## Bu taş neden yarım
 >
@@ -40,7 +52,7 @@
 
 | Görev | Durum | Neden |
 |---|---|---|
-| `M6-T01` Nihai bitmap font | ⏸ | PNG + `.xml` varlığı gerekiyor. Şu an çalışma zamanında üretilen yer tutucu font kullanılıyor (`fx/numberFont.ts`, M2'de kondu) — sayaçlar çalışıyor, yalnız nihai *görünüm* eksik |
+| **`M6-T01` Nihai bitmap font** | ☑ **(2026-08-16)** | Inter Tight → `numbers.png`+`.xml` (`scripts/prep-assets.mjs`, `sharp`'ın pango metin çizimiyle, yeni bağımlılık yok). 3,7 KB, tabular rakamlar |
 | **`M6-T02` Atlas boru hattı** | ☑ | `scripts/prep-assets.mjs` — `sharp` ile 33 kareyi tek `atlas.png`'e (PNG-8, 1024×272) paketliyor |
 | **`M6-T03` Arka planlar** | ☑ | 3 harita arka planı WebP q80, harita 1 `bg/`, 2-3 `lazy/` — tembel yükleme canlı doğrulandı |
 | **`M6-T04` Tezhip HUD** | ☑ | `ParchmentFrame` (Phaser `TileSprite` ile 9-slice, yeni bağımlılık yok) — sayaç kartı, butonlar, kartuş |
@@ -307,7 +319,7 @@ Kural yazılır yazılmaz `HudScene`'de iki gerçek hata çıkardı:
 | ~~`M6-P04`~~ | ~~9 düşman silüeti + ölüm karesi~~ | **üretildi, 2026-08-16** |
 | ~~`M6-T11` SFX~~ | ~~12 ses efekti~~ | **üretildi, 2026-08-16** |
 | ~~`M6-T11` müzik~~ | ~~2 müzik parçası (`S52`)~~ | **üretildi, 2026-08-16** |
-| `M6-T01` girdisi | Bitmap font PNG-8 + `.xml` | — hâlâ açık |
+| ~~`M6-T01` girdisi~~ | ~~Bitmap font PNG-8 + `.xml`~~ | **üretildi, 2026-08-16 — kod işiydi, insan üretimi gerekmedi** |
 
 Varlıklar geldiğinde tüketen görevler (`T01`-`T06`, `T11`) doğrudan
 uygulanabilir; hiçbiri mimari karar bekletmiyor.

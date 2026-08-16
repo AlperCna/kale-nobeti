@@ -29,7 +29,6 @@ import { LocalStore } from '../util/storage';
 import { KISLA, barracksTierAt, BLOCK, SOLDIER_SPEED } from '../data/barracks';
 import type { AbilityId } from '../types/ability';
 import { DamageText, DamageTextSystem } from '../fx/DamageText';
-import { ensureNumberFont } from '../fx/numberFont';
 import { TowerInfoPanel } from '../fx/TowerInfoPanel';
 import { SoundSystem } from '../fx/SoundSystem';
 import { Pool } from '../util/pool';
@@ -289,7 +288,6 @@ export class GameScene extends Phaser.Scene {
     const yol = this.#map.paths[0] ?? [];
     const path = new PathSystem(yol);
     const mover = new PathMover(path);
-    ensureNumberFont(this);
 
     // Arka plan da bir kez — yol/yapı noktaları onun ÜSTÜNE çiziliyor
     // (P01 brifi: arka plan kendi yolunu çizmiyor, oyun kodu çiziyor).
