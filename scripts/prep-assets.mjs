@@ -11,11 +11,19 @@
 //      hariç tutma yolu tam bu klasör adına bakıyor).
 //   2. P02+P03+P04 (33 parça) -> tek `atlas.png` (PNG-8) + `atlas.json`
 //      (Phaser "hash" atlas biçimi), basit raf-paketleme (shelf packing).
+//   3. Ses efektleri + müzik: WAV -> AAC (.m4a), `ffmpeg-static` ile
+//      (M6-ses-uretim-brifi.md). Eksik kaynak dosya sessizce atlanır —
+//      kısmi teslim (yalnız SFX veya yalnız müzik) kabul.
 
 import sharp from 'sharp';
+import ffmpegYolu from 'ffmpeg-static';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { mkdir, writeFile, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
+
+const execFileAsync = promisify(execFile);
 
 const ROOT = process.cwd();
 const SRC = path.join(ROOT, 'assets-src');
@@ -212,6 +220,48 @@ async function atlasUret() {
   console.log(`  atlas.png  ${atlasGenislik}x${atlasYukseklik}  ${Math.round(size / 1024)} KB  (${yerlesim.length} kare)`);
 }
 
+// ---------------------------------------------------------------------
+// 3. Ses — WAV -> AAC (.m4a). `M6-ses-uretim-brifi.md`: efekt ~128 kbps
+//    mono, müzik 96 kbps mono, `.ogg` üretilmez.
+// ---------------------------------------------------------------------
+
+const SES_EFEKTLERI = [
+  'shot_okcu', 'shot_top', 'shot_buyu', 'enemy_death', 'gold',
+  'tower_place', 'tower_upgrade', 'error', 'wave_start', 'boss_intro',
+  'victory', 'defeat',
+];
+const MUZIK = ['music_menu', 'music_game'];
+
+async function sesDosyasiCevir(ad, altKlasor, bitrate) {
+  const srcPath = path.join(SRC, 'audio', `${ad}.wav`);
+  if (!existsSync(srcPath)) return false;
+  const outPath = path.join(OUT, 'audio', altKlasor, `${ad}.m4a`);
+  await ensureDir(path.dirname(outPath));
+  await execFileAsync(ffmpegYolu, [
+    '-y',
+    '-i', srcPath,
+    '-c:a', 'aac',
+    '-b:a', bitrate,
+    '-ac', '1', // mono — brif kuralı
+    outPath,
+  ]);
+  const { size } = await stat(outPath);
+  console.log(`  audio/${altKlasor}/${ad}.m4a  ${Math.round(size / 1024)} KB`);
+  return true;
+}
+
+async function sesleriUret() {
+  let uretilen = 0;
+  for (const ad of SES_EFEKTLERI) {
+    if (await sesDosyasiCevir(ad, 'sfx', '128k')) uretilen++;
+  }
+  for (const ad of MUZIK) {
+    if (await sesDosyasiCevir(ad, 'music', '96k')) uretilen++;
+  }
+  const toplam = SES_EFEKTLERI.length + MUZIK.length;
+  console.log(`  (${uretilen}/${toplam} kaynak dosya bulundu — eksikler atlandı)`);
+}
+
 async function main() {
   if (!existsSync(SRC)) {
     throw new Error(`${SRC} yok — assets-src/ altına kaynak dosyalar konmalı.`);
@@ -222,6 +272,8 @@ async function main() {
   await kartKucukResimleriUret();
   console.log('Atlas:');
   await atlasUret();
+  console.log('Ses:');
+  await sesleriUret();
   console.log('Bitti.');
 }
 

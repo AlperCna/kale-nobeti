@@ -46,7 +46,7 @@
 | **`M6-T08` `HitStop`** | ☑ | 10 test |
 | **`M6-T09` Parçacıklar** | ☑ | Phaser parçacığı, ayrı havuz yok |
 | **`M6-T10` Vinyet, squash, toz, sayaç** | ☑ **kısmi** | Yalnız **altın uçuşu** kaldı — artık altın ikonu var (atlas'ta `meteor_icon`/`takviye_icon` gibi paketlenebilir) ama uçuş animasyonu hâlâ yazılmadı |
-| `M6-T11` Ses ve müzik | ⏸ | 12 ses efekti + 2 müzik parçası (`S51`, `S52`) — brif hazır (`docs/plan/M6-ses-uretim-brifi.md`) |
+| `M6-T11` Ses ve müzik | ⏸ **kısmi (2026-08-16)** | 12/12 ses efekti üretildi (ElevenLabs) ve koda bağlandı (`SoundSystem`, `S51` kapandı). 2 müzik parçası (`S52`) hâlâ eksik |
 | **`M6-T12` Ayarlar + erişilebilirlik** | ☑ | 17 test |
 
 Aşağıdaki alt bölümler (§1'in geri kalanı hariç her şey) **2026-08-05
@@ -301,7 +301,8 @@ Kural yazılır yazılmaz `HudScene`'de iki gerçek hata çıkardı:
 | ~~`M6-P02`~~ | ~~HUD tezhip çerçevesi, kartuş, menzil çemberi~~ | **üretildi, 2026-08-16** |
 | ~~`M6-P03`~~ | ~~16 kule kademesi silüeti~~ | **üretildi, 2026-08-16** |
 | ~~`M6-P04`~~ | ~~9 düşman silüeti + ölüm karesi~~ | **üretildi, 2026-08-16** |
-| `M6-T11` girdisi | 12 ses efekti + 2 müzik parçası (`S51`, `S52`) | — hâlâ açık |
+| ~~`M6-T11` SFX~~ | ~~12 ses efekti~~ | **üretildi, 2026-08-16** |
+| `M6-T11` müzik | 2 müzik parçası (`S52`) | — hâlâ açık |
 | `M6-T01` girdisi | Bitmap font PNG-8 + `.xml` | — hâlâ açık |
 
 Varlıklar geldiğinde tüketen görevler (`T01`-`T06`, `T11`) doğrudan

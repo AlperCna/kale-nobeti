@@ -25,6 +25,14 @@ export interface GameEvents {
    * ayarlar kalıcı olmuyor; oyun çalışmaya devam ediyor (M6).
    */
   'save:failed': { readonly once: boolean };
+
+  /** M6-T11 — `SoundSystem` `tower_upgrade.m4a` çalıyor. */
+  'tower:upgraded': { readonly spotIndex: number };
+  /**
+   * Yetersiz altınla satın alma/yükseltme denendi (`#menuButonu`
+   * devre dışıyken tıklandı). M6-T11 — `error.m4a`.
+   */
+  'purchase:denied': Record<string, never>;
 }
 
 export type GameEventName = keyof GameEvents;
