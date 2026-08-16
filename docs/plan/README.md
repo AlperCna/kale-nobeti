@@ -24,8 +24,8 @@ görevler.
 | M3 — Ekonomi, dalgalar, denge sağlamaları | [M3-ekonomi-dalga-denge.md](M3-ekonomi-dalga-denge.md) | 11 | — | 3 gün | **☑** |
 | M4 — Tam kule/düşman seti, yükseltme, bilgi paneli | [M4-tam-set-yukseltme-panel.md](M4-tam-set-yukseltme-panel.md) | 11 | — | 4 gün | **☑** |
 | M5 — Kışla, askerler, yetenekler | [M5-kisla-asker-yetenek.md](M5-kisla-asker-yetenek.md) | 9 | — | 3 gün | **☑** |
-| M6 — Sanat, juice, ses | [M6-sanat-juice-ses.md](M6-sanat-juice-ses.md) | 12 | 4 | **3-4 hafta** | ▶ **5/12** (kalanı sanat/ses üretimi bekliyor) |
-| M7 — Harita 2-3, denge geçişi, yayın | [M7-harita23-denge-yayin.md](M7-harita23-denge-yayin.md) | 11 | 2 | 5-7 gün | ▶ **8/11** (yayın ve denge oturumları insan) |
+| M6 — Sanat, juice, ses | [M6-sanat-juice-ses.md](M6-sanat-juice-ses.md) | 12 | 4 | **3-4 hafta** | **☑** |
+| M7 — Harita 2-3, denge geçişi, yayın | [M7-harita23-denge-yayin.md](M7-harita23-denge-yayin.md) | 11 | 2 | 5-7 gün | ▶ **10/11** (yalnız `T11` itch.io yayını — insan eylemi) |
 
 **82 kod görevi + 6 üretim bloğu. Toplam takvim: 7-9 hafta** kesintisiz
 çalışmayla ([`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) Takvim).
