@@ -116,6 +116,20 @@ export function angleTo(from: Vec2, to: Vec2): number {
 }
 
 /**
+ * İkinci derece (tek kontrol noktalı) bezier — `GAME-DESIGN.md` §10
+ * "altın uçuşu": düşman ölünce altın ikonu HUD sayacına bu eğriyle uçuyor.
+ *
+ * `t` kırpılmaz — çağıran sorumlu (`lerp` ile aynı sözleşme).
+ */
+export function quadraticBezier(p0: Vec2, control: Vec2, p1: Vec2, t: number): Vec2 {
+  const ters = 1 - t;
+  return {
+    x: ters * ters * p0.x + 2 * ters * t * control.x + t * t * p1.x,
+    y: ters * ters * p0.y + 2 * ters * t * control.y + t * t * p1.y,
+  };
+}
+
+/**
  * `a`-`b` segmentinin, `center` merkezli `radius` yarıçaplı çemberin
  * **içinde kalan** parçasının uzunluğu.
  *

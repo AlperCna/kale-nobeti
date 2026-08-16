@@ -114,6 +114,8 @@ export interface DevHooks {
   triggerHitStop: (ms: number) => number;
   /** Yaşayan parçacık sayısı — §10 tavanı 300. */
   particleCount: () => number;
+  /** Havadaki altın ikonu sayısı — havuz sızıntı sağlaması. */
+  goldFlightActive: () => number;
   settings: () => { sound: boolean; screenShake: boolean; effects: string; scale: number };
   setSetting: (key: string, value: unknown) => { sound: boolean; screenShake: boolean; effects: string };
 }

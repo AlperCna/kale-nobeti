@@ -8,6 +8,7 @@ import {
   segmentCircleOverlapLength,
   closestPointOnSegment,
   closestPointOnPath,
+  quadraticBezier,
 } from './math';
 
 describe('distSq', () => {
@@ -238,6 +239,45 @@ describe('closestPointOnSegment / closestPointOnPath (M5 — kural 6)', () => {
     for (const p of [{ x: 0, y: 0 }, { x: 20, y: 20 }, { x: -30, y: 5 }, { x: 60, y: 60 }]) {
       const nokta = closestPointOnSegment(p, a, b);
       expect(distSq(p, nokta)).toBeCloseTo(pointToSegmentDistSq(p, a, b), 9);
+    }
+  });
+});
+
+describe('quadraticBezier', () => {
+  it('t=0 başlangıcı verir', () => {
+    const r = quadraticBezier({ x: 0, y: 0 }, { x: 50, y: -80 }, { x: 100, y: 0 }, 0);
+    expect(r).toEqual({ x: 0, y: 0 });
+  });
+
+  it('t=1 bitişi verir', () => {
+    const r = quadraticBezier({ x: 0, y: 0 }, { x: 50, y: -80 }, { x: 100, y: 0 }, 1);
+    expect(r).toEqual({ x: 100, y: 0 });
+  });
+
+  it('t=0.5 — düz çizgi kontrol noktasına eşit ağırlıkta çekilir', () => {
+    // Kontrol noktası doğrudan orta noktaysa eğri de oradan geçer.
+    const r = quadraticBezier({ x: 0, y: 0 }, { x: 50, y: -40 }, { x: 100, y: 0 }, 0.5);
+    expect(r.x).toBeCloseTo(50, 9);
+    expect(r.y).toBeCloseTo(-20, 9); // uçlar 0'da, kontrol -40'ta — orta -20
+  });
+
+  it('kontrol noktası uçların ÜSTÜNDEyse eğri yukarı kabarır — altın uçuşu kavisi', () => {
+    const baslangic = { x: 0, y: 100 };
+    const bitis = { x: 200, y: 100 };
+    const kontrol = { x: 100, y: 0 }; // uçlardan çok daha yukarıda
+    const orta = quadraticBezier(baslangic, kontrol, bitis, 0.5);
+    expect(orta.y).toBeLessThan(baslangic.y); // ekranda küçük y = yukarı
+  });
+
+  it('kontrol noktası uçlarla aynı doğruysa eğri DÜZ çizgiye eşit — lerp ile tutarlı', () => {
+    const a = { x: 10, y: 20 };
+    const b = { x: 90, y: 60 };
+    const orta = lerp(a, b, 0.5); // doğru üstünde bir nokta, kontrol olarak kullanılabilir
+    for (const t of [0, 0.25, 0.5, 0.75, 1]) {
+      const bez = quadraticBezier(a, orta, b, t);
+      const duz = lerp(a, b, t);
+      expect(bez.x).toBeCloseTo(duz.x, 9);
+      expect(bez.y).toBeCloseTo(duz.y, 9);
     }
   });
 });
