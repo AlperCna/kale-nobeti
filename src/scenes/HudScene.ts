@@ -5,7 +5,6 @@ import { t } from '../util/i18n';
 import { devHooks } from '../util/devHooks';
 import { HudReadout } from '../fx/HudReadout';
 import { WaveTelegraph } from '../fx/WaveTelegraph';
-import { ensureNumberFont } from '../fx/numberFont';
 import { AbilityButtons } from '../fx/AbilityButtons';
 import { SettingsPanel } from '../fx/SettingsPanel';
 import { createParchmentButton, createParchmentFrame } from '../fx/ParchmentFrame';
@@ -90,7 +89,6 @@ export class HudScene extends Phaser.Scene {
     // başlatıcısı bir kez, `create()` her seferinde.
     this.#paused = false;
     this.#speed = 1;
-    ensureNumberFont(this);
     this.#createSpeedButton();
     // Altın/can/dalga sayaç kartı — P02 brifi "HUD sol üstte üç parşömen
     // kart" (`docs/plan/M6-sanat-uretim-brifi.md`). Etiket+sayı bloğunun

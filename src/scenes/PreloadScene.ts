@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { queueNumberFont } from '../fx/numberFont';
 
 /**
  * Aşamalı yükleme.
@@ -80,6 +81,7 @@ export class PreloadScene extends Phaser.Scene {
     if (!scene.textures.exists('bg-degirmen-gecidi')) {
       scene.load.image('bg-degirmen-gecidi', 'assets/bg/degirmen-gecidi.webp');
     }
+    queueNumberFont(scene);
     for (const ad of SFX) {
       if (!scene.cache.audio.exists(ad)) {
         scene.load.audio(ad, `assets/audio/sfx/${ad}.m4a`);

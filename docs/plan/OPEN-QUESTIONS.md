@@ -111,7 +111,7 @@ hâlâ açık ve ikisi de M3'ün girdisi.**
 
 | # | Durum | Ayrıntı |
 |---|---|---|
-| **S18** | ✅ kapandı | Karakter kümesi `0-9 + - . %`. Font **dosya değil**, `create`'te bir kez üretilen doku + `RetroFont.Parse` — doğrulanamayan ikili dosya uydurmak yerine. M6'da gerçek dosyayla değişecek, `NUMBER_FONT_KEY` aynı kalıyor |
+| **S18** | ✅ kapandı | Karakter kümesi `0-9 + - . %`. Font **dosya değil**, `create`'te bir kez üretilen doku + `RetroFont.Parse` — doğrulanamayan ikili dosya uydurmak yerine. M6'da gerçek dosyayla değişecek, `NUMBER_FONT_KEY` aynı kalıyor. **2026-08-16: değişti** — `M6-T01` gerçek dosyayı üretti (`numbers.png`+`.xml`, Inter Tight), yer tutucu silindi |
 | **S21** | ✅ kapandı | Mermi havadayken hedef ölürse **son bilinen konuma gidip sönümleniyor**; alan hasarlıysa oraya varınca **yine de patlıyor** (top mermisi boşa gitmiyor). Üç ayrı test |
 | **S19** | ☐ varsayılan uygulandı | İki butonlu düz liste, 88×44 px. §2'deki "altın kartuş" biçimi M6'da |
 | **S22** | ☐ varsayılan uygulandı | Patlama hasarı merkeze uzaklığa göre **azalmıyor**. M3 denge sağlamaları bu varsayımla koşacak; değişirse Top ailesinin tavanı değişir |

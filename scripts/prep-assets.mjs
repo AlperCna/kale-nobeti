@@ -281,6 +281,131 @@ async function sesleriUret() {
   console.log(`  (${uretilen}/${toplam} kaynak dosya bulundu — eksikler atlandı)`);
 }
 
+// ---------------------------------------------------------------------
+// 4. Sayı bitmap fontu — Inter Tight'tan `numbers.png` + `numbers.xml`
+//    (M6-T01, AngleCode BMFont biçimi). Inter Tight **web fontu olarak
+//    indirilmiyor** — kaynak `.ttf` yalnız burada, üretim aracı olarak
+//    kullanılıyor (`assets-src/`, pakete girmiyor).
+// ---------------------------------------------------------------------
+
+const FONT_TTF = path.join(SRC, 'fonts', 'InterTight-Variable.ttf');
+const FONT_PT = 32;
+/** `M6-sanat-juice-ses.md` T01: `0-9 + - . , / % × ×2 ›`. `×2` iki ayrı
+ * karakterden (`×`, `2`) kuruluyor, tekrar glif gerekmiyor. */
+const SAYI_KARAKTERLERI = [
+  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+  '+', '-', '.', ',', '/', '%', '×', '›',
+];
+/** Rakamlar sabit genişlikte (tabular figürler, `GAME-DESIGN.md` §2) —
+ * yoksa altın sayacı her değiştiğinde metin genişliği oynar. */
+const RAKAM_PAY = 3;
+const SEMBOL_PAY = 2;
+const HUCRE_BOSLUK = 1;
+
+async function sayiFontuUret() {
+  // Beyaz dolgu: kullanım yerleri `.setTint(renk)` çağırıyor (altın/vermilion/
+  // mürekkep) — siyah dolguda tint hiçbir şey değiştirmez (siyah × renk = siyah).
+  const metin = `<span foreground="#ffffff">${SAYI_KARAKTERLERI.join(' ')}</span>`;
+  const { data, info } = await sharp({
+    text: { text: metin, font: `Inter Tight Bold ${FONT_PT}`, fontfile: FONT_TTF, rgba: true },
+  })
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  const { width, height, channels } = info;
+  const inkVarMi = (x) => {
+    for (let y = 0; y < height; y++) {
+      if (data[(y * width + x) * channels + 3] > 10) return true;
+    }
+    return false;
+  };
+  const araliklar = [];
+  let basla = null;
+  for (let x = 0; x < width; x++) {
+    const var_ = inkVarMi(x);
+    if (var_ && basla === null) basla = x;
+    if (!var_ && basla !== null) {
+      araliklar.push([basla, x - 1]);
+      basla = null;
+    }
+  }
+  if (basla !== null) araliklar.push([basla, width - 1]);
+  if (araliklar.length !== SAYI_KARAKTERLERI.length) {
+    throw new Error(
+      `Sayı fontu: ${araliklar.length} parça bulundu, ${SAYI_KARAKTERLERI.length} bekleniyordu ` +
+        '(karakterler birbirine değiyor olabilir — Font.PT düşür).',
+    );
+  }
+
+  const genislikler = araliklar.map(([x0, x1]) => x1 - x0 + 1);
+  const azamiRakamGenisligi = Math.max(...genislikler.slice(0, 10));
+  const tabularAdvance = azamiRakamGenisligi + 2 * RAKAM_PAY;
+
+  const kompozitler = [];
+  const charlar = [];
+  let atlasX = 0;
+  for (let i = 0; i < SAYI_KARAKTERLERI.length; i++) {
+    const [x0, x1] = araliklar[i];
+    const inkW = genislikler[i];
+    const rakamMi = i < 10;
+
+    const dilim = await sharp(data, { raw: { width, height, channels } })
+      .extract({ left: x0, top: 0, width: inkW, height })
+      .png()
+      .toBuffer();
+    kompozitler.push({ input: dilim, left: atlasX, top: 0 });
+
+    const xadvance = rakamMi ? tabularAdvance : inkW + 2 * SEMBOL_PAY;
+    const xoffset = rakamMi ? Math.round((tabularAdvance - inkW) / 2) : SEMBOL_PAY;
+    charlar.push({
+      id: SAYI_KARAKTERLERI[i].codePointAt(0),
+      x: atlasX,
+      y: 0,
+      width: inkW,
+      height,
+      xoffset,
+      yoffset: 0,
+      xadvance,
+    });
+
+    atlasX += inkW + HUCRE_BOSLUK;
+  }
+  const atlasGenislik = atlasX - HUCRE_BOSLUK;
+
+  await ensureDir(path.join(OUT, 'fonts'));
+  const pngPath = path.join(OUT, 'fonts', 'numbers.png');
+  await sharp({
+    create: { width: atlasGenislik, height, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+  })
+    .composite(kompozitler)
+    .png({ palette: true })
+    .toFile(pngPath);
+
+  const xml = [
+    '<?xml version="1.0"?>',
+    '<font>',
+    `  <info face="Inter Tight" size="${FONT_PT}" bold="1" italic="0" charset="" unicode="1" stretchH="100" smooth="1" aa="1" padding="0,0,0,0" spacing="0,0"/>`,
+    `  <common lineHeight="${height}" base="${height}" scaleW="${atlasGenislik}" scaleH="${height}" pages="1" packed="0"/>`,
+    '  <pages>',
+    '    <page id="0" file="numbers.png"/>',
+    '  </pages>',
+    `  <chars count="${charlar.length}">`,
+    ...charlar.map(
+      (c) =>
+        `    <char id="${c.id}" x="${c.x}" y="${c.y}" width="${c.width}" height="${c.height}" ` +
+        `xoffset="${c.xoffset}" yoffset="${c.yoffset}" xadvance="${c.xadvance}" page="0" chnl="15"/>`,
+    ),
+    '  </chars>',
+    '</font>',
+    '',
+  ].join('\n');
+  await writeFile(path.join(OUT, 'fonts', 'numbers.xml'), xml);
+
+  const { size } = await stat(pngPath);
+  console.log(`  fonts/numbers.png  ${atlasGenislik}x${height}  ${Math.round(size / 1024).toFixed(0)} KB (${size} B)`);
+  console.log(`  fonts/numbers.xml  ${charlar.length} karakter`);
+}
+
 async function main() {
   if (!existsSync(SRC)) {
     throw new Error(`${SRC} yok — assets-src/ altına kaynak dosyalar konmalı.`);
@@ -293,6 +418,8 @@ async function main() {
   await atlasUret();
   console.log('Ses:');
   await sesleriUret();
+  console.log('Sayı fontu:');
+  await sayiFontuUret();
   console.log('Bitti.');
 }
 
