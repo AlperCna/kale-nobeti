@@ -208,6 +208,7 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
 
     const no = this.waveNumber;
     this.eco.awardWaveEnd(no);
+    this.bus.emit('wave:ended', { index: no });
 
     this.#index++;
     if (this.#index >= this.waves.length) {

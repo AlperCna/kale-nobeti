@@ -1,19 +1,23 @@
-# M6 — Sanat, juice, ses · SONUÇ (**kısmi — 9/12 görev**)
+# M6 — Sanat, juice, ses · SONUÇ (**kısmi — 10/12 görev**)
 
 | | |
 |---|---|
 | **Tarih** | 2026-08-05 (bu güncelleme: 2026-08-16) |
-| **Durum** | ⚠️ **kısmi.** 9 görev bitti; ses/müzik (`T11`) ve nihai bitmap font (`T01`) hâlâ insan üretimi bekliyor |
+| **Durum** | ⚠️ **kısmi.** 10 görev bitti; yalnız nihai bitmap font (`T01`) ve `T10`'un altın-uçuşu parçası açık — ikisi de artık insan üretimi değil, kod işi |
 | **Test** | 671 geçti / 34 dosya (M5: 531 / 27) |
 | **Bekçi** | 10/10 ✓ |
-| **İlk indirme** | 0,69 MB (hedef ≤ 5 MB) |
+| **İlk indirme** | 3,90 MB (hedef ≤ 5 MB — menü müziği tek başına 2,9 MB, bkz. not) |
 
-> **2026-08-16 güncellemesi:** `M6-P01`-`P04` sanatı üretildi (AI görsel
-> üretimiyle, gerçek piksel/alfa ölçümüyle doğrulandı) ve `T02`, `T03`,
-> `T04`, `T05`, `T06` tamamlandı — `5401d58` ve `4ea71a6` commit'leri.
-> Aşağıdaki "neden yarım" ve "insana kalan iş" bölümleri **o tarihteki**
-> durumu anlatıyor, tarihsel kayıt olarak bırakıldı; güncel görev
-> tablosu §1'de.
+> **2026-08-16 güncellemesi:** `M6-P01`-`P04` sanatı, 12 ses efekti ve
+> 2 müzik parçası üretildi (AI üretim, gerçek piksel/alfa ölçümüyle ve
+> canlı tarayıcı testiyle doğrulandı) ve `T02`-`T06`, `T11` tamamlandı
+> — `5401d58`, `4ea71a6`, `c01bd70` commit'leri. **Not:** müzik
+> parçaları brif'in istediği 60-90 sn'lik döngü yerine ~4 dakikalık tam
+> şarkı geldi (dinleyip kısaltmak mümkün değildi) — ilk indirmeyi
+> 0,69 MB'tan 3,90 MB'a çıkardı, hâlâ 5 MB uyarı eşiğinin altında ama
+> payı daralttı. Aşağıdaki "neden yarım" ve "insana kalan iş" bölümleri
+> **o tarihteki** durumu anlatıyor, tarihsel kayıt olarak bırakıldı;
+> güncel görev tablosu §1'de.
 
 > ## Bu taş neden yarım
 >
@@ -46,7 +50,7 @@
 | **`M6-T08` `HitStop`** | ☑ | 10 test |
 | **`M6-T09` Parçacıklar** | ☑ | Phaser parçacığı, ayrı havuz yok |
 | **`M6-T10` Vinyet, squash, toz, sayaç** | ☑ **kısmi** | Yalnız **altın uçuşu** kaldı — artık altın ikonu var (atlas'ta `meteor_icon`/`takviye_icon` gibi paketlenebilir) ama uçuş animasyonu hâlâ yazılmadı |
-| `M6-T11` Ses ve müzik | ⏸ **kısmi (2026-08-16)** | 12/12 ses efekti üretildi (ElevenLabs) ve koda bağlandı (`SoundSystem`, `S51` kapandı). 2 müzik parçası (`S52`) hâlâ eksik |
+| **`M6-T11` Ses ve müzik** | ☑ **(2026-08-16)** | 12/12 ses efekti (ElevenLabs) + 2/2 müzik parçası (Suno/Udio) üretildi, `ffmpeg-static` ile `.m4a`'ya çevrildi, `SoundSystem` + `wave:ended` olayıyla koda bağlandı. `S51`, `S52` kapandı |
 | **`M6-T12` Ayarlar + erişilebilirlik** | ☑ | 17 test |
 
 Aşağıdaki alt bölümler (§1'in geri kalanı hariç her şey) **2026-08-05
@@ -302,7 +306,7 @@ Kural yazılır yazılmaz `HudScene`'de iki gerçek hata çıkardı:
 | ~~`M6-P03`~~ | ~~16 kule kademesi silüeti~~ | **üretildi, 2026-08-16** |
 | ~~`M6-P04`~~ | ~~9 düşman silüeti + ölüm karesi~~ | **üretildi, 2026-08-16** |
 | ~~`M6-T11` SFX~~ | ~~12 ses efekti~~ | **üretildi, 2026-08-16** |
-| `M6-T11` müzik | 2 müzik parçası (`S52`) | — hâlâ açık |
+| ~~`M6-T11` müzik~~ | ~~2 müzik parçası (`S52`)~~ | **üretildi, 2026-08-16** |
 | `M6-T01` girdisi | Bitmap font PNG-8 + `.xml` | — hâlâ açık |
 
 Varlıklar geldiğinde tüketen görevler (`T01`-`T06`, `T11`) doğrudan

@@ -434,6 +434,23 @@ export class GameScene extends Phaser.Scene {
       if (import.meta.env.DEV) console.info(`[can] kalan ${remaining}`);
     });
 
+    // M6-T11 — dalga 1 boyunca sessiz (brif: "oyun içinde, dalga 1
+    // bittikten sonra devreye giriyor"), menü müziği burada susuyor.
+    this.sound.stopByKey('music_menu');
+    this.bus.on('wave:ended', ({ index }) => {
+      if (index !== 1) return;
+      const basla = (): void => {
+        this.sound.play('music_game', { loop: true, volume: 0.5 });
+      };
+      if (this.cache.audio.exists('music_game')) {
+        basla();
+      } else {
+        this.load.once('filecomplete-audio-music_game', basla);
+        PreloadScene.queueBackground(this);
+        this.load.start();
+      }
+    });
+
     // `once`, `on` DEĞİL. Phaser kaynağı (Systems.js):
     //   - `shutdown()` yalnız SHUTDOWN yayar, dinleyicileri KALDIRMAZ
     //     (`removeAllListeners` `destroy()` içinde, 810. satır)
@@ -454,6 +471,9 @@ export class GameScene extends Phaser.Scene {
       // toplanıyor. Sıfırlamanın koruduğu şey (ölü hedef referansı) yalnız
       // **yaşayan** bir havuzda anlamlı.
       this.bus.clear();
+      // M6-T11 — `Game`den çıkarken oyun müziği susuyor; `Menu` kendi
+      // müziğini kendi başlatıyor (`MenuScene.create()`).
+      this.sound.stopByKey('music_game');
       const d = devHooks();
       if (d !== undefined) d.clearCount = (d.clearCount ?? 0) + 1;
     });
