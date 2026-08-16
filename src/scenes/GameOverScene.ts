@@ -4,11 +4,9 @@ import { SaveSystem, starsFor } from '../systems/SaveSystem';
 import { LocalStore } from '../util/storage';
 import { BALANCE } from '../data/balance';
 import { devHooks } from '../util/devHooks';
+import { createParchmentButton } from '../fx/ParchmentFrame';
 
 const INK = 0x14203a;
-const PARCHMENT = 0xe4d3a8;
-const GOLD = 0xd4a032;
-const VERMILION = 0xb03a2e;
 
 export interface GameOverData {
   readonly won: boolean;
@@ -95,10 +93,7 @@ export class GameOverScene extends Phaser.Scene {
   }
 
   #menuButonu(x: number, y: number): void {
-    const arka = this.add
-      .rectangle(x, y, 220, 56, PARCHMENT)
-      .setStrokeStyle(2, this.#data.won ? GOLD : VERMILION)
-      .setInteractive({ useHandCursor: true });
+    const cerceve = createParchmentButton(this, x, y, 220, 56, 14);
 
     this.add
       .text(x, y, t('backToMenu'), {
@@ -108,7 +103,7 @@ export class GameOverScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    arka.on('pointerup', () => {
+    cerceve.on('pointerup', () => {
       // `stop` + `start`: `Game` ve `Hud` tamamen kapanıyor ki yeni oyun
       // temiz başlasın. `sleep`/`wake` kullanılsaydı önceki oyunun altını
       // ve kuleleri kalırdı — görevin "bitmedi sayılır eğer" maddesi.
