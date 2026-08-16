@@ -45,8 +45,10 @@ export class PreloadScene extends Phaser.Scene {
   // Aşama 1 — açılış. Menü ve UI. İlk indirmenin tamamı bu.
   // ---------------------------------------------------------------------
   private queueBoot(): void {
-    // M6: menü arka planı, UI atlası, bitmap font.
+    // M6-T05: menü arka planı — ilk indirmenin parçası, `Menu` UI atlası
+    // beklemeden gösterilebilsin diye burada (`Menu` atlas kullanmıyor).
     // Fontlar M0-T05'te BootScene'de FontFace ile yükleniyor, buraya girmez.
+    this.load.image('menu-bg', 'assets/menu-bg.webp');
   }
 
   // ---------------------------------------------------------------------
