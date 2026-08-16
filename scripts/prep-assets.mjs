@@ -34,14 +34,16 @@ async function ensureDir(p) {
 // ---------------------------------------------------------------------
 
 const ARKA_PLANLAR = [
-  { src: 'degirmen-gecidi.png', out: 'bg/degirmen-gecidi.webp', harita1: true },
-  { src: 'tas-kopru.png', out: 'lazy/tas-kopru.webp', harita1: false },
-  { src: 'kul-ovasi.png', out: 'lazy/kul-ovasi.webp', harita1: false },
+  { src: ['bg', 'degirmen-gecidi.png'], out: 'bg/degirmen-gecidi.webp' },
+  { src: ['bg', 'tas-kopru.png'], out: 'lazy/tas-kopru.webp' },
+  { src: ['bg', 'kul-ovasi.png'], out: 'lazy/kul-ovasi.webp' },
+  // M6-T05 — menü arka planı, `queueBoot`'ta (ilk indirmenin parçası).
+  { src: ['menu', 'menu-bg.png'], out: 'menu-bg.webp' },
 ];
 
 async function arkaPlanlariUret() {
   for (const bp of ARKA_PLANLAR) {
-    const srcPath = path.join(SRC, 'bg', bp.src);
+    const srcPath = path.join(SRC, ...bp.src);
     const outPath = path.join(OUT, bp.out);
     await ensureDir(path.dirname(outPath));
     await sharp(srcPath)
@@ -52,6 +54,33 @@ async function arkaPlanlariUret() {
     const kb = Math.round(size / 1024);
     const uyari = size > UYARI_WEBP_BYTE ? '  UYARI: 400 KB hedefini aşıyor' : '';
     console.log(`  ${bp.out}  ${kb} KB${uyari}`);
+  }
+}
+
+// ---------------------------------------------------------------------
+// 1b. Seviye seçim kart küçük resimleri — aynı 3 kaynaktan, küçük boyutta.
+//     Yeni sanat değil: P01'in yeniden kullanımı (M6-T05).
+// ---------------------------------------------------------------------
+
+const KART_W = 300;
+const KART_H = 190;
+const KART_KUCUK_RESIMLERI = [
+  { src: ['bg', 'degirmen-gecidi.png'], id: 'degirmen-gecidi' },
+  { src: ['bg', 'tas-kopru.png'], id: 'tas-kopru' },
+  { src: ['bg', 'kul-ovasi.png'], id: 'kul-ovasi' },
+];
+
+async function kartKucukResimleriUret() {
+  for (const k of KART_KUCUK_RESIMLERI) {
+    const srcPath = path.join(SRC, ...k.src);
+    const outPath = path.join(OUT, 'level-select', `${k.id}.webp`);
+    await ensureDir(path.dirname(outPath));
+    await sharp(srcPath)
+      .resize(KART_W, KART_H, { fit: 'cover' })
+      .webp({ quality: 78 })
+      .toFile(outPath);
+    const { size } = await stat(outPath);
+    console.log(`  level-select/${k.id}.webp  ${Math.round(size / 1024)} KB`);
   }
 }
 
@@ -189,6 +218,8 @@ async function main() {
   }
   console.log('Arka planlar:');
   await arkaPlanlariUret();
+  console.log('Seviye seçim kartları:');
+  await kartKucukResimleriUret();
   console.log('Atlas:');
   await atlasUret();
   console.log('Bitti.');

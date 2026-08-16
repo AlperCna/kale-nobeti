@@ -26,6 +26,11 @@ export class MenuScene extends Phaser.Scene {
   create(): void {
     const { width, height } = this.scale;
 
+    // M6-T05 — ilk izlenim ekranı. Kompozisyon üst-orta boşluk bırakacak
+    // şekilde üretildi (bkz. görsel brifi): gökyüzü üstte açık, kale
+    // alt yarıda — başlık/buton üstüne net oturuyor.
+    this.add.image(width / 2, height / 2, 'menu-bg');
+
     // Başlık marka adı — çeviri sözlüğüne girmez (S63 istisnası).
     // Statik metin, bir kez yazılıp değişmiyor: `Text` serbest
     // (TIER 1 kural 7 istisnası, sonradan "ihlal mi" diye sorulmasın).

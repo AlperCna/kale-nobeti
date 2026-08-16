@@ -5,11 +5,19 @@ import { SaveSystem } from '../systems/SaveSystem';
 import { LocalStore } from '../util/storage';
 import { t } from '../util/i18n';
 import { PreloadScene } from './PreloadScene';
+import { createParchmentButton } from '../fx/ParchmentFrame';
 
 const INK = 0x14203a;
-const PARCHMENT = 0xe4d3a8;
 const GOLD = 0xd4a032;
-const KILITLI = 0x4a5570;
+/**
+ * M6-T05 palet temizliği: `KILITLI`/kart-dışı metin renkleri önceden
+ * palet dışıydı (`0x4a5570`, `0x2a3550`, `#8A93AA`, `#B9AF95`, `#5A6478`
+ * — `M6-T05` kabul kriteri "palet dışı renk sıfır" bunlarla geçmiyordu).
+ * Kilitli kart artık düz mürekkep + düşük alfa altın kontur; soluk
+ * metinler `rgba()` ile GOLD/PARCHMENT'ın düşük alfalı hali — yeni renk
+ * yok, var olanın saydamlığı.
+ */
+const KILITLI_KONTUR_ALFA = 0.35;
 
 /** Dokunmatik hedef en az 44×44 px (`CLAUDE.md` Platform). */
 const KART_W = 300;
@@ -49,6 +57,15 @@ export class LevelSelectScene extends Phaser.Scene {
    */
   preload(): void {
     PreloadScene.queueGame(this);
+    // M6-T05 — kart küçük resimleri (P01'in yeniden kullanımı, yeni
+    // sanat değil). `exists` koruması: sahne yeniden başlatmada tekrar
+    // istenmesin (aynı gerekçe `PreloadScene.queueGame`'de de var).
+    for (const m of MAPS) {
+      const key = `card-${m.id}`;
+      if (!this.textures.exists(key)) {
+        this.load.image(key, `assets/level-select/${m.id}.webp`);
+      }
+    }
   }
 
   create(): void {
@@ -80,15 +97,23 @@ export class LevelSelectScene extends Phaser.Scene {
       const acik = this.#save!.isUnlocked(ids, m.id);
       const yildiz = this.#save!.starsOf(m.id);
 
-      const kart = this.add
-        .rectangle(x, y, KART_W, KART_H, acik ? PARCHMENT : KILITLI)
-        .setStrokeStyle(3, acik ? GOLD : 0x2a3550);
+      let kart: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Container;
+      if (acik) {
+        // Küçük resim + üstünde yalnız köşe/kenar (orta dolgu yok —
+        // varsa küçük resmi kapatırdı).
+        this.add.image(x, y, `card-${m.id}`).setDisplaySize(KART_W, KART_H);
+        kart = createParchmentButton(this, x, y, KART_W, KART_H, 20, true);
+      } else {
+        kart = this.add
+          .rectangle(x, y, KART_W, KART_H, INK)
+          .setStrokeStyle(3, GOLD, KILITLI_KONTUR_ALFA);
+      }
 
       this.add
         .text(x, y - 54, `${i + 1}. ${HARITA_ADI[m.id] ?? m.id}`, {
           fontFamily: '"Grenze Gotisch", serif',
           fontSize: '26px',
-          color: acik ? '#14203A' : '#8A93AA',
+          color: acik ? '#14203A' : 'rgba(228,211,168,0.4)',
         })
         .setOrigin(0.5);
 
@@ -97,7 +122,7 @@ export class LevelSelectScene extends Phaser.Scene {
         .text(x, y - 8, '★★★', {
           fontFamily: 'serif',
           fontSize: '30px',
-          color: '#B9AF95',
+          color: 'rgba(212,160,50,0.35)',
         })
         .setOrigin(0.5);
       if (yildiz > 0) {
@@ -118,13 +143,12 @@ export class LevelSelectScene extends Phaser.Scene {
           {
             fontFamily: 'Spectral, serif',
             fontSize: '16px', // Platform: minimum 16 px
-            color: acik ? '#5A6478' : '#8A93AA',
+            color: acik ? '#8A7250' : 'rgba(228,211,168,0.4)',
           },
         )
         .setOrigin(0.5);
 
       if (!acik) return;
-      kart.setInteractive({ useHandCursor: true });
       kart.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => {
         this.scene.start('Game', { mapId: m.id });
         this.scene.launch('Hud');

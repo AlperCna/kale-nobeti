@@ -19,6 +19,9 @@ export function createParchmentFrame(
   width: number,
   height: number,
   cornerSize = 24,
+  /** Harita seçim kartları gibi — arkada başka bir görsel varsa orta
+   * dolgu onu kapatır, o yüzden atlanabiliyor (yalnız köşe+kenar kalır). */
+  skipMiddle = false,
 ): Phaser.GameObjects.Container {
   const corner = Math.min(cornerSize, width / 2, height / 2);
   const middleW = Math.max(1, width - corner * 2);
@@ -26,9 +29,9 @@ export function createParchmentFrame(
 
   const container = scene.add.container(x, y);
 
-  const middle = scene.add
-    .tileSprite(0, 0, middleW, middleH, 'atlas', FRAME_MIDDLE)
-    .setOrigin(0.5);
+  const middle = skipMiddle
+    ? null
+    : scene.add.tileSprite(0, 0, middleW, middleH, 'atlas', FRAME_MIDDLE).setOrigin(0.5);
 
   const top = scene.add
     .tileSprite(0, -height / 2 + corner / 2, middleW, corner, 'atlas', FRAME_EDGE)
@@ -59,7 +62,8 @@ export function createParchmentFrame(
       .setAngle(k.angle),
   );
 
-  container.add([middle, top, bottom, left, right, ...koseGorselleri]);
+  const parcalar = middle === null ? [top, bottom, left, right] : [middle, top, bottom, left, right];
+  container.add([...parcalar, ...koseGorselleri]);
   return container;
 }
 
@@ -76,8 +80,9 @@ export function createParchmentButton(
   width: number,
   height: number,
   cornerSize = 24,
+  skipMiddle = false,
 ): Phaser.GameObjects.Container {
-  const frame = createParchmentFrame(scene, x, y, width, height, cornerSize);
+  const frame = createParchmentFrame(scene, x, y, width, height, cornerSize, skipMiddle);
   frame.setInteractive(
     new Phaser.Geom.Rectangle(-width / 2, -height / 2, width, height),
     Phaser.Geom.Rectangle.Contains,
