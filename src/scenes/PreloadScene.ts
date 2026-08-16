@@ -56,6 +56,9 @@ export class PreloadScene extends Phaser.Scene {
     // beklemeden gösterilebilsin diye burada (`Menu` atlas kullanmıyor).
     // Fontlar M0-T05'te BootScene'de FontFace ile yükleniyor, buraya girmez.
     this.load.image('menu-bg', 'assets/menu-bg.webp');
+    // M6-T11 — menü/seviye seçim müziği, `Menu` gösterilir gösterilmez
+    // çalınabilsin diye açılışta.
+    this.load.audio('music_menu', 'assets/audio/music/music_menu.m4a');
   }
 
   // ---------------------------------------------------------------------
@@ -89,8 +92,11 @@ export class PreloadScene extends Phaser.Scene {
   // İlk dalga bittikten sonra çağrılır (GAME-DESIGN §12).
   // ---------------------------------------------------------------------
   static queueBackground(scene: Phaser.Scene): void {
-    void scene;
-    // M6: 2 müzik parçası, .m4a 96 kbps mono.
+    // `lazy/` altında — `report-size.mjs`'in "ilk indirme" hariç tutma
+    // yolu tam bu klasör adına bakıyor, harita 2-3 arka planlarıyla aynı.
+    if (!scene.cache.audio.exists('music_game')) {
+      scene.load.audio('music_game', 'assets/lazy/music_game.m4a');
+    }
   }
 
   // ---------------------------------------------------------------------

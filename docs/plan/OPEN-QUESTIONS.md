@@ -1,25 +1,23 @@
 # Açık sorular
 
-## Kod bekleyen soru kalmadı — **yalnız müzik bekliyor**
+## Kod bekleyen soru kalmadı — **M6'nın hiçbir görevi artık varlık beklemiyor**
 
 M0-M5 boyunca hiçbir soru kodu bloke etmedi ve etmiyor. M6'da S50 (sanat
 yönü), S51 (ses efektleri) ve S52 (müzik) **insan üretimi** gerektirdi.
-**2026-08-16: S50 ve S51 kapandı** — sanat (`5401d58`, `4ea71a6`) ve 12
-ses efekti (AI üretim + `ffmpeg-static`) koda bağlandı. **S52 hâlâ açık**
-— 2 müzik parçası henüz yok, `M6-T11` yalnız bunu bekliyor.
+**2026-08-16: üçü de kapandı** — sanat (`5401d58`, `4ea71a6`), 12 ses
+efekti ve 2 müzik parçası (AI üretim + `ffmpeg-static`) koda bağlandı.
 
 Kalan soruların makul bir varsayılanı var ve varsayılanla ilerlenebilir.
 Bunları tek tek çözmeye çalışmak iki gün kod yazmamak demek.
 
 | Durum | Sayı |
 |---|---|
-| ☑ Kapandı | 45 (S01, S02, S06, S08, S10-S18, S21, S25-S33, S39-S42, S45-S47, S49, S50, S51, S53-S56, S57, S58, S59, S60, S62, S63, S73) |
+| ☑ Kapandı | 46 (S01, S02, S06, S08, S10-S18, S21, S25-S33, S39-S42, S45-S47, S49, S50, S51, S52, S53-S56, S57, S58, S59, S60, S62, S63, S73) |
 | ☐ Varsayılanla geçilebilir | 24 |
 | ⚠️ Yeni denge bulgusu | 11 (M3: 8 nokta · yükseltme kapsamı · M4: S65 boss payı · M5: S66 asker hasarı · S67 hasar tipi · S68 asker hızı · S69 kışla yeri · M7: S70 dalga bonusu ✅ · S72 başlangıç altını ✅ · S73 altın çarpanı ayrıştı ✅ · S74 Kısıt A kışlayı modellemiyor) |
-| **⛔ Bloke edici** | **1** — S52 müzik. **İnsan üretimi**; `M6-T11`'in yalnız müzik kısmını bekletiyor, mimari veya denge kararı bekletmiyor |
+| **⛔ Bloke edici** | **0** |
 
-**Kod yazmaya başlamak için beklenen hiçbir şey yok.** Yalnız 2 müzik
-parçası (S52) bekliyor; geri kalan her şey yazılabilir.
+**Kod yazmaya başlamak için beklenen hiçbir şey yok.**
 
 ### Kapanan sorular
 
@@ -183,7 +181,7 @@ insan üretimi gerektiriyor ve `M6-T11`'i bekletiyor.
 |---|---|---|
 | **S50** | ✅ **kapandı (2026-08-16)** | **Sanat yönü.** Karar "özgün silüet" — koyu mürekkep silüet + tek vurgu + altın kontur. Üretim de bitti: 3 arka plan, HUD çerçevesi (`ParchmentFrame`, 9-slice), 16 kule silüeti, 9 düşman silüeti + boss + asker. `M6-T02`, `T03`, `T04`, `T05`, `T06` koda bağlandı (`5401d58`, `4ea71a6`) |
 | **S51** | ✅ **kapandı (2026-08-16)** | Ses efektleri — 12/12 üretildi (ElevenLabs Sound Effects, AI üretim), `ffmpeg-static` ile `.m4a`'ya çevrildi, koda bağlandı. `.ogg` yok (tarandı: **0** dosya) |
-| **S52** | ⛔ **bekliyor** | Müzik nereden — 2 parça, `.m4a` 96 kbps mono, **ilk dalgadan sonra** yükleniyor |
+| **S52** | ✅ **kapandı (2026-08-16)** | Müzik — 2/2 üretildi (Suno/Udio, AI üretim), `ffmpeg-static` ile `.m4a`'ya çevrildi. `music_menu` açılışta, `music_game` `wave:ended` (dalga 1) ile tembel yükleniyor (`assets/lazy/`) ve devreye giriyor |
 | **S53** | ✅ kapandı | **Efekt yoğunluğu ÜÇ kademe:** kapalı / düşük / tam (çarpan 0 / **0,4** / 1). İki kademe `prefers-reduced-motion`'ı ikili bir anahtara indirir ve §10'un "varsayılanı **düşük** yapar" cümlesinin karşılığı kalmazdı — "düşük" ancak arada bir kademe varsa var olabilir |
 | **S54** | ✅ kapandı | `prefers-reduced-motion` → **`low`**, `off` değil: medya sorgusunun adı `reduce`, `disable` değil. Ekran sarsıntısı **kapatılıyor** (sarsıntının "azaltılmış" hâli yok), ses değişmiyor (ses hareket değil). **Oyuncunun açık seçimi sistem tercihini eziyor** — ayrı test |
 | **S55** | ✅ kapandı | **Ekran sarsıntısı 2× hızda AÇIK kalıyor**, hit-stop'un aksine. §10 hit-stop için açıkça "kapalı" diyor, sarsıntı için demiyor. Sarsıntı okunurluğu bozmuyor: kamerayı en çok 8 px oynatıyor ve süresi zaten oyun zamanıyla yarıya iniyor. Hit-stop ise **akışı durdurduğu** için 2×'te asıl sorunu o çıkarıyor |

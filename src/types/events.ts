@@ -10,6 +10,8 @@ import type { Speed } from './common';
 export interface GameEvents {
   'enemy:killed': { readonly id: number; readonly gold: number };
   'wave:started': { readonly index: number };
+  /** M6-T11 — dalga bitince yayılıyor. `music_game` dalga 1 bitince başlıyor. */
+  'wave:ended': { readonly index: number };
   'gold:changed': { readonly total: number };
   'life:lost': { readonly remaining: number };
   'tower:placed': { readonly spotIndex: number };

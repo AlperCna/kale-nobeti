@@ -31,6 +31,14 @@ export class MenuScene extends Phaser.Scene {
     // alt yarıda — başlık/buton üstüne net oturuyor.
     this.add.image(width / 2, height / 2, 'menu-bg');
 
+    // M6-T11 — menü müziği. `sound` sahneler arası paylaşılan tek
+    // yönetici (Phaser); `isPlaying` koruması olmadan `Menu`ye her
+    // dönüşte (ör. `GameOver`'dan "yeniden dene") ikinci bir kopya
+    // üst üste binerdi.
+    if (this.sound.get('music_menu')?.isPlaying !== true) {
+      this.sound.play('music_menu', { loop: true, volume: 0.5 });
+    }
+
     // Başlık marka adı — çeviri sözlüğüne girmez (S63 istisnası).
     // Statik metin, bir kez yazılıp değişmiyor: `Text` serbest
     // (TIER 1 kural 7 istisnası, sonradan "ihlal mi" diye sorulmasın).

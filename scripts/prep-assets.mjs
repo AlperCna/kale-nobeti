@@ -230,33 +230,52 @@ const SES_EFEKTLERI = [
   'tower_place', 'tower_upgrade', 'error', 'wave_start', 'boss_intro',
   'victory', 'defeat',
 ];
-const MUZIK = ['music_menu', 'music_game'];
+// `music_menu` erken (`queueBoot`) yükleniyor — `audio/music/` altında,
+// "ilk indirme"ye dahil, doğru. `music_game` `queueBackground` ile dalga
+// 1 bitince yükleniyor — `report-size.mjs`'in "ilk indirme" hariç tutma
+// yolu klasör adına (`assets/lazy/`) bakıyor, o yüzden bilerek oraya.
+const MUZIK = [
+  { ad: 'music_menu', cikisYolu: 'audio/music/music_menu.m4a' },
+  { ad: 'music_game', cikisYolu: 'lazy/music_game.m4a' },
+];
 
-async function sesDosyasiCevir(ad, altKlasor, bitrate) {
-  const srcPath = path.join(SRC, 'audio', `${ad}.wav`);
-  if (!existsSync(srcPath)) return false;
-  const outPath = path.join(OUT, 'audio', altKlasor, `${ad}.m4a`);
+/** Kaynak `.wav` ya da `.mp3` olabilir — sanatçı hangisini verdiyse. */
+function sesKaynagiBul(ad) {
+  for (const uzanti of ['wav', 'mp3']) {
+    const p = path.join(SRC, 'audio', `${ad}.${uzanti}`);
+    if (existsSync(p)) return p;
+  }
+  return null;
+}
+
+async function sesDosyasiCevir(ad, cikisYolu, bitrate) {
+  const srcPath = sesKaynagiBul(ad);
+  if (srcPath === null) return false;
+  const outPath = path.join(OUT, cikisYolu);
   await ensureDir(path.dirname(outPath));
   await execFileAsync(ffmpegYolu, [
     '-y',
     '-i', srcPath,
+    '-vn', // mp3 kaynaklarda gömülü kapak resmi olabiliyor — o bir "video"
+           // akışı sayılıyor ve .m4a'ya (ses-only mp4 profili) yazılamıyor.
+    '-map', '0:a',
     '-c:a', 'aac',
     '-b:a', bitrate,
     '-ac', '1', // mono — brif kuralı
     outPath,
   ]);
   const { size } = await stat(outPath);
-  console.log(`  audio/${altKlasor}/${ad}.m4a  ${Math.round(size / 1024)} KB`);
+  console.log(`  ${cikisYolu}  ${Math.round(size / 1024)} KB`);
   return true;
 }
 
 async function sesleriUret() {
   let uretilen = 0;
   for (const ad of SES_EFEKTLERI) {
-    if (await sesDosyasiCevir(ad, 'sfx', '128k')) uretilen++;
+    if (await sesDosyasiCevir(ad, `audio/sfx/${ad}.m4a`, '128k')) uretilen++;
   }
-  for (const ad of MUZIK) {
-    if (await sesDosyasiCevir(ad, 'music', '96k')) uretilen++;
+  for (const m of MUZIK) {
+    if (await sesDosyasiCevir(m.ad, m.cikisYolu, '96k')) uretilen++;
   }
   const toplam = SES_EFEKTLERI.length + MUZIK.length;
   console.log(`  (${uretilen}/${toplam} kaynak dosya bulundu — eksikler atlandı)`);
