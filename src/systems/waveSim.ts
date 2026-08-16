@@ -36,7 +36,7 @@ import type { SoldierState } from '../types/barracks';
 import { EconomySystem } from './EconomySystem';
 import { EventBus } from './EventBus';
 import { PathSystem } from './PathSystem';
-import { PathMover, resetEnemyState } from './movers';
+import { LineMover, PathMover, resetEnemyState } from './movers';
 import { ProjectileSystem } from './ProjectileSystem';
 import { TowerSystem } from './TowerSystem';
 import { WaveManager } from './WaveManager';
@@ -166,7 +166,16 @@ export function simulateWave(
   const bus = new EventBus();
   const eco = new EconomySystem(map, bus);
   const path = new PathSystem(map.paths[0] ?? []);
-  const mover = new PathMover(path);
+  // Birden fazla giriş olabilir (harita 2/3) — her yol/uçan hattı kendi
+  // hareketini alır, `WaveGroup.spawnPoint` hangisini seçeceğini söylüyor.
+  // Gerçek oyunla (`GameScene.ts`) aynı seçim mantığı: tek yol kullanmak
+  // ikinci girişin kulelerini hiç sınamadan bırakırdı.
+  const groundMovers: Mover[] = map.paths.map((p) => new PathMover(new PathSystem(p)));
+  const flyerMovers: Mover[] = map.flyerPaths.map((p) => new LineMover(p));
+  const moverFor = (def: EnemyDef, spawnPoint: number): Mover => {
+    const havuz = def.flying ? flyerMovers : groundMovers;
+    return havuz[spawnPoint] ?? havuz[0] ?? groundMovers[0] ?? new PathMover(path);
+  };
 
   let leakedHp = 0;
   let leakedCount = 0;
@@ -219,7 +228,7 @@ export function simulateWave(
 
   const wm = new WaveManager(
     enemyPool,
-    () => mover,
+    moverFor,
     bus,
     eco,
     [wave],

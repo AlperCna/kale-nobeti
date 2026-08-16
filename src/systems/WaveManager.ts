@@ -40,6 +40,8 @@ interface Bekleyen {
   readonly def: EnemyDef;
   /** Dalga başından itibaren doğum anı. Birim: saniye. */
   readonly at: number;
+  /** Haritada birden fazla giriş varsa hangisi (`WaveGroup.spawnPoint`). */
+  readonly spawnPoint: number;
 }
 
 export class WaveManager<T extends SpawnableEnemy & Poolable> {
@@ -55,13 +57,14 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
   constructor(
     private readonly pool: Pool<T>,
     /**
-     * Düşman tipine göre hareket stratejisi seçer.
+     * Düşman tipine ve girişe (`spawnPoint`) göre hareket stratejisi seçer.
      *
      * Uçanlar `LineMover`, yürüyenler `PathMover` alıyor. Seçim burada
      * çünkü `Enemy` sınıfı hangi hareketle geldiğini bilmiyor ve
-     * bilmemeli (`DEPENDENCIES.md` §2).
+     * bilmemeli (`DEPENDENCIES.md` §2). `spawnPoint` haritada birden fazla
+     * giriş varsa hangisini kullanacağını belirtiyor (`WaveGroup.spawnPoint`).
      */
-    private readonly moverFor: (def: EnemyDef) => Mover,
+    private readonly moverFor: (def: EnemyDef, spawnPoint: number) => Mover,
     private readonly bus: EventBus,
     private readonly eco: EconomySystem,
     private readonly waves: readonly Wave[],
@@ -157,7 +160,7 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
       const def = this.resolveEnemy(g.enemy);
       if (def === undefined) continue;
       for (let i = 0; i < g.count; i++) {
-        kuyruk.push({ def, at: g.startAt + i * g.spawnDelay });
+        kuyruk.push({ def, at: g.startAt + i * g.spawnDelay, spawnPoint: g.spawnPoint });
       }
     }
     kuyruk.sort((a, b) => a.at - b.at);
@@ -182,7 +185,7 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
         return;
       }
       this.#kuyruk.shift();
-      dusman.spawn(this.moverFor(bas.def), bas.def, this.hpMultiplier);
+      dusman.spawn(this.moverFor(bas.def, bas.spawnPoint), bas.def, this.hpMultiplier);
       this.#spawnedThisWave++;
     }
   }

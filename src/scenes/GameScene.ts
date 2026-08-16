@@ -39,8 +39,9 @@ import { PreloadScene } from './PreloadScene';
 import type { MapDef } from '../types/map';
 import { TOWERS, getTower, tierAt } from '../data/towers';
 import { towerFrameKey, FRAME_CARTOUCHE } from '../data/spriteFrames';
+import { createParchmentButton } from '../fx/ParchmentFrame';
 import { getEnemy, ENEMIES } from '../data/enemies';
-import { POOL_PREALLOC, GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI } from '../data/balance';
+import { BALANCE, POOL_PREALLOC, GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI } from '../data/balance';
 import { MAP1_WAVES, wavesFor } from '../data/waves';
 import { devHooks } from '../util/devHooks';
 import type { TargetMode, TierIndex, TowerDef } from '../types/tower';
@@ -63,6 +64,7 @@ const SPOT_RADIUS = 22;
 const CASTLE_COLOR = 0x14203a; // Mürekkep
 const GOLD_COLOR = 0xd4a032; // Altın varak
 const INK_COLOR = 0x14203a;
+const VERMILION_COLOR = 0xb03a2e;
 const CASTLE_SIZE = 56;
 const PROJECTILE_RADIUS = 5;
 /** P03 brifi — kule/kışla gövdesi oyun içi gösterim boyutu (`Tower.ts` ile aynı). */
@@ -223,8 +225,19 @@ export class GameScene extends Phaser.Scene {
     return this.#eco?.gold ?? 0;
   }
 
+  /**
+   * `#eco` yalnız `create()` bittikten sonra var. Tembel yüklenen harita
+   * arka planı (2/3, `PreloadScene.queueLazy`) `preload()`'u gerçekten
+   * asenkron yapıyor — `Hud`, `Game`'in `create()`'i bitmeden ilk
+   * `update()`'ini çalıştırabiliyor. Geri dönüş `0` olsaydı `HudScene`'in
+   * "can 0 → kaybettin" kontrolü *harita henüz yüklenirken* sahte bir
+   * yenilgi tetikliyordu (canlı testte yakalandı — harita 1 hiç
+   * görülmüyordu çünkü onun arka planı erken/istekli yükleniyor, bu yarış
+   * yalnız 2/3'te açığa çıkıyordu). Tam can dönmek daha güvenli varsayılan:
+   * "henüz başlamadıysa can eksilmemiştir."
+   */
   get lives(): number {
-    return this.#eco?.lives ?? 0;
+    return this.#eco?.lives ?? BALANCE.startLives;
   }
 
   get wavePhase(): WavePhase {
@@ -298,14 +311,18 @@ export class GameScene extends Phaser.Scene {
 
     const yol = this.#map.paths[0] ?? [];
     const path = new PathSystem(yol);
-    const mover = new PathMover(path);
+    // Birden fazla giriş olabilir (`M7-T01`/`T02` Y ayrımı / iki giriş) —
+    // her yol kendi `PathMover`'ını alır, `WaveGroup.spawnPoint` hangisini
+    // seçeceğini söylüyor. Daha önce yalnız `paths[0]` kullanılıyordu ve
+    // ikinci giriş hem çizimde hem harekette **hiç** devreye girmiyordu.
+    const groundMovers: Mover[] = this.#map.paths.map((p) => new PathMover(new PathSystem(p)));
 
     // Arka plan da bir kez — yol/yapı noktaları onun ÜSTÜNE çiziliyor
     // (P01 brifi: arka plan kendi yolunu çizmiyor, oyun kodu çiziyor).
     this.add.image(this.scale.width / 2, this.scale.height / 2, `bg-${this.#map.id}`);
     // Harita **bir kez** çiziliyor. `update`'te yeniden çizmek her karede
     // yeni geometri üretmek demek; Graphics'in maliyeti orada.
-    this.#drawMap(yol);
+    this.#drawMap();
     this.#flyerGfx = this.add.graphics();
     this.#hoverGfx = this.add.graphics();
     // Bilgi paneli: harita 1 kadrosunun düşmanları (S42).
@@ -429,9 +446,13 @@ export class GameScene extends Phaser.Scene {
     }, this.bus);
 
     // Uçanlar `flyerPaths` üstünde düz gidiyor (§5). Seçim burada; `Enemy`
-    // hangi hareketle geldiğini bilmiyor (`DEPENDENCIES.md` §2).
-    const ucanMover = new LineMover(this.#map.flyerPaths[0] ?? yol);
-    const moverFor = (def: { flying: boolean }): Mover => (def.flying ? ucanMover : mover);
+    // hangi hareketle geldiğini bilmiyor (`DEPENDENCIES.md` §2). Yerdekiler
+    // gibi giriş başına bir hat — harita 3'ün iki uçan rotası var.
+    const flyerMovers: Mover[] = this.#map.flyerPaths.map((p) => new LineMover(p));
+    const moverFor = (def: { flying: boolean }, spawnPoint: number): Mover => {
+      const havuz = def.flying ? flyerMovers : groundMovers;
+      return havuz[spawnPoint] ?? havuz[0] ?? groundMovers[0] ?? new PathMover(path);
+    };
 
     this.#eco = new EconomySystem(this.#map, this.bus);
     this.#abilities = new EnemyAbilitySystem(enemyPool, this.#map.hpMultiplier, getEnemy);
@@ -1275,29 +1296,32 @@ export class GameScene extends Phaser.Scene {
       this.#menuButonu(kap, 0, `Sat +${iade}`, true, () => this.#sellTower(spotIndex));
     }
 
-    // Hedefleme modu seçici (`M4-T11`) — beş mod, kule başına.
+    // Hedefleme modu seçici (`M4-T11`) — beş mod, kule başına. Diğer
+    // menülerle aynı parşömen buton; seçili olan `#menuButonu`'nun dolgu
+    // rengi ayrımını taşıyamıyor (9-slice doku, düz renk değil), o yüzden
+    // seçim ince bir vermilyon çerçeveyle işaretleniyor.
     TARGET_MODES.forEach((mod, i) => {
       const bx = (i - (TARGET_MODES.length - 1) / 2) * 50;
       const secili = kule.targetMode === mod;
-      const btn = this.add
-        .rectangle(bx, 52, 46, 44, secili ? GOLD_COLOR : SPOT_COLOR)
-        .setStrokeStyle(2, GOLD_COLOR)
-        .setInteractive({ useHandCursor: true });
+      const cerceve = createParchmentButton(this, bx, 52, 46, 44, 8);
       const et = this.add
         .text(bx, 52, MODE_LABEL[mod], {
           fontFamily: 'Spectral, serif',
           fontSize: '14px',
-          color: '#14203A',
+          color: secili ? '#B03A2E' : '#14203A',
         })
         .setOrigin(0.5);
-      btn.on(
+      cerceve.on(
         Phaser.Input.Events.POINTER_DOWN,
         (_p: unknown, _x: number, _y: number, olay: Phaser.Types.Input.EventData) => {
           olay.stopPropagation();
           this.#setTargetMode(spotIndex, mod);
         },
       );
-      kap.add([btn, et]);
+      kap.add([cerceve, et]);
+      if (secili) {
+        kap.add(this.add.rectangle(bx, 52, 46, 44, 0, 0).setStrokeStyle(3, VERMILION_COLOR));
+      }
     });
 
     this.#selectedSpot = spotIndex;
@@ -1373,6 +1397,13 @@ export class GameScene extends Phaser.Scene {
   }
 
   /** 88×44 — Platform dokunmatik hedef alt sınırı. */
+  /**
+   * `S19` düz dikdörtgen yerine parşömen çerçeve (`ParchmentFrame`) — M6'nın
+   * söz verip unuttuğu "altın kartuş" biçimi (`GAME-DESIGN.md` §2, yorum
+   * hâlâ "S19 geçici" diyordu). Kartuş resmi değil: `cartouche.png`
+   * `#showCartouche`'un sabit en-boylu süsü, bu buton her satırda farklı
+   * genişlikte olabildiği için 9-slice `createParchmentButton` kullanıyor.
+   */
   #menuButonu(
     kap: Phaser.GameObjects.Container,
     bx: number,
@@ -1380,10 +1411,8 @@ export class GameScene extends Phaser.Scene {
     etkin: boolean,
     onClick: () => void,
   ): void {
-    const arka = this.add
-      .rectangle(bx, 0, 88, 44, etkin ? SPOT_COLOR : 0x6b6558)
-      .setStrokeStyle(2, GOLD_COLOR)
-      .setInteractive({ useHandCursor: etkin });
+    const cerceve = createParchmentButton(this, bx, 0, 88, 44, 10);
+    if (!etkin) cerceve.setAlpha(0.55);
 
     const etiket = this.add
       .text(bx, 0, metin, {
@@ -1395,7 +1424,7 @@ export class GameScene extends Phaser.Scene {
 
     // Devre dışıyken de tıklanabilir: M6-T11 "yetersiz altınla satın alma
     // denenince" sesi (`purchase:denied`) ancak böyle tetiklenebiliyor.
-    arka.on(
+    cerceve.on(
       Phaser.Input.Events.POINTER_DOWN,
       (
         _p: Phaser.Input.Pointer,
@@ -1413,7 +1442,7 @@ export class GameScene extends Phaser.Scene {
       },
     );
 
-    kap.add([arka, etiket]);
+    kap.add([cerceve, etiket]);
   }
 
   /**
@@ -1517,16 +1546,21 @@ export class GameScene extends Phaser.Scene {
 
   // ------------------------------------------------------------------- çizim
 
-  #drawMap(yol: readonly Vec2[]): void {
+  #drawMap(): void {
     const g = this.add.graphics();
 
-    g.lineStyle(PATH_WIDTH, PATH_COLOR, 1);
-    g.beginPath();
-    yol.forEach((p, i) => (i === 0 ? g.moveTo(p.x, p.y) : g.lineTo(p.x, p.y)));
-    g.strokePath();
-    // Keskin virajda (S13) köşe boşluk bırakıyor; nokta ile dolduruluyor.
-    g.fillStyle(PATH_COLOR, 1);
-    for (const p of yol) g.fillCircle(p.x, p.y, PATH_WIDTH / 2);
+    // Birden fazla giriş varsa (harita 2/3) **hepsi** çizilir — yalnız
+    // `paths[0]` çizilirse ikinci girişin yolu ekranda hiç görünmez, oysa
+    // düşman artık gerçekten oradan da geliyor.
+    for (const yol of this.#map.paths) {
+      g.lineStyle(PATH_WIDTH, PATH_COLOR, 1);
+      g.beginPath();
+      yol.forEach((p, i) => (i === 0 ? g.moveTo(p.x, p.y) : g.lineTo(p.x, p.y)));
+      g.strokePath();
+      // Keskin virajda (S13) köşe boşluk bırakıyor; nokta ile dolduruluyor.
+      g.fillStyle(PATH_COLOR, 1);
+      for (const p of yol) g.fillCircle(p.x, p.y, PATH_WIDTH / 2);
+    }
 
     for (const s of this.#map.buildSpots) {
       g.fillStyle(SPOT_COLOR, 1);
