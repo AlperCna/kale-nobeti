@@ -29,6 +29,7 @@ import { LocalStore } from '../util/storage';
 import { KISLA, barracksTierAt, BLOCK, SOLDIER_SPEED } from '../data/barracks';
 import type { AbilityId } from '../types/ability';
 import { DamageText, DamageTextSystem } from '../fx/DamageText';
+import { GoldCoin, GoldFlightSystem } from '../fx/GoldFlight';
 import { TowerInfoPanel } from '../fx/TowerInfoPanel';
 import { SoundSystem } from '../fx/SoundSystem';
 import { Pool } from '../util/pool';
@@ -74,6 +75,15 @@ const RALLY_COLOR = 0x3e6ca8;
 /** §10: "Aynı anda en fazla 300 parçacık (havuzlu)." */
 const PARTICLE_MAX = 300;
 
+/**
+ * Altın uçuşunun vardığı nokta — `HudScene`'in altın sayacıyla **aynı ekran
+ * koordinatı** olmalı (`HudReadout(this, MARGIN + 8, MARGIN + 16)`, kısa bir
+ * sayının yaklaşık merkezi). `Game` ve `Hud` aynı 1280×720 kamerayı
+ * paylaşıyor (`CLAUDE.md` Mimari) — kaydırma yok, o yüzden ekran koordinatı
+ * iki sahne arasında doğrudan taşınabiliyor.
+ */
+const HUD_GOLD_HEDEFI: Vec2 = { x: 44, y: 52 };
+
 /** Beş hedefleme modu (`GAME-DESIGN.md` §4.5). Varsayılan `first`. */
 const TARGET_MODES: readonly TargetMode[] = ['first', 'last', 'strongest', 'weakest', 'closest'];
 const TOWER_LABEL: Readonly<Record<string, string>> = {
@@ -105,6 +115,7 @@ export class GameScene extends Phaser.Scene {
   #towers?: TowerSystem;
   #projectiles?: ProjectileSystem<Enemy, Projectile>;
   #damageTexts?: DamageTextSystem;
+  #altinUcusu?: GoldFlightSystem;
   #enemyPool?: Pool<Enemy>;
   #abilities?: EnemyAbilitySystem<Enemy>;
 
@@ -311,6 +322,7 @@ export class GameScene extends Phaser.Scene {
     const dusmanGrup = this.add.group({ runChildUpdate: false });
     const mermiGrup = this.add.group({ runChildUpdate: false });
     const sayiGrup = this.add.group({ runChildUpdate: false });
+    const altinGrup = this.add.group({ runChildUpdate: false });
 
     const enemyPool = new Pool<Enemy>(
       () => {
@@ -344,6 +356,17 @@ export class GameScene extends Phaser.Scene {
     );
 
     this.#damageTexts = new DamageTextSystem(sayiHavuzu);
+
+    const altinHavuzu = new Pool<GoldCoin>(
+      () => {
+        const c = new GoldCoin(this);
+        altinGrup.add(c);
+        return c;
+      },
+      POOL_PREALLOC.goldFlight,
+      (k) => this.#havuzDoldu('altın uçuşu', k),
+    );
+    this.#altinUcusu = new GoldFlightSystem(altinHavuzu, HUD_GOLD_HEDEFI.x, HUD_GOLD_HEDEFI.y);
 
     // Asker havuzu — `research/02` §7 tablosu 24 diyor. Kışla askerleri ve
     // Takviye'nin geçici askerleri **aynı** havuzdan geliyor: ikisi de
@@ -476,7 +499,7 @@ export class GameScene extends Phaser.Scene {
       if (d !== undefined) d.clearCount = (d.clearCount ?? 0) + 1;
     });
 
-    this.#devKancalari(path, enemyPool, mermiHavuzu, sayiHavuzu);
+    this.#devKancalari(path, enemyPool, mermiHavuzu, sayiHavuzu, altinHavuzu);
   }
 
   /**
@@ -504,6 +527,7 @@ export class GameScene extends Phaser.Scene {
     this.#towers?.update(sd, dusmanlar);
     this.#projectiles?.update(sd, dusmanlar);
     this.#damageTexts?.update(sd);
+    this.#altinUcusu?.update(sd);
     this.#updateFlyerHint();
 
     const aktifMermi = this.#projectiles?.activeCount ?? 0;
@@ -538,6 +562,12 @@ export class GameScene extends Phaser.Scene {
     this.hitStop.trigger(e.def?.id === 'ogreSef' ? 80 : 60, this.clock.scale);
     this.#particleBurst(e.x, e.y, 0, -1, 10);
     if (e.def?.id === 'ogreSef') this.shake.trigger(0, 1, 1);
+    // Altın uçuşu — ödül kazandıran her ölümde (§10). Salt görsel; gerçek
+    // altın zaten yukarıda anında kazanıldı, o yüzden TIER 1 k.6 efekt
+    // yoğunluğu 0'ken sessizce atlanabiliyor.
+    if (e.def !== null && e.def.gold > 0 && this.settings.effectScale > 0) {
+      this.#altinUcusu?.spawn(e.x, e.y);
+    }
 
     // Bölünme havuza DÖNMEDEN önce — yavrular annenin `progress`'ini
     // devralıyor ve `release` onu sıfırlıyor.
@@ -1556,6 +1586,7 @@ export class GameScene extends Phaser.Scene {
     enemyPool: Pool<Enemy>,
     mermiHavuzu: Pool<Projectile>,
     sayiHavuzu: Pool<DamageText>,
+    altinHavuzu: Pool<GoldCoin>,
   ): void {
     const dev = devHooks();
     if (dev === undefined) return;
@@ -1575,6 +1606,7 @@ export class GameScene extends Phaser.Scene {
     dev.projectileActive = () => mermiHavuzu.activeCount;
     dev.projectilePeak = () => this.#mermiTepe;
     dev.damageTextActive = () => sayiHavuzu.activeCount;
+    dev.goldFlightActive = () => altinHavuzu.activeCount;
     dev.towerCount = () => this.#towers?.towers.length ?? 0;
     dev.placeTower = (spotIndex: number, towerId: string) => {
       const def = getTower(towerId as TowerDef['id']);

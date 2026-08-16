@@ -1,10 +1,10 @@
-# M6 — Sanat, juice, ses · SONUÇ (**kısmi — 11/12 görev**)
+# M6 — Sanat, juice, ses · SONUÇ (**12/12 görev — TAMAM**)
 
 | | |
 |---|---|
 | **Tarih** | 2026-08-05 (bu güncelleme: 2026-08-16) |
-| **Durum** | ⚠️ **kısmi.** 11 görev bitti; yalnız `T10`'un altın-uçuşu parçası açık — insan üretimi değil, kod işi (altın ikonu atlas'ta hazır, uçuş animasyonu yazılmadı) |
-| **Test** | 671 geçti / 34 dosya (M5: 531 / 27) |
+| **Durum** | ✅ **12/12 görev bitti.** |
+| **Test** | 676 geçti / 34 dosya (M5: 531 / 27) |
 | **Bekçi** | 10/10 ✓ |
 | **İlk indirme** | 3,90 MB (hedef ≤ 5 MB — menü müziği tek başına 2,9 MB, bkz. not) |
 
@@ -30,6 +30,17 @@
 > Rakamlar tabular (sabit `xadvance`) — altın sayacı değiştikçe metin
 > genişliği oynamıyor. `numberFont.ts` artık çalışma zamanında üretmiyor,
 > `PreloadScene.queueGame` içinde yükleniyor.
+>
+> **2026-08-16 (T10):** Altın uçuşu yazıldı — `T10`'un tek eksik parçasıydı,
+> M6 artık **tam**. Gerçek altın sanatı yok (`P02` üretmedi); `CLAUDE.md`
+> "Üretim kuralı" gereği GREYBOX — tek renk altın daire (`fx/GoldFlight.ts`).
+> Düşman ölünce ikinci derece bezier ile (`util/math.ts` →
+> `quadraticBezier`, 5 yeni test) HUD sayacına uçuyor, `Pool<GoldCoin>`
+> ile havuzlanıyor (TIER 1 k.3), TIER 1 k.6 efekt yoğunluğu 0'ken hiç
+> doğmuyor. Ses **değiştirilmedi** — vardığında ayrı bir "tık" çalmak
+> anlık `gold:changed` sesiyle çakışıp çifte sese dönüşürdü; mevcut anlık
+> ses tek kalan geri bildirim. Canlı doğrulama: kill→uçuş başlangıcı aynı
+> karede, ~500 ms sonra havuz sızmadan sıfıra dönüyor (`dev.goldFlightActive`).
 
 > ## Bu taş neden yarım
 >
@@ -61,7 +72,7 @@
 | **`M6-T07` `ScreenShake`** | ☑ | 11 test |
 | **`M6-T08` `HitStop`** | ☑ | 10 test |
 | **`M6-T09` Parçacıklar** | ☑ | Phaser parçacığı, ayrı havuz yok |
-| **`M6-T10` Vinyet, squash, toz, sayaç** | ☑ **kısmi** | Yalnız **altın uçuşu** kaldı — artık altın ikonu var (atlas'ta `meteor_icon`/`takviye_icon` gibi paketlenebilir) ama uçuş animasyonu hâlâ yazılmadı |
+| **`M6-T10` Vinyet, squash, toz, sayaç, altın uçuşu** | ☑ **(2026-08-16)** | Altın uçuşu tamam — `fx/GoldFlight.ts`, greybox daire (gerçek sanat yok), bezier, havuzlu, efekt yoğunluğuna saygılı |
 | **`M6-T11` Ses ve müzik** | ☑ **(2026-08-16)** | 12/12 ses efekti (ElevenLabs) + 2/2 müzik parçası (Suno/Udio) üretildi, `ffmpeg-static` ile `.m4a`'ya çevrildi, `SoundSystem` + `wave:ended` olayıyla koda bağlandı. `S51`, `S52` kapandı |
 | **`M6-T12` Ayarlar + erişilebilirlik** | ☑ | 17 test |
 

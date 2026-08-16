@@ -30,6 +30,13 @@ export const POOL_PREALLOC = {
    * §8 Takviye'yi bir ek olarak tanımlıyor, garantili bir hak olarak değil.
    */
   soldier: 24,
+  /**
+   * Altın uçuşu (M6-T10, `GAME-DESIGN.md` §10). Ömrü kısa (~500 ms) —
+   * yalnız aynı yarım saniyede ölen düşman sayısı kadarı aynı anda uçuyor.
+   * `soldier` ile aynı tavan: alan hasarlı bir kule bir grubu aynı karede
+   * bitirebiliyor, bu onu karşılıyor.
+   */
+  goldFlight: 24,
 } as const;
 
 /**
