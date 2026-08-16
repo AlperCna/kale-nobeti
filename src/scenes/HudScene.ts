@@ -95,10 +95,17 @@ export class HudScene extends Phaser.Scene {
     // Altın/can/dalga sayaç kartı — P02 brifi "HUD sol üstte üç parşömen
     // kart" (`docs/plan/M6-sanat-uretim-brifi.md`). Etiket+sayı bloğunun
     // gerçek yerleşimini saran, ölçülmüş bir kutu.
-    createParchmentFrame(this, MARGIN + 96, MARGIN + 44, 216, 96, 16);
+    //
+    // Kart kenarlığı (`cornerSize=16`) dekoratif bir şerit — sayılar bu
+    // şeridin İÇİNE değil, ÜSTÜNE denk gelirse üst kısımları kenarlık
+    // desenine gömülüp "tam gözükmüyor" görünür. Sayı bloğu bu yüzden
+    // kenarlık kalınlığı + biraz boşluk kadar içeri (`MARGIN+8, MARGIN+16`)
+    // kaydırılıyor; kart da üç satırı (dy 0/34/68 + 28px yükseklik) o payla
+    // birlikte tutacak kadar büyütüldü.
+    createParchmentFrame(this, MARGIN + 96, MARGIN + 66, 216, 140, 16);
     this.#createLabels();
-    this.#readout = new HudReadout(this, MARGIN, MARGIN);
-    this.#telegraph = new WaveTelegraph(this, MARGIN + 150, MARGIN + 78);
+    this.#readout = new HudReadout(this, MARGIN + 8, MARGIN + 16);
+    this.#telegraph = new WaveTelegraph(this, MARGIN + 150, MARGIN + 94);
     this.#createEarlyStartButton();
     this.#abilityButtons = new AbilityButtons(
       this,
@@ -200,9 +207,9 @@ export class HudScene extends Phaser.Scene {
   /** Statik etiketler — bir kez yazılıyor, `setText` yok (TIER 1 k.7). */
   #createLabels(): void {
     const stil = { fontFamily: 'Spectral, serif', fontSize: '16px', color: '#8A7250' };
-    this.add.text(MARGIN + 92, MARGIN + 4, t('gold'), stil);
-    this.add.text(MARGIN + 92, MARGIN + 38, t('lives'), stil);
-    this.add.text(MARGIN + 92, MARGIN + 72, t('wave'), stil);
+    this.add.text(MARGIN + 92, MARGIN + 20, t('gold'), stil);
+    this.add.text(MARGIN + 92, MARGIN + 54, t('lives'), stil);
+    this.add.text(MARGIN + 92, MARGIN + 88, t('wave'), stil);
   }
 
   /**
