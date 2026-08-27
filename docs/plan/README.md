@@ -13,6 +13,7 @@ görevler.
 | [`RISKS.md`](RISKS.md) | Projeyi öldürebilecek riskler |
 | [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) | Karar bekleyen soruların tek listesi |
 | [`../results/`](../results/README.md) | **Taş sonuçları** — her taş bitince yazılan ölçüm defteri |
+| [`iyilestirme/`](iyilestirme/README.md) | **İyileştirme dosyası** — M7 sonrası taramada bulunan 22 görsel/yapısal bulgu |
 
 ## Taşlar
 
