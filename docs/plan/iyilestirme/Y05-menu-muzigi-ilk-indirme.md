@@ -1,13 +1,58 @@
-# Y05 · Menü müziği ilk indirmenin %75'i
+# Y05 · Menü müziği ilk indirmenin %75'i — ☑ **düzeltildi (2026-08-27)**
 
 | | |
 |---|---|
 | **Tür** | Yapısal — paket boyutu |
-| **Önem** | **En yüksek.** Tek başına ilk indirmenin dörtte üçü |
-| **Emek** | Küçük (bir script satırı + bir yükleme aşaması) |
-| **Risk** | Düşük — kod mantığı değişmiyor, yalnız *ne zaman* indirildiği |
-| **Dokunulan** | `scripts/prep-assets.mjs`, `src/scenes/PreloadScene.ts`, `src/scenes/MenuScene.ts`, `assets-src/audio/music_menu.mp3` |
+| **Önem** | **En yüksek.** Tek başına ilk indirmenin dörtte üçüydü |
+| **Emek** | Küçük (gerçekleşen) |
+| **Risk** | Düşük — doğrulandı |
+| **Dokunulan** | `scripts/prep-assets.mjs`, `src/scenes/PreloadScene.ts`, `src/scenes/MenuScene.ts` |
 | **İlgili risk** | `RISKS.md` **R7** (paket boyutu), **R8** (Poki küratörlüğü) |
+
+---
+
+## Sonuç (2026-08-27)
+
+**Düzeltildi, seçenek (d) uygulandı: kırp + tembelleştir.**
+
+`music_menu` 60 saniyeye kırpıldı ve `lazy/` altına taşındı
+(`prep-assets.mjs`'te `sure: 60` alanı, `-t` + iki uçta 1,2 sn'lik
+`afade` — kırpma noktası kulakla bulunmadı, dalga formunun neresinde
+kesilirse kesilsin süreksizliği **maskeleyen** bir kısılma kullanıldı;
+gerekçe scriptin kendi yorumunda). `PreloadScene`'e `queueMenuMusic`
+eklendi, `MenuScene.create()` artık `music_game`'in
+(`GameScene.ts:504-517`) **birebir aynı** `filecomplete` desenini
+kullanıyor. `Y04`'ün bedava kazancı da uygulandı: ses kapalıysa
+`music_menu` **hiç istenmiyor**.
+
+### Ölçülen sonuç
+
+| | Önce | Sonra | Hedef |
+|---|---|---|---|
+| `music_menu.m4a` | 2937 KB / 244,5 sn | **723 KB / 60,0 sn** | ~0,72 MB |
+| İlk indirme | 3,90 MB | **1,03 MB** | ≤ 1,1 MB ✅ |
+| Toplam paket | 7,01 MB | **4,85 MB** | ~5,24 MB (aşıldı, daha iyi) |
+
+### Canlı doğrulama
+
+| Senaryo | Sonuç |
+|---|---|
+| `sound:false` ile aç | `music_menu` **hiç** ağ isteği yapmadı (`cache.audio.exists` false) |
+| `sound:true` ile aç | `assets/lazy/music_menu.m4a` 200 OK, yükleme bitince otomatik çaldı |
+| Çalan sesin süresi | `sound.get('music_menu').duration === 60`, `loop === true` |
+
+`npm run build` → `docs/KURALLAR.md` diff'i **boş** (yalnız ses/yükleme
+değişti, denge etkilenmedi — beklenen). `npm run test` (693/693),
+`npm run guard` (10/10).
+
+### Kapanmayan uç
+
+**Kırpma noktası kulakla doğrulanmadı** — script dinleyemiyor,
+maskeleme (fade) ile süreksizlik gizlendi ama "müzikal olarak kapanan
+bir cümle" garantisi yok. Bu, dosyanın kendi "Bitmedi sayılır eğer"
+listesindeki "Menü müziği döngüde duyulur bir kesinti veriyorsa"
+maddesiyle örtüşüyor — **insan kulağıyla bir kez dinlenip
+doğrulanmalı**, otomatik doğrulama bunu kapatamıyor.
 
 ---
 

@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import { t } from '../util/i18n';
+import { getSettings } from '../systems/Settings';
+import { PreloadScene } from './PreloadScene';
 
 /** GAME-DESIGN §2 paleti. */
 const INK = 0x14203a;
@@ -35,8 +37,25 @@ export class MenuScene extends Phaser.Scene {
     // yönetici (Phaser); `isPlaying` koruması olmadan `Menu`ye her
     // dönüşte (ör. `GameOver`'dan "yeniden dene") ikinci bir kopya
     // üst üste binerdi.
-    if (this.sound.get('music_menu')?.isPlaying !== true) {
-      this.sound.play('music_menu', { loop: true, volume: 0.5 });
+    //
+    // `Y05` — tembel yükleniyor: `GameScene.ts:504-517`'deki
+    // `music_game` deseninin birebir kopyası (`filecomplete` olayı +
+    // `load.start()`). `Y04`'ün bedava kazancı: ses kapalıysa
+    // (`getSettings` artık `Menu`de de erişilebilir — bu da `Y04`'ün
+    // eseri) dosya **hiç indirilmiyor**; `BootScene` zaten
+    // `sound.mute`'u doğru kurdu, burada yalnız bant genişliği israfını
+    // önlüyoruz.
+    if (getSettings(this).state.sound && this.sound.get('music_menu')?.isPlaying !== true) {
+      const calmayaBasla = (): void => {
+        this.sound.play('music_menu', { loop: true, volume: 0.5 });
+      };
+      if (this.cache.audio.exists('music_menu')) {
+        calmayaBasla();
+      } else {
+        this.load.once('filecomplete-audio-music_menu', calmayaBasla);
+        PreloadScene.queueMenuMusic(this);
+        this.load.start();
+      }
     }
 
     // Başlık marka adı — çeviri sözlüğüne girmez (S63 istisnası).

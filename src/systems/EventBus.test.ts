@@ -7,10 +7,10 @@ describe('EventBus', () => {
     const fn = vi.fn();
 
     bus.on('gold:changed', fn);
-    bus.emit('gold:changed', { total: 280 });
+    bus.emit('gold:changed', { total: 280, reason: 'spend' });
 
     expect(fn).toHaveBeenCalledTimes(1);
-    expect(fn).toHaveBeenCalledWith({ total: 280 });
+    expect(fn).toHaveBeenCalledWith({ total: 280, reason: 'spend' });
   });
 
   it('off sonrası dinleyici çağrılmaz', () => {
@@ -81,7 +81,7 @@ describe('EventBus', () => {
 
     bus.on('gold:changed', eski);
     bus.clear();
-    bus.emit('gold:changed', { total: 100 });
+    bus.emit('gold:changed', { total: 100, reason: 'spend' });
 
     expect(eski).not.toHaveBeenCalled();
   });
@@ -97,10 +97,10 @@ describe('EventBus', () => {
 
     const yeni = vi.fn();
     bus.on('gold:changed', yeni);
-    bus.emit('gold:changed', { total: 280 });
+    bus.emit('gold:changed', { total: 280, reason: 'spend' });
 
     expect(yeni).toHaveBeenCalledTimes(1);
-    expect(yeni).toHaveBeenCalledWith({ total: 280 });
+    expect(yeni).toHaveBeenCalledWith({ total: 280, reason: 'spend' });
     expect(bus.listenerCount('gold:changed')).toBe(1);
   });
 

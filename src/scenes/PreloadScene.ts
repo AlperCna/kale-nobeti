@@ -57,9 +57,23 @@ export class PreloadScene extends Phaser.Scene {
     // beklemeden gösterilebilsin diye burada (`Menu` atlas kullanmıyor).
     // Fontlar M0-T05'te BootScene'de FontFace ile yükleniyor, buraya girmez.
     this.load.image('menu-bg', 'assets/menu-bg.webp');
-    // M6-T11 — menü/seviye seçim müziği, `Menu` gösterilir gösterilmez
-    // çalınabilsin diye açılışta.
-    this.load.audio('music_menu', 'assets/audio/music/music_menu.m4a');
+    // `music_menu` **burada değil** — `Y05`: 244,5 sn'lik dosya tek
+    // başına ilk indirmenin %75'iydi. `queueMenuMusic`'e taşındı,
+    // `Menu` gösterildikten sonra tembel yükleniyor.
+  }
+
+  // ---------------------------------------------------------------------
+  // Menü müziği — `queueBoot`'un DIŞINDA (`Y05`). `Menu.create()`
+  // gösterildikten sonra çağrılıyor; `music_game` (`queueBackground`)
+  // ile aynı `filecomplete` deseni, `GameScene.ts:504-517`'de zaten
+  // çalışan örneğin birebir kopyası.
+  // ---------------------------------------------------------------------
+  static queueMenuMusic(scene: Phaser.Scene): void {
+    // `lazy/` altında — `report-size.mjs`'in "ilk indirme" hariç tutma
+    // yolu tam bu klasör adına bakıyor, `music_game`'le aynı sebep.
+    if (!scene.cache.audio.exists('music_menu')) {
+      scene.load.audio('music_menu', 'assets/lazy/music_menu.m4a');
+    }
   }
 
   // ---------------------------------------------------------------------

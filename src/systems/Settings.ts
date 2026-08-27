@@ -147,3 +147,71 @@ export class Settings {
     this.#store.set(SAVE_KEY, JSON.stringify(mevcut));
   }
 }
+
+// ---------------------------------------------------------------------
+// Y04 — sahneler arası paylaşım
+// ---------------------------------------------------------------------
+//
+// Eskiden `Settings` `GameScene`'in `readonly` bir alanıydı — bir
+// oyun-oturumu nesnesi gibi kurulmuştu, oysa uygulama-ömrü boyunca tek
+// olması gereken bir nesneydi. `GameScene`'den önce çalışan hiçbir
+// sahne (`Boot`, `Preload`, `Menu`) ona erişemiyordu; sonuç: oyuncu
+// sesi kapatıp sekmeyi kapatsa bile bir dahaki açılışta menü müziği
+// **açık** çalıyordu — susturma ancak bir haritaya girilip
+// `HudScene.create()` koşunca uygulanıyordu.
+//
+// Çözüm `Settings`'i `BootScene`'de kurup Phaser'ın sahneler arası
+// paylaşılan tek sözlüğüne (`scene.registry`) koymak — böylece `Menu`
+// da dahil, hiçbir sahne ondan önce çalışmıyor.
+
+/**
+ * `BootScene`'in `Settings`'i koyduğu, diğer sahnelerin okuduğu
+ * `registry` anahtarı.
+ */
+export const SETTINGS_REGISTRY_KEY = 'settings';
+
+/**
+ * `LocalStore`'un **ilk** yazma hatasını `BootScene`'den bir sonraki
+ * `GameScene.create()`'e taşıyan bayrak. `BootScene` bir daha
+ * çalışmadığı için hatayı kendisi bildiremiyor (TIER 1 kural 10:
+ * "kayıt başarısızsa oyuncuya bir kez bildirilir").
+ *
+ * **Bilinen sınır:** bir harita ortasında (ör. ayarlar panelinden)
+ * yeni bir yazma başarısız olursa bildirim **o an değil**, bir sonraki
+ * `GameScene` başlangıcında görünür — eskiden (Settings `GameScene`'in
+ * kendi alanıyken) anında oluyordu. `save:failed` olayının bugün hiçbir
+ * dinleyicisi yok (tarandı, `GameScene.ts`), yani bu gecikme şu an
+ * gözlemlenebilir değil; bir tüketici eklenirse bu sınır yeniden
+ * değerlendirilmeli.
+ */
+export const SAVE_FAILED_REGISTRY_KEY = 'kn-save-failed';
+
+/**
+ * `scene.registry`'nin okuma yüzeyi — `Phaser.Scene`'in tamamı değil,
+ * dar bir arayüz (`GameClock.ClockTarget` ile aynı desen: `Phaser.Scene`
+ * bu şekli sağlıyor, testte sahte nesne de sağlayabilir). Bu dosya
+ * Phaser'a hâlâ dokunmuyor (TIER 1 kural 11).
+ */
+export interface RegistryHost {
+  readonly registry: { get(key: string): unknown };
+}
+
+/**
+ * `registry`'den paylaşılan `Settings` örneğini tipli okur.
+ *
+ * `registry.get` tipsiz (`any`) döner; `instanceof` ile daraltmak
+ * TIER 1 kural 5'in (`any` yasağı) ruhuna bir `as Settings`
+ * zorlamasından daha uygun.
+ *
+ * @throws `BootScene` henüz koşmadıysa — sahne sırası bozulduysa
+ *   (`main.ts`'te `Boot` her zaman ilk kayıtlı sahne olmalı).
+ */
+export function getSettings(host: RegistryHost): Settings {
+  const s = host.registry.get(SETTINGS_REGISTRY_KEY);
+  if (!(s instanceof Settings)) {
+    throw new Error(
+      'Settings registry’de yok — BootScene her zaman ilk koşan sahne olmalı (main.ts sahne sırası).',
+    );
+  }
+  return s;
+}

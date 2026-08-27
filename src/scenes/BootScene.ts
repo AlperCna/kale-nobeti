@@ -1,7 +1,9 @@
 import Phaser from 'phaser';
+import { Settings, SETTINGS_REGISTRY_KEY, SAVE_FAILED_REGISTRY_KEY } from '../systems/Settings';
+import { LocalStore } from '../util/storage';
 
 /**
- * Font yükleme aşaması.
+ * Font yükleme + ayarlar aşaması.
  *
  * Phaser'ın kendi yükleyicisi web fontlarını beklemiyor — `preload` fontu
  * beklemez, sahne fontsuz çizilir ve sonra zıplar (research/02 §2).
@@ -10,6 +12,12 @@ import Phaser from 'phaser';
  *
  * `scenes/` içinde olduğu için Phaser'ı çalışma zamanında almak serbest
  * (TIER 1 kural 11 yalnız `systems/`, `util/`, `data/`, `types/` için).
+ *
+ * **`Y04`: `Settings` de burada kuruluyor**, `Menu`den önce — eskiden
+ * `GameScene`'in alanıydı ve ses tercihi ancak bir haritaya girilince
+ * uygulanıyordu; kapatılmış ses menüde her açılışta bir kez daha
+ * duyuluyordu. `Settings.ts`'teki "Y04 — sahneler arası paylaşım"
+ * bölümü gerekçenin tamamını taşıyor.
  */
 
 /** Yükleme buna takılırsa oyun bekletilmez, sistem serif'ine düşülür. */
@@ -54,11 +62,23 @@ export class BootScene extends Phaser.Scene {
   }
 
   create(): void {
+    // `Y04` — ayarlar `Menu`den önce kuruluyor ve uygulanıyor. `Boot`
+    // yalnız burada, bir kez koşuyor; bu yüzden tekil `Settings`'in
+    // doğal evi burası (`Settings.ts` "Y04 — sahneler arası paylaşım").
+    const settings = new Settings(new LocalStore(() => this.#kayitBasarisiz()));
+    this.registry.set(SETTINGS_REGISTRY_KEY, settings);
+    this.sound.mute = !settings.state.sound;
+
     // `create` async yapılmıyor: Phaser döndürülen promise'i beklemez.
     // Promise içeride yönetilip bitince sahne değiştiriliyor.
     void this.#loadFonts().finally(() => {
       this.scene.start('Preload');
     });
+  }
+
+  /** TIER 1 kural 10 — bkz. `Settings.ts` `SAVE_FAILED_REGISTRY_KEY`. */
+  #kayitBasarisiz(): void {
+    this.registry.set(SAVE_FAILED_REGISTRY_KEY, true);
   }
 
   /**

@@ -5,6 +5,8 @@ import {
   EFFECT_SCALE,
   reducedMotionDefaults,
   prefersReducedMotion,
+  getSettings,
+  SETTINGS_REGISTRY_KEY,
 } from './Settings';
 import { LocalStore, MemoryStore, SAVE_KEY } from '../util/storage';
 import type { KeyValueStore } from '../util/storage';
@@ -174,5 +176,24 @@ describe('TIER 1 kural 10 — localStorage her zaman try/catch içinde', () => {
 
   it('tek anahtar kullanılıyor — CLAUDE.md Teknoloji', () => {
     expect(SAVE_KEY).toBe('kale-nobeti-save-v1');
+  });
+});
+
+describe('getSettings — Y04 sahneler arası paylaşım', () => {
+  it('registry’deki Settings örneğini döndürüyor', () => {
+    const s = new Settings(new MemoryStore(), azaltma);
+    const kayit = new Map<string, unknown>([[SETTINGS_REGISTRY_KEY, s]]);
+    const host = { registry: { get: (k: string) => kayit.get(k) } };
+    expect(getSettings(host)).toBe(s);
+  });
+
+  it('BootScene koşmadıysa (registry boş) fırlatıyor — sessizce any dönmüyor', () => {
+    const host = { registry: { get: () => undefined } };
+    expect(() => getSettings(host)).toThrow();
+  });
+
+  it('registry’de Settings olmayan bir değer varsa da fırlatıyor', () => {
+    const host = { registry: { get: () => ({ sound: true }) } };
+    expect(() => getSettings(host)).toThrow();
   });
 });

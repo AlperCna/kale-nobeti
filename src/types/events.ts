@@ -7,12 +7,21 @@ import type { Speed } from './common';
  * İlk beş olay CLAUDE.md'de listeli. Son ikisi M0'da eklendi ve **S06'da
  * onaylandı** — M0 ve M1 boyunca kullanımda kaldılar, geçici değiller.
  */
+/**
+ * `gold:changed`'in **neden** yayıldığı — `Y06`: `SoundSystem` bunu
+ * kullanıp yalnız "haber değeri" olan artışlarda (`waveBonus`,
+ * `earlyBonus`, `sell`) `gold` sesi çalıyor. `kill` sessiz — görsel
+ * karşılığı zaten var (altın uçuşu, `GoldFlight`) ve her ölümde
+ * `enemy_death` ile aynı anda çalması sesleri anlamsızlaştırıyordu.
+ */
+export type GoldChangeReason = 'kill' | 'waveBonus' | 'earlyBonus' | 'sell' | 'spend';
+
 export interface GameEvents {
   'enemy:killed': { readonly id: number; readonly gold: number };
   'wave:started': { readonly index: number };
   /** M6-T11 — dalga bitince yayılıyor. `music_game` dalga 1 bitince başlıyor. */
   'wave:ended': { readonly index: number };
-  'gold:changed': { readonly total: number };
+  'gold:changed': { readonly total: number; readonly reason: GoldChangeReason };
   'life:lost': { readonly remaining: number };
   'tower:placed': { readonly spotIndex: number };
 

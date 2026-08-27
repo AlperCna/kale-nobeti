@@ -7,6 +7,7 @@
 
 import type { EnemyDef } from '../types/enemy';
 import type { MapDef } from '../types/map';
+import type { GoldChangeReason } from '../types/events';
 import { BALANCE } from '../data/balance';
 import type { EventBus } from './EventBus';
 
@@ -40,15 +41,20 @@ export class EconomySystem {
   spend(cost: number): boolean {
     if (!this.canAfford(cost)) return false;
     this.#gold -= cost;
-    this.bus.emit('gold:changed', { total: this.#gold });
+    this.bus.emit('gold:changed', { total: this.#gold, reason: 'spend' });
     return true;
   }
 
-  /** Ödül, bonus, iade. Negatif miktar yok sayılır. */
-  earn(amount: number): void {
+  /**
+   * Ödül, bonus, iade. Negatif miktar yok sayılır.
+   *
+   * `reason` — `Y06`: `SoundSystem`'in `gold` sesini yalnız haber değeri
+   * olan artışlarda çalması için. `kill` sessiz kalıyor.
+   */
+  earn(amount: number, reason: GoldChangeReason): void {
     if (!(amount > 0)) return;
     this.#gold += amount;
-    this.bus.emit('gold:changed', { total: this.#gold });
+    this.bus.emit('gold:changed', { total: this.#gold, reason });
   }
 
   /**
@@ -58,7 +64,7 @@ export class EconomySystem {
    * oyuncunun eline 12 noktayı doldurmaya bile yetmeyen para geçerdi (§9).
    */
   award(enemy: EnemyDef): void {
-    this.earn(Math.round(enemy.gold * this.map.goldMultiplier));
+    this.earn(Math.round(enemy.gold * this.map.goldMultiplier), 'kill');
   }
 
   /**
@@ -93,7 +99,7 @@ export class EconomySystem {
     if (harcanan <= 0) return 0;
     const iade = this.sellRefund(harcanan);
     this.#spentBySpot.delete(spotIndex);
-    this.earn(iade);
+    this.earn(iade, 'sell');
     return iade;
   }
 
@@ -125,7 +131,7 @@ export class EconomySystem {
    */
   awardWaveEnd(waveNo: number): number {
     const b = Math.round(BALANCE.waveEndBonus(waveNo) * this.map.goldMultiplier);
-    this.earn(b);
+    this.earn(b, 'waveBonus');
     return b;
   }
 

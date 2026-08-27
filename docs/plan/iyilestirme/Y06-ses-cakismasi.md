@@ -1,13 +1,63 @@
-# Y06 · Her ölümde iki ses üst üste biniyor
+# Y06 · Her ölümde iki ses üst üste biniyor — ☑ **düzeltildi (2026-08-27)**
 
 | | |
 |---|---|
 | **Tür** | Yapısal — ses tasarımı |
-| **Önem** | Orta. Yoğun dalgada duyulur biçimde bozucu |
-| **Emek** | Küçük |
-| **Risk** | Düşük |
-| **Dokunulan** | `src/fx/SoundSystem.ts` |
+| **Önem** | Orta. Yoğun dalgada duyulur biçimde bozucuydu |
+| **Emek** | Küçük (gerçekleşen) |
+| **Risk** | Düşük — doğrulandı |
+| **Dokunulan** | `src/types/events.ts`, `src/systems/EconomySystem.ts`, `src/systems/WaveManager.ts`, `src/fx/SoundSystem.ts`, `src/data/audio.ts` (yeni) |
 | **İlgili** | `docs/plan/M6-ses-uretim-brifi.md` · `RISKS.md` R8 |
+
+---
+
+## Sonuç (2026-08-27)
+
+**Düzeltildi, (a) + (b) birlikte — planla aynı, bir ek bulguyla.**
+
+`gold:changed` artık `GoldChangeReason` taşıyor:
+`'kill' | 'waveBonus' | 'earlyBonus' | 'sell' | 'spend'`. Tarama sırasında
+plandaki üç değere **dördüncü** bir gerçek çağrı yeri çıktı:
+`WaveManager.startWaveEarly()`'in `eco.earn(bonus)` çağrısı (erken
+başlatma bonusu) — `awardWaveEnd`'den ayrı bir formül
+(`earlyStartBonus`), ayrı bir `reason` (`'earlyBonus'`) aldı ve dalga
+sonu bonusuyla **aynı** "haber değerli" sınıfa kondu (ikisi de sesli).
+
+**Karar, dokümanın "belki" bıraktığı satış tarafında verildi:** satış
+`gold` sesini **korudu**. Gerekçe: satmanın bugün başka hiçbir ses
+geri bildirimi yok (`tower:sold` gibi bir olay/ses hiç yok, tarandı) —
+`kill`'i susturmak listedeki asıl spam kaynağını kapatıyor, satışı da
+susturmak sesi tamamen kaldırırdı.
+
+`earn()`'ün ikinci parametresi artık **zorunlu** — eskiden `#sonAltin`
+ile "arttı mı" tahmin ediliyordu (`gold:changed` hem kazanmada hem
+harcamada yayılıyordu), `reason` bunu gereksizleştirdi: `earn()` yalnız
+pozitif miktarla çağrılıyor (her zaman artış), `spend()` her zaman
+azaltıyor — yön artık tahmin değil, tip sisteminde yazılı.
+
+`enemy_death` kısıtlaması (`ENEMY_DEATH_THROTTLE_MS = 80`,
+`data/audio.ts`, yeni dosya) duvar saatiyle (`performance.now()`) —
+`fx/` altında, TIER 1 kural 8'in kapsamı yalnız `systems/`/`util/`/
+`data/`/`types/`, bekçi bunu doğruluyor (`guard-rules.mjs`'in k.8
+kontrolü `fx/`'i taramıyor).
+
+### Canlı doğrulama (gerçek `bus.emit`, `sound.play` izlendi)
+
+| Senaryo | Beklenen | Sonuç |
+|---|---|---|
+| Ölüm sırası (`gold:changed(kill)` → `enemy:killed`) | yalnız `enemy_death` | ✅ `["enemy_death"]` |
+| `waveBonus` / `earlyBonus` / `sell` | üçü de `gold` çalıyor | ✅ `["gold","gold","gold"]` |
+| `spend` | sessiz | ✅ çağrılmadı |
+| Aynı karede 5 ölüm | 1 ses (kısıtlama) | ✅ `toplamCagri: 1` |
+| >80 ms sonra yeni ölüm | tekrar çalıyor (kısıtlama sıfırlanıyor) | ✅ |
+
+`npm run typecheck/test (693/693)/guard (10/10)` hepsi yeşil.
+`EconomySystem.test.ts`'e `reason` etiketleri için 4 yeni test,
+`EventBus.test.ts`'in üç genel örnek satırı yeni zorunlu alana
+güncellendi. `npm run build` → `KURALLAR.md` diff'i **boş** (salt ses
+mantığı, denge etkilenmedi).
+
+---
 
 ---
 
