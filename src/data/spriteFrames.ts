@@ -66,3 +66,6 @@ export const FRAME_CORNER = 'corner';
 export const FRAME_EDGE = 'edge-strip';
 export const FRAME_MIDDLE = 'middle-texture';
 export const FRAME_CARTOUCHE = 'cartouche';
+
+/** Altın uçuşu ikonu (`fx/GoldFlight.ts`) — M6-T10 görsel iyileştirme. */
+export const FRAME_GOLD_COIN = 'gold-coin';

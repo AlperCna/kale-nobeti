@@ -11,7 +11,9 @@
 
 **Taş sonunda oyun:** üç harita da **oynanabiliyor**, seviye seçim ekranı ve
 yıldız kaydı çalışıyor, ilerleme kalıcı. Kısıt A ve Kısıt B 30 dalga için
-koşuyor ve üç harita da **geçilebilir** (can kaybı 0 / 8 / 15, sınır 20).
+koşuyor ve üç harita da **geçilebilir** (can kaybı 0 / 6 / 10, sınır 20 —
+2026-08-27 rakamları, aşağıdaki ikinci-giriş düzeltmesinden sonra;
+`docs/KURALLAR.md` `npm run build`'de otomatik yeniden üretiliyor).
 
 > **2026-08-16 güncellemesi:** M6 tamamlandı (gerçek sanat, ses, bitmap
 > font, altın uçuşu). `T09` ve `T10`'un "sanat gelmeden anlamsız" notu
@@ -33,11 +35,20 @@ koşuyor ve üç harita da **geçilebilir** (can kaybı 0 / 8 / 15, sınır 20).
 >
 > **Düzeltme:** `WaveManager`/`waveSim` artık `spawnPoint`'e göre doğru
 > `PathMover`/`LineMover`'ı seçiyor; `GameScene` her girişi çiziyor.
-> **Denge yeniden ölçüldü — hiçbir şey bozulmadı:** 676/676 test geçti,
-> `Kısıt B` haritaya 2/3'ün 30 dalgalık sızıntı tavanları (`kisitB.test.ts`)
-> **değişmeden** tuttu. Sebep: her iki dal geometrik olarak **ayna** (kol
-> B, kol A'nın aynası) — toplam mesafe/maruziyet aynı kaldı, yalnız hangi
-> kulenin hangi düşmanı gördüğü düzeldi. Tek fire eden test bir yakınsama
+> **Denge yeniden ölçüldü — hiçbir şey bozulmadı, üstelik iyileşti.**
+> İlk raporda "676/676 test geçti, sızıntı tavanları değişmedi" denmişti —
+> bu **yanıltıcıydı**: `kisitB.test.ts` üst sınır kontrolü yapıyor
+> (`toBeLessThanOrEqual`), tam sayı eşitliği değil, o yüzden testler hem
+> eski hem yeni sayıyla yeşil kalırdı. `npm run build`'in ürettiği
+> `docs/KURALLAR.md`'yi bu görsel-iyileştirme turunda yeniden çalıştırınca
+> gerçek fark ortaya çıktı: harita 2 can kaybı **8 → 6**, harita 3
+> **15 → 10** (30 dalga toplamı, sızan düşman 8→6 / 11→8). Yani düzeltme
+> savunmayı **iyileştirdi** — mantıklı, çünkü artık her iki koldaki kule de
+> gerçekten düşman görüyor; önce yalnız tek kolun kuleleri hem kendi hem
+> öbür kolun trafiğini (ikisi de tek yolda birleşiyordu) karşılıyordu.
+> Üst sınırın (harita 2: 8, harita 3: 25) hâlâ altında olduğu için
+> `M7-T08`'in denge kararları geçerliliğini koruyor, yeniden ayarlama
+> gerekmedi. Tek fire eden test bir yakınsama
 > sağlaması oldu (`waveSim.test.ts` "%2 → %4" eşik notu, uçan düşmanın artık
 > gerçek rotasında son ana kadar hayatta kalması daha adım-boyutu-duyarlı
 > bir kapanış anı yarattı — `killedCount` eşitliği, asıl denge sağlaması,

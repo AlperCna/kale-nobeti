@@ -346,8 +346,8 @@ tahta 3820'de takılıyor ve oyuncu 34 can kaybediyordu (20 canla kayıp).
 | Harita | HP çarpanı | Altın çarpanı | Tahta maliyeti | Can kaybı |
 |---|---|---|---|---|
 | 1 · Değirmen Geçidi | ×1 | ×1 | 1350 | 0 / 20 ✓ |
-| 2 · Taş Köprü | ×1,6 | ×1,6 | 2210 | 8 / 20 ✓ |
-| 3 · Kül Ovası | ×2,6 | ×3,8 **←ayrıştı** | 4870 | 15 / 20 ✓ |
+| 2 · Taş Köprü | ×1,6 | ×1,6 | 2210 | 6 / 20 ✓ |
+| 3 · Kül Ovası | ×2,6 | ×3,8 **←ayrıştı** | 4870 | 10 / 20 ✓ |
 
 Türetilebilir kural: **altın, haritanın noktalarını tam yükseltmeye
 yetmeli.** 3,8'de maliyet doyuyor (üstü fazladan kule almıyor), yani sayı
@@ -365,7 +365,7 @@ kule, ama goblin efektif HP'si 45/72/117. §9'un kendi gerekçesi
 | 2 · Taş Köprü | 340 | **448** = 280 × 1,6 | **4 → 0** |
 | 3 · Kül Ovası | 400 | **1064** = 280 × 2,6 | **7 → 0** |
 
-Toplam sızıntı: harita 2'de 13 → 8, harita 3'te 43 → 11.
+Toplam sızıntı: harita 2'de 13 → 6, harita 3'te 43 → 8.
 
 ---
 
@@ -557,8 +557,8 @@ Simülasyon **canlı oyunla aynı kodu** kullanıyor: aynı
 | Harita | Sızan düşman | Sızan HP | Dalga dağılımı |
 |---|---|---|---|
 | 1 · Değirmen Geçidi | **0** | 0 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:0 |
-| 2 · Taş Köprü | **8** | 384 | d1:0 d2:0 d3:1 d4:2 d5:1 d6:1 d7:1 d8:0 d9:2 d10:0 |
-| 3 · Kül Ovası | **11** | 2038 | d1:0 d2:2 d3:0 d4:0 d5:1 d6:2 d7:1 d8:0 d9:4 d10:1 |
+| 2 · Taş Köprü | **6** | 361 | d1:0 d2:1 d3:1 d4:1 d5:1 d6:1 d7:0 d8:0 d9:1 d10:0 |
+| 3 · Kül Ovası | **8** | 645 | d1:0 d2:1 d3:0 d4:1 d5:0 d6:1 d7:0 d8:0 d9:4 d10:1 |
 
 
 **Hangi düşman sızıyor** — toplam sayı *neyin* sızdığını söylemiyor ve
@@ -567,8 +567,8 @@ bu ikisi farklı düzeltmeler gerektiriyor:
 | Harita | Sızan düşmanlar (çok → az) |
 |---|---|
 | 1 · Değirmen Geçidi | **hiç yok** |
-| 2 · Taş Köprü | Zırhlı Ork ×4 · Ork Savaşçı ×2 · Harpi ×2 |
-| 3 · Kül Ovası | Trol ×3 · Zırhlı Ork ×3 · Ork Savaşçı ×2 · Örümcek Ana ×1 · Harpi ×1 · Şaman ×1 |
+| 2 · Taş Köprü | Zırhlı Ork ×3 · Ork Savaşçı ×2 · Harpi ×1 |
+| 3 · Kül Ovası | Harpi ×3 · Ork Savaşçı ×2 · Trol ×2 · Zırhlı Ork ×1 |
 
 **Kısıt A ile Kısıt B aynı şeyi ölçmüyor.** Kısıt A *tek* düşman için
 ("bir Ork Savaşçı öldürülebilir mi"), Kısıt B *dalga* için ("on bir tanesi

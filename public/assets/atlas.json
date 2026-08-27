@@ -580,7 +580,7 @@
         "h": 64
       }
     },
-    "meteor_icon": {
+    "gold-coin": {
       "frame": {
         "x": 256,
         "y": 208,
@@ -600,7 +600,7 @@
         "h": 48
       }
     },
-    "takviye_icon": {
+    "meteor_icon": {
       "frame": {
         "x": 304,
         "y": 208,
@@ -620,9 +620,29 @@
         "h": 48
       }
     },
-    "orumcek_yavrusu": {
+    "takviye_icon": {
       "frame": {
         "x": 352,
+        "y": 208,
+        "w": 48,
+        "h": 48
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 48
+      }
+    },
+    "orumcek_yavrusu": {
+      "frame": {
+        "x": 400,
         "y": 208,
         "w": 40,
         "h": 40
@@ -642,7 +662,7 @@
     },
     "edge-strip": {
       "frame": {
-        "x": 392,
+        "x": 440,
         "y": 208,
         "w": 128,
         "h": 32
