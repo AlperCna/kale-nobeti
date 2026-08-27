@@ -20,6 +20,7 @@ Teknoloji planı: Phaser 3 + TypeScript (strict) + Vite.
 | [docs/ROADMAP.md](docs/ROADMAP.md) | 8 kilometre taşlı yol haritası |
 | [docs/plan/](docs/plan/README.md) | **Uygulama planı** — 82 kod görevi + 6 üretim bloğu, 8 taş dosyası, veri şemaları, test stratejisi, riskler, açık sorular |
 | [docs/results/](docs/results/README.md) | **Taş sonuçları** — her taş bitince yazılan ölçüm defteri |
+| [docs/plan/iyilestirme/](docs/plan/iyilestirme/README.md) | **İyileştirme dosyası** — M7 sonrası taramada bulunan 22 görsel/yapısal bulgu |
 | [docs/results/OLCUMLER.md](docs/results/OLCUMLER.md) | **Ölçüm kütüğü** — varsayılmayan, ölçülen her sayı; nereden geldiği ve hangi test onu koruduğu |
 | [docs/research/](docs/research/README.md) | **Araştırma bulguları** — aşağıya bakınız |
 
