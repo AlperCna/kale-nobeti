@@ -113,7 +113,7 @@ function kosu(kurulum: Kurulum, kuleAtesEdiyor = true, sureSn = 240): Sonuc {
     const kademe = barracksTierAt(KISLA, kurulum.tier);
     respawn = kademe.respawnSeconds;
     // §4.4 sinerji: iki kışlanın toplanma noktası AYNI yere konuyor.
-    const rally = defaultRally(NOKTA, YOL);
+    const rally = defaultRally(NOKTA, [YOL]);
     let sira = 0;
     for (let k = 0; k < kurulum.kislaSayisi; k++) {
       for (let i = 0; i < kademe.soldierCount; i++) {

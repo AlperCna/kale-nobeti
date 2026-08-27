@@ -19,7 +19,7 @@ import type { Vec2 } from '../types/common';
 import type { BarracksRuntime, BlockableEnemy, SoldierState } from '../types/barracks';
 import { BLOCK, meleeDps } from '../data/barracks';
 import { applyDamage } from './combat';
-import { closestPointOnPath, distSq, moveToward } from '../util/math';
+import { closestPointOnPaths, distSq, moveToward } from '../util/math';
 
 const AGGRO_KARE = BLOCK.aggroRadius * BLOCK.aggroRadius;
 const TEMAS_KARE = BLOCK.contactRadius * BLOCK.contactRadius;
@@ -39,11 +39,16 @@ const VARIS_KARE = TEMAS_KARE;
  *
  * Ters sırada yapılsaydı yola yapışan nokta menzil dışına taşabilirdi ve
  * kural 6'nın iki yarısı çelişirdi.
+ *
+ * `paths` **çoğul** (`Y13`): harita 2/3'ün iki kolu var. `closestPointOnPaths`
+ * hangi kola en yakınsa onu seçiyor — tek yollu haritada (`paths.length===1`)
+ * davranış birebir aynı kalıyor. Eskiden yalnız `paths[0]` kullanılıyordu ve
+ * ikinci kolun yanına sürüklenen bayrak sessizce reddediliyordu.
  */
 export function clampRally(
   barracksPos: Vec2,
   istenen: Vec2,
-  path: readonly Vec2[],
+  paths: readonly (readonly Vec2[])[],
   /**
    * İstenen nokta geçersizse dönülecek konum — sürükleme sırasında
    * **mevcut** toplanma noktası. Verilmezse varsayılan toplanma noktası
@@ -59,12 +64,12 @@ export function clampRally(
   }
 
   // 2) Yola yapıştır.
-  const yol = closestPointOnPath(aday, path);
+  const yol = closestPointOnPaths(aday, paths);
   if (yol.distSq <= YAPISMA_KARE) return yol.point;
 
   // Yola yeterince yakın değil — yol dışına konamaz (kural 6). Toplanma
   // noktası **değişmiyor**; sürükleme işaretçisi olduğu yerde kalıyor.
-  return fallback ?? defaultRally(barracksPos, path);
+  return fallback ?? defaultRally(barracksPos, paths);
 }
 
 /**
@@ -78,9 +83,15 @@ export function clampRally(
  *
  * Yola en yakın nokta her zaman geçerli: yapı noktası ↔ yol mesafesi
  * `rallyRange = 160`'ın altında olduğu sürece menzil kısıtı da sağlanıyor.
+ *
+ * `paths` **çoğul** (`Y13`): harita 2/3'te kışla, iki koldan **hangisine**
+ * daha yakınsa ona toplanır. Eskiden yalnız `paths[0]`'a bakılıyordu; ikinci
+ * kolun yanına kurulan kışla toplanma noktasını birinci kola göre
+ * hesaplıyor, menzil dışı çıkınca da kışlanın kendi üstüne düşüyordu —
+ * yolun üstünde durmayan asker hiçbir düşmanı engellemiyor.
  */
-export function defaultRally(barracksPos: Vec2, path: readonly Vec2[]): Vec2 {
-  const yol = closestPointOnPath(barracksPos, path);
+export function defaultRally(barracksPos: Vec2, paths: readonly (readonly Vec2[])[]): Vec2 {
+  const yol = closestPointOnPaths(barracksPos, paths);
   if (distSq(barracksPos, yol.point) <= TOPLANMA_KARE) return yol.point;
   // Yol toplanma menzilinin dışında — harita hatası. Kışlanın üstü.
   return { x: barracksPos.x, y: barracksPos.y };

@@ -717,7 +717,7 @@ export class GameScene extends Phaser.Scene {
       .setDisplaySize(TOWER_DISPLAY_SIZE, TOWER_DISPLAY_SIZE);
     const kayit = {
       tier: 0 as 0 | 1 | 2 | 3,
-      rally: defaultRally(spot, this.#map.paths[0] ?? []),
+      rally: defaultRally(spot, this.#map.paths),
       soldiers: [] as Soldier[],
       marker,
       govde,
@@ -771,7 +771,7 @@ export class GameScene extends Phaser.Scene {
     const spot = this.#map.buildSpots[spotIndex];
     if (k === undefined || spot === undefined) return;
 
-    k.rally = clampRally(spot, istenen, this.#map.paths[0] ?? [], k.rally);
+    k.rally = clampRally(spot, istenen, this.#map.paths, k.rally);
     const kademe = barracksTierAt(KISLA, k.tier);
     k.soldiers.forEach((s, i) => {
       const yayilma = (i - (kademe.soldierCount - 1) / 2) * 14;
@@ -1098,12 +1098,17 @@ export class GameScene extends Phaser.Scene {
 
     // Kapsanan yol vurgusu — `coveredSegments` ile, yani ekranda görünen
     // çizgi ile `MapDef.coverage` içindeki sayı aynı hesaptan geliyor.
+    // `Y13`: bütün yollar geziliyor — yalnız `paths[0]` çizilseydi harita
+    // 2/3'ün ikinci kolundaki kapsama hiç görünmezdi, oysa `MapDef.coverage`
+    // (yukarıdaki yorumun "aynı hesap" dediği sayı) ikisini de topluyor.
     g.lineStyle(10, GOLD_COLOR, 0.55);
-    for (const p of coveredSegments(this.#map.paths[0] ?? [], spot, menzil)) {
-      g.beginPath();
-      g.moveTo(p.a.x, p.a.y);
-      g.lineTo(p.b.x, p.b.y);
-      g.strokePath();
+    for (const yol of this.#map.paths) {
+      for (const p of coveredSegments(yol, spot, menzil)) {
+        g.beginPath();
+        g.moveTo(p.a.x, p.a.y);
+        g.lineTo(p.b.x, p.b.y);
+        g.strokePath();
+      }
     }
 
     // Menzil uçan hattını kesiyorsa o parça da vurgulanıyor (§5) — oyuncu

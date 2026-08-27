@@ -53,7 +53,7 @@ Emek/etki oranına göre. **Üstteki üçü açık ara en yüksek getirili.**
 
 | # | Bulgu | Tür | Emek | Etki |
 |---|---|---|---|---|
-| 1 | [Y13 · `paths[0]` kalıntıları — kışla harita 2/3'te bozuk](Y13-paths0-kalintilari.md) | **hata** | küçük + ölçüm | **çok yüksek** |
+| 1 | [Y13 · `paths[0]` kalıntıları — kışla harita 2/3'te bozuk](Y13-paths0-kalintilari.md) | **hata** | ☑ **düzeltildi** | **çok yüksek** |
 | 2 | [Y05 · Menü müziği ilk indirmenin %75'i](Y05-menu-muzigi-ilk-indirme.md) | boyut | **küçük** | **çok yüksek** |
 | 3 | [Y04 · Ses tercihi açılışta uygulanmıyor](Y04-ses-tercihi-acilista-uygulanmiyor.md) | **hata** | **küçük** | yüksek |
 | 4 | [Y10 · Kısıtlanmış FPS geçidi hiç ölçülmedi](Y10-kisitlanmis-fps-olculmedi.md) | doğrulama | **küçük** | yüksek |
@@ -83,11 +83,16 @@ Emek/etki oranına göre. **Üstteki üçü açık ara en yüksek getirili.**
 Dosyalar tek tek bağımsız, ama bazıları **aynı kodu açıyor**. Birlikte
 yapılmaları hem ucuz hem tutarlı:
 
-### Paket 0 — "çok yol hatasını kapat" *(önce bu)*
-**Y13 tek başına.** Başka hiçbir işle aynı sevkte gitmemeli: denge
-sayılarını değiştiren tek bulgu bu ve `KURALLAR.md` diff'inin **yalnız
-bu yüzden** değiştiğinden emin olmak gerekiyor. Başka bir değişiklikle
-birlikte giderse hangi sayının neden kaydığı ayırt edilemez.
+### Paket 0 — "çok yol hatasını kapat" — ☑ **tamamlandı (2026-08-27)**
+**Y13.** `closestPointOnPaths` eklendi, `defaultRally`/`clampRally`
+çoğul yol alıyor, üç çağrı yeri ve `waveSim` güncellendi. Canlı
+doğrulandı (harita 2 spot 6, harita 3 spot 5, harita 1 regresyon yok).
+`KURALLAR.md` diff'i **boş çıktı** — beklenmedik ama açıklanabilir:
+otomatik denge tahtası kışlayı her zaman "en düşük kapsamalı nokta"ya
+kuruyor ve bu nokta bugünkü haritalarda zaten `paths[0]`'a yakın, yani
+hata otomatik ölçümü hiç tetiklemiyordu. Ayrıntı: Y13'ün kendi "Sonuç"
+bölümü. **Yeni bulgu:** `balanceChecks.ts`'in kışla yerleşimi ikinci
+kolu hiç sınamıyor — bu ayrı, açık bir uç olarak kaldı.
 
 ### Paket A — "yarım kalanları kapat" *(bir oturum)*
 **G01 + G02 + G06** — üçü de küçük, üçü de M6'nın bıraktığı borç.

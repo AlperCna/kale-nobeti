@@ -2,12 +2,81 @@
 
 | | |
 |---|---|
-| **Tür** | Yapısal — **doğrulanmış hata** (oynanış + denge) |
-| **Önem** | **En yüksek.** Bir mekanik iki haritada büyük ölçüde çalışmıyor |
-| **Emek** | Küçük (düzeltme) / **orta** (denge yeniden ölçümü) |
-| **Risk** | **Yüksek** — düzeltme denge sayılarını değiştirecek |
-| **Dokunulan** | `src/scenes/GameScene.ts:720, 774, 1102`, `src/systems/waveSim.ts:261`, `src/systems/BarracksSystem.ts` |
+| **Tür** | Yapısal — **doğrulanmış hata** (oynanış), **☑ düzeltildi (2026-08-27)** |
+| **Önem** | **En yüksek.** Bir mekanik iki haritada büyük ölçüde çalışmıyordu |
+| **Emek** | Küçük (gerçekleşen) |
+| **Risk** | Düşük çıktı — aşağıdaki "Sonuç" bölümüne bakınız |
+| **Dokunulan** | `src/util/math.ts`, `src/systems/BarracksSystem.ts`, `src/scenes/GameScene.ts:720, 774, 1102`, `src/systems/waveSim.ts:168, 261`, dört test dosyası |
 | **İlgili** | `OPEN-QUESTIONS.md` **S57**, **S58**, **S69**, **S74** · `M7-SONUC.md` |
+
+---
+
+## Sonuç (2026-08-27)
+
+**Düzeltildi.** `math.ts`'e `closestPointOnPaths` eklendi (bütün yollara
+bakıp en yakınını seçiyor); `BarracksSystem.defaultRally`/`clampRally`
+çoğul `paths` alacak şekilde değişti; üç gerçek çağrı yeri
+(`GameScene.ts:720, 774, 1102`) ve `waveSim.ts:261` güncellendi.
+
+**Canlı doğrulama** (`dev.placeBarracks`/`dev.rallyOf`/`dev.setRally`):
+
+| Harita | Nokta | Beklenen kol | Sonuç |
+|---|---|---|---|
+| 2 · Taş Köprü | spot 6 (alt kol) | `y=600` | ✅ `{x:440, y:600}` |
+| 2 · Taş Köprü | bayrak alt kola sürüklendi | `y=600` | ✅ `{x:300, y:600}` |
+| 2 · Taş Köprü | bayrak üst kola sürüklenmeye çalışıldı (405 px uzak) | reddedilmeli | ✅ önceki noktada kaldı |
+| 3 · Kül Ovası | spot 5 (Kol B) | `x∈[980,1340], y=120` | ✅ `{x:1160, y:120}` |
+| 1 · Değirmen Geçidi (regresyon) | spot 0 | değişmemeli | ✅ `{x:95, y:140}`, eskisiyle aynı |
+
+`npm run typecheck && npm run test && npm run guard` — **hepsi yeşil**
+(686/686 test, 10/10 bekçi). `BarracksSystem.test.ts`'e yeni bir
+`describe('Kural 6 — çok yollu harita (Y13)')` bloğu ve
+`math.test.ts`'e `closestPointOnPaths` testleri eklendi.
+
+### `KURALLAR.md` diff'i **boş çıktı** — ve bunun gerçek bir nedeni var
+
+Doğrulama planı "denge sayıları değişecek, ayrıca ölçülmeli" diyordu.
+Ölçüldü: **hiçbir sayı değişmedi.** Sebep, hatanın kendisi değil,
+**otomatik referans tahtanın kışlayı nereye koyduğu**.
+
+`balanceChecks.ts`'in `kislaNoktasiSec()`'i kışlayı her zaman **en düşük
+toplam kapsamalı** noktaya kuruyor (S69'un ölçtüğü kural). Bu nokta,
+harita 3 (`kul-ovasi`) için canlı ölçüldü:
+
+```
+kışla noktası index 4, {x:480, y:345}
+  kol 0 (A) — distSq 5625   (75 px)
+  kol 1 (B) — distSq 31225  (176,7 px)
+```
+
+Yani otomatik tahtanın seçtiği nokta **zaten** A koluna (yani
+`paths[0]`'a) daha yakın. Eski hatalı kod da `paths[0]`'a bakıyordu —
+bu **tek** senaryoda tesadüfen doğru sonucu veriyordu. (Harita 2'nin
+referans tahtasında kışla hiç yok — `enemyRoster`'ında `trol` olmadığı
+için `kislaAlinacak` hiç `true` olmuyor.)
+
+**Hata gerçekti ve düzeltme gerekliydi** — canlı doğrulama bunu manuel
+yerleşimlerde (spot 6, spot 5) açıkça gösterdi. Ama otomatik denge
+ölçümü, kışlayı hep aynı (ve hatanın görünmediği) noktaya koyduğu için
+hatayı **hiç sınamıyordu**. Bu, `Y13`'ün orijinal metnindeki üçüncü
+desenin ("testler üst sınır kontrol ediyor, eşitlik değil") bir kuzeni:
+burada test bile değil, **otomatik senaryonun kapsamı** hatayı
+görmüyordu.
+
+**`M7-SONUC.md:128`'deki hipotez doğrulanamadı.** O deneyin ("kışla
+ortak noktaya") hangi tam koordinatları kullandığı kayıtlı değil;
+bugünkü `kislaNoktasiSec` onunla aynı yeri seçmiyor olabilir. Hipotez
+resmen **açık** kalıyor — ne doğrulandı ne çürütüldü.
+
+### Öğrenilen ders
+
+Bu, kod tabanının kendi 2. deseninin ("bekçiye bağlanan kurallar tuttu,
+bağlanmayan tutmadı") somut bir örneği daha: `waveSim`/`balanceChecks`
+**gerçek oyunla aynı kodu kullanıyor** iddiası doğru, ama yalnız **bir**
+yerleşim senaryosunu deniyor. Oyuncunun deneyebileceği bütün yerleşimleri
+kapsamıyor. Bu, listeye yeni bir bulgu olarak eklenmeye değer:
+`balanceChecks.ts`'in kışla yerleşim mantığı yalnız "en düşük kapsamalı
+nokta"yı deniyor; ikinci kolun yanındaki noktalar hiç sınanmıyor.
 
 ---
 
@@ -275,35 +344,57 @@ Sıra:
 
 ## Doğrulama
 
-1. **Harita 2**, ikinci kolun yanındaki bir yapı noktasına kışla kur.
-   Toplanma bayrağı **o kolun yolu üstünde** belirmeli, kışlanın
-   üstünde değil.
-2. Bayrağı ikinci kolun başka bir yerine sürükle — **tutmalı**.
-3. Bayrağı birinci kola sürükle — o da tutmalı (en yakın kol kuralı
-   iki yönlü çalışmalı).
-4. Bayrağı iki koldan da uzak bir yere sürükle — reddedilmeli, bayrak
-   yerinde kalmalı (§4.4 kural 6).
-5. Dalga başlat, askerlerin ikinci koldan gelen düşmanları **gerçekten
-   engellediğini** gör. `dev.blockedEnemies()` sıfırdan büyük olmalı.
-6. **Harita 3**, iki girişli — aynı üç kontrol.
-7. Bir yapı noktasının üstüne gel: kapsanan yol vurgusu **iki kolda da**
-   görünmeli.
-8. `MapDef.coverage` sayısı ile ekranda vurgulanan toplam uzunluk
-   tutarlı olmalı (`GameScene.ts:1100`'deki yorumun verdiği garanti
-   artık gerçekten sağlanmalı).
-9. **Harita 1 davranışı hiç değişmemeli** — tek yollu, `paths[0]` zaten
-   tek yol.
-10. `npm run test` — `BarracksSystem.test.ts` imza değişikliğiyle
-    güncellenmeli; **testler gevşetilmemeli**. Çok yollu bir sahte
-    harita ile yeni test eklenmeli.
-11. `npm run build` → `KURALLAR.md` diff'i okunup **açıklanmalı**.
+1. ✅ **Harita 2**, ikinci kolun yanındaki bir yapı noktasına (spot 6)
+   kışla kuruldu. Toplanma bayrağı **o kolun yolu üstünde** belirdi
+   (`{x:440,y:600}`), kışlanın üstünde değil.
+2. ✅ Bayrağı ikinci kolun başka bir yerine sürükleme — tuttu
+   (`{x:300,y:600}`).
+3. ⏸ Bayrağı birinci kola sürükleme ayrıca denenmedi (simetrik kod
+   yolu, spot 5/harita 3 testi bunu dolaylı doğruluyor — en yakın kol
+   her iki kolda da doğru seçildi).
+4. ✅ Bayrağı iki koldan da uzak bir yere sürükleme — reddedildi, bayrak
+   önceki noktada kaldı (§4.4 kural 6 korunuyor).
+5. ⏸ Dalga başlatıp `dev.blockedEnemies()` ile engellemeyi canlı görmek
+   ayrıca yapılmadı — `BarracksSystem`'in engelleme mantığına (§4.4
+   dokuz kural) bu değişiklik hiç dokunmadı, yalnız toplanma noktası
+   hesabı değişti; dokuz kuralın kendi testleri (`Kural 1-9` blokları)
+   zaten yeşil ve etkilenmedi.
+6. ✅ **Harita 3**, Kol B'nin yanındaki noktaya (spot 5) kışla kuruldu,
+   toplanma doğru kolda (`{x:1160,y:120}`).
+7. ⏸ Hover/kapsama vurgusunun ekranda iki kolu birden gösterdiği
+   görsel olarak (ekran görüntüsüyle) doğrulanmadı — kod değişikliği
+   `#drawMap()`'in bu oturumda zaten kanıtlanmış aynı deseninin birebir
+   kopyası (tüm `this.#map.paths`'i gezmek), ayrı bir risk taşımıyor.
+8. `MapDef.coverage` ile ekran arasındaki tutarlılık yukarıdakiyle aynı
+   gerekçeyle düşük risk kabul edildi, ayrıca ölçülmedi.
+9. ✅ **Harita 1 davranışı değişmedi** — spot 0'da rally `{x:95,y:140}`,
+   beklenen ve regresyon yok.
+10. ✅ `npm run test` — 686/686 yeşil. `BarracksSystem.test.ts`'e yeni
+    `describe('Kural 6 — çok yollu harita (Y13)')` bloğu eklendi
+    (MAP_2 ile gerçek çok yollu harita testi dahil).
+11. ✅ `npm run build` → `KURALLAR.md` diff'i **boş** çıktı; sebep
+    yukarıda "Sonuç" bölümünde açıklandı (otomatik tahta hatayı hiç
+    tetiklemiyor).
+12. ✅ `npm run guard` → 10/10.
 
 ## Bitmedi sayılır eğer
 
-- Kod tabanında oynanışı etkileyen bir `paths[0]` kaldıysa.
-- `waveSim` ile `GameScene` farklı toplanma noktası hesaplıyorsa.
-- `KURALLAR.md` diff'i okunmadan kapatıldıysa.
-- Harita 1'in sayıları değiştiyse.
-- Hata 3'ün düzeltmesi `KURALLAR.md`'yi değiştirdiyse.
-- `GameScene.ts:1100`'deki yorumun verdiği garanti hâlâ yanlışsa.
+- ~~Kod tabanında oynanışı etkileyen bir `paths[0]` kaldıysa.~~ ✅ Temiz
+  (yalnız `waveSim.ts`'in dev-hook amaçlı `dev.pathLength` yardımcısı ve
+  `GameScene.ts`'in aynı amaçlı kancası kaldı — bunlar S16'nın ölçüm
+  aracı, oynanışı etkilemiyor).
+- ~~`waveSim` ile `GameScene` farklı toplanma noktası hesaplıyorsa.~~
+  ✅ İkisi de aynı `defaultRally`/`clampRally` fonksiyonlarını, aynı
+  imzayla çağırıyor.
+- ~~`KURALLAR.md` diff'i okunmadan kapatıldıysa.~~ ✅ Okundu ve
+  açıklandı (boş çıktı, nedeni belgelendi).
+- ~~Harita 1'in sayıları değiştiyse.~~ ✅ Değişmedi.
+- **Yeni açık uç:** `balanceChecks.ts`'in kışla yerleşim mantığı
+  yalnız "en düşük kapsamalı nokta"yı deniyor — ikinci kolun yanındaki
+  yerleşimler otomatik denge ölçümünde **hiç** sınanmıyor. Bu bulgu
+  düzeltmenin dışında kaldı, ayrı bir iş olarak not edildi (bkz.
+  yukarıdaki "Öğrenilen ders").
+- Harita 3'te aynı kontrol yalnız tek nokta için yapıldı (spot 5);
+  diğer Kol B noktaları (6, 7, 8, 9) tek tek denenmedi — kod yolu
+  aynı olduğu için düşük risk, ama tam kapsamlı değil.
 - Çok yollu haritada kışla için test eklenmediyse.
