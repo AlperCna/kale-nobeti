@@ -2,23 +2,30 @@ import Phaser from 'phaser';
 import type { Poolable } from '../util/pool';
 import { Pool } from '../util/pool';
 import { quadraticBezier } from '../util/math';
+import { FRAME_GOLD_COIN } from '../data/spriteFrames';
 
 /**
  * Altın uçuşu — `GAME-DESIGN.md` §10, `M6-T10`.
  *
  * Düşman ölünce bir altın ikonu HUD sayacına doğru bezier ile uçuyor.
- * Gerçek altın sanatı yok (`P02`'de üretilmedi) — GREYBOX (`CLAUDE.md`
- * "Üretim kuralı"): tek renk daire, nihai sanat oynanışta kanıtlandıktan
- * sonra gelir.
+ * Görsel iyileştirme turunda gerçek sanata geçti (`assets-src/hud/gold-coin.png`,
+ * `scripts/prep-assets.mjs` atlas manifestine eklendi) — eski greybox
+ * (düz renkli daire) kalktı. Boyut de büyüdü (12 px çap → 20 px): eski
+ * çap zaten hiçbir iç detay taşımıyordu, yeni sprite'ın okunması için
+ * biraz daha yer gerekiyor.
  */
 
-const GOLD = 0xd4a032;
-const RADIUS = 6;
+const DISPLAY_SIZE = 20;
 const LIFETIME_MS = 500;
 /** Düz çizgi yerine yukarı kabaran kavis — "bezier ile uçar" (§10). */
 const ARC_HEIGHT = 70;
 
-export class GoldCoin extends Phaser.GameObjects.Arc implements Poolable {
+export class GoldCoin extends Phaser.GameObjects.Image implements Poolable {
+  /** `setDisplaySize`'ın hesapladığı gerçek ölçek — `setScale(1)` bunu
+   * ezip sprite'ı kaynak boyutuna (48 px) geri döndürürdü. Küçülme
+   * efekti ve sıfırlama hep bu tabana göre orantılı çalışıyor. */
+  readonly #baseScale: number;
+
   /** Kalan ömür, ms. `scaledDelta` ile azalıyor — 2× hızda da doğru (k.8). */
   #left = 0;
   #startX = 0;
@@ -29,7 +36,9 @@ export class GoldCoin extends Phaser.GameObjects.Arc implements Poolable {
   #endY = 0;
 
   constructor(scene: Phaser.Scene) {
-    super(scene, 0, 0, RADIUS, 0, 360, false, GOLD, 1);
+    super(scene, 0, 0, 'atlas', FRAME_GOLD_COIN);
+    this.setDisplaySize(DISPLAY_SIZE, DISPLAY_SIZE);
+    this.#baseScale = this.scaleX;
     scene.add.existing(this);
     this.resetForPool();
   }
@@ -43,7 +52,7 @@ export class GoldCoin extends Phaser.GameObjects.Arc implements Poolable {
     this.#ctrlY = Math.min(y, hedefY) - ARC_HEIGHT;
     this.#left = LIFETIME_MS;
     this.setPosition(x, y);
-    this.setScale(1);
+    this.setScale(this.#baseScale);
     this.setAlpha(1);
     this.setActive(true).setVisible(true);
   }
@@ -65,7 +74,7 @@ export class GoldCoin extends Phaser.GameObjects.Arc implements Poolable {
     );
     this.setPosition(p.x, p.y);
     // Sayaca yaklaşırken küçülerek "emiliyor" hissi.
-    this.setScale(1 - 0.4 * t);
+    this.setScale(this.#baseScale * (1 - 0.4 * t));
     return false;
   }
 
@@ -79,7 +88,7 @@ export class GoldCoin extends Phaser.GameObjects.Arc implements Poolable {
     this.#endY = 0;
     this.setActive(false).setVisible(false);
     this.setPosition(0, 0);
-    this.setScale(1);
+    this.setScale(this.#baseScale);
     this.setAlpha(1);
   }
 }

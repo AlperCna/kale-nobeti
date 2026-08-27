@@ -41,6 +41,21 @@
 > anlık `gold:changed` sesiyle çakışıp çifte sese dönüşürdü; mevcut anlık
 > ses tek kalan geri bildirim. Canlı doğrulama: kill→uçuş başlangıcı aynı
 > karede, ~500 ms sonra havuz sızmadan sıfıra dönüyor (`dev.goldFlightActive`).
+>
+> **2026-08-27 (görsel iyileştirme):** Altın ikonu GREYBOX'tan çıktı.
+> AI üretimi `gold-coin.png` (`assets-src/hud/`, altın varak dolgu +
+> mürekkep kontur + kale silueti — üretim promptu bu oturumda yazıldı),
+> `scripts/prep-assets.mjs` atlas manifestine eklendi (`FRAME_GOLD_COIN`,
+> `data/spriteFrames.ts`). `GoldCoin` artık `Phaser.GameObjects.Arc`
+> değil, gerçek sprite taşıyan `Image` — görünen çap da büyüdü (12 px →
+> 20 px), çünkü 12 px'te zaten hiçbir iç detay okunmuyordu. **Dikkat
+> edilen bir tuzak:** `setDisplaySize` sonrası hesaplanan gerçek ölçek
+> bir alana (`#baseScale`) kaydedildi; `resetForPool`/`fly()`'daki eski
+> `setScale(1)` çağrıları bunu ezip sprite'ı kaynak boyutuna (48 px)
+> geri döndürürdü — havuzdan her çıkışta coin birden büyüyüp küçülürdü.
+> Canlı doğrulama: sahne ağacından coin nesnesi bulunup `scaleX`'i
+> `0,4055` (≈ 20/48, beklenen) olarak ölçüldü, atlas karesi ayrıca
+> `sharp` ile doğrudan (elle taşınmadan) kesilip gözle kontrol edildi.
 
 > ## Bu taş neden yarım
 >

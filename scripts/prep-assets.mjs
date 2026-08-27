@@ -116,6 +116,8 @@ const MANIFEST = [
   { ad: 'edge-strip', dosya: 'hud/edge-strip.png', w: 128, h: 32 },
   { ad: 'middle-texture', dosya: 'hud/middle-texture.png', w: 64, h: 64 },
   { ad: 'cartouche', dosya: 'hud/cartouche.png', w: 128, h: 128 },
+  // Altın uçuşu (M6-T10 görsel iyileştirme) — greybox daireyi değiştiriyor.
+  { ad: 'gold-coin', dosya: 'hud/gold-coin.png', w: YETENEK_KUTU, h: YETENEK_KUTU },
 
   // Kule kademeleri (P03) — 16 tanesi de aynı kare kutu.
   ...KULE_DOSYALARI.map((ad) => ({ ad, dosya: `towers/${ad}.png`, w: KULE_KUTU, h: KULE_KUTU })),
