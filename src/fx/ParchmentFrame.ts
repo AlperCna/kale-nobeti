@@ -90,3 +90,24 @@ export function createParchmentButton(
   if (frame.input !== null) frame.input.cursor = 'pointer';
   return frame;
 }
+
+/** Üzerine gelme: %3 büyür. Basma: %2 küçülür. */
+const HOVER_SCALE = 1.03;
+const PRESS_SCALE = 0.98;
+
+/**
+ * `createParchmentButton`'a üzerine gelme/basma geri bildirimi ekler
+ * (`G01`/`G02`). Eski greybox butonların `setFillStyle` ile yaptığı işin
+ * doku üstündeki karşılığı — düz renk yerine **ölçek** değişiyor,
+ * dokunun kendisi bozulmuyor.
+ *
+ * Anında uygulanıyor, tween yok: bu buton kromu (menü/HUD), oynanış
+ * VFX'i değil — `settings.effectScale`'e bağlanmıyor, tıpkı kod
+ * tabanındaki hiçbir düğmenin bugün bağlanmadığı gibi.
+ */
+export function addPressFeedback(container: Phaser.GameObjects.Container): void {
+  container.on('pointerover', () => container.setScale(HOVER_SCALE));
+  container.on('pointerout', () => container.setScale(1));
+  container.on('pointerdown', () => container.setScale(PRESS_SCALE));
+  container.on('pointerup', () => container.setScale(HOVER_SCALE));
+}

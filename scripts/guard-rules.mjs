@@ -146,8 +146,18 @@ const sonuclar = [];
 //
 // M2'ye kadar kontrol "hiç setText olmasın" idi; bitmap font M2-T08'de
 // (planlanandan erken) gelince daraltıldı: **bir dosya `setText` çağırıyorsa
-// içinde `Text` nesnesi ÜRETMEMELİ.** Aynı dosyada ikisi bir aradaysa hangi
-// nesneye çağrıldığı düzenli ifadeyle ayrılamaz ve ihlal sayılır.
+// içinde `Text` nesnesi ÜRETMEMELİ.**
+//
+// `G02` (2026-08-27) bunu **yanlış pozitif** olarak yakaladı: aynı
+// dosyada hem `BitmapText.setText` hem başka bir alanın `add.text`si
+// olunca eski kontrol ikisini ayıramayıp ikisini de ihlal sayıyordu.
+// Düzeltme: `setText`in **alıcısı** (çağrıldığı ifade — `this.#hizYazi`
+// gibi) bulunup dosyada NEREDE atandığı aranıyor. Atama satırı aynı
+// satırda `.bitmapText(` içeriyorsa (kod tabanı zinciri hep tek satırda
+// yazıyor — `this.#label1x = this.add.text(...).setOrigin(...)` deseniyle
+// aynı biçim) o çağrı **serbest**, dosyanın geri kalanı taranmaz. Alıcı
+// çözülemezse ya da `add.text`e atanmışsa eski (muhafazakâr) davranışa
+// dönülüyor: dosyada herhangi bir `Text` üretimi varsa ihlal.
 // ---------------------------------------------------------------------
 {
   let ihlalVar = false;
@@ -156,16 +166,26 @@ const sonuclar = [];
     const setTextSatirlari = satirlar.filter((s) => /\.setText\s*\(/.test(s.metin));
     if (setTextSatirlari.length === 0) continue;
 
-    const textUretimi = satirlar.filter((s) =>
+    const textUretimiVar = satirlar.some((s) =>
       /\badd\.text\s*\(|new\s+Phaser\.GameObjects\.Text\b|GameObjects\.Text\b(?!\s*\.)/.test(
         s.metin,
       ),
     );
-    if (textUretimi.length > 0) {
+    if (!textUretimiVar) continue; // dosyada hiç Text yok — hepsi zaten serbest
+
+    for (const s of setTextSatirlari) {
+      const alici = /^(.*?)\.setText\s*\(/.exec(s.metin)?.[1]?.trim().replace(/\?$/, '');
+      const bitmapMi =
+        alici !== undefined &&
+        alici.length > 0 &&
+        satirlar.some((a) => {
+          const kacisli = alici.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          return new RegExp(`${kacisli}\\s*[:=](?!=)`).test(a.metin) && /\.bitmapText\s*\(/.test(a.metin);
+        });
+      if (bitmapMi) continue; // alıcı BitmapText'e atanmış — bu çağrı serbest
+
       ihlalVar = true;
-      for (const s of setTextSatirlari) {
-        ihlal('k.7 ', dosya, s.no, 'setText + aynı dosyada Text üretimi — ayrıştırılamıyor');
-      }
+      ihlal('k.7 ', dosya, s.no, 'setText + aynı dosyada Text üretimi — ayrıştırılamıyor');
     }
   }
   sonuclar.push(['k.7  setText yalnız Text üretmeyen dosyada', !ihlalVar]);

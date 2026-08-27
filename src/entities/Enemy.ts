@@ -100,9 +100,21 @@ export class Enemy extends Phaser.GameObjects.Sprite implements Poolable, EnemyS
     return this.mover !== null && this.mover.reachedEnd(this);
   }
 
+  /** Titremeyi önleyen ölü bölge — `G06`. Kayan nokta gürültüsü ile
+   * dikey segmentlerde `dx` sıfıra çok yakın çıkabiliyor. */
+  static readonly #YON_OLU_BOLGE = 0.01;
+
   private syncPosition(): void {
     if (this.mover === null) return;
     const p = this.mover.positionAt(this);
+    // G06 — yürüdüğü yöne dönüyor. Atlas'taki kareler elle incelendi
+    // (`public/assets/atlas.png`): çoğu (goblin, ork, trol, zırhlı ork,
+    // örümcek, şaman, boss) öne bakan simetrik silüet — flip'in görünür
+    // bir etkisi yok, ama zararı da yok. `kurtBinicisi` gerçekten yönlü
+    // ve **varsayılan olarak sola** koşuyor — flip yönü ona göre seçildi
+    // (`dx > 0` = sağa gidiyor = aynala).
+    const dx = p.x - this.x;
+    if (Math.abs(dx) > Enemy.#YON_OLU_BOLGE) this.setFlipX(dx > 0);
     this.setPosition(p.x, p.y);
   }
 
@@ -123,6 +135,7 @@ export class Enemy extends Phaser.GameObjects.Sprite implements Poolable, EnemyS
     this.setPosition(0, 0);
     this.setAlpha(1);
     this.setAngle(0);
+    this.setFlipX(false); // G06 — TIER 1 kural 3: yön de sıfırlanmalı
     this.setDisplaySize(this.#size, this.#size);
     this.clearTint();
   }

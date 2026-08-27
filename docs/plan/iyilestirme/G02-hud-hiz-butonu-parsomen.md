@@ -1,13 +1,51 @@
-# G02 · HUD hız butonu (1×/2×) parşömen çerçeveye geçmedi
+# G02 · HUD hız butonu (1×/2×) parşömen çerçeveye geçmedi — ☑ **düzeltildi (2026-08-27)**
 
 | | |
 |---|---|
 | **Tür** | Görsel — tutarlılık |
 | **Önem** | Orta. Oyun boyunca ekranda duran üç butondan biri |
-| **Emek** | Küçük |
-| **Risk** | Düşük |
-| **Dokunulan** | `src/scenes/HudScene.ts:240-256` |
-| **İlgili** | [G01](G01-menu-oyna-butonu-parsomen.md) (aynı sınıf, birlikte yapılmalı) · S07 |
+| **Emek** | Küçük (gerçekleşen) |
+| **Risk** | Düşük — doğrulandı |
+| **Dokunulan** | `src/scenes/HudScene.ts`, `scripts/guard-rules.mjs` |
+| **İlgili** | [G01](G01-menu-oyna-butonu-parsomen.md) (aynı oturumda yapıldı) · S07 (kapandı) |
+
+---
+
+## Sonuç (2026-08-27)
+
+**Düzeltildi, seçenek (b) uygulandı.** `#createSpeedButton`
+`createParchmentButton`'a geçti; `#label1x`/`#label2x` (iki statik
+`Text`) yerine tek `#hizYazi` (`BitmapText`, `NUMBER_FONT_KEY`,
+`.setTint(INK)` — parşömen zeminde altın okunmuyordu). `#toggleSpeed`
+artık `setText('1×'|'2×')` çağırıyor. **S07'nin borcu kapandı**
+(`OPEN-QUESTIONS.md` güncellendi).
+
+**Beklenen yanlış pozitif çıktı, önceden öngörüldüğü gibi:**
+`guard-rules.mjs`'in k.7 kontrolü `HudScene.ts`'i ihlal olarak
+işaretledi — dosyada hem `BitmapText.setText` hem başka alanların
+`add.text`si var, eski kontrol ikisini ayıramıyordu. **Bekçi
+düzeltildi, kural değil** (dosyanın kendi önerisi buydu): kontrol artık
+`setText`in **alıcısını** bulup atandığı yeri arıyor — `.bitmapText(`
+ile kurulmuşsa serbest, değilse (ya da çözülemiyorsa) eski muhafazakâr
+davranışa dönüyor. Kasıtlı bozma sınamasıyla doğrulandı: gerçek bir
+`Text.setText` hâlâ yakalanıyor.
+
+**Canlı doğrulama:**
+
+| Kontrol | Sonuç |
+|---|---|
+| `BitmapText` tint'i | `1318970` = `0x14203a` (`INK`) — parşömen zeminde doğru kontrast |
+| `pointerup` → toggle | `dev.scale()` `1→2`, metin `'1×'→'2×'` |
+| Gerçek hızlanma | `tweens/time/anims.timeScale` üçü de `2` |
+| `npm run guard` | 10/10, ayrıca kasıtlı bozmayla negatif doğrulandı |
+
+`npm run typecheck/test (698/698)` yeşil. `docs/KURALLAR.md` diff'i boş.
+
+**Not:** aynı oturumda G01'de eklenen `addPressFeedback` hız butonuna
+**bilerek eklenmedi** — `HudScene`'deki diğer parşömen butonlar
+(ayarlar, erken başlat) da bugün bu geri bildirimi taşımıyor; yalnız
+hız butonuna eklemek HUD içinde yeni bir tutarsızlık yaratırdı. HUD
+genelinde hover/basma geri bildirimi ayrı, kapsamı daha geniş bir iş.
 
 ---
 

@@ -57,14 +57,14 @@ Emek/etki oranına göre. **Üstteki üçü açık ara en yüksek getirili.**
 | 2 | [Y05 · Menü müziği ilk indirmenin %75'i](Y05-menu-muzigi-ilk-indirme.md) | boyut | ☑ **düzeltildi** | **çok yüksek** |
 | 3 | [Y04 · Ses tercihi açılışta uygulanmıyor](Y04-ses-tercihi-acilista-uygulanmiyor.md) | **hata** | ☑ **düzeltildi** | yüksek |
 | 4 | [Y10 · Kısıtlanmış FPS geçidi hiç ölçülmedi](Y10-kisitlanmis-fps-olculmedi.md) | doğrulama | **küçük** | yüksek |
-| 5 | [G01 · Menü "Oyna" butonu parşömene geçmedi](G01-menu-oyna-butonu-parsomen.md) | görsel | **küçük** | yüksek |
+| 5 | [G01 · Menü "Oyna" butonu parşömene geçmedi](G01-menu-oyna-butonu-parsomen.md) | görsel | ☑ **düzeltildi** | yüksek |
 | 6 | [Y12 · Açılışta boş ekran, favicon yok](Y12-acilis-bos-ekran.md) | ilk izlenim | **küçük** | orta-yüksek |
-| 7 | [G02 · HUD hız butonu parşömene geçmedi](G02-hud-hiz-butonu-parsomen.md) | görsel | **küçük** | orta |
+| 7 | [G02 · HUD hız butonu parşömene geçmedi](G02-hud-hiz-butonu-parsomen.md) | görsel | ☑ **düzeltildi** | orta |
 | 8 | [Y07 · "Tekrar dene" / "Sonraki harita" yok](Y07-oyun-sonu-akisi.md) | akış | küçük-orta | yüksek |
 | 9 | [G03 · Yapı menüsünün arkasında panel yok](G03-yapi-menusu-arkalik.md) | görsel | orta | yüksek |
 | 10 | [Y14 · Yükleme hatası ele alınmıyor](Y14-yukleme-hatasi-ele-alinmiyor.md) | dayanıklılık | küçük-orta | orta-yüksek |
 | 11 | [G07 · Yıldızlar sistem yazı tipine bırakılmış](G07-yildiz-gosterimi.md) | görsel | küçük-orta | orta-yüksek |
-| 12 | [G06 · Düşmanlar yürüdükleri yöne dönmüyor](G06-dusman-yonelmesi.md) | görsel | **küçük** | orta |
+| 12 | [G06 · Düşmanlar yürüdükleri yöne dönmüyor](G06-dusman-yonelmesi.md) | görsel | ☑ **düzeltildi (kısmen)** | orta |
 | 13 | [Y06 · Her ölümde iki ses üst üste](Y06-ses-cakismasi.md) | ses | ☑ **düzeltildi** | orta |
 | 14 | [G08 · Vuruşta darbe geri bildirimi yok](G08-vurus-geri-bildirimi.md) | görsel | küçük | orta |
 | 15 | [Y08 · Test kapsamı — `storage.ts` testsiz](Y08-test-kapsami.md) | test | orta | orta-yüksek |
@@ -94,10 +94,19 @@ hata otomatik ölçümü hiç tetiklemiyordu. Ayrıntı: Y13'ün kendi "Sonuç"
 bölümü. **Yeni bulgu:** `balanceChecks.ts`'in kışla yerleşimi ikinci
 kolu hiç sınamıyor — bu ayrı, açık bir uç olarak kaldı.
 
-### Paket A — "yarım kalanları kapat" *(bir oturum)*
-**G01 + G02 + G06** — üçü de küçük, üçü de M6'nın bıraktığı borç.
-Sonuç: kod tabanında `createParchmentButton` kullanmayan buton kalmıyor,
-düşmanlar yönleniyor.
+### Paket A — "yarım kalanları kapat" — ☑ **tamamlandı (2026-08-27)**
+**G01 + G02 + G06.** Menü ve HUD hız butonu parşömene geçti (paylaşılan
+`addPressFeedback` yardımcısı doğdu); S07'nin `BitmapText` borcu kapandı
+(bu arada `guard-rules.mjs`'in k.7 kontrolündeki bir yanlış-pozitif de
+düzeltildi — alıcı-farkındalıklı hâle geldi); düşmanlar ve askerler artık
+yürüdükleri/dövüştükleri yöne bakıyor (`flipX`, ölü bölgeli). Atlas
+kareleri elle incelendi: art çoğunlukla simetrik öne-bakan silüet, yalnız
+kurt binicisi gerçekten yönlü — flip onun için görünür, diğerleri için
+zararsız. S13'ün dönüş tween'i (c) **açık kaldı**, kod tabanında
+`createParchmentButton` kullanmayan buton kalmadı.
+> **Ekran görüntüsü alınamadı** (Browser pane sorunu, istemci taraflı) —
+> doğrulama Phaser sahne grafiği okunarak yapıldı, piksel/göz kontrolü
+> eksik kaldı. Ayrıntı: her dosyanın "Sonuç" bölümü.
 
 ### Paket B — "ses ve boyut" — ☑ **tamamlandı (2026-08-27)**
 **Y05 + Y04 + Y06.** `Settings` `BootScene`'e taşındı (registry

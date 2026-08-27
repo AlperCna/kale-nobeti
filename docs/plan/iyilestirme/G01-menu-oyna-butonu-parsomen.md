@@ -1,13 +1,47 @@
-# G01 · Menü "Oyna" butonu parşömen çerçeveye geçmedi
+# G01 · Menü "Oyna" butonu parşömen çerçeveye geçmedi — ☑ **düzeltildi (2026-08-27)**
 
 | | |
 |---|---|
 | **Tür** | Görsel — tutarlılık |
 | **Önem** | Yüksek. Oyuncunun gördüğü **ilk** etkileşimli öğe |
-| **Emek** | Küçük |
-| **Risk** | Düşük |
-| **Dokunulan** | `src/scenes/MenuScene.ts:63-92` |
-| **İlgili** | `GAME-DESIGN.md` §2 · [G02](G02-hud-hiz-butonu-parsomen.md) (aynı sınıf) |
+| **Emek** | Küçük (gerçekleşen) |
+| **Risk** | Düşük — doğrulandı |
+| **Dokunulan** | `src/scenes/MenuScene.ts`, `src/fx/ParchmentFrame.ts` |
+| **İlgili** | `GAME-DESIGN.md` §2 · [G02](G02-hud-hiz-butonu-parsomen.md) (aynı sınıf, aynı oturumda yapıldı) |
+
+---
+
+## Sonuç (2026-08-27)
+
+**Düzeltildi, seçenek (b) uygulandı.** `#createPlayButton`
+`createParchmentButton`'a geçti; üzerine gelme/basma geri bildirimi için
+`ParchmentFrame.ts`'e yeni bir paylaşılan yardımcı eklendi
+(`addPressFeedback` — hover ×1.03, basma ×0.98, anında/tweensiz). Aynı
+yardımcı [G02](G02-hud-hiz-butonu-parsomen.md)'de de kullanılabilir hâle
+geldi.
+
+**Canlı doğrulama** (Phaser sahne grafiği üzerinden, ekran görüntüsü
+alınamadı — bkz. not):
+
+| Kontrol | Sonuç |
+|---|---|
+| Container yapısı 9 parça (5 `TileSprite` + 4 köşe `Image`) | ✅ — `createParchmentFrame`'in ürettiği tam şekil |
+| `pointerover` → ölçek | ✅ `1.03` |
+| `pointerdown` → ölçek | ✅ `0.98` |
+| `pointerout` → ölçek | ✅ `1` |
+| Köşeye (metnin dışına) tıklama → oyun başlıyor | ✅ `Menu → LevelSelect` geçişi doğrulandı |
+
+`npm run typecheck/test (698/698)/guard (10/10)` yeşil.
+`docs/KURALLAR.md` diff'i boş (salt görsel).
+
+**Not — ekran görüntüsü alınamadı:** bu oturumda Browser pane'in
+`computer` ekran görüntüsü aracı sürekli "pane görüntülenmiyor" hatası
+verdi (istemci taraflı, önceki oturumlarda da görülmüş bir durum).
+Doğrulama bunun yerine Phaser'ın sahne grafiğini doğrudan okuyarak
+yapıldı (`scene.children.list`, olay `emit` ile tetikleme) — dokunun
+gerçekten uygulandığı **yapısal olarak** kanıtlandı, ama piksel
+düzeyinde göz kontrolü yapılamadı. 640×360 okunurluk maddesi (doğrulama
+listesi madde 3) bu yüzden **açık kaldı**.
 
 ---
 

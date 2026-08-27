@@ -41,6 +41,7 @@ function asker(over: Partial<SoldierState> = {}): SoldierState {
     lifetimeLeft: Number.POSITIVE_INFINITY,
     speed: SOLDIER_SPEED,
     alive: true,
+    flipX: false,
     ...over,
   };
 }
@@ -601,6 +602,7 @@ describe('Havuz sözleşmesi (TIER 1 kural 3)', () => {
     expect(s.engagedWith).toBeNull();
     expect(s.alive).toBe(false);
     expect(s.state).toBe('dead');
+    expect(s.flipX).toBe(false); // G06
   });
 
   it('havuzda bekleyen asker (alive=false) adım atmıyor', () => {
@@ -610,6 +612,49 @@ describe('Havuz sözleşmesi (TIER 1 kural 3)', () => {
     kostur([s], [e], 1.0);
     expect(e.blockedBy).toBeNull();
     expect(s.x).toBe(0);
+  });
+});
+
+describe('Yön — G06', () => {
+  it('sağa yürürken flipX true oluyor', () => {
+    const s = asker({ x: 0, y: 0, rally: { x: 100, y: 0 }, state: 'walking', flipX: false });
+    kostur([s], [], 0.05);
+    expect(s.flipX).toBe(true);
+  });
+
+  it('sola yürürken flipX false oluyor', () => {
+    const s = asker({ x: 100, y: 0, rally: { x: 0, y: 0 }, state: 'walking', flipX: true });
+    kostur([s], [], 0.05);
+    expect(s.flipX).toBe(false);
+  });
+
+  it('dikey harekette (dx≈0) flipX DEĞİŞMİYOR — titreme yok', () => {
+    const s = asker({ x: 0, y: 0, rally: { x: 0, y: 100 }, state: 'walking', flipX: true });
+    kostur([s], [], 0.05);
+    expect(s.flipX).toBe(true); // eski değer korunuyor
+  });
+
+  it('dövüşürken kilitli düşmana bakıyor', () => {
+    // Temas yarıçapı (20 px) İÇİNDE — ilk karede kilitleniyor. Yön
+    // güncellemesi `fighting` dalında, yani kilitlenmeden SONRAKİ karede
+    // (16 ms) devreye giriyor — kilitlenme anının kendisinde değil.
+    const s = asker({ x: 0, y: 0, rally: { x: 0, y: 0 }, state: 'idle', flipX: false });
+    const e = dusman(GOBLIN, 15, 0); // sağda, temas menzilinde
+    kostur([s], [e], 0.05); // birkaç kare — kilitlenme + en az bir dövüş karesi
+    expect(s.state).toBe('fighting');
+    expect(s.flipX).toBe(true);
+  });
+
+  it('doğan asker ilk kareden itibaren doğru yöne bakıyor', () => {
+    const s = asker();
+    spawnSoldier(s, { x: 100, y: 0 }, { x: 0, y: 0 }, {
+      hp: 45,
+      dps: 5,
+      evasion: 0,
+      speed: SOLDIER_SPEED,
+    });
+    // Doğum noktası (100,0) toplanma (0,0)'ın sağında — sola yürüyecek.
+    expect(s.flipX).toBe(false);
   });
 });
 
