@@ -127,6 +127,9 @@ export function spawnSoldier(
   // engelleme yapmaz. Doğrudan 'idle' yapmak kuralı sessizce delerdi.
   s.state = 'walking';
   s.alive = true;
+  // G06 — ilk kareden itibaren doğru yöne baksın, `stepSoldiers`'ın ilk
+  // tikini beklemesin (tek karelik yanlış yön flaşı olmasın diye).
+  yuzYonelt(s, rally.x);
 }
 
 /**
@@ -156,6 +159,7 @@ export function resetSoldierState(s: SoldierState): void {
   s.alive = false;
   s.x = 0;
   s.y = 0;
+  s.flipX = false; // G06 — TIER 1 kural 3: yön de sıfırlanmalı
 }
 
 /** Kilidi iki taraflı olarak kırar (kural 4). */
@@ -255,6 +259,19 @@ export interface BarracksStepResult {
   readonly expired: readonly SoldierState[];
 }
 
+/** Kayan nokta gürültüsü için ölü bölge — `G06`, `Enemy.ts`'teki ile aynı sayı. */
+const YON_OLU_BOLGE = 0.01;
+
+/**
+ * Askeri hedefe göre döndürür — `G06`. Yalnız görsel; hiçbir kural/hesap
+ * `flipX`'e bakmıyor. Yürürken hedef `rally`/düşman, döğüşürken kilitli
+ * düşman — ikisi de aynı fonksiyonu kullanıyor.
+ */
+function yuzYonelt(s: SoldierState, hedefX: number): void {
+  const dx = hedefX - s.x;
+  if (Math.abs(dx) > YON_OLU_BOLGE) s.flipX = dx > 0;
+}
+
 /**
  * Bir kışlanın askerlerini bir kare ilerletir.
  *
@@ -311,6 +328,7 @@ export function stepSoldiers(
       case 'walking': {
         // **Kural 7:** yürürken engelleme YOK. Düşman taraması bile yapılmıyor.
         s.engagedWith = null;
+        yuzYonelt(s, s.rally.x);
         const yeni = moveToward(s, s.rally, s.speed * dt);
         s.x = yeni.x;
         s.y = yeni.y;
@@ -323,6 +341,7 @@ export function stepSoldiers(
         if (hedef === null) {
           // Hedef yok — toplanma noktasına dön (yürüyerek, ama 'idle'
           // kalarak: bu asker hâlâ engellemeye hazır).
+          yuzYonelt(s, s.rally.x);
           const yeni = moveToward(s, s.rally, s.speed * dt);
           s.x = yeni.x;
           s.y = yeni.y;
@@ -336,6 +355,7 @@ export function stepSoldiers(
           if (hedef.blockedBy === null) hedef.blockedBy = s;
           s.state = 'fighting';
         } else {
+          yuzYonelt(s, hedef.x);
           const yeni = moveToward(s, hedef, s.speed * dt);
           s.x = yeni.x;
           s.y = yeni.y;
@@ -349,6 +369,7 @@ export function stepSoldiers(
           s.state = 'idle';
           break;
         }
+        yuzYonelt(s, e.x); // G06 — dövüşürken kilitli düşmana bakıyor
         // **Kural 4 (devralma):** engelleyen asker öldüyse düşman serbest
         // kalıyor ama bu asker hâlâ temasta. "Aggro yarıçapında serbest
         // asker varsa yeniden kilitlenir" — temastaki asker o adayın ta

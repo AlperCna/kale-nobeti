@@ -29,6 +29,7 @@ function bosAsker(): SoldierState {
     lifetimeLeft: Number.POSITIVE_INFINITY,
     speed: 0,
     alive: false,
+    flipX: false,
   };
 }
 

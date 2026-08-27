@@ -9,9 +9,9 @@ import { AbilityButtons } from '../fx/AbilityButtons';
 import { SettingsPanel } from '../fx/SettingsPanel';
 import { createParchmentButton, createParchmentFrame } from '../fx/ParchmentFrame';
 import { PreloadScene } from './PreloadScene';
+import { NUMBER_FONT_KEY } from '../fx/numberFont';
 
 const INK = 0x14203a;
-const GOLD = 0xd4a032;
 
 /** Dokunmatik hedef en az 44×44 px (CLAUDE.md Platform). */
 const BTN = 56;
@@ -28,16 +28,12 @@ export class HudScene extends Phaser.Scene {
   #speed: Speed = 1;
 
   /**
-   * S07 — TIER 1 kural 7 çatışması.
-   *
-   * Kural değişen metni `BitmapText` zorunlu kılıyor, ama sayı bitmap
-   * fontu M6'da üretiliyor. Ara çözüm: **iki statik `Text`**, biri
-   * görünür. `setText` hiç çağrılmıyor, yani canvas yeniden üretilmiyor
-   * ve kuralın önlemek istediği maliyet doğmuyor.
-   * M6'da ikisi tek `BitmapText` ile değişecek.
+   * S07 — TIER 1 kural 7. `G02`: sayı bitmap fontu artık üretiliyor
+   * (`M6-T01`), iki statik `Text` yerine tek `BitmapText` — kuralın
+   * "değişen metin bitmap olur" ruhuna tam uyum. `×` karakteri font
+   * karakter kümesinde (`prep-assets.mjs` `SAYI_KARAKTERLERI`).
    */
-  #label1x?: Phaser.GameObjects.Text;
-  #label2x?: Phaser.GameObjects.Text;
+  #hizYazi?: Phaser.GameObjects.BitmapText;
 
   #overlay?: Phaser.GameObjects.Container;
 
@@ -241,26 +237,21 @@ export class HudScene extends Phaser.Scene {
     const x = this.scale.width - MARGIN - BTN / 2;
     const y = MARGIN + BTN / 2;
 
-    const arka = this.add
-      .rectangle(x, y, BTN, BTN, INK)
-      .setStrokeStyle(2, GOLD)
-      .setInteractive({ useHandCursor: true });
+    // `G02` — diğer HUD butonlarıyla aynı parşömen çerçeve. Kare bir
+    // kutuda 9-slice köşeleri hiç gerilmiyor, dönüşüm en ucuz durum.
+    const cerceve = createParchmentButton(this, x, y, BTN, BTN, 12);
 
-    const stil = { fontFamily: 'Spectral, serif', fontSize: '24px', color: '#D4A032' };
-    this.#label1x = this.add.text(x, y, '1×', stil).setOrigin(0.5);
-    this.#label2x = this.add.text(x, y, '2×', stil).setOrigin(0.5).setVisible(false);
+    // Parşömen zeminde mürekkep — altın burada okunmuyor.
+    this.#hizYazi = this.add.bitmapText(x, y, NUMBER_FONT_KEY, '1×').setOrigin(0.5).setTint(INK);
 
-    arka.on('pointerup', () => {
+    cerceve.on('pointerup', () => {
       this.#toggleSpeed();
     });
   }
 
   #toggleSpeed(): void {
     this.#speed = this.#speed === 1 ? 2 : 1;
-
-    // Etiket değişmiyor, görünürlük değişiyor — S07.
-    this.#label1x?.setVisible(this.#speed === 1);
-    this.#label2x?.setVisible(this.#speed === 2);
+    this.#hizYazi?.setText(this.#speed === 1 ? '1×' : '2×');
 
     const game = this.scene.get('Game') as GameScene;
     // `Phaser.Scene` yapısal olarak `ClockTarget`i karşılıyor:

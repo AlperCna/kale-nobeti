@@ -283,6 +283,7 @@ export function simulateWave(
         lifetimeLeft: Number.POSITIVE_INFINITY,
         speed: SOLDIER_SPEED,
         alive: false,
+        flipX: false,
       };
       const yayilma = (i - (kademe.soldierCount - 1) / 2) * 14;
       spawnSoldier(s, spot, { x: rally.x + yayilma, y: rally.y }, {

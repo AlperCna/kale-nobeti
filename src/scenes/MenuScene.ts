@@ -2,11 +2,7 @@ import Phaser from 'phaser';
 import { t } from '../util/i18n';
 import { getSettings } from '../systems/Settings';
 import { PreloadScene } from './PreloadScene';
-
-/** GAME-DESIGN §2 paleti. */
-const INK = 0x14203a;
-const PARCHMENT = 0xe4d3a8;
-const GOLD = 0xd4a032;
+import { createParchmentButton, addPressFeedback } from '../fx/ParchmentFrame';
 
 /**
  * Dokunmatik hedef en az 44×44 px (CLAUDE.md Platform, 1280×720 ölçeğinde).
@@ -73,20 +69,19 @@ export class MenuScene extends Phaser.Scene {
   }
 
   /**
-   * Buton = arka dikdörtgen (tıklama alanı) + üstünde etiket.
+   * Buton = parşömen çerçeve (tıklama alanı) + üstünde etiket (`G01`).
    *
-   * Etkileşim **dikdörtgene** bağlanıyor, metne değil. Metne bağlansaydı
+   * Etkileşim **çerçeveye** bağlanıyor, metne değil. Metne bağlansaydı
    * yalnız harflerin tam üstüne tıklandığında çalışırdı — bu görevin
-   * "bitmedi sayılır eğer" maddesi tam olarak bu.
+   * "bitmedi sayılır eğer" maddesi tam olarak bu. `createParchmentButton`
+   * bunu zaten garanti ediyor: hit-alanı `Container`'ın tamamı.
    */
   #createPlayButton(x: number, y: number): void {
-    const arka = this.add
-      .rectangle(x, y, BTN_W, BTN_H, PARCHMENT)
-      .setStrokeStyle(2, GOLD)
-      .setInteractive({ useHandCursor: true });
+    const cerceve = createParchmentButton(this, x, y, BTN_W, BTN_H, 16);
+    addPressFeedback(cerceve);
 
-    // Metin tıklamayı yutmasın: etkileşim yalnız dikdörtgende.
-    const etiket = this.add
+    // Metin tıklamayı yutmasın: etkileşim yalnız çerçevede.
+    this.add
       .text(x, y, t('play'), {
         fontFamily: 'Spectral, serif',
         fontSize: `${BTN_FONT_PX}px`,
@@ -94,19 +89,7 @@ export class MenuScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    arka.on('pointerover', () => {
-      arka.setFillStyle(GOLD);
-      etiket.setColor('#14203A');
-    });
-    arka.on('pointerout', () => {
-      arka.setFillStyle(PARCHMENT);
-      etiket.setColor('#14203A');
-    });
-    arka.on('pointerdown', () => {
-      arka.setFillStyle(INK);
-      etiket.setColor('#E4D3A8');
-    });
-    arka.on('pointerup', () => {
+    cerceve.on('pointerup', () => {
       this.#startGame();
     });
   }

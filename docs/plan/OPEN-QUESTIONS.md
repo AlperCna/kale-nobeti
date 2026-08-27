@@ -66,7 +66,7 @@ Her soru için: **neden önemli** · **hangi taşı bloke ediyor** ·
 | S04 | 2× seçimi kalıcı mı — oturum boyu, harita boyu, yoksa her dalga 1×'e mi dönüyor? | **Varsayılan uygulandı:** oturum boyu, kaydedilmiyor. Ölçüldü — duraklatmayı aşıp korunuyor. Kalıcı olması istenirse `SaveSystem`'e (M7) bağlanır | `M0-T09` ☑ | (uygulandı) |
 | S05 | Menü M0'da ne kadar dolu — yalnız "Oyna" mı, Ayarlar/Seviye Seçim yer tutucuları da mı? | Kapsam şişmesi riski | `M0-T07` | Yalnız "Oyna" |
 | S06 | ✅ **Kapandı.** `EventBus` M0'da kuruldu; `speed:changed` ve `game:paused` iki taş boyunca kullanımda kaldı ve M1'de `life:lost` da devreye girdi. İkisi de **onaylandı**, `types/events.ts`'teki geçici işaretleri kaldırıldı | — | `M0-T03` ☑ | (onaylandı) |
-| S07 | Hız butonu etiketi TIER 1 k.7'yi nasıl karşılayacak? | **(a) uygulandı** — iki statik `Text`, görünürlük değiştiriliyor. `setText` kod tabanında **hiç** çağrılmıyor (tarandı), yani kuralın önlemek istediği canvas yeniden üretimi doğmuyor. M6'da ikisi tek `BitmapText` olacak | `M0-T09` ☑ | (uygulandı) |
+| S07 | Hız butonu etiketi TIER 1 k.7'yi nasıl karşılayacak? | **Kapandı (2026-08-27, `G02`).** İki statik `Text` yerine tek `BitmapText` (`HudScene.#hizYazi`, `NUMBER_FONT_KEY`) — `setText` çağrılıyor ama `BitmapText` üzerinde, kuralın yasakladığı `Text` yeniden üretimi değil. `guard-rules.mjs`'in k.7 kontrolü bu ayrımı yapamıyordu (yanlış pozitif verdi) — alıcı-farkındalıklı hâle getirildi | `M0-T09` ☑ | (kapandı) |
 | S08 | Vitest ortamı `node` mu `jsdom` mu? `GameClock`'un Phaser'a dokunan kısmı sahte nesneyle mi test edilecek? | Test yazım şeklini belirliyor | `M0-T01`, `M0-T04` | `node` + sahte sahne nesnesi |
 | S09 | `prefers-reduced-motion` M0'da mı okunacak? | TIER 1 k.6 erişilebilirlik tabanı istiyor ama efektler M6'da | `M0-T09` | M6'ya bırakılır |
 | S10 | ✅ **Kapandı.** `scripts/report-size.mjs` üç satır basıyor: `js/html/css` (gzip'li), `varlıklar` (sıkışmaz), `İLK İNDİRME` (Poki 8 MB) ve `toplam` (CrazyGames, SDK'sız). Tanım çıktının içinde yazılı, varsayım gizli değil. `assets/lazy/` dizini ilk indirmeden düşülüyor | — | `M0-T10` ☑ | (uygulandı) |
@@ -84,6 +84,10 @@ düzleştirir. (3) TIER 1 kural 4 yolun sabit waypoint dizisi olmasını
 istiyor; yay bir eğri değerlendirmesi getirir.
 **Görsel bedeli M6'da kapatılır:** düşman köşede yön değiştirirken kısa bir
 dönüş tween'i — yalnız görüntü, `PathSystem`'e dokunmaz, ölçümler değişmez.
+**Kısmen ödendi (2026-08-27, `G06`):** yürüdüğü yöne bakma (`flipX`)
+eklendi — `Enemy.ts`, `Soldier.ts`/`BarracksSystem.ts`. Dönüş tween'inin
+kendisi (S13'ün asıl sözü, `scaleX: 1→0→-1`) hâlâ açık; `flipX` onun
+ucuz/anında hâli.
 
 **S15 kapandı — iki kademeli ölçüm.**
 - **Birincil geçit:** geliştirme makinesi, tepe dalgada **60 FPS**

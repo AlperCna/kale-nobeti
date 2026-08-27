@@ -1,13 +1,70 @@
-# G06 · Düşmanlar yürüdükleri yöne dönmüyor — S13'ün görsel borcu
+# G06 · Düşmanlar yürüdükleri yöne dönmüyor — S13'ün görsel borcu — ☑ **düzeltildi (2026-08-27, kısmen)**
 
 | | |
 |---|---|
 | **Tür** | Görsel — hareket okunurluğu |
 | **Önem** | Orta |
-| **Emek** | Küçük (yatay çevirme) / Orta (dönüş tween'i) |
-| **Risk** | Düşük — yalnız görüntü, `PathSystem`'e dokunmuyor |
-| **Dokunulan** | `src/entities/Enemy.ts`, `src/entities/Soldier.ts` |
-| **İlgili** | `OPEN-QUESTIONS.md` **S13** · TIER 1 kural 4 |
+| **Emek** | Küçük (gerçekleşen — yalnız (a), dönüş tween'i (c) hâlâ açık) |
+| **Risk** | Düşük — doğrulandı |
+| **Dokunulan** | `src/entities/Enemy.ts`, `src/systems/BarracksSystem.ts`, `src/types/barracks.ts` |
+| **İlgili** | `OPEN-QUESTIONS.md` **S13** (kısmen kapandı) · TIER 1 kural 4 |
+
+---
+
+## Sonuç (2026-08-27)
+
+**Düzeltildi, seçenek (a) uygulandı** (yatay çevirme, ölü bölgeli).
+(c) — S13'ün sözü verdiği dönüş tween'i — **açık kaldı**, isteğe bağlı
+bir sonraki adım olarak.
+
+**Beklenmedik bulgu — art sanat çoğunlukla öne bakan simetrik silüet.**
+Uygulamaya başlamadan önce atlas'taki kareler tek tek incelendi
+(`public/assets/atlas.png`, `sharp` ile kırpılıp elle bakıldı): goblin,
+ork savaşçı, trol, zırhlı ork, örümcek (ana+yavru), şaman, boss, kışla
+askeri — hepsi **simetrik, öne bakan** kompozisyon (tezhip
+"kahraman silüeti" geleneği). Yalnız **kurt binicisi** gerçekten yönlü
+— koşan bir profil, **varsayılan olarak sola** bakıyor. Flip mantığı
+buna göre kuruldu (`dx > 0` → aynala). Simetrik olanlarda flip **görünür
+bir etki yaratmıyor** ama zararı da yok; kurt binicisi ve ileride
+eklenecek yönlü sanat için doğru.
+
+**Asker de kapsandı (`Soldier.ts`), ama dolaylı yoldan.** `x`/`y` gibi
+`flipX` de artık `SoldierState`'in bir alanı — `BarracksSystem.ts`
+(Phaser'sız, TIER 1 kural 11) hareket yönünü hesaplayıp `s.flipX` yazıyor;
+gerçek `Soldier` (`Phaser.GameObjects.Sprite`) bu alanı zaten kendi
+`flipX`'i olarak taşıyor, ayrı bir köprü kodu gerekmedi. Yürürken **ve**
+dövüşürken (kilitli düşmana bakarak) çalışıyor — doğrulama listesinin
+5. maddesi.
+
+### Canlı doğrulama (Phaser sahne grafiği üzerinden — ekran görüntüsü alınamadı, bkz. not)
+
+| Kontrol | Sonuç |
+|---|---|
+| Sağa yürüyen goblin (harita 1) | `flipX: true`, birkaç karede `x` artıyor, `flipX` sabit kalıyor (titreme yok) |
+| Dikey segmentte (harita 3, köşe dönüşü) | `flipX` **değişmiyor** — dx≈0 ölü bölgesi çalışıyor |
+| İki kışla askeri, aynı barakadan, zıt yönlere yayılmış | biri `flipX:true`, diğeri `flipX:false` — aynı kaynaktan farklı yön, gerçekten hareket-türevli |
+| `npm run test` | `waveSim` dahil **698/698** değişmeden geçti |
+
+**Ek doğrulama — asker yön testleri** (`BarracksSystem.test.ts`, yeni
+`describe('Yön — G06')` bloğu): sağa/sola yürüme, dikey ölü bölge,
+dövüşürken düşmana bakma, doğan askerin ilk kareden doğru yöne bakması.
+
+`npm run typecheck/test (698/698)/guard (10/10)` yeşil.
+`docs/KURALLAR.md` diff'i boş (salt görsel, `waveSim` etkilenmedi).
+
+**Not — ekran görüntüsü alınamadı:** [G01](G01-menu-oyna-butonu-parsomen.md)'deki
+notla aynı — Browser pane'in ekran görüntüsü aracı bu oturumda
+çalışmadı. Doğrulama `scene.children.list` üzerinden gerçek sprite
+durumu (`x`, `flipX`) okunarak yapıldı; görsel olarak *nasıl göründüğü*
+(silüetin gerçekten simetrik olup olmadığı gibi) atlas karelerinin
+doğrudan kırpılıp incelenmesiyle ayrıca doğrulandı, ama canlı oyun
+ekranının kendisi göz ile görülemedi.
+
+### Kapanmayan uç
+
+**(c) — dönüş tween'i.** S13'ün sözü tam olarak `scaleX: 1→0→-1`
+tween'iydi; bu iş yalnız anında `flipX` yaptı. `OPEN-QUESTIONS.md`
+S13 satırı "kısmen ödendi" olarak güncellendi, tam kapanmadı.
 
 ---
 

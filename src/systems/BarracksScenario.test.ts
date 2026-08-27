@@ -72,6 +72,7 @@ function askerYap(): SoldierState {
     lifetimeLeft: Number.POSITIVE_INFINITY,
     speed: SOLDIER_SPEED,
     alive: false,
+    flipX: false,
   };
 }
 

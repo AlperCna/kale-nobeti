@@ -112,6 +112,13 @@ export interface SoldierState {
   /** Yürüme hızı. Birim: px/sn. */
   speed: number;
   alive: boolean;
+  /**
+   * Yürüdüğü/döğüştüğü yöne bakıyor mu (`G06`). `x`/`y` gibi Phaser'ın
+   * kendi `flipX` alanıyla aynı ad — `Soldier` gerçek `Sprite.flipX`'i
+   * geri veriyor, düz nesne testte bunu bir `boolean` olarak taşıyor.
+   * Görsel olarak dekoratif; hiçbir kural/hesap buna bakmıyor.
+   */
+  flipX: boolean;
 }
 
 /** Bir kışlanın çalışma zamanı durumu. */
