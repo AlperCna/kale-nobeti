@@ -1,13 +1,46 @@
-# Y04 · Ses tercihi açılışta uygulanmıyor — **hata**
+# Y04 · Ses tercihi açılışta uygulanmıyor — **hata**, ☑ **düzeltildi (2026-08-27)**
 
 | | |
 |---|---|
 | **Tür** | Yapısal — doğrulanmış hata |
 | **Önem** | Yüksek. Oyuncunun açık tercihi yok sayılıyor |
-| **Emek** | Küçük |
-| **Risk** | Düşük |
-| **Dokunulan** | `src/scenes/BootScene.ts` *veya* `src/scenes/MenuScene.ts`, `src/scenes/GameScene.ts:178`, `src/scenes/HudScene.ts:121-126` |
+| **Emek** | Küçük (gerçekleşen) |
+| **Risk** | Düşük — doğrulandı |
+| **Dokunulan** | `src/systems/Settings.ts`, `src/scenes/BootScene.ts`, `src/scenes/GameScene.ts` |
 | **İlgili** | `GAME-DESIGN.md` §12 · TIER 1 kural 10 · `RISKS.md` R8 · [Y05](Y05-menu-muzigi-ilk-indirme.md) |
+
+---
+
+## Sonuç (2026-08-27)
+
+**Düzeltildi, seçenek (b) uygulandı.** `Settings` artık `BootScene`'de
+kuruluyor ve `scene.registry`'ye (`SETTINGS_REGISTRY_KEY`) konuyor.
+`Settings.ts`'e `getSettings(host)` (dar `RegistryHost` arayüzüyle,
+`instanceof` daraltmalı — `any` yok) ve `SAVE_FAILED_REGISTRY_KEY`
+(TIER 1 kural 10'un gecikmiş bildirim bayrağı, `BootScene` bir daha
+çalışmadığı için) eklendi. `GameScene.settings` artık `create()`'te
+`getSettings(this)` ile okunuyor, kendi `Settings` örneğini kurmuyor.
+
+**Canlı doğrulama** (temiz `localStorage`, `sound:false` ile
+işaretlenmiş):
+
+| Adım | Beklenen | Sonuç |
+|---|---|---|
+| Sayfa açılır açılmaz, **`Boot` sahnesindeyken** | `game.sound.mute === true` | ✅ `Menu` daha var olmadan doğru |
+| `Menu` çalışırken | `registry.get('settings').state.sound === false` | ✅ |
+| Ses kapalıyken | `music_menu` **hiç indirilmiyor** (bkz. Y05) | ✅ `cache.audio.exists('music_menu') === false` |
+| `sound:true` ile aynı tur | `mute === false`, müzik yüklenip çalıyor | ✅ |
+
+`npm run typecheck/test (693/693)/guard (10/10)` hepsi yeşil.
+`Settings.test.ts`'e `getSettings` için 3 yeni test eklendi.
+
+**Bilinen sınır (dokümante edildi, `Settings.ts`'te):** bir harita
+ortasında yeni bir kayıt yazma hatası olursa bildirim o an değil, bir
+sonraki `GameScene.create()`'de görünür (eskiden anındaydı). `save:failed`
+olayının bugün hiçbir dinleyicisi olmadığı için (tarandı) bu gecikme şu an
+gözlemlenebilir değil.
+
+---
 
 ---
 

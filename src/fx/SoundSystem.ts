@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { EventBus } from '../systems/EventBus';
 import type { TowerId } from '../types/tower';
 import type { Wave } from '../types/wave';
+import { ENEMY_DEATH_THROTTLE_MS } from '../data/audio';
 
 /**
  * M6-T11 — `docs/plan/M6-ses-uretim-brifi.md`.
@@ -29,21 +30,26 @@ const ATIS_SESI: Partial<Record<TowerId, string>> = {
 
 export class SoundSystem {
   readonly #scene: Phaser.Scene;
-  /** `gold:changed` hem kazanmada hem harcamada yayılıyor (`EconomySystem`)
-   * — yalnız artışta çalmak için önceki toplam tutuluyor. */
-  #sonAltin = -1;
+  /** Duvar saati — `enemy_death` kısıtlamasının son çalış zamanı (Y06). */
+  #sonOlumSesi = -Infinity;
 
   constructor(scene: Phaser.Scene, bus: EventBus, waveList: readonly Wave[]) {
     this.#scene = scene;
 
-    bus.on('enemy:killed', () => this.#cal('enemy_death'));
+    bus.on('enemy:killed', () => this.#olumSesiCal());
     bus.on('tower:placed', () => this.#cal('tower_place'));
     bus.on('tower:upgraded', () => this.#cal('tower_upgrade'));
     bus.on('purchase:denied', () => this.#cal('error'));
 
-    bus.on('gold:changed', ({ total }) => {
-      if (this.#sonAltin >= 0 && total > this.#sonAltin) this.#cal('gold');
-      this.#sonAltin = total;
+    // `Y06` — `reason` yönü zaten söylüyor (`earn()` yalnız pozitif
+    // miktarla çağrılıyor, `spend()` her zaman azaltıyor), eski
+    // "önceki toplamla karşılaştır" tahmini gereksizleşti. `kill`
+    // kasıtlı sessiz: görsel karşılığı zaten var (altın uçuşu,
+    // `GoldFlight`) ve her ölümde `enemy_death` ile aynı anda çalıp
+    // ikisini de anlamsızlaştırıyordu.
+    bus.on('gold:changed', ({ reason }) => {
+      if (reason === 'kill' || reason === 'spend') return;
+      this.#cal('gold');
     });
 
     bus.on('wave:started', ({ index }) => {
@@ -51,6 +57,18 @@ export class SoundSystem {
       const bossVar = dalga?.groups.some((g) => g.enemy === 'ogreSef') ?? false;
       this.#cal(bossVar ? 'boss_intro' : 'wave_start');
     });
+  }
+
+  /**
+   * `enemy_death`'i duvar saatiyle kısıtlar (`data/audio.ts`) — tepe
+   * dalgada saniyede birkaç ölüm olduğunda 1,5 sn'lik ses üst üste
+   * binip doyuma gitmesin diye.
+   */
+  #olumSesiCal(): void {
+    const simdi = performance.now();
+    if (simdi - this.#sonOlumSesi < ENEMY_DEATH_THROTTLE_MS) return;
+    this.#sonOlumSesi = simdi;
+    this.#cal('enemy_death');
   }
 
   /** `TowerSystem`'in ateş geri çağrısından — bus olayı değil, kule ailesine bağlı. */

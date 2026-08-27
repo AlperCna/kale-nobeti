@@ -232,12 +232,16 @@ const SES_EFEKTLERI = [
   'tower_place', 'tower_upgrade', 'error', 'wave_start', 'boss_intro',
   'victory', 'defeat',
 ];
-// `music_menu` erken (`queueBoot`) yükleniyor — `audio/music/` altında,
-// "ilk indirme"ye dahil, doğru. `music_game` `queueBackground` ile dalga
-// 1 bitince yükleniyor — `report-size.mjs`'in "ilk indirme" hariç tutma
-// yolu klasör adına (`assets/lazy/`) bakıyor, o yüzden bilerek oraya.
+// `Y05` — ikisi de artık `lazy/` altında: `music_menu` menü göründükten
+// SONRA yükleniyor (`MenuScene.ts`, `filecomplete` deseni `music_game`
+// ile aynı — `GameScene.ts:504-517`'de zaten çalışan örnek). Eskiden
+// `music_menu` `queueBoot`'ta, "ilk indirme"nin **%75'i** tek başına
+// oydu (244,5 sn, 2,94 MB) — oyuncu "Oyna"yı görebilmeden önce iniyordu.
+//
+// `sure` verilen parçalar `sesDosyasiCevir`'de kırpılıyor — bkz. onun
+// başındaki not (döngü noktası kulakla değil, kısılarak yumuşatılıyor).
 const MUZIK = [
-  { ad: 'music_menu', cikisYolu: 'audio/music/music_menu.m4a' },
+  { ad: 'music_menu', cikisYolu: 'lazy/music_menu.m4a', sure: 60 },
   { ad: 'music_game', cikisYolu: 'lazy/music_game.m4a' },
 ];
 
@@ -250,24 +254,47 @@ function sesKaynagiBul(ad) {
   return null;
 }
 
-async function sesDosyasiCevir(ad, cikisYolu, bitrate) {
+/**
+ * Döngü kırpmasının kenarlarına kısa bir kısılma (fade).
+ *
+ * `Y05` "kırpma noktası kulakla bulunmalı" diyor — bu script kulakla
+ * dinleyemiyor. Rastgele bir saniyede (`sure`) kesilen dalga formu
+ * müzikal bir cümlenin ortasına denk gelebilir ve döngü her tekrarında
+ * duyulur bir "tık" üretebilirdi. Kısa bir kısılma bu süreksizliği
+ * **maskeliyor** — mükemmel bir döngü noktası değil ama güvenilir ve
+ * kod tarafından üretilebilir. Kesin bir müzikal döngü noktası
+ * isteniyorsa `sure` değeri kulakla ayarlanıp buradaki kısılma
+ * kısaltılabilir/kaldırılabilir.
+ */
+const KIRPMA_KISILMA_SN = 1.2;
+
+async function sesDosyasiCevir(ad, cikisYolu, bitrate, sure) {
   const srcPath = sesKaynagiBul(ad);
   if (srcPath === null) return false;
   const outPath = path.join(OUT, cikisYolu);
   await ensureDir(path.dirname(outPath));
-  await execFileAsync(ffmpegYolu, [
+
+  const args = [
     '-y',
     '-i', srcPath,
     '-vn', // mp3 kaynaklarda gömülü kapak resmi olabiliyor — o bir "video"
            // akışı sayılıyor ve .m4a'ya (ses-only mp4 profili) yazılamıyor.
     '-map', '0:a',
-    '-c:a', 'aac',
-    '-b:a', bitrate,
-    '-ac', '1', // mono — brif kuralı
-    outPath,
-  ]);
+  ];
+  if (sure !== undefined) {
+    args.push('-t', String(sure));
+    args.push(
+      '-af',
+      `afade=t=in:st=0:d=${KIRPMA_KISILMA_SN},` +
+        `afade=t=out:st=${sure - KIRPMA_KISILMA_SN}:d=${KIRPMA_KISILMA_SN}`,
+    );
+  }
+  args.push('-c:a', 'aac', '-b:a', bitrate, '-ac', '1', outPath);
+
+  await execFileAsync(ffmpegYolu, args);
   const { size } = await stat(outPath);
-  console.log(`  ${cikisYolu}  ${Math.round(size / 1024)} KB`);
+  const etiket = sure !== undefined ? ` (${sure} sn'ye kırpıldı)` : '';
+  console.log(`  ${cikisYolu}  ${Math.round(size / 1024)} KB${etiket}`);
   return true;
 }
 
@@ -277,7 +304,7 @@ async function sesleriUret() {
     if (await sesDosyasiCevir(ad, `audio/sfx/${ad}.m4a`, '128k')) uretilen++;
   }
   for (const m of MUZIK) {
-    if (await sesDosyasiCevir(m.ad, m.cikisYolu, '96k')) uretilen++;
+    if (await sesDosyasiCevir(m.ad, m.cikisYolu, '96k', m.sure)) uretilen++;
   }
   const toplam = SES_EFEKTLERI.length + MUZIK.length;
   console.log(`  (${uretilen}/${toplam} kaynak dosya bulundu — eksikler atlandı)`);

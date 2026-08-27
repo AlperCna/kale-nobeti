@@ -24,8 +24,7 @@ import {
 import { AbilitySystem } from '../systems/AbilitySystem';
 import { ScreenShake } from '../fx/ScreenShake';
 import { HitStop } from '../fx/HitStop';
-import { Settings } from '../systems/Settings';
-import { LocalStore } from '../util/storage';
+import { Settings, getSettings, SAVE_FAILED_REGISTRY_KEY } from '../systems/Settings';
 import { KISLA, barracksTierAt, BLOCK, SOLDIER_SPEED } from '../data/barracks';
 import type { AbilityId } from '../types/ability';
 import { DamageText, DamageTextSystem } from '../fx/DamageText';
@@ -174,8 +173,13 @@ export class GameScene extends Phaser.Scene {
   readonly shake = new ScreenShake();
   /** §10 — 60-80 ms, 2× hızda devre dışı. */
   readonly hitStop = new HitStop();
-  /** TIER 1 kural 6 + 10. */
-  readonly settings = new Settings(new LocalStore(() => this.#kayitUyar()));
+  /**
+   * TIER 1 kural 6 + 10. `Y04`: `BootScene`de kurulup `registry`'ye
+   * konan tekil örnek — `create()`'te okunuyor (alan başlatıcısı bir
+   * kez koşardı, `registry`'den okumak her `create()`'te tazeleniyor,
+   * ki zaten hep aynı örneği döndürüyor).
+   */
+  settings!: Settings;
   #particles?: Phaser.GameObjects.Particles.ParticleEmitter;
   #vignette?: Phaser.GameObjects.Graphics;
   #kayitUyarildi = false;
@@ -276,6 +280,11 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
+    // `Y04` — `BootScene`de kurulan tekil `Settings` buradan okunuyor.
+    // Her `create()`'te tekrar okumak zararsız: `registry` hep aynı
+    // örneği döndürüyor, yalnız *nereden* okunduğu değişti.
+    this.settings = getSettings(this);
+
     // **Alan başlatıcıları yalnız BİR KEZ koşuyor; `create()` her yeniden
     // başlatmada.** Phaser sahne örneğini yeniden kullanıyor, yani
     // `#towerBySpot` önceki oyunun (yok edilmiş) kulelerini taşıyordu —
@@ -313,6 +322,14 @@ export class GameScene extends Phaser.Scene {
     this.shake.reset();
     this.hitStop.reset();
     this.#kayitUyarildi = false;
+    // Gecikmiş kayıt-hatası bildirimi (TIER 1 kural 10) — `#kayitUyarildi`
+    // sıfırlandıktan SONRA kontrol edilmeli, yoksa önceki oturumdan kalan
+    // `true` bu çağrıyı sessizce yutar. Bkz. `Settings.ts`
+    // `SAVE_FAILED_REGISTRY_KEY`'in "bilinen sınır" notu.
+    if (this.registry.get(SAVE_FAILED_REGISTRY_KEY) === true) {
+      this.registry.set(SAVE_FAILED_REGISTRY_KEY, false);
+      this.#kayitUyar();
+    }
     this.shake.enabled = this.settings.state.screenShake;
 
     const yol = this.#map.paths[0] ?? [];

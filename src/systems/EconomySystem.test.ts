@@ -34,7 +34,7 @@ describe('EconomySystem — harcama', () => {
 
     expect(eco.spend(OKCU.tiers[0].cost)).toBe(true);
     expect(eco.gold).toBe(280 - 70);
-    expect(dinleyici).toHaveBeenCalledWith({ total: 210 });
+    expect(dinleyici).toHaveBeenCalledWith({ total: 210, reason: 'spend' });
   });
 
   it('yetersiz altında false döner ve altın DEĞİŞMEZ', () => {
@@ -65,6 +65,41 @@ describe('EconomySystem — harcama', () => {
     const { eco } = kur();
     expect(eco.spend(-100)).toBe(false);
     expect(eco.gold).toBe(280);
+  });
+});
+
+describe('EconomySystem — gold:changed reason (Y06)', () => {
+  it('öldürme "kill" etiketiyle yayılıyor', () => {
+    const { eco, bus } = kur();
+    const dinleyici = vi.fn();
+    bus.on('gold:changed', dinleyici);
+    eco.award(GOBLIN);
+    expect(dinleyici).toHaveBeenCalledWith({ total: 283, reason: 'kill' });
+  });
+
+  it('dalga bitiş bonusu "waveBonus" etiketiyle yayılıyor', () => {
+    const { eco, bus } = kur();
+    const dinleyici = vi.fn();
+    bus.on('gold:changed', dinleyici);
+    eco.awardWaveEnd(1);
+    expect(dinleyici).toHaveBeenCalledWith({ total: 315, reason: 'waveBonus' });
+  });
+
+  it('satış iadesi "sell" etiketiyle yayılıyor', () => {
+    const { eco, bus } = kur();
+    eco.buyAt(3, OKCU.tiers[0].cost);
+    const dinleyici = vi.fn();
+    bus.on('gold:changed', dinleyici);
+    const iade = eco.sellAt(3);
+    expect(dinleyici).toHaveBeenCalledWith({ total: 280 - OKCU.tiers[0].cost + iade, reason: 'sell' });
+  });
+
+  it('harcama "spend" etiketiyle yayılıyor', () => {
+    const { eco, bus } = kur();
+    const dinleyici = vi.fn();
+    bus.on('gold:changed', dinleyici);
+    eco.spend(OKCU.tiers[0].cost);
+    expect(dinleyici).toHaveBeenCalledWith({ total: 280 - OKCU.tiers[0].cost, reason: 'spend' });
   });
 });
 

@@ -54,8 +54,8 @@ Emek/etki oranına göre. **Üstteki üçü açık ara en yüksek getirili.**
 | # | Bulgu | Tür | Emek | Etki |
 |---|---|---|---|---|
 | 1 | [Y13 · `paths[0]` kalıntıları — kışla harita 2/3'te bozuk](Y13-paths0-kalintilari.md) | **hata** | ☑ **düzeltildi** | **çok yüksek** |
-| 2 | [Y05 · Menü müziği ilk indirmenin %75'i](Y05-menu-muzigi-ilk-indirme.md) | boyut | **küçük** | **çok yüksek** |
-| 3 | [Y04 · Ses tercihi açılışta uygulanmıyor](Y04-ses-tercihi-acilista-uygulanmiyor.md) | **hata** | **küçük** | yüksek |
+| 2 | [Y05 · Menü müziği ilk indirmenin %75'i](Y05-menu-muzigi-ilk-indirme.md) | boyut | ☑ **düzeltildi** | **çok yüksek** |
+| 3 | [Y04 · Ses tercihi açılışta uygulanmıyor](Y04-ses-tercihi-acilista-uygulanmiyor.md) | **hata** | ☑ **düzeltildi** | yüksek |
 | 4 | [Y10 · Kısıtlanmış FPS geçidi hiç ölçülmedi](Y10-kisitlanmis-fps-olculmedi.md) | doğrulama | **küçük** | yüksek |
 | 5 | [G01 · Menü "Oyna" butonu parşömene geçmedi](G01-menu-oyna-butonu-parsomen.md) | görsel | **küçük** | yüksek |
 | 6 | [Y12 · Açılışta boş ekran, favicon yok](Y12-acilis-bos-ekran.md) | ilk izlenim | **küçük** | orta-yüksek |
@@ -65,7 +65,7 @@ Emek/etki oranına göre. **Üstteki üçü açık ara en yüksek getirili.**
 | 10 | [Y14 · Yükleme hatası ele alınmıyor](Y14-yukleme-hatasi-ele-alinmiyor.md) | dayanıklılık | küçük-orta | orta-yüksek |
 | 11 | [G07 · Yıldızlar sistem yazı tipine bırakılmış](G07-yildiz-gosterimi.md) | görsel | küçük-orta | orta-yüksek |
 | 12 | [G06 · Düşmanlar yürüdükleri yöne dönmüyor](G06-dusman-yonelmesi.md) | görsel | **küçük** | orta |
-| 13 | [Y06 · Her ölümde iki ses üst üste](Y06-ses-cakismasi.md) | ses | küçük | orta |
+| 13 | [Y06 · Her ölümde iki ses üst üste](Y06-ses-cakismasi.md) | ses | ☑ **düzeltildi** | orta |
 | 14 | [G08 · Vuruşta darbe geri bildirimi yok](G08-vurus-geri-bildirimi.md) | görsel | küçük | orta |
 | 15 | [Y08 · Test kapsamı — `storage.ts` testsiz](Y08-test-kapsami.md) | test | orta | orta-yüksek |
 | 16 | [Y03 · i18n sızıntısı, `en` %0](Y03-i18n-sizintisi.md) | yapısal | orta | yüksek |
@@ -99,12 +99,15 @@ kolu hiç sınamıyor — bu ayrı, açık bir uç olarak kaldı.
 Sonuç: kod tabanında `createParchmentButton` kullanmayan buton kalmıyor,
 düşmanlar yönleniyor.
 
-### Paket B — "ses ve boyut" *(bir oturum)*
-**Y05 + Y04 + Y06** — üçü de ses yolunu açıyor. Y04 `Settings`'i
-`BootScene`'e taşıyor; Y05 müziği tembelleştiriyor ve **taşınmış
-`Settings` sayesinde susturulmuş oyuncuda hiç indirmiyor**; Y06 aynı
-`SoundSystem` dosyasında. Ayrı ayrı yapmak üç kez aynı yolu açmak.
-> İlk indirme 3,90 MB → ~0,96 MB.
+### Paket B — "ses ve boyut" — ☑ **tamamlandı (2026-08-27)**
+**Y05 + Y04 + Y06.** `Settings` `BootScene`'e taşındı (registry
+üzerinden paylaşılıyor); `music_menu` 60 sn'ye kırpılıp tembel
+yüklemeye geçti ve susturulmuş oyuncuda **hiç** indirilmiyor; `gold:changed`
+artık `reason` taşıyor, `enemy_death` 80 ms kısıtlandı. Üçü de canlı
+doğrulandı (gerçek ağ istekleri, gerçek `bus.emit`/`sound.play` izlemesi).
+> İlk indirme **3,90 MB → 1,03 MB** (%74 düşüş). Toplam paket
+> **7,01 MB → 4,85 MB**. Ayrıntı: her dosyanın kendi "Sonuç" bölümü.
+> **Kapanmayan uç:** müzik kırpma noktası kulakla doğrulanmadı (Y05).
 
 ### Paket C — "menü yüzeyi" *(bir oturum)*
 **G03 + Y01'in 3. adımı** — G03 zaten `#openMenu`/`#openSellMenu`/
