@@ -38,7 +38,7 @@ import { PreloadScene } from './PreloadScene';
 import type { MapDef } from '../types/map';
 import { TOWERS, getTower, tierAt } from '../data/towers';
 import { towerFrameKey, FRAME_CARTOUCHE } from '../data/spriteFrames';
-import { createParchmentButton } from '../fx/ParchmentFrame';
+import { createParchmentButton, createParchmentFrame } from '../fx/ParchmentFrame';
 import { getEnemy, ENEMIES } from '../data/enemies';
 import { BALANCE, POOL_PREALLOC, GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI } from '../data/balance';
 import { MAP1_WAVES, wavesFor } from '../data/waves';
@@ -106,6 +106,20 @@ const MODE_LABEL: Readonly<Record<TargetMode, string>> = {
   weakest: 'Zayıf',
   closest: 'Yakın',
 };
+
+/**
+ * `G03` — yapı/yükseltme menülerinin arkalığı. İçerik butonlardan SONRA
+ * ölçülüp panel ona göre boyutlanıyor (`#menuArkalikEkleVeKonumla`);
+ * `S19`'un "altın kartuş biçimi M6'da" borcu bu.
+ */
+const MENU_PANEL_PAY = 16;
+const MENU_PANEL_CORNER = 16;
+/** Panelin ekran kenarından bırakacağı en az boşluk. */
+const MENU_KENAR_PAY = 16;
+/** Seçili olmayan hedefleme modu butonu — seçili olandan **şekilsel de**
+ * ayrılsın diye (TIER 1 kural 6: ayrım yalnız renge dayanmaz); vermilyon
+ * kontur tek başına bırakılmıyor. */
+const HEDEFLEME_SECILMEMIS_ALFA = 0.8;
 
 /**
  * Oyun alanı. Saatin sahibi.
@@ -1215,18 +1229,21 @@ export class GameScene extends Phaser.Scene {
   }
 
   /**
-   * Kule seçim menüsü. **S19 geçici:** iki butonlu düz liste.
-   * `GAME-DESIGN.md` §2'deki "altın kartuş" biçimi M6'da.
+   * Kule seçim menüsü.
+   *
+   * `G03` — arkasında artık bir parşömen panel var (`S19`'un "altın kartuş
+   * biçimi" borcu). Butonlar önce eklenip panel SONRA, içeriğin ölçülmüş
+   * sınırlarına göre kuruluyor — `#menuArkalikEkleVeKonumla`.
    */
   #openMenu(spotIndex: number): void {
     this.#closeMenu();
     const spot = this.#map.buildSpots[spotIndex];
     if (spot === undefined) return;
 
-    const kap = this.add.container(
-      Phaser.Math.Clamp(spot.x, 160, this.scale.width - 160),
-      Phaser.Math.Clamp(spot.y - 56, 40, this.scale.height - 40),
-    );
+    // Konum SONRADAN veriliyor (`#menuArkalikEkleVeKonumla`) — panel
+    // boyutu içeriğe bağlı, o yüzden ekran-kenarı kenetleme butonlar
+    // eklendikten sonra yapılabiliyor.
+    const kap = this.add.container(0, 0);
 
     // Dört aile: üç kule + kışla (§4). Kışla ayrı tip olduğu için ayrı
     // buton — `TOWERS` dizisine sokmak `TowerDef` sözleşmesini bozardı.
@@ -1254,6 +1271,7 @@ export class GameScene extends Phaser.Scene {
       () => this.#placeBarracks(spotIndex),
     );
 
+    this.#menuArkalikEkleVeKonumla(kap, spot.x, spot.y - 56);
     this.#menu = kap;
   }
 
@@ -1286,10 +1304,8 @@ export class GameScene extends Phaser.Scene {
     const kule = this.#towerBySpot.get(spotIndex);
     if (spot === undefined || kule === undefined) return;
 
-    const kap = this.add.container(
-      Phaser.Math.Clamp(spot.x, 140, this.scale.width - 140),
-      Phaser.Math.Clamp(spot.y - 56, 40, this.scale.height - 40),
-    );
+    // Konum SONRADAN veriliyor — bkz. `#openMenu`'nün aynı notu.
+    const kap = this.add.container(0, 0);
 
     const iade = this.#eco?.sellRefund(this.#eco.spentAt(spotIndex)) ?? 0;
 
@@ -1327,11 +1343,15 @@ export class GameScene extends Phaser.Scene {
     // Hedefleme modu seçici (`M4-T11`) — beş mod, kule başına. Diğer
     // menülerle aynı parşömen buton; seçili olan `#menuButonu`'nun dolgu
     // rengi ayrımını taşıyamıyor (9-slice doku, düz renk değil), o yüzden
-    // seçim ince bir vermilyon çerçeveyle işaretleniyor.
+    // seçim vermilyon çerçeve + soluk-olmayan dolgu ile işaretleniyor
+    // (`G03`: kontur tek başına TIER 1 kural 6'nın "yalnız renge
+    // dayanmaz" ruhuna zayıf bir cevaptı — diğer butonlar hafifçe
+    // soluklaştırılıp seçili olan şekilsel de ayrışıyor).
     TARGET_MODES.forEach((mod, i) => {
       const bx = (i - (TARGET_MODES.length - 1) / 2) * 50;
       const secili = kule.targetMode === mod;
       const cerceve = createParchmentButton(this, bx, 52, 46, 44, 8);
+      if (!secili) cerceve.setAlpha(HEDEFLEME_SECILMEMIS_ALFA);
       const et = this.add
         .text(bx, 52, MODE_LABEL[mod], {
           fontFamily: 'Spectral, serif',
@@ -1352,6 +1372,7 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
+    this.#menuArkalikEkleVeKonumla(kap, spot.x, spot.y - 56);
     this.#selectedSpot = spotIndex;
     this.#showCartouche(spot);
     this.#showInfoPanel(spotIndex);
@@ -1474,6 +1495,61 @@ export class GameScene extends Phaser.Scene {
   }
 
   /**
+   * `G03` — menü içeriği (butonlar, hedefleme satırı) eklendikten SONRA
+   * çağrılır: içeriğin gerçek sınırlarını ölçüp arkaya bir parşömen panel
+   * ekler (`addAt(..., 0)` — liste sırası çizim sırası, index 0 en altta),
+   * sonra `kap`'ı panelin gerçek yarı-genişliğine göre ekran içinde
+   * kalacak şekilde konumlandırır.
+   *
+   * Eskiden konum **önce**, sabit bir yarı-genişlik varsayımıyla
+   * (`Clamp(spot.x, 160, ...)` gibi) veriliyordu — panel yoktu, yalnız
+   * butonlar vardı ve varsayım kabaca doğruydu. Panel her menüde farklı
+   * genişlikte (2 buton mu, 3 buton + hedefleme satırı mı), o yüzden
+   * konumlandırma artık **ölçülmüş** genişliğe göre yapılıyor
+   * (`OPEN-QUESTIONS.md` S19'un bıraktığı not: "Clamp payı panelin
+   * yarısı olmalı, sabit değil").
+   */
+  #menuArkalikEkleVeKonumla(
+    kap: Phaser.GameObjects.Container,
+    istenenX: number,
+    istenenY: number,
+  ): void {
+    const b = kap.getBounds();
+    const yerelSol = b.left - kap.x;
+    const yerelSag = b.right - kap.x;
+    const yerelUst = b.top - kap.y;
+    const yerelAlt = b.bottom - kap.y;
+
+    const genislik = yerelSag - yerelSol + MENU_PANEL_PAY * 2;
+    const yukseklik = yerelAlt - yerelUst + MENU_PANEL_PAY * 2;
+    const merkezX = (yerelSol + yerelSag) / 2;
+    const merkezY = (yerelUst + yerelAlt) / 2;
+
+    const panel = createParchmentFrame(this, merkezX, merkezY, genislik, yukseklik, MENU_PANEL_CORNER);
+    kap.addAt(panel, 0);
+
+    // Kenetleme **panelin** kenarına göre, buton sınırına göre DEĞİL —
+    // panel butonlardan `MENU_PANEL_PAY` daha geniş (dolgu payı), o payı
+    // hesaba katmazsa panel ekranın kenarından `MENU_PANEL_PAY` kadar
+    // taşabiliyordu (canlı testte yakalandı: sağ kenardaki bir noktada
+    // panelin sağı tam ekran genişliğine denk geliyordu, `MENU_KENAR_PAY`
+    // payı hiç görünmüyordu).
+    const panelSol = merkezX - genislik / 2;
+    const panelSag = merkezX + genislik / 2;
+    const panelUst = merkezY - yukseklik / 2;
+    const panelAlt = merkezY + yukseklik / 2;
+
+    const minX = MENU_KENAR_PAY - panelSol;
+    const maxX = this.scale.width - MENU_KENAR_PAY - panelSag;
+    const minY = MENU_KENAR_PAY - panelUst;
+    const maxY = this.scale.height - MENU_KENAR_PAY - panelAlt;
+    kap.setPosition(
+      Phaser.Math.Clamp(istenenX, minX, maxX),
+      Phaser.Math.Clamp(istenenY, minY, maxY),
+    );
+  }
+
+  /**
    * Kışla menüsü: yükselt / dal seç / sat.
    *
    * Menü açıkken kışla **seçili** sayılıyor, yani toplanma noktası ve
@@ -1487,10 +1563,8 @@ export class GameScene extends Phaser.Scene {
 
     this.#selectedSpot = spotIndex;
     this.#showCartouche(spot);
-    const kap = this.add.container(
-      Phaser.Math.Clamp(spot.x, 140, this.scale.width - 140),
-      Phaser.Math.Clamp(spot.y - 56, 40, this.scale.height - 40),
-    );
+    // Konum SONRADAN veriliyor — bkz. `#openMenu`'nün aynı notu.
+    const kap = this.add.container(0, 0);
     const iade = this.#eco?.sellRefund(this.#eco.spentAt(spotIndex)) ?? 0;
 
     if (k.tier === 0) {
@@ -1512,6 +1586,7 @@ export class GameScene extends Phaser.Scene {
       this.#menuButonu(kap, 0, `Sat +${iade}`, true, () => this.#sellBarracks(spotIndex));
     }
 
+    this.#menuArkalikEkleVeKonumla(kap, spot.x, spot.y - 56);
     this.#menu = kap;
     this.#drawRally();
   }

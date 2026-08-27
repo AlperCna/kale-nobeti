@@ -1,14 +1,101 @@
-# G03 · Yapı/yükseltme menüsünün arkasında panel yok — S19 yarım kaldı
+# G03 · Yapı/yükseltme menüsünün arkasında panel yok — S19 yarım kaldı — ☑ **düzeltildi (2026-08-28)**
 
 | | |
 |---|---|
 | **Tür** | Görsel — okunurluk *ve* tutarlılık |
 | **Önem** | **Yüksek.** Oyunun en sık açılan arayüzü |
-| **Emek** | Orta |
-| **Risk** | Orta — buton yerleşimi ve tıklama alanları etkileniyor |
-| **Dokunulan** | `src/scenes/GameScene.ts:1199-1236`, `1256-1344`, `1460-1495`, `1508-1513` |
-| **İlgili** | `GAME-DESIGN.md` §2 · `OPEN-QUESTIONS.md` **S19** |
+| **Emek** | Orta (gerçekleşen) |
+| **Risk** | Orta — doğrulandı, bir gerçek hata canlı testte yakalanıp düzeltildi |
+| **Dokunulan** | `src/scenes/GameScene.ts` (`#openMenu`, `#openSellMenu`, `#openBarracksMenu`, yeni `#menuArkalikEkleVeKonumla`) |
+| **İlgili** | `GAME-DESIGN.md` §2 · `OPEN-QUESTIONS.md` **S19** (kapandı) |
 
+---
+
+## Sonuç (2026-08-28)
+
+**Düzeltildi, seçenek (b) uygulandı** (içeriğe göre boyutlanan panel).
+`fx/BuildMenu.ts`'e ayrıştırma (Y01'in 3. adımı, aynı oturumda
+planlanmıştı) **bilinçli olarak ertelendi** — gerekçe aşağıda.
+
+### Nasıl yapıldı — planla farkı
+
+Doc'un önerdiği "önce ölç, sonra çiz" (b) sırası yerine, daha az kod
+tekrarı isteyen bir sıra kullanıldı: **önce butonlar eskisi gibi çizilir
+(`kap` konumu `(0,0)`), sonra tek bir yardımcı (`#menuArkalikEkleVeKonumla`)
+`kap.getBounds()` ile gerçek sınırları ölçüp panel kurar VE `kap`'ı
+ekran-güvenli konuma taşır.** Üç menünün (`#openMenu`, `#openSellMenu`,
+`#openBarracksMenu`) üçü de aynı tek yardımcıyı çağırıyor — düzen
+matematiği (buton aralığı, hedefleme satırı yüksekliği) **hiçbir yerde
+elle kopyalanmadı**, `getBounds()` gerçek render'dan okuyor.
+
+**Beklenmedik ve olumlu bir sonuç:** `getBounds()` yaklaşımı yalnız buton
+kutularını değil, **metni de** ölçüyor. T2 kule menüsünde "Keskin
+Nişancı 170" gibi uzun bir dal adı butonun 88 px'lik kutusundan taştığında
+(136 px, 24 px taşma) panel bunu **otomatik olarak** kapsayacak şekilde
+genişledi — canlı ölçümde doğrulandı. Doc'un kendi riski
+("metin i18n ile değişirse hesap da değişmeli... bu risk bugün panelde
+değil, butonda") burada **panel tarafında da** bedava çözülmüş oldu.
+
+### Canlı testte yakalanan gerçek hata
+
+İlk uygulamada kenetleme (`Clamp`) **panelin değil, yalnız butonların**
+sınırlarına bakıyordu — panel butonlardan `MENU_PANEL_PAY` (16 px) daha
+geniş olduğu için, ekranın **tam kenarındaki** bir yapı noktasında panel
+ekranın dışına **tam 16 px taşıyordu** (sağ kenar testinde: panel sağı
+`1280`, ekran genişliği `1280` — pay sıfıra inmişti). Kenetleme
+**panelin gerçek kenarına** göre yeniden hesaplandı ve dört kenarda da
+(sol/sağ/üst/alt) 16 px'lik payın tam korunduğu ölçülerek doğrulandı.
+Bu, dosyanın kendi doğrulama listesindeki "en soldaki ve en sağdaki yapı
+noktalarına tıkla" maddesinin **tam olarak yakalamak için var olduğu**
+hata sınıfı.
+
+### Hedefleme modu seçimi güçlendirildi
+
+Öneri maddesi (1) uygulandı: seçili olmayan hedefleme butonları artık
+`alpha 0.8` ile hafifçe soluk — seçili buton (vermilyon konturla birlikte)
+tam opak. Ölçek küçültme (basılı görünüm) **bilerek yapılmadı**:
+46×44 px'lik buton zaten platformun 44 px alt sınırına çok yakın;
+`%6` küçültme dokunmatik hedefi 44 px'in **altına** düşürürdü. Opaklık
+farkı, dokunmatik hedefi küçültmeden aynı "yalnız renge dayanmaz"
+gerekçesini (TIER 1 kural 6) karşılıyor.
+
+### Canlı doğrulama
+
+| Kontrol | Sonuç |
+|---|---|
+| Boş nokta → 4 buton + panel | ✅ panel 9 parça, buton tıklaması panelin üstünden geçiyor (kule kuruldu, altın düştü) |
+| T1 kule → 2 buton + 5 hedefleme + panel | ✅ panel genişliği elle hesapla **birebir** eşleşti (184/246 → 246) |
+| T2 kule (uzun dal adı) → panel metni de kapsıyor | ✅ 280 (buton) yerine 304 (metin dahil) — beklenen ve doğru |
+| Hedefleme modu değiştirme | ✅ tıklanan buton `alpha:1`, diğerleri `0.8`'e döndü |
+| Kışla T0 menüsü (hedefleme satırı YOK) | ✅ panel 184×44, yalnız 2 buton |
+| **Sol kenar** (spot 0) | ✅ panel sol kenarı ekranın **tam 16 px** içinde |
+| **Sağ kenar** (spot 7) | ✅ panel sağ kenarı ekranın **tam 16 px** içinde (düzeltmeden önce 0 px'ti — canlı yakalandı) |
+| **Üst kenar** (spot 1) | ✅ panel üstü ekranın **tam 16 px** içinde |
+| Dışarı tıklayınca menü kapanıyor | ✅ panel dahil tamamen yok oluyor |
+| `dev.shutdownListeners()` | ✅ 3 yeniden başlatmada sabit (13→13) |
+| `npm run typecheck/test (698/698)/guard (10/10)` | ✅ hepsi yeşil |
+| `docs/KURALLAR.md` diff'i | ✅ boş (salt görsel) |
+
+**Not — ekran görüntüsü yine alınamadı** (Browser pane sorunu bu
+oturumda da sürdü). Doğrulama, Phaser sahne grafiğinin doğrudan
+okunmasıyla (`scene.children.list`, `getBounds()`, olay `emit` ile
+tetikleme) yapıldı — geometri ve davranış **sayısal olarak** kanıtlandı,
+piksel/göz kontrolü eksik kaldı.
+
+### Ertelenen: `fx/BuildMenu.ts` ayrıştırması (Y01'in 3. adımı)
+
+**Bilerek yapılmadı.** [Y01](Y01-gamescene-bolme.md)'in kendi notu:
+"**Emek: Büyük — tek oturumda yapılmamalı**" ve bu üç menü metodu
+projenin en çok sistemle konuşan yüzeyi (ekonomi, kule, kışla,
+hedefleme, bilgi paneli, `dev` kancalarının yarısı). G03'ü aynı
+oturumda **güvenli** biçimde bitirmek zaten mümkündü (yukarıdaki
+doğrulama bunu gösteriyor); riskli 350 satırlık taşımayı da aynı
+oturuma sıkıştırmak, tam da bu "iyileştirme" turunun önlemeye çalıştığı
+türden bir hataya açık kapı bırakırdı. Ayrıştırma artık **daha ucuz**:
+menü içeriği artık `#menuArkalikEkleVeKonumla` gibi tek bir ortak
+noktadan geçiyor, gelecekteki taşıma bunu da beraberinde götürebilir.
+
+---
 ---
 
 ## Bulgu

@@ -117,7 +117,7 @@ hâlâ açık ve ikisi de M3'ün girdisi.**
 |---|---|---|
 | **S18** | ✅ kapandı | Karakter kümesi `0-9 + - . %`. Font **dosya değil**, `create`'te bir kez üretilen doku + `RetroFont.Parse` — doğrulanamayan ikili dosya uydurmak yerine. M6'da gerçek dosyayla değişecek, `NUMBER_FONT_KEY` aynı kalıyor. **2026-08-16: değişti** — `M6-T01` gerçek dosyayı üretti (`numbers.png`+`.xml`, Inter Tight), yer tutucu silindi |
 | **S21** | ✅ kapandı | Mermi havadayken hedef ölürse **son bilinen konuma gidip sönümleniyor**; alan hasarlıysa oraya varınca **yine de patlıyor** (top mermisi boşa gitmiyor). Üç ayrı test |
-| **S19** | ☐ varsayılan uygulandı | İki butonlu düz liste, 88×44 px. §2'deki "altın kartuş" biçimi M6'da |
+| **S19** | ✅ **kapandı (2026-08-28, `G03`)** | "Altın kartuş biçimi" geldi: menüler artık içeriğe göre boyutlanan bir parşömen panel üstünde duruyor (`GameScene.ts` `#menuArkalikEkleVeKonumla`). Ayrıntı: `docs/plan/iyilestirme/G03-yapi-menusu-arkalik.md` |
 | **S22** | ☐ varsayılan uygulandı | Patlama hasarı merkeze uzaklığa göre **azalmıyor**. M3 denge sağlamaları bu varsayımla koşacak; değişirse Top ailesinin tavanı değişir |
 | **S23** | ☐ varsayılan uygulandı | Kule dönmüyor, anında ateş ediyor. `research/01` "dönüş vergisi"ni %15-20 etkin DPS kaybı olarak ölçmüştü — eklenirse **tüm Kısıt A tavanları yeniden bakılmalı** |
 | **S20** | ⚠️ **açık** | Mermi hızı `600 px/sn`, `data/balance.ts` içinde `GECICI_MERMI_HIZI` olarak işaretli. Dokümanda hiçbir yerde yok. En hızlı düşmanın (Kurt Binicisi 110) 5,5 katı; menzil 150'de uçuş süresi ≤ 0,25 sn — yani M2 ölçümlerinde ıskalama üretmiyor |

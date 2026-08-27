@@ -61,7 +61,7 @@ Emek/etki oranına göre. **Üstteki üçü açık ara en yüksek getirili.**
 | 6 | [Y12 · Açılışta boş ekran, favicon yok](Y12-acilis-bos-ekran.md) | ilk izlenim | **küçük** | orta-yüksek |
 | 7 | [G02 · HUD hız butonu parşömene geçmedi](G02-hud-hiz-butonu-parsomen.md) | görsel | ☑ **düzeltildi** | orta |
 | 8 | [Y07 · "Tekrar dene" / "Sonraki harita" yok](Y07-oyun-sonu-akisi.md) | akış | küçük-orta | yüksek |
-| 9 | [G03 · Yapı menüsünün arkasında panel yok](G03-yapi-menusu-arkalik.md) | görsel | orta | yüksek |
+| 9 | [G03 · Yapı menüsünün arkasında panel yok](G03-yapi-menusu-arkalik.md) | görsel | ☑ **düzeltildi** | yüksek |
 | 10 | [Y14 · Yükleme hatası ele alınmıyor](Y14-yukleme-hatasi-ele-alinmiyor.md) | dayanıklılık | küçük-orta | orta-yüksek |
 | 11 | [G07 · Yıldızlar sistem yazı tipine bırakılmış](G07-yildiz-gosterimi.md) | görsel | küçük-orta | orta-yüksek |
 | 12 | [G06 · Düşmanlar yürüdükleri yöne dönmüyor](G06-dusman-yonelmesi.md) | görsel | ☑ **düzeltildi (kısmen)** | orta |
@@ -73,7 +73,7 @@ Emek/etki oranına göre. **Üstteki üçü açık ara en yüksek getirili.**
 | 18 | [G04 · `TowerInfoPanel` paletten kopuk](G04-towerinfopanel-paleti.md) | görsel | orta | orta |
 | 19 | [Y02 · `Pool.activeItems()` kare başına 7 dizi](Y02-pool-activeitems-tahsis.md) | başarım | orta | orta |
 | 20 | [Y09 · Öğretici / yönlendirme yok](Y09-ogretici-yok.md) | UX | orta-büyük | **yüksek** |
-| 21 | [Y01 · `GameScene.ts` 1749 satır](Y01-gamescene-bolme.md) | mimari | **büyük** | orta-yüksek |
+| 21 | [Y01 · `GameScene.ts` 1749 satır](Y01-gamescene-bolme.md) | mimari | **büyük** (3. adım kısmen kolaylaştı) | orta-yüksek |
 | 22 | [Y11 · Phaser tam yapımı paketleniyor](Y11-phaser-tam-yapim.md) | boyut | orta-büyük | **belirsiz — önce ölç** |
 
 ---
@@ -118,10 +118,22 @@ doğrulandı (gerçek ağ istekleri, gerçek `bus.emit`/`sound.play` izlemesi).
 > **7,01 MB → 4,85 MB**. Ayrıntı: her dosyanın kendi "Sonuç" bölümü.
 > **Kapanmayan uç:** müzik kırpma noktası kulakla doğrulanmadı (Y05).
 
-### Paket C — "menü yüzeyi" *(bir oturum)*
-**G03 + Y01'in 3. adımı** — G03 zaten `#openMenu`/`#openSellMenu`/
-`#openBarracksMenu`'nün 350 satırını açıyor; `fx/BuildMenu.ts`'e
-taşıma aynı işte yapılmalı. Y01'in diğer iki adımı bundan bağımsız.
+### Paket C — "menü yüzeyi" — ☑ **G03 tamamlandı (2026-08-28)**, ⏸ **Y01'in 3. adımı ertelendi**
+**G03**: `#openMenu`/`#openSellMenu`/`#openBarracksMenu` artık içeriğe
+göre boyutlanan bir panel üzerinde (`#menuArkalikEkleVeKonumla`, tek
+ortak yardımcı — üç menüde de düzen matematiği tekrar edilmiyor).
+Canlı testte **gerçek bir kenetleme hatası** yakalanıp düzeltildi:
+panel butonlardan `MENU_PANEL_PAY` daha geniş olduğu için kenar
+noktalarda ekran dışına taşıyordu; dört kenar da (sol/sağ/üst/alt)
+sayısal olarak doğrulandı. Hedefleme modu seçimi de güçlendirildi
+(seçili olmayanlar `alpha 0.8`).
+
+`fx/BuildMenu.ts`'e ayrıştırma **bilerek aynı oturuma sıkıştırılmadı**
+— Y01'in kendi notu "büyük, tek oturumda yapılmamalı" ve bu üç metod
+projenin en çok sistemle konuşan yüzeyi. Ayrıntı ve gerekçe:
+G03'ün kendi "Sonuç" bölümü.
+> **Ekran görüntüsü yine alınamadı** (Browser pane sorunu bu oturumda
+> da sürdü) — doğrulama sahne grafiği + `getBounds()` okunarak yapıldı.
 
 ### Paket D — "oyuncu akışı" *(bir oturum)*
 **Y07 + G07** — oyun sonu ekranı ikisinde de değişiyor.
