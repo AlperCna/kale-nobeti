@@ -19,8 +19,8 @@ import {
 } from './BarracksSystem';
 import { BLOCK, KISLA, barracksTierAt, meleeDps, SOLDIER_SPEED } from '../data/barracks';
 import { GOBLIN, HARPI, OGRE_SEF, TROL, ZIRHLI_ORK } from '../data/enemies';
-import { MAP_1 } from '../data/maps';
-import { closestPointOnPath } from '../util/math';
+import { MAP_1, MAP_2 } from '../data/maps';
+import { closestPointOnPaths } from '../util/math';
 
 const KARE_MS = 1000 / 60;
 
@@ -254,29 +254,30 @@ describe('Kural 6 — toplanma noktası', () => {
     { x: 0, y: 100 },
     { x: 400, y: 100 },
   ];
+  const paths: readonly (readonly Vec2[])[] = [yol];
   const kisla: Vec2 = { x: 200, y: 40 };
 
   it('yol üstündeki geçerli nokta olduğu gibi kalıyor', () => {
-    const r = clampRally(kisla, { x: 250, y: 100 }, yol);
+    const r = clampRally(kisla, { x: 250, y: 100 }, paths);
     expect(r.x).toBeCloseTo(250, 6);
     expect(r.y).toBeCloseTo(100, 6);
   });
 
   it('yola ≤40 px yakın nokta YOLA YAPIŞIYOR', () => {
-    const r = clampRally(kisla, { x: 250, y: 70 }, yol);
+    const r = clampRally(kisla, { x: 250, y: 70 }, paths);
     expect(r.y).toBeCloseTo(100, 6); // yola çekildi
     expect(r.x).toBeCloseTo(250, 6);
   });
 
   it('yola 40 px’ten uzak nokta KONULAMIYOR — yol dışına çıkamaz', () => {
     const mevcut = { x: 300, y: 100 };
-    const r = clampRally(kisla, { x: 250, y: 20 }, yol, mevcut);
+    const r = clampRally(kisla, { x: 250, y: 20 }, paths, mevcut);
     // Yola 80 px uzak → reddedildi, MEVCUT toplanma noktası korunuyor.
     expect(r).toEqual(mevcut);
   });
 
   it('geri düşüş verilmezse varsayılan toplanma noktası dönüyor — sonuç HER ZAMAN yol üstünde', () => {
-    const r = clampRally(kisla, { x: 250, y: 20 }, yol);
+    const r = clampRally(kisla, { x: 250, y: 20 }, paths);
     expect(r.y).toBeCloseTo(100, 6); // yolun üstünde
   });
 
@@ -285,7 +286,7 @@ describe('Kural 6 — toplanma noktası', () => {
     // `pathSnapMax = 40`'ın dışında. Kışlanın üstü varsayılan olsaydı
     // askerler yol kenarında dururdu, aggro (60 px) yola yetişmezdi ve
     // kışla hiçbir şey yapmazdı. Canlı ölçümde yakalandı.
-    const r = defaultRally(kisla, yol);
+    const r = defaultRally(kisla, paths);
     expect(r.x).toBeCloseTo(kisla.x, 6);
     expect(r.y).toBeCloseTo(100, 6);
     expect(r.y).not.toBe(kisla.y);
@@ -293,9 +294,9 @@ describe('Kural 6 — toplanma noktası', () => {
 
   it('Harita 1’in HER yapı noktası geçerli bir toplanma noktası üretiyor', () => {
     for (const spot of MAP_1.buildSpots) {
-      const r = defaultRally(spot, MAP_1.paths[0]!);
+      const r = defaultRally(spot, MAP_1.paths);
       // Yol üstünde mi?
-      expect(closestPointOnPath(r, MAP_1.paths[0]!).distSq).toBeLessThan(1e-6);
+      expect(closestPointOnPaths(r, MAP_1.paths).distSq).toBeLessThan(1e-6);
       // Toplanma menzilinde mi?
       expect(Math.hypot(r.x - spot.x, r.y - spot.y)).toBeLessThanOrEqual(BLOCK.rallyRange);
     }
@@ -303,16 +304,67 @@ describe('Kural 6 — toplanma noktası', () => {
 
   it('kışladan 160 px dışına sürüklenince SINIRA kenetleniyor', () => {
     const uzakKisla: Vec2 = { x: 0, y: 100 };
-    const r = clampRally(uzakKisla, { x: 400, y: 100 }, yol);
+    const r = clampRally(uzakKisla, { x: 400, y: 100 }, paths);
     const mesafe = Math.hypot(r.x - uzakKisla.x, r.y - uzakKisla.y);
     expect(mesafe).toBeCloseTo(BLOCK.rallyRange, 3);
   });
 
   it('kenetleme ÖNCE, yapışma SONRA — sıra tersine dönerse menzil aşılır', () => {
     const uzakKisla: Vec2 = { x: 0, y: 100 };
-    const r = clampRally(uzakKisla, { x: 900, y: 100 }, yol);
+    const r = clampRally(uzakKisla, { x: 900, y: 100 }, paths);
     const mesafe = Math.hypot(r.x - uzakKisla.x, r.y - uzakKisla.y);
     expect(mesafe).toBeLessThanOrEqual(BLOCK.rallyRange + 1e-6);
+  });
+});
+
+describe('Kural 6 — çok yollu harita (Y13)', () => {
+  // İki ayrı, birbirinden uzak kol — harita 2/3'ün iki girişinin küçük
+  // bir modeli. Eskiden `defaultRally`/`clampRally` yalnız `kolA`'ya
+  // bakıyordu; ikinci kolun yanına kurulan kışla toplanma noktasını
+  // hiç bulamıyordu.
+  const kolA: readonly Vec2[] = [
+    { x: 0, y: 0 },
+    { x: 400, y: 0 },
+  ];
+  const kolB: readonly Vec2[] = [
+    { x: 0, y: 1000 },
+    { x: 400, y: 1000 },
+  ];
+  const paths: readonly (readonly Vec2[])[] = [kolA, kolB];
+
+  it('kışla B kolunun yanındaysa varsayılan toplanma B kolunda — A kolunda DEĞİL', () => {
+    const kislaB: Vec2 = { x: 200, y: 1040 }; // B'ye 40 px, A'ya 1040 px
+    const r = defaultRally(kislaB, paths);
+    expect(r.y).toBeCloseTo(1000, 6); // B kolu
+  });
+
+  it('kışla A kolunun yanındaysa varsayılan toplanma A kolunda', () => {
+    const kislaA: Vec2 = { x: 200, y: 40 };
+    const r = defaultRally(kislaA, paths);
+    expect(r.y).toBeCloseTo(0, 6); // A kolu
+  });
+
+  it('bayrak B kolunun üstüne sürüklenebiliyor — sessizce reddedilmiyor', () => {
+    const kislaB: Vec2 = { x: 200, y: 1040 };
+    const r = clampRally(kislaB, { x: 250, y: 1010 }, paths);
+    expect(r.y).toBeCloseTo(1000, 6);
+    expect(r.x).toBeCloseTo(250, 6);
+  });
+
+  it('bayrak yanlış kola (kışlanın bağlı olmadığı kola) yapışmıyor', () => {
+    // Kışla B'nin yanında; A kolu kışladan 1000 px uzak — rallyRange
+    // (160) kenetlemesi zaten A'yı erişilemez kılıyor, bayrak B'de kalır.
+    const kislaB: Vec2 = { x: 200, y: 1040 };
+    const r = clampRally(kislaB, { x: 200, y: 5 }, paths);
+    expect(r.y).toBeCloseTo(1000, 3);
+  });
+
+  it('MAP_2’nin HER yapı noktası geçerli bir toplanma noktası üretiyor (iki kol)', () => {
+    for (const spot of MAP_2.buildSpots) {
+      const r = defaultRally(spot, MAP_2.paths);
+      expect(closestPointOnPaths(r, MAP_2.paths).distSq).toBeLessThan(1e-6);
+      expect(Math.hypot(r.x - spot.x, r.y - spot.y)).toBeLessThanOrEqual(BLOCK.rallyRange);
+    }
   });
 });
 

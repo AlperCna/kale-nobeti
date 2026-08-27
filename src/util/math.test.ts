@@ -8,6 +8,7 @@ import {
   segmentCircleOverlapLength,
   closestPointOnSegment,
   closestPointOnPath,
+  closestPointOnPaths,
   quadraticBezier,
 } from './math';
 
@@ -240,6 +241,45 @@ describe('closestPointOnSegment / closestPointOnPath (M5 — kural 6)', () => {
       const nokta = closestPointOnSegment(p, a, b);
       expect(distSq(p, nokta)).toBeCloseTo(pointToSegmentDistSq(p, a, b), 9);
     }
+  });
+});
+
+describe('closestPointOnPaths (Y13 — harita 2/3, çok yollu kışla)', () => {
+  const kolA = [
+    { x: 0, y: 0 },
+    { x: 100, y: 0 },
+  ];
+  const kolB = [
+    { x: 0, y: 500 },
+    { x: 100, y: 500 },
+  ];
+
+  it('tek yollu haritada closestPointOnPath ile BİREBİR aynı sonucu veriyor', () => {
+    const p = { x: 50, y: 30 };
+    const cok = closestPointOnPaths(p, [kolA]);
+    const tek = closestPointOnPath(p, kolA);
+    expect(cok).toEqual(tek);
+  });
+
+  it('en yakın kolu seçiyor — A’ya yakınken A döner', () => {
+    const r = closestPointOnPaths({ x: 50, y: 10 }, [kolA, kolB]);
+    expect(r.point.y).toBeCloseTo(0, 9);
+  });
+
+  it('en yakın kolu seçiyor — B’ye yakınken B döner', () => {
+    const r = closestPointOnPaths({ x: 50, y: 490 }, [kolA, kolB]);
+    expect(r.point.y).toBeCloseTo(500, 9);
+  });
+
+  it('kol sırası sonucu etkilemiyor', () => {
+    const p = { x: 50, y: 490 };
+    const r1 = closestPointOnPaths(p, [kolA, kolB]);
+    const r2 = closestPointOnPaths(p, [kolB, kolA]);
+    expect(r1).toEqual(r2);
+  });
+
+  it('boş yol listesi çökmüyor', () => {
+    expect(closestPointOnPaths({ x: 4, y: 4 }, []).distSq).toBe(0);
   });
 });
 

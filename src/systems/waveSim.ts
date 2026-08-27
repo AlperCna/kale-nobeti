@@ -165,7 +165,6 @@ export function simulateWave(
 ): SimResult {
   const bus = new EventBus();
   const eco = new EconomySystem(map, bus);
-  const path = new PathSystem(map.paths[0] ?? []);
   // Birden fazla giriş olabilir (harita 2/3) — her yol/uçan hattı kendi
   // hareketini alır, `WaveGroup.spawnPoint` hangisini seçeceğini söylüyor.
   // Gerçek oyunla (`GameScene.ts`) aynı seçim mantığı: tek yol kullanmak
@@ -174,7 +173,9 @@ export function simulateWave(
   const flyerMovers: Mover[] = map.flyerPaths.map((p) => new LineMover(p));
   const moverFor = (def: EnemyDef, spawnPoint: number): Mover => {
     const havuz = def.flying ? flyerMovers : groundMovers;
-    return havuz[spawnPoint] ?? havuz[0] ?? groundMovers[0] ?? new PathMover(path);
+    // Son çare: harita bozuksa (paths boş) bile bir Mover döner —
+    // `map.paths[0] ?? []` yerine doğrudan boş yol, aynı zararsız kalıyor.
+    return havuz[spawnPoint] ?? havuz[0] ?? groundMovers[0] ?? new PathMover(new PathSystem([]));
   };
 
   let leakedHp = 0;
@@ -258,7 +259,12 @@ export function simulateWave(
     const kademe = barracksTierAt(KISLA, bb.tier);
     // Toplanma noktası: yola en yakın nokta. Kışlanın üstü **olamaz** —
     // yapı noktaları yoldan `pathSnapMax`'ten uzak (M5-SONUC §5).
-    const rally = defaultRally(spot, map.paths[0] ?? []);
+    // `Y13`: bütün yollara bakılıyor — gerçek oyunla (`GameScene.ts`)
+    // aynı fonksiyon, aynı imza. Eskiden yalnız `paths[0]`'a bakılıyordu,
+    // yani harita 2/3'te kışla simülasyonu gerçek oyundan sessizce
+    // ayrışıyordu ve buradan çıkan denge sayıları kışlası bozuk bir
+    // oyunda ölçülmüştü.
+    const rally = defaultRally(spot, map.paths);
     const askerler: SoldierState[] = [];
     for (let i = 0; i < kademe.soldierCount; i++) {
       const s: SoldierState = {

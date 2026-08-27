@@ -108,6 +108,30 @@ export function closestPointOnPath(
 }
 
 /**
+ * Aynı, ama **birden fazla yol** için (harita 2/3 — iki giriş, iki kol).
+ *
+ * Her yolun en yakın noktası ayrı ayrı hesaplanır, en yakını döner. Tek
+ * yollu haritada `closestPointOnPath(p, paths[0])` ile birebir aynı sonucu
+ * verir — `paths.length === 1` olduğu için erken çıkış yok, döngü tek
+ * turda biter.
+ *
+ * `Y13`: kışlanın toplanma noktası (`BarracksSystem.defaultRally`/
+ * `clampRally`) daha önce yalnız `paths[0]`'a bakıyordu — ikinci kolun
+ * yanına kurulan kışla çalışmıyordu. Kök neden burada kapatılıyor.
+ */
+export function closestPointOnPaths(
+  p: Vec2,
+  paths: readonly (readonly Vec2[])[],
+): { point: Vec2; distSq: number } {
+  let enIyi = closestPointOnPath(p, paths[0] ?? []);
+  for (let i = 1; i < paths.length; i++) {
+    const aday = closestPointOnPath(p, paths[i]!);
+    if (aday.distSq < enIyi.distSq) enIyi = aday;
+  }
+  return enIyi;
+}
+
+/**
  * `from`'dan `to`'ya açı. Birim: radyan, `-π`…`π`.
  * Düşmanın yönelmesi ve kule dönüşü için.
  */
