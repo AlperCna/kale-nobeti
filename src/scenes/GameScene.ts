@@ -78,13 +78,19 @@ const RALLY_COLOR = 0x3e6ca8;
 const PARTICLE_MAX = 300;
 
 /**
- * Altın uçuşunun vardığı nokta — `HudScene`'in altın sayacıyla **aynı ekran
- * koordinatı** olmalı (`HudReadout(this, MARGIN + 8, MARGIN + 16)`, kısa bir
- * sayının yaklaşık merkezi). `Game` ve `Hud` aynı 1280×720 kamerayı
- * paylaşıyor (`CLAUDE.md` Mimari) — kaydırma yok, o yüzden ekran koordinatı
- * iki sahne arasında doğrudan taşınabiliyor.
+ * Altın uçuşunun vardığı nokta.
+ *
+ * Sayacın **merkezi değil, üst kenarının hemen üstü** — `Hud` sahnesi
+ * `Game`'in her zaman üstünde çiziliyor (`CLAUDE.md` Mimari), yani bu
+ * `GoldCoin` (bir `Game` nesnesi) parşömen kartın (`HudScene`'de,
+ * `createParchmentFrame(this, MARGIN+96, MARGIN+66, 216, 140, 16)`, üst
+ * kenarı `y=16`) ardına düşen her koordinatta **görünmez oluyor**. Canlı
+ * testte yakalandı: coin sayaca yaklaşırken kartın arkasında kayboluyordu.
+ * Bezier zaten yukarı kabararak yaklaşıyor (`ARC_HEIGHT`) — hedefi kartın
+ * **üst kenarının 4 px üstüne** çekmek uçuşun neredeyse tamamını kartın
+ * dışında (üstünde) tutuyor, yalnız varış anının son karesi sınırda oluyor.
  */
-const HUD_GOLD_HEDEFI: Vec2 = { x: 44, y: 52 };
+const HUD_GOLD_HEDEFI: Vec2 = { x: 44, y: 12 };
 
 /** Beş hedefleme modu (`GAME-DESIGN.md` §4.5). Varsayılan `first`. */
 const TARGET_MODES: readonly TargetMode[] = ['first', 'last', 'strongest', 'weakest', 'closest'];
