@@ -1,13 +1,51 @@
-# Y07 · Oyun sonunda "tekrar dene" ve "sonraki harita" yok
+# Y07 · Oyun sonunda "tekrar dene" ve "sonraki harita" yok — ☑ **düzeltildi (2026-08-28)**
 
 | | |
 |---|---|
 | **Tür** | Yapısal — akış / UX |
-| **Önem** | Yüksek. Kaybetmenin bedeli, kaybetmenin kendisinden fazla |
-| **Emek** | Küçük-orta |
-| **Risk** | Düşük — ama sahne yaşam döngüsü dikkat istiyor |
-| **Dokunulan** | `src/scenes/GameOverScene.ts` |
+| **Önem** | Yüksek. Kaybetmenin bedeli, kaybetmenin kendisinden fazlaydı |
+| **Emek** | Küçük-orta (gerçekleşen) |
+| **Risk** | Düşük — doğrulandı |
+| **Dokunulan** | `src/scenes/GameOverScene.ts`, `src/data/strings.ts` |
 | **İlgili** | `ROADMAP.md` v1 sonrası karar noktası · `RISKS.md` R8 |
+
+---
+
+## Sonuç (2026-08-28)
+
+**Düzeltildi, seçenek (b) uygulandı** (duruma göre üç buton), ek olarak
+Öneri'nin iki maddesi de uygulandı.
+
+Birincil eylem **boyutla** ayrışıyor (260×64 vs 220×56) — **renkle
+değil**: altın metin parşömen zeminde okunmuyor, `G02`'de düzeltilen
+kontrast hatasının aynısını burada tekrarlamamak için ölçek tercih
+edildi (doc'un "daha büyük ya da altın dolgulu" seçeneğinden ilki).
+`Enter` tuşu birincil eylemi tetikliyor — `HudScene`'in ESC/boşluk
+deseniyle aynı güvence (`KeyboardPlugin.shutdown()` sahne kapanınca
+kendi dinleyicilerini temizliyor, sızıntı yok).
+
+İki yeni metin `strings.ts`'e eklendi (`retry`, `nextMap`) — koda
+gömülmedi.
+
+### Canlı doğrulama
+
+| Senaryo | Butonlar | Sonuç |
+|---|---|---|
+| Kaybedildi (7/20) | Tekrar dene (260×64) · Ana menü (220×56) | ✅ |
+| Kazanıldı, sonraki harita var (18/20, ★★) | Sonraki harita (260×64) · Tekrar dene · Ana menü | ✅ |
+| Kazanıldı, son harita (20/20, ★★★) | Tekrar dene · Ana menü (ikisi eşit boy) | ✅ "Sonraki harita" doğru şekilde yok |
+| `Enter` → Tekrar dene | Oyun sıfırdan başlıyor | ✅ `gold:280, lives:20, wave:1, towerCount:0` |
+| `Enter` → Sonraki harita | Doğru haritaya geçiyor | ✅ `mapId: 'tas-kopru'` (harita 1'den sonraki) |
+| 5 art arda "Tekrar dene" | `shutdownListeners` sabit | ✅ `13→13`, `clearCount` doğru artıyor (`0→5`) |
+
+`npm run typecheck/test (698/698)/guard (10/10)` yeşil.
+`docs/KURALLAR.md` diff'i boş (salt akış/UI).
+
+**Not — ekran görüntüsü yine alınamadı** (Browser pane sorunu bu
+oturumda da sürdü). Doğrulama sahne grafiği üzerinden (buton sayısı,
+panel boyutları, yazı içerikleri, `Enter` tuşu emülasyonu) yapıldı.
+
+---
 
 ---
 

@@ -5,6 +5,7 @@ import { LocalStore } from '../util/storage';
 import { BALANCE } from '../data/balance';
 import { devHooks } from '../util/devHooks';
 import { createParchmentButton } from '../fx/ParchmentFrame';
+import { MAPS } from '../data/maps';
 
 const INK = 0x14203a;
 
@@ -22,6 +23,10 @@ export interface GameOverData {
  * Yıldız derecelendirmesi **M7'de** görselleştirilecek; eşikler
  * `GAME-DESIGN.md` §9'da zaten tanımlı (20 → ★★★, 15-19 → ★★, ≤14 → ★)
  * ve burada sayı olarak gösteriliyor.
+ *
+ * `Y07` — duruma göre **birincil bir eylem** var artık:
+ * kaybedince "Tekrar dene", kazanıp sonraki harita açılınca "Sonraki
+ * harita". "Ana menü" hep ikincil, hep orada.
  */
 export class GameOverScene extends Phaser.Scene {
   #data: GameOverData & { mapId?: string } = { won: false, lives: 0 };
@@ -47,7 +52,7 @@ export class GameOverScene extends Phaser.Scene {
 
   create(): void {
     const { width, height } = this.scale;
-    const { won, lives } = this.#data;
+    const { won, lives, mapId } = this.#data;
 
     this.add.rectangle(0, 0, width, height, INK, 0.9).setOrigin(0);
 
@@ -67,7 +72,8 @@ export class GameOverScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    // §9 eşikleri: 20 → ★★★, 15-19 → ★★, ≤14 → ★. Görselleştirme M7'de.
+    // §9 eşikleri: 20 → ★★★, 15-19 → ★★, ≤14 → ★.
+    // Görsel: `G07` — hâlâ sistem yazı tipi, atlas karesi bekliyor.
     if (won) {
       this.add
         .text(width / 2, height / 2 + 20, '★'.repeat(this.#yildiz(lives)), {
@@ -78,7 +84,31 @@ export class GameOverScene extends Phaser.Scene {
         .setOrigin(0.5);
     }
 
-    this.#menuButonu(width / 2, height / 2 + 100);
+    // `Y07` — sıradaki harita. S62: kilit yalnız bitirmeye bağlı, yani
+    // `won` ise bu haritanın kendisi az önce (yukarıdaki `init`) tamamlandı
+    // sayıldı ve sıradaki **zaten** açık; ayrıca bir `SaveSystem` okuması
+    // gerekmiyor.
+    const ids = MAPS.map((m) => m.id);
+    const suankiIndex = mapId !== undefined ? ids.indexOf(mapId) : -1;
+    const sonrakiId = suankiIndex >= 0 ? ids[suankiIndex + 1] : undefined;
+    const sonrakiVar = won && sonrakiId !== undefined;
+
+    const birincilEylem = this.#butonlariKur(width / 2, height / 2 + 96, {
+      kaybetti: !won,
+      sonrakiVar,
+      haritayaGec: (hedefMapId: string) => this.#haritayaGec(hedefMapId),
+      anaMenuyeDon: () => this.#anaMenuyeDon(),
+      mapId,
+      sonrakiId,
+    });
+
+    // `Enter` → birincil eylem. Duraklatma zaten ESC/boşluk kullanıyor
+    // (Poki zorunlu); bu doğal bir ek. `create()` her yeniden açılışta
+    // koşuyor ama sızıntı yok: `KeyboardPlugin.shutdown()` sahne kapanınca
+    // TÜM dinleyicilerini kendisi temizliyor (`removeAllListeners()`,
+    // Phaser çekirdeği) — `HudScene`'in ESC/boşluk dinleyicileriyle aynı
+    // güvence.
+    this.input.keyboard?.on('keydown-ENTER', birincilEylem);
 
     const dev = devHooks();
     if (dev !== undefined) {
@@ -92,24 +122,95 @@ export class GameOverScene extends Phaser.Scene {
     return starsFor(lives, this.#data.won);
   }
 
-  #menuButonu(x: number, y: number): void {
-    const cerceve = createParchmentButton(this, x, y, 220, 56, 14);
+  /**
+   * Duruma göre 1-3 buton kurar, dikey sıralı, birincil en üstte ve
+   * belirgin biçimde daha büyük (`Y07` Öneri 1 — renk yerine **boyut**:
+   * altın metin parşömen zeminde okunmuyor, `G02`'de düzeltilen hatanın
+   * aynısını burada tekrarlamamak için).
+   *
+   * @returns Birincil eylemi tetikleyen fonksiyon — `Enter` tuşuna bağlanıyor.
+   */
+  #butonlariKur(
+    x: number,
+    y: number,
+    d: {
+      readonly kaybetti: boolean;
+      readonly sonrakiVar: boolean;
+      readonly haritayaGec: (mapId: string) => void;
+      readonly anaMenuyeDon: () => void;
+      readonly mapId: string | undefined;
+      readonly sonrakiId: string | undefined;
+    },
+  ): () => void {
+    const ARA = 64;
+    let satir = 0;
+    const sonraki = () => y + satir++ * ARA;
+
+    if (d.sonrakiVar && d.sonrakiId !== undefined) {
+      // Kazanıldı, sonraki harita açık: Sonraki harita (birincil) ·
+      // Tekrar dene · Ana menü.
+      const birincil = (): void => d.haritayaGec(d.sonrakiId!);
+      this.#buton(x, sonraki(), 260, 64, t('nextMap'), true, birincil);
+      if (d.mapId !== undefined) {
+        this.#buton(x, sonraki(), 220, 56, t('retry'), false, () => d.haritayaGec(d.mapId!));
+      }
+      this.#buton(x, sonraki(), 220, 56, t('backToMenu'), false, d.anaMenuyeDon);
+      return birincil;
+    }
+
+    if (d.mapId !== undefined) {
+      // Kaybedildi (birincil "Tekrar dene"), ya da kazanıldı+son harita
+      // (ikisi de eşit ağırlıkta — tablo bu durumda birincil önermiyor).
+      const birincil = (): void => d.haritayaGec(d.mapId!);
+      const buyukMu = d.kaybetti;
+      this.#buton(x, sonraki(), buyukMu ? 260 : 220, buyukMu ? 64 : 56, t('retry'), buyukMu, birincil);
+      this.#buton(x, sonraki(), 220, 56, t('backToMenu'), false, d.anaMenuyeDon);
+      return birincil;
+    }
+
+    // `mapId` yok (teorik — `HudScene` her zaman veriyor). Tek çıkış.
+    this.#buton(x, sonraki(), 260, 64, t('backToMenu'), true, d.anaMenuyeDon);
+    return d.anaMenuyeDon;
+  }
+
+  #buton(
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    metin: string,
+    birincil: boolean,
+    onClick: () => void,
+  ): void {
+    const cerceve = createParchmentButton(this, x, y, w, h, 14);
 
     this.add
-      .text(x, y, t('backToMenu'), {
+      .text(x, y, metin, {
         fontFamily: 'Spectral, serif',
-        fontSize: '20px',
+        fontSize: birincil ? '24px' : '20px',
         color: '#14203A',
       })
       .setOrigin(0.5);
 
-    cerceve.on('pointerup', () => {
-      // `stop` + `start`: `Game` ve `Hud` tamamen kapanıyor ki yeni oyun
-      // temiz başlasın. `sleep`/`wake` kullanılsaydı önceki oyunun altını
-      // ve kuleleri kalırdı — görevin "bitmedi sayılır eğer" maddesi.
-      this.scene.stop('Hud');
-      this.scene.stop('Game');
-      this.scene.start('LevelSelect');
-    });
+    cerceve.on('pointerup', onClick);
+  }
+
+  /**
+   * `stop` + `start`: `Game` ve `Hud` tamamen kapanıp temiz başlıyor —
+   * `LevelSelectScene`'in kendi başlatma deseniyle aynı (`start('Game',
+   * ...)` + `launch('Hud')`). `sleep`/`wake` kullanılsaydı önceki oyunun
+   * altını ve kuleleri kalırdı — görevin "bitmedi sayılır eğer" maddesi.
+   */
+  #haritayaGec(mapId: string): void {
+    this.scene.stop('Hud');
+    this.scene.stop('Game');
+    this.scene.start('Game', { mapId });
+    this.scene.launch('Hud');
+  }
+
+  #anaMenuyeDon(): void {
+    this.scene.stop('Hud');
+    this.scene.stop('Game');
+    this.scene.start('LevelSelect');
   }
 }
