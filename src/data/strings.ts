@@ -32,6 +32,9 @@ const TR = {
   levelSelect: 'Seviye Seç',
   locked: 'Kilitli',
   back: '← Geri',
+  /** `Y07` — oyun sonu ekranı. */
+  retry: 'Tekrar dene',
+  nextMap: 'Sonraki harita',
 } as const;
 
 export type StringKey = keyof typeof TR;
@@ -60,5 +63,7 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     levelSelect: '',
     locked: '',
     back: '',
+    retry: '',
+    nextMap: '',
   },
 };
