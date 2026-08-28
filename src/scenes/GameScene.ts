@@ -32,10 +32,11 @@ import { GoldCoin, GoldFlightSystem } from '../fx/GoldFlight';
 import { EnemyHealthBar } from '../fx/EnemyHealthBar';
 import { EnemyHealthBarSystem } from '../fx/EnemyHealthBarSystem';
 import { Particles } from '../fx/Particles';
+import { MapRenderer } from '../fx/MapRenderer';
 import { TowerInfoPanel } from '../fx/TowerInfoPanel';
 import { SoundSystem } from '../fx/SoundSystem';
 import { Pool } from '../util/pool';
-import { coveredSegments, measureCoverage } from '../util/coverage';
+import { averageCoverage, measureCoverage } from '../util/coverage';
 import { MAP_1, getMap, COVERAGE_REFERENCE_RANGE } from '../data/maps';
 import { PreloadScene } from './PreloadScene';
 import type { MapDef } from '../types/map';
@@ -60,16 +61,9 @@ import type { Wave } from '../types/wave';
  */
 /** Savaş alanı gösterim boyutu — P04 brifinden "~30 px en uzun kenar" hedefinin karesel yaklaşımı. */
 const ENEMY_SIZE = 30;
-const PATH_COLOR = 0x8a7250; // Yol: parşömen ile mürekkep arası ara ton
-const PATH_WIDTH = 48;
-const SPOT_COLOR = 0xe4d3a8; // Parşömen
-/** Yarıçap 22 → çap 44 px: platform dokunmatik hedef alt sınırı. */
-const SPOT_RADIUS = 22;
-const CASTLE_COLOR = 0x14203a; // Mürekkep
 const GOLD_COLOR = 0xd4a032; // Altın varak
 const INK_COLOR = 0x14203a;
 const VERMILION_COLOR = 0xb03a2e;
-const CASTLE_SIZE = 56;
 const PROJECTILE_RADIUS = 5;
 /** P03 brifi — kule/kışla gövdesi oyun içi gösterim boyutu (`Tower.ts` ile aynı). */
 const TOWER_DISPLAY_SIZE = 64;
@@ -155,9 +149,8 @@ export class GameScene extends Phaser.Scene {
   #abilities?: EnemyAbilitySystem<Enemy>;
 
   #occupancy?: SpotOccupancy;
-  #hoverGfx?: Phaser.GameObjects.Graphics;
-  #flyerGfx?: Phaser.GameObjects.Graphics;
-  #flyerHintOn = false;
+  /** `Y01` adım 2 — harita çizimi, hover, uçan ipucu. */
+  #mapRenderer?: MapRenderer;
   #menu?: Phaser.GameObjects.Container;
   /** Seçili kule/kışlanın üstündeki altın kartuş (P02) — yalnız menü açıkken. */
   #cartouche?: Phaser.GameObjects.Image;
@@ -338,7 +331,6 @@ export class GameScene extends Phaser.Scene {
     this.#towerBySpot.clear();
     this.#hoveredSpot = -1;
     this.#selectedSpot = -1;
-    this.#flyerHintOn = false;
     this.#mermiTepe = 0;
     this.#menu = undefined;
     this.#cartouche = undefined;
@@ -386,9 +378,8 @@ export class GameScene extends Phaser.Scene {
     this.add.image(this.scale.width / 2, this.scale.height / 2, `bg-${this.#map.id}`);
     // Harita **bir kez** çiziliyor. `update`'te yeniden çizmek her karede
     // yeni geometri üretmek demek; Graphics'in maliyeti orada.
-    this.#drawMap();
-    this.#flyerGfx = this.add.graphics();
-    this.#hoverGfx = this.add.graphics();
+    // `Y01` adım 2 — çizim `fx/MapRenderer.ts`'e taşındı.
+    this.#mapRenderer = new MapRenderer(this, this.#map);
     // Bilgi paneli: harita 1 kadrosunun düşmanları (S42).
     this.#infoPanel = new TowerInfoPanel(
       this,
@@ -632,7 +623,7 @@ export class GameScene extends Phaser.Scene {
     this.#damageTexts?.update(sd);
     this.#altinUcusu?.update(sd);
     this.#enemyHealthBars?.update(dusmanlar);
-    this.#updateFlyerHint();
+    this.#mapRenderer?.updateFlyerHint(this.#waves?.upcomingWave);
 
     const aktifMermi = this.#projectiles?.activeCount ?? 0;
     if (aktifMermi > this.#mermiTepe) this.#mermiTepe = aktifMermi;
@@ -749,7 +740,7 @@ export class GameScene extends Phaser.Scene {
     // **`#drawRally()` BURADA ÇAĞRILMIYOR.** İlk yazımda çağrılıyordu ve
     // dalga 10'un kare maliyetini 0,95 ms'ten 3,5 ms'e çıkardı (canlı
     // ölçüm): her karede `Graphics.clear()` + kesikli çember + kesikli
-    // çizgi yeniden üretmek demekti. `#drawHover` zaten aynı sebeple
+    // çizgi yeniden üretmek demekti. `MapRenderer.drawHover` zaten aynı sebeple
     // yalnız hover değiştiğinde çiziliyor; toplanma noktası da yalnız
     // **değiştiğinde** çiziliyor (kurma, satma, seçim, sürükleme).
   }
@@ -770,10 +761,10 @@ export class GameScene extends Phaser.Scene {
 
       // Toplanma menzili (kural 6) — kesikli, kule menzil halkasıyla aynı dil.
       g.lineStyle(2, RALLY_COLOR, 0.5);
-      this.#dashedCircle(g, spot, BLOCK.rallyRange, RALLY_COLOR, 2);
+      this.#mapRenderer?.dashedCircle(g, spot, BLOCK.rallyRange, RALLY_COLOR, 2);
       // Kışla → toplanma noktası bağı.
       g.lineStyle(2, RALLY_COLOR, 0.7);
-      this.#dashedLine(g, spot, k.rally, 8);
+      this.#mapRenderer?.dashedLine(g, spot, k.rally, 8);
     }
   }
 
@@ -971,7 +962,7 @@ export class GameScene extends Phaser.Scene {
       const i = findSpotAt({ x: p.worldX, y: p.worldY }, this.#map.buildSpots);
       if (i === this.#hoveredSpot) return;
       this.#hoveredSpot = i;
-      this.#drawHover();
+      this.#mapRenderer?.drawHover(this.#hoveredSpot);
     });
 
     this.input.on(Phaser.Input.Events.POINTER_UP, () => {
@@ -1010,125 +1001,6 @@ export class GameScene extends Phaser.Scene {
       }
       this.#openMenu(i);
     });
-  }
-
-  /**
-   * `GAME-DESIGN.md` §4.5 + §2: kesikli altın menzil çemberi + mürekkep
-   * kontur, ve o noktanın **kapsadığı yol parçası** kalın altın çizgiyle.
-   *
-   * Tek bir `Graphics` nesnesi **yeniden çiziliyor**, her karede yenisi
-   * yaratılmıyor — üstelik yalnız hover değiştiğinde.
-   */
-  #drawHover(): void {
-    const g = this.#hoverGfx;
-    if (g === undefined) return;
-    g.clear();
-
-    const i = this.#hoveredSpot;
-    const spot = i >= 0 ? this.#map.buildSpots[i] : undefined;
-    if (spot === undefined) return;
-
-    const menzil = COVERAGE_REFERENCE_RANGE;
-
-    // Kapsanan yol vurgusu — `coveredSegments` ile, yani ekranda görünen
-    // çizgi ile `MapDef.coverage` içindeki sayı aynı hesaptan geliyor.
-    // `Y13`: bütün yollar geziliyor — yalnız `paths[0]` çizilseydi harita
-    // 2/3'ün ikinci kolundaki kapsama hiç görünmezdi, oysa `MapDef.coverage`
-    // (yukarıdaki yorumun "aynı hesap" dediği sayı) ikisini de topluyor.
-    g.lineStyle(10, GOLD_COLOR, 0.55);
-    for (const yol of this.#map.paths) {
-      for (const p of coveredSegments(yol, spot, menzil)) {
-        g.beginPath();
-        g.moveTo(p.a.x, p.a.y);
-        g.lineTo(p.b.x, p.b.y);
-        g.strokePath();
-      }
-    }
-
-    // Menzil uçan hattını kesiyorsa o parça da vurgulanıyor (§5) — oyuncu
-    // "bu nokta harpiyi görüyor mu" sorusunu bakarak cevaplayabilsin.
-    g.lineStyle(8, 0x3e5ca8, 0.5); // lapis — uçan
-    for (const uc of this.#map.flyerPaths) {
-      for (const p of coveredSegments(uc, spot, menzil)) {
-        g.beginPath();
-        g.moveTo(p.a.x, p.a.y);
-        g.lineTo(p.b.x, p.b.y);
-        g.strokePath();
-      }
-    }
-
-    // Kesikli altın çember + mürekkep dış kontur.
-    // Kontursuz çember yoğun dalgada kayboluyor (`GAME-DESIGN.md` §2).
-    this.#dashedCircle(g, spot, menzil + 1.5, INK_COLOR, 3);
-    this.#dashedCircle(g, spot, menzil, GOLD_COLOR, 2);
-  }
-
-  /**
-   * **Uçan hattı gösterimi** (`M4-T06`, `GAME-DESIGN.md` §5 — zorunlu).
-   *
-   * "Harpi yolu takip etmediği için, uçuş hattı kule menzillerinden
-   * geçmiyorsa harpi **garantili sızar** — oyuncunun hiçbir kararı bunu
-   * değiştiremez." Defense Grid'in çözümü: hazırlık aşamasında hattı göster.
-   *
-   * Hat **yalnız o dalgada uçan varsa** ve **yalnız hazırlıkta** görünüyor;
-   * dalga başlayınca sönüyor.
-   */
-  #updateFlyerHint(): void {
-    const g = this.#flyerGfx;
-    if (g === undefined) return;
-
-    const dalga = this.#waves?.upcomingWave;
-    const ucanVar =
-      dalga !== undefined &&
-      dalga.groups.some((gr) => getEnemy(gr.enemy)?.flying === true);
-
-    if (ucanVar === this.#flyerHintOn) return;
-    this.#flyerHintOn = ucanVar;
-    g.clear();
-    if (!ucanVar) return;
-
-    // Soluk kesikli altın çizgi (§5).
-    g.lineStyle(3, GOLD_COLOR, 0.45);
-    for (const hat of this.#map.flyerPaths) {
-      for (let i = 0; i < hat.length - 1; i++) {
-        const a = hat[i];
-        const b = hat[i + 1];
-        if (a === undefined || b === undefined) continue;
-        this.#dashedLine(g, a, b, 18);
-      }
-    }
-  }
-
-  /** Kesikli düz çizgi — Phaser'da hazır yok. */
-  #dashedLine(g: Phaser.GameObjects.Graphics, a: Vec2, b: Vec2, parcaPx: number): void {
-    const uzunluk = Math.hypot(b.x - a.x, b.y - a.y);
-    const adet = Math.max(1, Math.floor(uzunluk / parcaPx));
-    for (let k = 0; k < adet; k += 2) {
-      const t0 = k / adet;
-      const t1 = Math.min(1, (k + 1) / adet);
-      g.beginPath();
-      g.moveTo(a.x + (b.x - a.x) * t0, a.y + (b.y - a.y) * t0);
-      g.lineTo(a.x + (b.x - a.x) * t1, a.y + (b.y - a.y) * t1);
-      g.strokePath();
-    }
-  }
-
-  /** Phaser'da hazır kesikli yay yok; parça parça çiziliyor. */
-  #dashedCircle(
-    g: Phaser.GameObjects.Graphics,
-    c: Vec2,
-    r: number,
-    renk: number,
-    kalinlik: number,
-  ): void {
-    const parca = 24;
-    const adim = (Math.PI * 2) / parca;
-    g.lineStyle(kalinlik, renk, 1);
-    for (let k = 0; k < parca; k += 2) {
-      g.beginPath();
-      g.arc(c.x, c.y, r, k * adim, (k + 1) * adim);
-      g.strokePath();
-    }
   }
 
   /**
@@ -1550,77 +1422,6 @@ export class GameScene extends Phaser.Scene {
     return iade;
   }
 
-  // ------------------------------------------------------------------- çizim
-
-  #drawMap(): void {
-    const g = this.add.graphics();
-
-    // Birden fazla giriş varsa (harita 2/3) **hepsi** çizilir — yalnız
-    // `paths[0]` çizilirse ikinci girişin yolu ekranda hiç görünmez, oysa
-    // düşman artık gerçekten oradan da geliyor.
-    for (const yol of this.#map.paths) {
-      g.lineStyle(PATH_WIDTH, PATH_COLOR, 1);
-      g.beginPath();
-      yol.forEach((p, i) => (i === 0 ? g.moveTo(p.x, p.y) : g.lineTo(p.x, p.y)));
-      g.strokePath();
-      // Keskin virajda (S13) köşe boşluk bırakıyor; nokta ile dolduruluyor.
-      g.fillStyle(PATH_COLOR, 1);
-      for (const p of yol) g.fillCircle(p.x, p.y, PATH_WIDTH / 2);
-    }
-
-    for (const s of this.#map.buildSpots) {
-      g.fillStyle(SPOT_COLOR, 1);
-      g.fillCircle(s.x, s.y, SPOT_RADIUS);
-      g.lineStyle(3, GOLD_COLOR, 1);
-      g.strokeCircle(s.x, s.y, SPOT_RADIUS);
-    }
-
-    // Kale — mürekkep zemin üstünde mürekkep kare görünmez, altın kontur şart.
-    const c = this.#map.castle;
-    g.fillStyle(CASTLE_COLOR, 1);
-    g.fillRect(c.x - CASTLE_SIZE / 2, c.y - CASTLE_SIZE / 2, CASTLE_SIZE, CASTLE_SIZE);
-    g.lineStyle(4, GOLD_COLOR, 1);
-    g.strokeRect(c.x - CASTLE_SIZE / 2, c.y - CASTLE_SIZE / 2, CASTLE_SIZE, CASTLE_SIZE);
-
-    this.#drawCoverageOverlay();
-  }
-
-  /**
-   * `M1-T09` — kapsama göstergesi. **Yalnız geliştirmede.**
-   * `CLAUDE.md` Platform: yayın yapısında hata ayıklama göstergesi bulunmaz.
-   *
-   * TIER 1 kural 7 ihlali değil: bir kez yazılıp bir daha değişmiyor.
-   */
-  #drawCoverageOverlay(): void {
-    if (!import.meta.env.DEV) return;
-
-    const stil = { fontFamily: 'monospace', fontSize: '16px', color: '#D4A032' };
-    this.#map.coverage.forEach((c, i) => {
-      const s = this.#map.buildSpots[i];
-      if (s === undefined) return;
-      this.add
-        .text(s.x, s.y - SPOT_RADIUS - 14, `${Math.round(c.coveredPx)}`, stil)
-        .setOrigin(0.5, 1);
-    });
-
-    const L = this.#map.paths.reduce(
-      (t, p) => t + (p.length > 1 ? new PathSystem(p).totalLength : 0),
-      0,
-    );
-    this.add.text(
-      12,
-      12,
-      `ort: ${this.#ortalamaKapsama().toFixed(1)} px · L: ${L.toFixed(0)} px · menzil: ${COVERAGE_REFERENCE_RANGE}`,
-      { fontFamily: 'monospace', fontSize: '16px', color: '#E4D3A8' },
-    );
-  }
-
-  #ortalamaKapsama(): number {
-    const c = this.#map.coverage;
-    if (c.length === 0) return 0;
-    return c.reduce((t, x) => t + x.coveredPx, 0) / c.length;
-  }
-
   #devKancalari(
     path: PathSystem,
     enemyPool: Pool<Enemy>,
@@ -1642,7 +1443,7 @@ export class GameScene extends Phaser.Scene {
     dev.lives = () => this.#eco?.lives ?? -1;
     dev.pathLength = () => path.totalLength;
     dev.coverage = () => this.#map.coverage;
-    dev.coverageAverage = () => this.#ortalamaKapsama();
+    dev.coverageAverage = () => averageCoverage(this.#map.coverage);
 
     dev.projectileActive = () => mermiHavuzu.activeCount;
     dev.projectilePeak = () => this.#mermiTepe;
@@ -1671,14 +1472,14 @@ export class GameScene extends Phaser.Scene {
       return this.#towerBySpot.get(spotIndex)?.targetMode ?? '';
     };
     dev.towerTier = (spotIndex: number) => this.#towerBySpot.get(spotIndex)?.tierIndex ?? -1;
-    dev.flyerHintOn = () => this.#flyerHintOn;
+    dev.flyerHintOn = () => this.#mapRenderer?.flyerHintActive ?? false;
     dev.enemyKinds = () =>
       (this.#enemyPool?.activeItems() ?? []).map((e) => e.def?.id ?? '?');
     dev.enemySpeedFactors = () =>
       (this.#enemyPool?.activeItems() ?? []).map((e) => e.speedFactor);
     dev.hoverSpot = (spotIndex: number) => {
       this.#hoveredSpot = spotIndex;
-      this.#drawHover();
+      this.#mapRenderer?.drawHover(this.#hoveredSpot);
     };
 
     // --- M5 ---

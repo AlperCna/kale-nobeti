@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  averageCoverage,
   coveredLength,
   coveredSegments,
   measureCoverage,
@@ -265,5 +266,27 @@ describe('spotsCoveringFlyerPaths', () => {
       { x: 1000, y: 900 },
     ];
     expect(spotsCoveringFlyerPaths([ucus], [{ x: 500, y: 100 }], 150)).toBe(0);
+  });
+});
+
+describe('averageCoverage — Y01 adım 2, GameScene.#ortalamaKapsama idi', () => {
+  it('boş listede 0', () => {
+    expect(averageCoverage([])).toBe(0);
+  });
+
+  it('ortalamayı doğru hesaplıyor', () => {
+    expect(
+      averageCoverage([
+        { spotIndex: 0, coveredPx: 100 },
+        { spotIndex: 1, coveredPx: 200 },
+        { spotIndex: 2, coveredPx: 300 },
+      ]),
+    ).toBe(200);
+  });
+
+  it('gerçek haritanın kapsamasıyla tutarlı', () => {
+    const beklenen =
+      MAP_1.coverage.reduce((t, c) => t + c.coveredPx, 0) / MAP_1.coverage.length;
+    expect(averageCoverage(MAP_1.coverage)).toBeCloseTo(beklenen, 6);
   });
 });

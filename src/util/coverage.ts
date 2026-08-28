@@ -103,6 +103,18 @@ export function coveredSegments(
   return sonuc;
 }
 
+/**
+ * Ortalama kapsama — `Y01` adım 2: `GameScene`'in `#ortalamaKapsama`'sıydı.
+ * `fx/MapRenderer.ts`'e taşınan kapsama göstergesi VE `GameScene`'de kalan
+ * `dev.coverageAverage` hook'u ikisi de bunu istiyor; iki ayrı sınıfta
+ * aynı 3 satırı tutmak yerine buraya (`SpotCoverage`'ın zaten yaşadığı
+ * yere) taşındı.
+ */
+export function averageCoverage(coverage: readonly SpotCoverage[]): number {
+  if (coverage.length === 0) return 0;
+  return coverage.reduce((t, x) => t + x.coveredPx, 0) / coverage.length;
+}
+
 /** Bir yolun toplam uzunluğu. `research/01` §3'teki `L` değeri. */
 export function pathLength(path: readonly Vec2[]): number {
   let toplam = 0;
