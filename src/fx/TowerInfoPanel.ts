@@ -5,6 +5,7 @@ import { NUMBER_FONT_KEY } from './numberFont';
 import { effectiveDps } from '../systems/balanceChecks';
 import { applyDamage } from '../systems/combat';
 import { enemyFrameKey } from '../data/spriteFrames';
+import { createParchmentFrame } from './ParchmentFrame';
 
 /**
  * Kule bilgi paneli — `GAME-DESIGN.md` §11.
@@ -21,6 +22,24 @@ import { enemyFrameKey } from '../data/spriteFrames';
  *
  * TIER 1 kural 7: değişen **sayılar** `BitmapText`. Bu dosya `Text`
  * üretmiyor; sabit etiketler `HudScene`'de.
+ *
+ * ## Zemin: koyu, ama çerçeve parşömen — `G04`
+ *
+ * M6'da bütün paneller parşömen çerçeveye geçti, bu panel **tek istisna**
+ * kaldı ve G03'ten sonra yapı menüsünün hemen yanında açıldığı için
+ * tutarsızlık daha da göze battı. Tam parşömen dönüşümü (zemin de açık)
+ * **yapılmadı** — panelin yedi göstergesi (§11) açık renkli metin
+ * (`PARCHMENT`/`GOLD`) üstüne kurulu; açık zemine geçmek her rengi
+ * yeniden atamayı, rozet kontrastını yeniden ölçmeyi gerektirirdi ve
+ * risk §11'in çözdüğü "bilgi eksikliği" sorununu geri getirmek olurdu.
+ *
+ * Seçilen kural (`docs/plan/iyilestirme/G04-towerinfopanel-paleti.md`):
+ * **parşömen zemin eylem yüzeylerinde** (buton, menü, ayar), **koyu
+ * zemin yoğun bilgi yüzeylerinde** (bu panel) — **çerçeve her ikisinde
+ * de parşömen.** `createParchmentFrame`'in `skipMiddle=true`'su tam bu
+ * yüzden var: köşe + kenar dokusu çiziliyor, orta dolgu atlanıp yerine
+ * mevcut `INK` dikdörtgeni bırakılıyor. Metin renklerinin hiçbiri
+ * değişmedi — okunurluk aynen korunuyor.
  */
 
 const GOLD = 0xd4a032;
@@ -73,8 +92,13 @@ export class TowerInfoPanel {
     this.#roster = roster;
     this.#kap = scene.add.container(x, y).setVisible(false);
 
-    const arka = scene.add.rectangle(0, 0, W, H, INK, 0.9).setOrigin(0).setStrokeStyle(2, GOLD);
-    this.#kap.add(arka);
+    // `G04` — zemin koyu kalıyor (bilinçli, yukarıdaki gerekçe), ama
+    // artık kenarlığı KENDİ `setStrokeStyle`'ı DEĞİL, diğer panellerle
+    // aynı parşömen çerçeve (`skipMiddle=true` — orta doku atlanıp
+    // `INK` dikdörtgeni görünür kalıyor) çiziyor.
+    const arka = scene.add.rectangle(0, 0, W, H, INK, 0.9).setOrigin(0);
+    const cerceve = createParchmentFrame(scene, W / 2, H / 2, W, H, 16, true);
+    this.#kap.add([arka, cerceve]);
 
     const sayi = (dx: number, dy: number, renk: number): Phaser.GameObjects.BitmapText => {
       const t = scene.add.bitmapText(dx, dy, NUMBER_FONT_KEY, '').setScale(0.7).setTint(renk);
