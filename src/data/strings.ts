@@ -38,6 +38,36 @@ const TR = {
   /** `Y14` — kritik varlık yükleme hatası ekranı. */
   assetLoadError: 'Varlıklar yüklenemedi. Bağlantınızı kontrol edip sayfayı yenileyin.',
   reloadPage: 'Sayfayı yenile',
+
+  /**
+   * `Y03` — Adım 2: `scenes/`/`fx/`'te kodun içine yazılmış ~20 metin
+   * buraya taşındı. `en` şimdilik boş (Adım 3, ayrı bir iş — bkz.
+   * `docs/plan/iyilestirme/Y03-i18n-sizintisi.md`).
+   */
+  towerOkcu: 'Okçu',
+  towerTop: 'Top',
+  towerBuyu: 'Büyü',
+  modeFirst: 'İlk',
+  modeLast: 'Son',
+  modeStrongest: 'Güçlü',
+  modeWeakest: 'Zayıf',
+  modeClosest: 'Yakın',
+  barracks: 'Kışla',
+  sell: 'Sat',
+  pauseHint: 'ESC / boşluk',
+  buildSpot: 'nokta',
+  /** Harita adları — `OPEN-QUESTIONS.md` S75: çevrilecek, özel isim değil. */
+  mapDegirmenGecidi: 'Değirmen Geçidi',
+  mapTasKopru: 'Taş Köprü',
+  mapKulOvasi: 'Kül Ovası',
+  settingsTitle: 'Ayarlar',
+  sound: 'Ses',
+  screenShake: 'Ekran sarsıntısı',
+  effects: 'Efekt yoğunluğu',
+  on: 'Açık',
+  off: 'Kapalı',
+  effectLow: 'Düşük',
+  effectFull: 'Tam',
 } as const;
 
 export type StringKey = keyof typeof TR;
@@ -70,5 +100,28 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     nextMap: '',
     assetLoadError: '',
     reloadPage: '',
+    towerOkcu: '',
+    towerTop: '',
+    towerBuyu: '',
+    modeFirst: '',
+    modeLast: '',
+    modeStrongest: '',
+    modeWeakest: '',
+    modeClosest: '',
+    barracks: '',
+    sell: '',
+    pauseHint: '',
+    buildSpot: '',
+    mapDegirmenGecidi: '',
+    mapTasKopru: '',
+    mapKulOvasi: '',
+    settingsTitle: '',
+    sound: '',
+    screenShake: '',
+    effects: '',
+    on: '',
+    off: '',
+    effectLow: '',
+    effectFull: '',
   },
 };

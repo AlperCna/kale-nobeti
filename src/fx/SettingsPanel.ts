@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { Settings, EffectLevel } from '../systems/Settings';
 import { createParchmentButton } from './ParchmentFrame';
+import { t } from '../util/i18n';
 
 const GOLD = 0xd4a032;
 const INK = 0x14203a;
@@ -9,11 +10,10 @@ const INK = 0x14203a;
 const SATIR_Y = 58;
 const GENISLIK = 420;
 
-const EFEKT_ETIKET: Readonly<Record<EffectLevel, string>> = {
-  off: 'Kapalı',
-  low: 'Düşük',
-  full: 'Tam',
-};
+/** `Y03` — panel etiketleri `strings.ts`'e taşındı. */
+function efektEtiket(k: EffectLevel): string {
+  return k === 'off' ? t('off') : k === 'low' ? t('effectLow') : t('effectFull');
+}
 
 /**
  * Ayarlar paneli — `GAME-DESIGN.md` §10 ve **TIER 1 kural 6**.
@@ -50,7 +50,7 @@ export class SettingsPanel {
       .rectangle(0, 0, GENISLIK, 260, INK, 0.96)
       .setStrokeStyle(3, GOLD);
     const baslik = scene.add
-      .text(0, -100, 'Ayarlar', {
+      .text(0, -100, t('settingsTitle'), {
         fontFamily: '"Grenze Gotisch", serif',
         fontSize: '32px',
         color: '#E4D3A8',
@@ -58,7 +58,7 @@ export class SettingsPanel {
       .setOrigin(0.5);
     this.#kok.add([arka, baslik]);
 
-    this.#satir(scene, -SATIR_Y + 12, 'Ses', this.#sesEtiketleri, ['Açık', 'Kapalı'], () => {
+    this.#satir(scene, -SATIR_Y + 12, t('sound'), this.#sesEtiketleri, [t('on'), t('off')], () => {
       this.settings.set('sound', !this.settings.state.sound);
       this.refresh();
       this.onChange();
@@ -67,9 +67,9 @@ export class SettingsPanel {
     this.#satir(
       scene,
       12,
-      'Ekran sarsıntısı',
+      t('screenShake'),
       this.#sarsintiEtiketleri,
-      ['Açık', 'Kapalı'],
+      [t('on'), t('off')],
       () => {
         this.settings.set('screenShake', !this.settings.state.screenShake);
         this.refresh();
@@ -81,7 +81,7 @@ export class SettingsPanel {
     const y = SATIR_Y + 12;
     this.#kok.add(
       scene.add
-        .text(-GENISLIK / 2 + 24, y, 'Efekt yoğunluğu', {
+        .text(-GENISLIK / 2 + 24, y, t('effects'), {
           fontFamily: 'Spectral, serif',
           fontSize: '18px',
           color: '#E4D3A8',
@@ -96,16 +96,16 @@ export class SettingsPanel {
     });
     this.#kok.add(buton);
     for (const k of ['off', 'low', 'full'] as EffectLevel[]) {
-      const t = scene.add
-        .text(GENISLIK / 2 - 74, y, EFEKT_ETIKET[k], {
+      const metin = scene.add
+        .text(GENISLIK / 2 - 74, y, efektEtiket(k), {
           fontFamily: 'Spectral, serif',
           fontSize: '18px',
           color: '#14203A',
         })
         .setOrigin(0.5)
         .setVisible(false);
-      this.#efektEtiketleri.set(k, t);
-      this.#kok.add(t);
+      this.#efektEtiketleri.set(k, metin);
+      this.#kok.add(metin);
     }
 
     this.refresh();
@@ -133,7 +133,9 @@ export class SettingsPanel {
     this.#kok.add(buton);
 
     for (const d of degerler) {
-      const t = scene.add
+      // `metin`, imzadaki `t()` (i18n) ile karışmasın diye — bu yereldeki
+      // `Text` nesnesinin adı, çevirmen değil.
+      const metin = scene.add
         .text(GENISLIK / 2 - 74, y, d, {
           fontFamily: 'Spectral, serif',
           fontSize: '18px',
@@ -141,8 +143,8 @@ export class SettingsPanel {
         })
         .setOrigin(0.5)
         .setVisible(false);
-      etiketler.push(t);
-      this.#kok.add(t);
+      etiketler.push(metin);
+      this.#kok.add(metin);
     }
   }
 
@@ -153,7 +155,7 @@ export class SettingsPanel {
     this.#sesEtiketleri[1]?.setVisible(!s.sound);
     this.#sarsintiEtiketleri[0]?.setVisible(s.screenShake);
     this.#sarsintiEtiketleri[1]?.setVisible(!s.screenShake);
-    for (const [k, t] of this.#efektEtiketleri) t.setVisible(k === s.effects);
+    for (const [k, metin] of this.#efektEtiketleri) metin.setVisible(k === s.effects);
   }
 
   setVisible(v: boolean): void {
