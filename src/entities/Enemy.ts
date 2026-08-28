@@ -49,6 +49,27 @@ export class Enemy extends Phaser.GameObjects.Sprite implements Poolable, EnemyS
 
   static #sonrakiId = 1;
 
+  /**
+   * `Y08` — `guard-rules.mjs` k.3'ün okuduğu manifest: burada listelenen
+   * her ad için `resetForPool()` gövdesinde `set${ad}(` (`Tint` özel:
+   * `clearTint(`) geçmeli. Bu sınıf **beş kez** yaşanan "sıfırlanmayan
+   * havuz durumu" hatasının (`CLAUDE.md` TIER 1 kural 3) dördüncüsünü
+   * taşıyor (`FlipX` — `G06`); bekçi artık beşinciyi otomatik yakalıyor.
+   * `Frame` **kasıtlı dışarıda**: `spawn()` her zaman göstermeden önce
+   * `setFrame` çağırıyor, yani havuzdaki eski kare hiç görünmüyor —
+   * sıfırlanması gereken bir "sızıntı" değil.
+   */
+  static readonly HAVUZ_ALANLARI: readonly string[] = [
+    'Active',
+    'Visible',
+    'Position',
+    'Alpha',
+    'Angle',
+    'FlipX',
+    'DisplaySize',
+    'Tint',
+  ];
+
   /** Savaş alanı gösterim boyutu — kare değişse de sabit kalır. */
   readonly #size: number;
 

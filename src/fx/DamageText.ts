@@ -24,6 +24,17 @@ const RISE_PX = 34;
 const LIFETIME_MS = 700;
 
 export class DamageText extends Phaser.GameObjects.BitmapText implements Poolable {
+  /** `Y08` — bkz. `entities/Enemy.HAVUZ_ALANLARI`'ın başındaki gerekçe. */
+  static readonly HAVUZ_ALANLARI: readonly string[] = [
+    'Active',
+    'Visible',
+    'Position',
+    'Alpha',
+    'Scale',
+    'Tint',
+    'Text',
+  ];
+
   /** Kalan ömür, ms. `scaledDelta` ile azalıyor — 2× hızda da doğru. */
   #left = 0;
   #startY = 0;

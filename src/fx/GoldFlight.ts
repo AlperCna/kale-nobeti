@@ -21,6 +21,9 @@ const LIFETIME_MS = 500;
 const ARC_HEIGHT = 70;
 
 export class GoldCoin extends Phaser.GameObjects.Image implements Poolable {
+  /** `Y08` — bkz. `entities/Enemy.HAVUZ_ALANLARI`'ın başındaki gerekçe. */
+  static readonly HAVUZ_ALANLARI: readonly string[] = ['Active', 'Visible', 'Position', 'Scale', 'Alpha'];
+
   /** `setDisplaySize`'ın hesapladığı gerçek ölçek — `setScale(1)` bunu
    * ezip sprite'ı kaynak boyutuna (48 px) geri döndürürdü. Küçülme
    * efekti ve sıfırlama hep bu tabana göre orantılı çalışıyor. */

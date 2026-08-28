@@ -57,7 +57,11 @@ export class LocalStore implements KeyValueStore {
   #bildirildi = false;
   readonly #onFailure: (() => void) | undefined;
   readonly #yedek = new MemoryStore();
-  readonly #kullanilabilir: boolean;
+  /**
+   * Kurucuda bir kez ölçülüyor ama **kalıcı değil** — `#kalicOlarakDus()`
+   * çalışma sırasında da `false`'a çekebiliyor. Gerekçe aşağıda.
+   */
+  #kullanilabilir: boolean;
 
   constructor(onFailure?: () => void) {
     this.#onFailure = onFailure;
@@ -83,6 +87,7 @@ export class LocalStore implements KeyValueStore {
     try {
       return globalThis.localStorage.getItem(key);
     } catch {
+      this.#kaliciOlarakDus();
       return this.#yedek.get(key);
     }
   }
@@ -93,7 +98,8 @@ export class LocalStore implements KeyValueStore {
         globalThis.localStorage.setItem(key, value);
         return true;
       } catch {
-        // Kota dolmuş olabilir — sessizce yedeğe düş.
+        // Kota dolmuş olabilir — kalıcı olarak yedeğe düş (aşağıdaki not).
+        this.#kaliciOlarakDus();
       }
     }
     this.#yedek.set(key, value);
@@ -107,8 +113,24 @@ export class LocalStore implements KeyValueStore {
     try {
       globalThis.localStorage.removeItem(key);
     } catch {
-      // yoksay
+      this.#kaliciOlarakDus();
     }
+  }
+
+  /**
+   * `Y08` — canlı testte yakalanan gerçek hata: `#kullanilabilir` yalnız
+   * kurucuda ölçülüp bir daha bakılmıyordu. Bir `set()` çalışma sırasında
+   * (kota dolunca, prob başarılıyken) fırlarsa **o çağrı** yedeğe
+   * düşüyordu ama bayrak `true` kalıyordu — bir sonraki `get()` gerçek
+   * `localStorage`'ı tekrar deniyor ve (yazma hiç gerçekleşmediği için)
+   * **eski/olmayan değeri** döndürüyordu; oyuncunun az önce değiştirdiği
+   * ayar sanki hiç değişmemiş gibi geri geliyordu — `#yedek`'te doğru
+   * değer dururken. Artık herhangi bir gerçek erişim fırlarsa örnek
+   * kalıcı olarak yedeğe geçiyor; sonraki her `get`/`set`/`remove` aynı
+   * kaynaktan (yedek) tutarlı okuyor.
+   */
+  #kaliciOlarakDus(): void {
+    this.#kullanilabilir = false;
   }
 
   #bildir(): void {
