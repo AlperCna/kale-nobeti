@@ -47,6 +47,13 @@ Yol rengi parşömen ile mürekkep arası ara ton: `#8A7250`.
 - Lapis koyu zeminde okunmuyor. Efektlerde açık varyant `#6E8AD0` kullanılır.
 - **Düşman/dost ayrımı yalnız renge dayanmaz.** Yeşil-kırmızı ayrımı en yaygın
   renk körlüğünde kayboluyor; silüetler de farklı olmak zorunda.
+- **UI zemini yüzeyin işine göre seçilir, çerçeve her zaman parşömen**
+  (`docs/plan/iyilestirme/G04-towerinfopanel-paleti.md`): parşömen zemin
+  eylem yüzeylerinde (buton, menü, ayar); koyu mürekkep zemin yoğun bilgi
+  yüzeylerinde (`TowerInfoPanel` — yedi gösterge, açık renkli metin üstüne
+  kurulu; açık zemine geçmek okunurluğu riske atardı). Çerçeve dili
+  (`ParchmentFrame`, köşe+kenar) ikisinde de aynı — göz "bu aynı aileden"
+  diyor, zemin rengi bilgi yoğunluğuna göre değişiyor.
 
 ### Tipografi
 

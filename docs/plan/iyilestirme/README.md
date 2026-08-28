@@ -70,7 +70,7 @@ Emek/etki oranına göre. **Üstteki üçü açık ara en yüksek getirili.**
 | 15 | [Y08 · Test kapsamı — `storage.ts` testsiz](Y08-test-kapsami.md) | test | ☑ **düzeltildi** | orta-yüksek |
 | 16 | [Y03 · i18n sızıntısı, `en` %0](Y03-i18n-sizintisi.md) | yapısal | ☑ **düzeltildi (Adım 1+2)** | yüksek |
 | 17 | [G05 · Düşmanlarda can göstergesi yok](G05-dusman-can-gostergesi.md) | görsel | ☑ **düzeltildi** | **yüksek** |
-| 18 | [G04 · `TowerInfoPanel` paletten kopuk](G04-towerinfopanel-paleti.md) | görsel | orta | orta |
+| 18 | [G04 · `TowerInfoPanel` paletten kopuk](G04-towerinfopanel-paleti.md) | görsel | ☑ **düzeltildi** | orta |
 | 19 | [Y02 · `Pool.activeItems()` kare başına 7 dizi](Y02-pool-activeitems-tahsis.md) | başarım | orta | orta |
 | 20 | [Y09 · Öğretici / yönlendirme yok](Y09-ogretici-yok.md) | UX | orta-büyük | **yüksek** |
 | 21 | [Y01 · `GameScene.ts` 1749 satır](Y01-gamescene-bolme.md) | mimari | **büyük** (3. adım kısmen kolaylaştı) | orta-yüksek |
@@ -210,7 +210,13 @@ kök nedeni) — Phaser'ın kendi `forceSetTimeOut` yoluna zorlanarak
 oturumlar için kalıcı bir çözüm. Ayrıntı: dosyanın kendi "Sonuç"
 bölümü.
 
-**G04** (karar gerektiriyor),
+**G04** — ☑ **tamamlandı (2026-08-29)**. Panel koyu zeminde kalıyor
+(yedi göstergenin okunurluğu risk altına girmedi) ama artık diğer
+panellerle aynı parşömen köşe+kenar çerçevesini taşıyor
+(`createParchmentFrame(..., skipMiddle=true)`). Kural hem
+`GAME-DESIGN.md` §2'ye hem panelin kendi başlığına yazıldı. Canlı
+doğrulandı (gri tonlama dahil). Ayrıntı: dosyanın kendi "Sonuç" bölümü.
+
 **Y09** (en büyük, Y01'den sonra ucuzlar).
 
 ---

@@ -174,3 +174,42 @@ değerlendirilmeli.
 - 640×360'ta metin 16 px'in altına düştüyse.
 - (b) seçilip kural yazılmadıysa — o zaman tutarsızlık hâlâ "karar"
   değil "unutma" olarak kalır.
+
+## Sonuç (2026-08-29)
+
+Öneri **(b)** uygulandı, önerilen kuralla birlikte.
+
+[TowerInfoPanel.ts](../../../src/fx/TowerInfoPanel.ts): eski
+`scene.add.rectangle(...).setStrokeStyle(2, GOLD)` yerine, aynı `INK`
+dikdörtgeni (kenarlığı kaldırıldı) + üstüne `createParchmentFrame(...,
+skipMiddle=true)`. Orta doku atlandığı için `INK` dolgu olduğu gibi
+görünüyor, yalnız köşe+kenar dokusu diğer panellerle aynı aileden.
+**Hiçbir metin rengi değişmedi** — `GOLD`/`PARCHMENT`/`VERMILION`/
+`LAPIS` sabitleri aynen kaldı, yedi göstergenin hiçbiri dokunulmadı.
+
+Kural iki yere yazıldı (koda gömülü kalmasın diye):
+[GAME-DESIGN.md](../../GAME-DESIGN.md) §2 "İşlevsel düzeltmeler"e yeni
+madde, ve `TowerInfoPanel.ts`'in kendi başlık yorumuna ayrıntılı
+gerekçe. İkisi de aynı cümleyi taşıyor: *parşömen zemin eylem
+yüzeylerinde, koyu zemin yoğun bilgi yüzeylerinde, çerçeve her ikisinde
+de parşömen.*
+
+### Canlı doğrulama
+
+`dev.placeTower` + `dev.selectTower` ile paneli canlı açtırıp ekran
+görüntüsüyle doğrulandı: gold köşe brakları ve kenar çizgileri düzgün
+oturuyor, yedi göstergenin hepsi (ham hasar+hız, menzil, kapsama,
+iade, yükseltme farkı, etkin DPS, hasar tipi rozeti) okunur durumda,
+uçan-vurmuyor çizgisi ve düşman ikonu şeridi bozulmadı. Gri tonlamada
+(`filter: grayscale(1)`) rozet hâlâ ayrı bir kare olarak seçiliyor
+(kural 6 — zaten şekil/konumla ayrışıyordu, bu değişiklik onu
+etkilemedi). Konsol sessiz.
+
+`npm run typecheck && npm run test (727/727) && npm run guard (12/12)
+&& npm run build` temiz. `docs/KURALLAR.md` diff'i **boş** — beklenen,
+bu iş salt görsel.
+
+**Doğrulanmayan tek madde:** 640×360'a küçültülmüş ekranda yazı
+boyutu ölçülmedi (mevcut yazı tipleri zaten ≥16px sabit — bu değişiklik
+hiçbir font-size değiştirmedi, yalnız arkaplan/çerçeve — risk düşük
+ama canlı doğrulanmadı).
