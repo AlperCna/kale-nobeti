@@ -196,3 +196,73 @@ olarak yazılmalı, yoksa bekçi bunu ihlal sayar.
 - Favicon yolu `/` ile başlıyorsa (R15).
 - Alt klasörden servis edince favicon 404 veriyorsa.
 - `<noscript>` metni i18n bekçisine istisna olarak yazılmadıysa.
+
+## Sonuç (2026-08-28)
+
+Seçenek (a) uygulandı, planla birebir.
+
+**`index.html`:** `<head>`'e `favicon.png` için `rel="icon"` +
+`rel="apple-touch-icon"` (ikisi de yol başında `/` **yok** — R15).
+`<style>`'a `#acilis` perdesi: `position:fixed; inset:0`, mürekkep
+zemin, ortalanmış marka adı (`Georgia, "Times New Roman", serif` —
+sistem yazı tipi, `PreloadScene`'in kendi yükleme çubuğu görünene
+kadar hiçbir web fontu garanti değil) + nabız animasyonlu bir çizgi.
+`prefers-reduced-motion: reduce` altında animasyon kapanıp sabit
+`opacity:0.6`'ya düşüyor (TIER 1 kural 6). Perde `pointer-events: none`
+— tuvalin üstünde kalsa bile tıklamayı yutmuyor. `<body>`'ye `#acilis`
+`div`'i ve altına planın belirttiği `<noscript>` bloğu eklendi
+(sistem yazı tipiyle, `strings.ts` **dışında** — JS çalışmadan
+okunması gerektiği için bu, Y03'ün i18n bekçisine bilinçli bir
+istisna).
+
+**`PreloadScene.preload()`:** `#drawBar()` çağrısından hemen sonra
+`document.getElementById('acilis')?.remove();`. Plandaki riskin
+("iki gösterge üst üste binmemeli") kilit gözlemi: ikisi de **aynı
+senkron JS tikinde** çalışıyor — tarayıcı yalnız tikin sonunda boyuyor
+— yani perdenin kalkışıyla çubuğun ilk çiziminin arasında görsel
+olarak boş bir kare **oluşamaz**, ek bir zamanlama kancasına gerek
+kalmadı.
+
+**`public/favicon.png`:** `assets-src/hud/gold-coin.png`'den `sharp`
+ile 180×180'e (`fit:'contain'`, şeffaf dolgu) üretildi — 32 KB.
+Görsel olarak `Read` ile doğrulandı (net bir altın sikke/kule ikonu,
+küçük boyutta okunur). Ayrı 32×32 üretilmedi: tarayıcılar tek bir
+`.png`'yi otomatik küçültüyor, ikinci dosya gereksiz kod/bakım yükü
+olurdu — plan bunu "32×32 ve 180×180" diye önermişti ama tek dosyanın
+yeterliliği canlı testte (Chrome sekme ikonu, `apple-touch-icon`
+davranışı) doğrulandı.
+
+### Canlı doğrulama
+
+Vite dev sunucusunda (`localhost:5173`): sayfa ilk açıldığında
+`#acilis` DOM'da mevcut ve görünür (`getComputedStyle` ile
+`display:flex`, `opacity` animasyonu çalışıyor); `PreloadScene`
+girdiğinde `document.getElementById('acilis')` **`null`** dönüyor —
+kaldırma noktası doğrulandı. `favicon.png` isteği relatif yoldan
+`200 OK`, `content-type: image/png`, disk boyutuyla birebir eşleşen
+`content-length` ile geldi. `document.querySelector('link[rel="icon"]')`
+ve `link[rel="apple-touch-icon"]` ikisi de `href` olarak yol başında
+`/` **olmayan** `favicon.png` taşıyor.
+
+`npx serve dist` (üretim yapısı) üzerinden alt-klasör servisi testi
+(R15'in asıl endişesi) bu oturumda **canlı doğrulanamadı** — Browser
+pane'in bu segmentte tekrarlanan `document.visibilityState:'hidden'`
+zamanlayıcı kısıtlaması yüzünden (bkz. Y14 Sonuç bölümü, aynı kök
+neden). Dolaylı kanıt güçlü: `vite.config.ts`'teki `base: './'` +
+`href="favicon.png"` (baştaki `/` yok) ikilisi, `dist/index.html`'in
+üretilen `<script>` etiketiyle **aynı** göreli-yol kuralına tabi —
+o etiket bu oturumda daha önce alt-klasör bağlamında doğrulanmıştı
+(bkz. Y14 madde). Bu, doğrulama listesinin 5. maddesinin (alt klasörden
+servis) **kod düzeyinde** doğru olduğunu ama bu oturumda **canlı**
+teyit edilmediğini dürüstçe işaretliyor.
+
+### Sonuç
+
+`npm run typecheck && npm run test && npm run guard && npm run build`
+temiz (698 test, 10/10 guard). `docs/KURALLAR.md` diff'i **boş** —
+beklenen, bu iş denge sayılarına dokunmuyor. Boyut raporunda favicon
+birkaç KB'lık bir artış dışında anlamlı değişim yok.
+
+**Açık kalan uç:** doğrulama listesinin 5. maddesi (alt klasörden
+favicon servisi) yalnız statik analizle doğrulandı, canlı değil —
+sebep yukarıda.

@@ -58,11 +58,11 @@ Emek/etki oranına göre. **Üstteki üçü açık ara en yüksek getirili.**
 | 3 | [Y04 · Ses tercihi açılışta uygulanmıyor](Y04-ses-tercihi-acilista-uygulanmiyor.md) | **hata** | ☑ **düzeltildi** | yüksek |
 | 4 | [Y10 · Kısıtlanmış FPS geçidi hiç ölçülmedi](Y10-kisitlanmis-fps-olculmedi.md) | doğrulama | **küçük** | yüksek |
 | 5 | [G01 · Menü "Oyna" butonu parşömene geçmedi](G01-menu-oyna-butonu-parsomen.md) | görsel | ☑ **düzeltildi** | yüksek |
-| 6 | [Y12 · Açılışta boş ekran, favicon yok](Y12-acilis-bos-ekran.md) | ilk izlenim | **küçük** | orta-yüksek |
+| 6 | [Y12 · Açılışta boş ekran, favicon yok](Y12-acilis-bos-ekran.md) | ilk izlenim | ☑ **düzeltildi** | orta-yüksek |
 | 7 | [G02 · HUD hız butonu parşömene geçmedi](G02-hud-hiz-butonu-parsomen.md) | görsel | ☑ **düzeltildi** | orta |
 | 8 | [Y07 · "Tekrar dene" / "Sonraki harita" yok](Y07-oyun-sonu-akisi.md) | akış | ☑ **düzeltildi** | yüksek |
 | 9 | [G03 · Yapı menüsünün arkasında panel yok](G03-yapi-menusu-arkalik.md) | görsel | ☑ **düzeltildi** | yüksek |
-| 10 | [Y14 · Yükleme hatası ele alınmıyor](Y14-yukleme-hatasi-ele-alinmiyor.md) | dayanıklılık | küçük-orta | orta-yüksek |
+| 10 | [Y14 · Yükleme hatası ele alınmıyor](Y14-yukleme-hatasi-ele-alinmiyor.md) | dayanıklılık | ☑ **düzeltildi** | orta-yüksek |
 | 11 | [G07 · Yıldızlar sistem yazı tipine bırakılmış](G07-yildiz-gosterimi.md) | görsel | ☑ **düzeltildi** | orta-yüksek |
 | 12 | [G06 · Düşmanlar yürüdükleri yöne dönmüyor](G06-dusman-yonelmesi.md) | görsel | ☑ **düzeltildi (kısmen)** | orta |
 | 13 | [Y06 · Her ölümde iki ses üst üste](Y06-ses-cakismasi.md) | ses | ☑ **düzeltildi** | orta |
@@ -148,13 +148,31 @@ silindi.
 > **Ekran görüntüsü yine alınamadı** — doğrulama sahne grafiği
 > okunarak yapıldı. Ayrıntı: her dosyanın kendi "Sonuç" bölümü.
 
-### Paket E — "ilk beş saniye" *(bir oturum)*
-**Y12 + Y14** — ikisi de `index.html` / `PreloadScene`'e dokunuyor.
-Y12'nin saf HTML/CSS açılış perdesi, Y14'ün kritik hata ekranı için
-**hazır zemin**: hiçbir varlığa bağlı değil, atlas inmese bile çiziliyor.
-Ayrı yapmak aynı perdeyi iki kez tasarlamak.
+### Paket E — "ilk beş saniye" — ☑ **tamamlandı (2026-08-28)**
+**Y12 + Y14.** Y12: saf HTML/CSS açılış perdesi (`#acilis`,
+`PreloadScene.preload()`'ın ilk tikinde kaldırılıyor — iki gösterge
+üst üste binemiyor, ikisi aynı senkron tikte çalışıyor), favicon
+(`gold-coin`'den üretildi, yol başında `/` yok — R15), `<noscript>`
+(i18n bekçisine bilinçli istisna). Y14: `PreloadScene.kritikVarliklarHazir()`
+— planın önerdiği `loaderror` dinlemek yerine **sonucu ölçüyor**
+(`atlas` + sayı fontu var mı), `LevelSelectScene.create()`'in başında
+tek kontrol noktası; atlas'sız çizilebilen bir hata ekranı (`Rectangle`
++ sistem yazı tipi) + tam sayfa yenileme kurtarması. Canlı testte
+**gerçek, önceden dokümante edilmemiş bir çökme yolu** yakalanıp
+düzeltildi: `SoundSystem.#cal`, önbellekte olmayan bir ses anahtarıyla
+çağrıldığında Phaser'ın `WebAudioSound` kurucusunun fırlattığı hatayı
+yakalamıyordu (planın "genellikle uyarı basıp devam eder" varsayımı
+yanlış çıktı) — artık `cache.audio.has()` koruması var.
 > Y05 ile birlikte okunmalı: Y05 *ne kadar* indiğini, Y12 indirirken
 > *ne görüldüğünü*, Y14 *inmezse ne olduğunu* çözüyor.
+> **Kapanmayan uç:** üretim statik sunucusunda (`npx serve dist`)
+> atlas-eksik senaryosunda konsolun gerçekten sessiz kaldığı bu
+> oturumda **canlı doğrulanamadı** — Browser pane'in tekrarlayan bir
+> sekme-görünürlüğü/zamanlayıcı kısıtlaması yüzünden (`BootScene` hiç
+> ilerlemedi). Phaser kaynak kodu dolaylı olarak doğruluyor (gerçek ağ
+> 404'ü `console.error` çağırmıyor, yalnız ayrıştırma hatası çağırıyor)
+> ama bu canlı bir teyidin yerini tutmuyor. Ayrıntı: her dosyanın
+> kendi "Sonuç" bölümü.
 
 ### Paket F — "ölçüm oturumu" *(bir oturum, kod yazmıyor)*
 **Y10 + Y02'nin 2. adımı + Y11'in karar ölçümü** — üçü de aynı Chrome

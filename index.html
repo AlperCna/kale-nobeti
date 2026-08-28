@@ -4,6 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Kale Nöbeti</title>
+    <!-- `Y12` — yol başında `/` YOK, `base: './'` ile portal alt klasöründe
+         de çalışsın (R15'in tam uyardığı tuzak). -->
+    <link rel="icon" href="favicon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="favicon.png" />
     <style>
       /* CLAUDE.md Platform kısıtları */
       html,
@@ -29,9 +33,91 @@
       canvas {
         display: block;
       }
+
+      /*
+       * `Y12` — açılış perdesi. Sayfa açıldığı andan Phaser'ın ilk
+       * karesine kadar (HTML + JS indirme + ayrıştırma + Boot'un font
+       * yüklemesi) ekranda hiçbir şey yoktu, düz mürekkep rengi bir alan.
+       * Bu, saf HTML/CSS — ek istek YOK, ilk bayt ile birlikte geliyor,
+       * JS'i beklemiyor. `PreloadScene.preload()` kendi yükleme çubuğunu
+       * çizer çizmez kaldırılıyor (`#acilis` id'siyle `.remove()`).
+       */
+      #acilis {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 24px;
+        background: #14203a;
+        pointer-events: none; /* tuvalin üstünde kalırsa tıklamayı yutmasın */
+        z-index: 9999;
+      }
+      #acilis .marka {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 40px;
+        color: #d4a032;
+        letter-spacing: 2px;
+      }
+      #acilis .nabiz {
+        width: 64px;
+        height: 4px;
+        border-radius: 2px;
+        background: #d4a032;
+        animation: acilis-nabiz 1.2s ease-in-out infinite;
+      }
+      /* TIER 1 kural 6 — hareket azaltma tercihi burada da geçerli,
+         JS'in `Settings.reducedMotionDefaults()`'ı henüz çalışmıyor. */
+      @media (prefers-reduced-motion: reduce) {
+        #acilis .nabiz {
+          animation: none;
+          opacity: 0.6;
+        }
+      }
+      @keyframes acilis-nabiz {
+        0%,
+        100% {
+          opacity: 0.25;
+          transform: scaleX(0.4);
+        }
+        50% {
+          opacity: 1;
+          transform: scaleX(1);
+        }
+      }
     </style>
   </head>
   <body>
+    <div id="acilis" aria-hidden="true">
+      <div class="marka">Kale Nöbeti</div>
+      <div class="nabiz"></div>
+    </div>
+    <!--
+      `Y12` — JavaScript kapalıysa oyuncu #acilis'e sonsuza kadar bakardı,
+      neden çalışmadığına dair tek kelime olmadan. Metin `strings.ts`'e
+      giremez (JS çalışmıyorken okunuyor) — i18n bekçisinin istisnası.
+    -->
+    <noscript>
+      <div
+        style="
+          position: fixed;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 2rem;
+          text-align: center;
+          background: #14203a;
+          color: #e4d3a8;
+          font-family: Georgia, 'Times New Roman', serif;
+          font-size: 20px;
+        "
+      >
+        Bu oyun JavaScript gerektiriyor. Lütfen tarayıcınızda JavaScript'i
+        etkinleştirip sayfayı yenileyin.
+      </div>
+    </noscript>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
