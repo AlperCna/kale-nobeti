@@ -118,6 +118,10 @@ const MANIFEST = [
   { ad: 'cartouche', dosya: 'hud/cartouche.png', w: 128, h: 128 },
   // Altın uçuşu (M6-T10 görsel iyileştirme) — greybox daireyi değiştiriyor.
   { ad: 'gold-coin', dosya: 'hud/gold-coin.png', w: YETENEK_KUTU, h: YETENEK_KUTU },
+  // Yıldız derecelendirmesi (G07) — sistem yazı tipindeki `★`'ın yerine.
+  // İki kare: kazanılmış (altın dolgu) ve kazanılmamış (soluk, düşük alfa).
+  { ad: 'star', dosya: 'hud/star.png', w: YETENEK_KUTU, h: YETENEK_KUTU },
+  { ad: 'star-empty', dosya: 'hud/star-empty.png', w: YETENEK_KUTU, h: YETENEK_KUTU },
 
   // Kule kademeleri (P03) — 16 tanesi de aynı kare kutu.
   ...KULE_DOSYALARI.map((ad) => ({ ad, dosya: `towers/${ad}.png`, w: KULE_KUTU, h: KULE_KUTU })),

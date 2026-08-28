@@ -600,7 +600,7 @@
         "h": 48
       }
     },
-    "meteor_icon": {
+    "star": {
       "frame": {
         "x": 304,
         "y": 208,
@@ -620,7 +620,7 @@
         "h": 48
       }
     },
-    "takviye_icon": {
+    "star-empty": {
       "frame": {
         "x": 352,
         "y": 208,
@@ -640,9 +640,49 @@
         "h": 48
       }
     },
-    "orumcek_yavrusu": {
+    "meteor_icon": {
       "frame": {
         "x": 400,
+        "y": 208,
+        "w": 48,
+        "h": 48
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 48
+      }
+    },
+    "takviye_icon": {
+      "frame": {
+        "x": 448,
+        "y": 208,
+        "w": 48,
+        "h": 48
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 48
+      }
+    },
+    "orumcek_yavrusu": {
+      "frame": {
+        "x": 496,
         "y": 208,
         "w": 40,
         "h": 40
@@ -662,7 +702,7 @@
     },
     "edge-strip": {
       "frame": {
-        "x": 440,
+        "x": 536,
         "y": 208,
         "w": 128,
         "h": 32

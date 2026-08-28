@@ -1,13 +1,82 @@
-# G07 · Yıldızlar sistem yazı tipine bırakılmış — platforma göre değişiyor
+# G07 · Yıldızlar sistem yazı tipine bırakılmış — platforma göre değişiyor — ☑ **düzeltildi (2026-08-28)**
 
 | | |
 |---|---|
 | **Tür** | Görsel — platformlar arası tutarlılık *ve* hizalama |
-| **Önem** | Orta-yüksek. İlerlemenin **tek** görsel ödülü |
-| **Emek** | Küçük-orta (bir atlas karesi üretilecek) |
-| **Risk** | Düşük |
-| **Dokunulan** | `src/scenes/GameOverScene.ts:74-82`, `src/scenes/LevelSelectScene.ts:121-136`, `assets-src/hud/`, `scripts/prep-assets.mjs` |
+| **Önem** | Orta-yüksek. İlerlemenin **tek** görsel ödülüydü |
+| **Emek** | Küçük-orta (gerçekleşen — kullanıcı sanatı üretti) |
+| **Risk** | Düşük — doğrulandı |
+| **Dokunulan** | `src/scenes/GameOverScene.ts`, `src/scenes/LevelSelectScene.ts`, `assets-src/hud/star.png`, `assets-src/hud/star-empty.png`, `scripts/prep-assets.mjs`, `src/data/spriteFrames.ts` |
 | **İlgili** | `GAME-DESIGN.md` §9 · `CLAUDE.md` Varlık formatları (`latin-ext` gerekçesiyle aynı sınıf) |
+
+---
+
+## Sonuç (2026-08-28)
+
+**Düzeltildi, seçenek (a) uygulandı.** Kullanıcı iki kare üretti
+(dolu/boş yıldız, verilen prompt'la); **kabul öncesi piksel düzeyinde
+doğrulandı** (göze güvenilmedi — bu projenin P01-P04'ten beri süregelen
+disiplini):
+
+| Kontrol | Dolu (`star`) | Boş (`star-empty`) |
+|---|---|---|
+| Gerçek transparan arka plan (`sharp` ile köşe örneklemesi) | ✅ `(0,0,0,0)` | ✅ `(0,0,0,0)` |
+| Merkez renk | RGB `(20,31,60)` — istenen `INK` `#14203A` ile **piksel-birebir** | RGB `(27,36,45)`, α=**28** (~%11 opaklık — "soluk mürekkep" tam istenen) |
+| Kenar boşluğu | %74×%70 içerik oranı | %79×%75 |
+
+`assets-src/hud/star.png`/`star-empty.png`, `prep-assets.mjs`
+manifestine (`YETENEK_KUTU=48`), `spriteFrames.ts`'e
+`FRAME_STAR`/`FRAME_STAR_EMPTY`. Atlas 34→**36 kare**, boyut
+59,8→**61,1 KB** (+1,3 KB — hedef "<5 KB artış" rahatça tutuyor).
+
+### Kapsam plandan biraz genişledi — üçüncü bir yer bulundu
+
+Doc'un "Kanıt" bölümü iki yeri işaretlemişti (`GameOverScene` yıldız
+satırı, `LevelSelectScene`'in kart-başı yıldızları). Uygulama sırasında
+kod tabanı taranınca **üçüncü bir `★`** çıktı:
+`LevelSelectScene.ts:87`, üstteki "toplam yıldız" özeti
+(`` `★ ${toplam} / ${MAPS.length * 3}` ``). Doc'un kendi "bitmedi
+sayılır eğer" maddesi ("kod tabanında `★` karakteri kaldıysa") bunu da
+kapsıyordu — o yüzden bu da düzeltildi: tek bir `FRAME_STAR` ikonu +
+sayı metni, ikon genişliği ölçülüp ikisi birlikte ortalanıyor.
+
+Artık kod tabanında **oyuncuya gösterilen** hiçbir `★` karakteri yok
+(kalanlar yalnız yorum satırlarında, tasarım dokümanının kendi
+notasyonuna atıf).
+
+### Hizalama formülü tamamen kalktı
+
+`LevelSelectScene`'in eski "soluk arka plan `★★★` + üstüne dolu `★`
+bindirme" hilesi ve şüpheli `x - 30 + (yıldız*30)/2 - 15 + 15`
+aritmetiği **silindi**. Yerine üç sabit yuva geldi
+(`i < yıldız ? FRAME_STAR : FRAME_STAR_EMPTY`), doc'un önerdiği
+desenin birebir aynısı — artık hizalama hesap değil, konumlandırma.
+
+Aynı desen `GameOverScene`'e de uygulandı; eskiden yalnız kazanılan
+sayı kadar `★` yazılıyordu, şimdi **üç yuva hep çiziliyor** (dolu+boş)
+— kazanılmamış yıldızlar da görünür, bu doc'un örnek kodunun doğal bir
+sonucu (bedava iyileştirme, ayrıca istenmemişti).
+
+### Canlı doğrulama
+
+| Senaryo | Beklenen | Sonuç |
+|---|---|---|
+| Hiç oynanmamış harita | 3× `star-empty` | ✅ üç haritada da |
+| 17 can (2 yıldız) | `star, star, star-empty` | ✅ hem `GameOverScene` hem `LevelSelectScene`'de **aynı desen** |
+| 20 can (3 yıldız) | `star, star, star` | ✅ |
+| Kaybedilince | hiç yıldız görseli yok | ✅ `GameOverScene`'de 0 `Image` |
+| Toplam özet (`5/9`) | 1 ikon + doğru sayı, ortalı | ✅ `x=620` ikon, `x=636` metin, "5 / 9" |
+
+`npm run typecheck/test (698/698)/guard (10/10)` yeşil.
+`docs/KURALLAR.md` diff'i boş (salt görsel).
+
+**Not — ekran görüntüsü yine alınamadı** (Browser pane sorunu bu
+oturumda da sürdü). Doğrulama sahne grafiği üzerinden yapıldı
+(`scene.children.list`, `frame.name`, konum okuma) — geometri ve
+mantık sayısal olarak kanıtlandı, 640×360'ta gözle okunurluk
+(doğrulama maddesi 8) ve gri tonlama testi (madde 9) eksik kaldı.
+
+---
 
 ---
 
