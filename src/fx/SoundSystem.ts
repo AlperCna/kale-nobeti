@@ -82,7 +82,19 @@ export class SoundSystem {
     this.#cal(kazandi ? 'victory' : 'defeat');
   }
 
+  /**
+   * `Y14` — anahtar önbellekte yoksa (yükleme başarısız olduysa) sessizce
+   * çıkıyor. **Kontrolsüz çağırmak `throw` eder:** Phaser'ın
+   * `WebAudioSound` kurucusu `cache`'te olmayan bir anahtarla
+   * çağrıldığında `Error('Audio key "..." not found in cache')`
+   * fırlatıyor (`node_modules/phaser/src/sound/webaudio/WebAudioSound.js`)
+   * — yakalanmazsa bu, TIER 1 Platform'un yasakladığı konsol çıktısına
+   * (ve muhtemelen olay işleyicisinin geri kalanının çalışmamasına)
+   * yol açardı. Ses efektleri kritik değil (`Y14` sınıflandırması);
+   * eksikse oyun sessizce sessiz kalmalı, çökmemeli.
+   */
   #cal(anahtar: string): void {
+    if (!this.#scene.cache.audio.has(anahtar)) return;
     this.#scene.sound.play(anahtar, { rate: rastgeleHiz() });
   }
 }

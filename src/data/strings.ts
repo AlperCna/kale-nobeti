@@ -35,6 +35,9 @@ const TR = {
   /** `Y07` — oyun sonu ekranı. */
   retry: 'Tekrar dene',
   nextMap: 'Sonraki harita',
+  /** `Y14` — kritik varlık yükleme hatası ekranı. */
+  assetLoadError: 'Varlıklar yüklenemedi. Bağlantınızı kontrol edip sayfayı yenileyin.',
+  reloadPage: 'Sayfayı yenile',
 } as const;
 
 export type StringKey = keyof typeof TR;
@@ -65,5 +68,7 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     back: '',
     retry: '',
     nextMap: '',
+    assetLoadError: '',
+    reloadPage: '',
   },
 };

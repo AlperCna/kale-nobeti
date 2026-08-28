@@ -70,6 +70,17 @@ export class LevelSelectScene extends Phaser.Scene {
   }
 
   create(): void {
+    // `Y14` — `atlas`/sayı fontu inmediyse oyun oynanamaz hâle geliyor
+    // (kuleler, düşmanlar, HUD çerçevesi, bütün sayılar). `LevelSelect`
+    // bu ikisini isteyen **ilk** sahne (`preload()`'daki `queueGame`) ve
+    // `Game`/`Hud`'a giden **tek** yol — burada durdurmak, aşağı akışın
+    // hepsini (Game + Hud, ikisi de atlas'a bağımlı) ayrıca korumaktan
+    // daha ucuz ve daha güvenilir.
+    if (!PreloadScene.kritikVarliklarHazir(this)) {
+      this.#kritikYuklemeHatasi();
+      return;
+    }
+
     this.#save = new SaveSystem(new LocalStore());
     const { width, height } = this.scale;
 
@@ -176,5 +187,47 @@ export class LevelSelectScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true })
       .on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => this.scene.start('Menu'));
+  }
+
+  /**
+   * `Y14` — kritik varlık yüklenemedi. **Atlas'sız çizilebilmeli**
+   * (`createParchmentButton`/`FRAME_STAR` atlas kareleri, tam da eksik
+   * olan şey) — düz `Graphics`/`Rectangle` + sistem yazı tipi.
+   *
+   * Kurtarma tam sayfa yenileme: Phaser'ın yükleyicisi yerleşik yeniden
+   * deneme taşımıyor, belirli dosyaları elle kuyruğa geri koymak bu
+   * ekranın basitliğine değmiyor — bir sayfa yenilemesi (Boot'tan
+   * itibaren) ağa yeni bir şans veriyor ve çok daha güvenilir.
+   */
+  #kritikYuklemeHatasi(): void {
+    const { width, height } = this.scale;
+
+    this.add.rectangle(0, 0, width, height, INK).setOrigin(0);
+    this.add
+      .text(width / 2, height / 2 - 50, t('assetLoadError'), {
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: '24px',
+        color: '#E4D3A8',
+        align: 'center',
+        wordWrap: { width: width - 160 },
+      })
+      .setOrigin(0.5);
+
+    const btnY = height / 2 + 70;
+    const btn = this.add
+      .rectangle(width / 2, btnY, 260, 60, GOLD)
+      .setStrokeStyle(2, INK)
+      .setInteractive({ useHandCursor: true });
+    this.add
+      .text(width / 2, btnY, t('reloadPage'), {
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: '20px',
+        color: '#14203A',
+      })
+      .setOrigin(0.5);
+
+    btn.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => {
+      window.location.reload();
+    });
   }
 }

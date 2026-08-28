@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { queueNumberFont } from '../fx/numberFont';
+import { queueNumberFont, NUMBER_FONT_KEY } from '../fx/numberFont';
 
 /**
  * Aşamalı yükleme.
@@ -41,6 +41,11 @@ export class PreloadScene extends Phaser.Scene {
    */
   preload(): void {
     this.#drawBar();
+    // `Y12` — `index.html`'in HTML/CSS açılış perdesi (`#acilis`)
+    // Phaser'ın kendi yükleme çubuğu görünür olur olmaz kalkıyor; ikisi
+    // asla üst üste binmiyor çünkü ikisi de bu **aynı senkron tikte**
+    // çiziliyor (tarayıcı yalnız tikin sonunda boyuyor).
+    document.getElementById('acilis')?.remove();
     this.queueBoot();
   }
 
@@ -101,6 +106,23 @@ export class PreloadScene extends Phaser.Scene {
         scene.load.audio(ad, `assets/audio/sfx/${ad}.m4a`);
       }
     }
+  }
+
+  /**
+   * `Y14` — bu iki varlık **kritik**: olmadan oyun oynanamaz hâle geliyor
+   * (`atlas` — bütün kuleler/düşmanlar/HUD çerçevesi; `numbers` bitmap
+   * fontu — bütün hasar/altın/can/dalga sayıları). Geri kalan (müzik,
+   * ses efektleri, arka planlar) kritik değil, sessizce eksik kalabilir.
+   *
+   * Yükleme hatasını **dinleyerek değil, sonucu ölçerek** yakalıyor:
+   * `loaderror` olayının hangi alt dosya için ateşlendiğini (`atlas.png`
+   * mi `atlas.json` mı) ayırt etmek kırılgan bir varsayım gerektirirdi;
+   * bunun yerine `LevelSelectScene.create()` çalıştığında kritik
+   * kaynakların **gerçekten kullanılabilir olup olmadığı** doğrudan
+   * soruluyor — yükleyicinin iç olaylarına bağımlı değil.
+   */
+  static kritikVarliklarHazir(scene: Phaser.Scene): boolean {
+    return scene.textures.exists('atlas') && scene.cache.bitmapFont.has(NUMBER_FONT_KEY);
   }
 
   // ---------------------------------------------------------------------
