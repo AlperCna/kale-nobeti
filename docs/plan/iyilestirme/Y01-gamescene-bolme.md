@@ -201,3 +201,45 @@ değişmemesi.
   ~950).
 - Bir menü durumu (kışla T3 dalları, hedefleme seçili işareti)
   eskisinden farklı davranıyorsa.
+
+## Sonuç — Adım 1 (2026-08-29)
+
+**Yalnız Adım 1** ([fx/Particles.ts](../../../src/fx/Particles.ts))
+uygulandı — planın kendi notu ("üç ayrı sevk") gereği Adım 2
+(`MapRenderer.ts`) ve Adım 3 (`BuildMenu.ts`) **bilerek** bu oturuma
+sıkıştırılmadı.
+
+Taşınan: `#kurJuice` (parçacık dokusu + vinyet kurulumu),
+`#particleBurst` → `patlat`, `#meteorEfekti` → `meteorEfekti`,
+`#olumEfekti` → `olumEfekti`, `#vinyetNabzi` → `vinyetNabzi`.
+`PARTICLE_MAX` sabiti de yeni dosyaya gitti. Bağımlılıklar dıştan
+veriliyor (kurucu parametresi): `scene`, `settings`, `clock`,
+`enemyPool`, `enemyHealthBars` (`G05`'in sistemi — `olumEfekti`
+ikisine de dokunuyor). `GameScene`'in geri kalanını bilmiyor, planın
+"bağımlılıkları dar" beklentisini karşılıyor.
+
+`GameScene.ts`: **164 satır silindi, 16 satır eklendi** (net **-148**)
+— planın ~150 satır tahminiyle hemen hemen birebir. Tek yeni alan
+`#efektler?: Particles;`, tek yeni kurulum satırı `create()`'te.
+
+### Doğrulama
+
+`npm run typecheck && npm run test (727/727) && npm run guard (12/12)
+&& npm run build` temiz. `docs/KURALLAR.md` diff'i **boş** — davranış
+değişmeyen bir taşıma, beklenen.
+
+Canlı doğrulama (gerçek oynanış, G05'te bulunan `forceSetTimeOut`
+tekniğiyle): kule kurulup dalga başlatıldı — vuruşta parçacık patladı
+(`dev.particleCount()` 20'ye çıktı), bir düşman öldü (altın arttı,
+`olumEfekti`'nin havuza dönüş yolu çalıştı), Meteor yeteneği hatasız
+çağrıldı (`meteorEfekti` çöküş üretmedi), oyun birden çok can kaybı
+boyunca sorunsuz devam etti (`vinyetNabzi` her seferinde tetiklendi,
+konsol sessiz). Dört metodun **hepsi** gerçek oynanışta en az bir kez
+çalıştırılıp doğrulandı.
+
+**Açık kalan:** Adım 2 (`fx/MapRenderer.ts`) ve Adım 3
+(`fx/BuildMenu.ts`, G03'ten sonra artık daha güvenli — arkalık zaten
+var) hâlâ yapılmadı. `GameScene.ts` bu adımdan sonra da hâlâ
+~1750 satır (Adım 1 öncesi bu oturumda zaten G05/Y03 eklemeleriyle
+büyümüştü) — üç adımın hepsi bitmeden "hedef ~950" ölçütü
+değerlendirilemez.
