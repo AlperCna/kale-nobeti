@@ -63,7 +63,7 @@ Emek/etki oranına göre. **Üstteki üçü açık ara en yüksek getirili.**
 | 8 | [Y07 · "Tekrar dene" / "Sonraki harita" yok](Y07-oyun-sonu-akisi.md) | akış | ☑ **düzeltildi** | yüksek |
 | 9 | [G03 · Yapı menüsünün arkasında panel yok](G03-yapi-menusu-arkalik.md) | görsel | ☑ **düzeltildi** | yüksek |
 | 10 | [Y14 · Yükleme hatası ele alınmıyor](Y14-yukleme-hatasi-ele-alinmiyor.md) | dayanıklılık | küçük-orta | orta-yüksek |
-| 11 | [G07 · Yıldızlar sistem yazı tipine bırakılmış](G07-yildiz-gosterimi.md) | görsel | küçük-orta | orta-yüksek |
+| 11 | [G07 · Yıldızlar sistem yazı tipine bırakılmış](G07-yildiz-gosterimi.md) | görsel | ☑ **düzeltildi** | orta-yüksek |
 | 12 | [G06 · Düşmanlar yürüdükleri yöne dönmüyor](G06-dusman-yonelmesi.md) | görsel | ☑ **düzeltildi (kısmen)** | orta |
 | 13 | [Y06 · Her ölümde iki ses üst üste](Y06-ses-cakismasi.md) | ses | ☑ **düzeltildi** | orta |
 | 14 | [G08 · Vuruşta darbe geri bildirimi yok](G08-vurus-geri-bildirimi.md) | görsel | küçük | orta |
@@ -135,8 +135,18 @@ G03'ün kendi "Sonuç" bölümü.
 > **Ekran görüntüsü yine alınamadı** (Browser pane sorunu bu oturumda
 > da sürdü) — doğrulama sahne grafiği + `getBounds()` okunarak yapıldı.
 
-### Paket D — "oyuncu akışı" *(bir oturum)*
-**Y07 + G07** — oyun sonu ekranı ikisinde de değişiyor.
+### Paket D — "oyuncu akışı" — ☑ **tamamlandı (2026-08-28)**
+**Y07 + G07.** Oyun sonu ekranı artık duruma göre 1-3 buton gösteriyor
+(birincil eylem büyüklükle ayrışıyor, renkle değil — `G02`'nin kontrast
+hatasını tekrarlamamak için), `Enter` birincil eylemi tetikliyor.
+Yıldızlar sistem yazı tipinden atlas karesine geçti (kullanıcı sanat
+üretti, kabul öncesi piksel düzeyinde doğrulandı) — uygulama sırasında
+planın görmediği üçüncü bir `★` yeri de (toplam yıldız özeti) bulunup
+düzeltildi; kod tabanında oyuncuya gösterilen hiçbir `★` karakteri
+kalmadı. `LevelSelectScene`'in şüpheli hizalama aritmetiği tamamen
+silindi.
+> **Ekran görüntüsü yine alınamadı** — doğrulama sahne grafiği
+> okunarak yapıldı. Ayrıntı: her dosyanın kendi "Sonuç" bölümü.
 
 ### Paket E — "ilk beş saniye" *(bir oturum)*
 **Y12 + Y14** — ikisi de `index.html` / `PreloadScene`'e dokunuyor.

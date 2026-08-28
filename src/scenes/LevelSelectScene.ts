@@ -6,6 +6,7 @@ import { LocalStore } from '../util/storage';
 import { t } from '../util/i18n';
 import { PreloadScene } from './PreloadScene';
 import { createParchmentButton } from '../fx/ParchmentFrame';
+import { FRAME_STAR, FRAME_STAR_EMPTY } from '../data/spriteFrames';
 
 const INK = 0x14203a;
 const GOLD = 0xd4a032;
@@ -81,14 +82,26 @@ export class LevelSelectScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
+    // `G07` — tek yıldız ikonu + sayı. Metin önce `(0,0)`'da ölçülüp
+    // sonra ikon+metin çifti birlikte ortalanıyor (ikon genişliği +
+    // aralarındaki boşluk hesaba katılarak) — `★` karakteri kod
+    // tabanından tamamen kalktı.
     const toplam = this.#save.totalStars();
-    this.add
-      .text(width / 2, 106, `★ ${toplam} / ${MAPS.length * 3}`, {
+    const IKON_BOYUT = 20;
+    const IKON_METIN_BOSLUK = 6;
+    const toplamMetin = this.add
+      .text(0, 106, `${toplam} / ${MAPS.length * 3}`, {
         fontFamily: 'Spectral, serif',
         fontSize: '20px',
         color: '#8A7250',
       })
-      .setOrigin(0.5);
+      .setOrigin(0, 0.5);
+    const grupGenisligi = IKON_BOYUT + IKON_METIN_BOSLUK + toplamMetin.width;
+    const solKenar = width / 2 - grupGenisligi / 2;
+    this.add
+      .image(solKenar + IKON_BOYUT / 2, 106, 'atlas', FRAME_STAR)
+      .setDisplaySize(IKON_BOYUT, IKON_BOYUT);
+    toplamMetin.setX(solKenar + IKON_BOYUT + IKON_METIN_BOSLUK);
 
     const ids = MAPS.map((m) => m.id);
     MAPS.forEach((m, i) => {
@@ -117,22 +130,21 @@ export class LevelSelectScene extends Phaser.Scene {
         })
         .setOrigin(0.5);
 
-      // Yıldızlar — kazanılan altın, kazanılmayan soluk.
-      this.add
-        .text(x, y - 8, '★★★', {
-          fontFamily: 'serif',
-          fontSize: '30px',
-          color: 'rgba(212,160,50,0.35)',
-        })
-        .setOrigin(0.5);
-      if (yildiz > 0) {
+      // Yıldızlar — `G07`: atlas karesi, eski sistem yazı tipi `★`'ın
+      // yerine. Üç yuva her zaman çiziliyor (dolu+boş) — eski "soluk
+      // arka plan ★★★ + üstüne dolu ★ bindirme" hilesi ve onun şüpheli
+      // hizalama aritmetiği (`x - 30 + (yildiz*30)/2 - 15 + 15`) tamamen
+      // kalktı; artık her yuva kendi sabit konumunda.
+      const YILDIZ_ADIM = 36;
+      for (let i = 0; i < 3; i++) {
         this.add
-          .text(x - 30 + (yildiz * 30) / 2 - 15 + 15, y - 8, '★'.repeat(yildiz), {
-            fontFamily: 'serif',
-            fontSize: '30px',
-            color: '#D4A032',
-          })
-          .setOrigin(0.5);
+          .image(
+            x + (i - 1) * YILDIZ_ADIM,
+            y - 8,
+            'atlas',
+            i < yildiz ? FRAME_STAR : FRAME_STAR_EMPTY,
+          )
+          .setDisplaySize(30, 30);
       }
 
       this.add

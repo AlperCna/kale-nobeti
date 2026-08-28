@@ -6,6 +6,7 @@ import { BALANCE } from '../data/balance';
 import { devHooks } from '../util/devHooks';
 import { createParchmentButton } from '../fx/ParchmentFrame';
 import { MAPS } from '../data/maps';
+import { FRAME_STAR, FRAME_STAR_EMPTY } from '../data/spriteFrames';
 
 const INK = 0x14203a;
 
@@ -73,15 +74,22 @@ export class GameOverScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     // §9 eşikleri: 20 → ★★★, 15-19 → ★★, ≤14 → ★.
-    // Görsel: `G07` — hâlâ sistem yazı tipi, atlas karesi bekliyor.
+    // `G07` — atlas karesi (`FRAME_STAR`/`FRAME_STAR_EMPTY`), sistem yazı
+    // tipi `★`'ın yerine. Üç yuva hep çiziliyor (dolu+boş) — kazanılmamış
+    // yıldızlar da görünür, "bir tanesi daha var" hissi bedava.
     if (won) {
-      this.add
-        .text(width / 2, height / 2 + 20, '★'.repeat(this.#yildiz(lives)), {
-          fontFamily: 'serif',
-          fontSize: '36px',
-          color: '#D4A032',
-        })
-        .setOrigin(0.5);
+      const yildizSayisi = this.#yildiz(lives);
+      const ADIM = 44;
+      for (let i = 0; i < 3; i++) {
+        this.add
+          .image(
+            width / 2 + (i - 1) * ADIM,
+            height / 2 + 20,
+            'atlas',
+            i < yildizSayisi ? FRAME_STAR : FRAME_STAR_EMPTY,
+          )
+          .setDisplaySize(36, 36);
+      }
     }
 
     // `Y07` — sıradaki harita. S62: kilit yalnız bitirmeye bağlı, yani

@@ -69,3 +69,7 @@ export const FRAME_CARTOUCHE = 'cartouche';
 
 /** Altın uçuşu ikonu (`fx/GoldFlight.ts`) — M6-T10 görsel iyileştirme. */
 export const FRAME_GOLD_COIN = 'gold-coin';
+
+/** Yıldız derecelendirmesi (`GameOverScene`, `LevelSelectScene`) — `G07`. */
+export const FRAME_STAR = 'star';
+export const FRAME_STAR_EMPTY = 'star-empty';
