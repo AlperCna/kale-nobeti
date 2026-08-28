@@ -29,6 +29,8 @@ import { KISLA, barracksTierAt, BLOCK, SOLDIER_SPEED } from '../data/barracks';
 import type { AbilityId } from '../types/ability';
 import { DamageText, DamageTextSystem } from '../fx/DamageText';
 import { GoldCoin, GoldFlightSystem } from '../fx/GoldFlight';
+import { EnemyHealthBar } from '../fx/EnemyHealthBar';
+import { EnemyHealthBarSystem } from '../fx/EnemyHealthBarSystem';
 import { TowerInfoPanel } from '../fx/TowerInfoPanel';
 import { SoundSystem } from '../fx/SoundSystem';
 import { Pool } from '../util/pool';
@@ -149,6 +151,8 @@ export class GameScene extends Phaser.Scene {
   #projectiles?: ProjectileSystem<Enemy, Projectile>;
   #damageTexts?: DamageTextSystem;
   #altinUcusu?: GoldFlightSystem;
+  /** `G05` — hasar görmüş düşmanların can çubuğu (seçenek b). */
+  #enemyHealthBars?: EnemyHealthBarSystem;
   #enemyPool?: Pool<Enemy>;
   #abilities?: EnemyAbilitySystem<Enemy>;
 
@@ -300,6 +304,19 @@ export class GameScene extends Phaser.Scene {
     return this.#waves?.earlyStartAvailable ?? false;
   }
 
+  /**
+   * `G05` — boss can çubuğu için. Aynı anda birden fazla boss
+   * beklenmiyor (dalga tasarımı tek boss); yine de savunmacı olarak
+   * **ilk** canlı boss döndürülüyor, `find` sırası havuzun iç sırası
+   * (kararlı, `Y02`'nin araştırdığı `Set` sırası).
+   */
+  get bossInfo(): { hp: number; maxHp: number } | null {
+    const boss = (this.#enemyPool?.activeItems() ?? []).find(
+      (e) => e.alive && e.def?.id === 'ogreSef',
+    );
+    return boss !== undefined ? { hp: boss.hp, maxHp: boss.maxHp } : null;
+  }
+
   /** @returns Kazanılan bonus altın. */
   startWaveEarly(): number {
     return this.#waves?.startWaveEarly() ?? 0;
@@ -389,6 +406,7 @@ export class GameScene extends Phaser.Scene {
     const mermiGrup = this.add.group({ runChildUpdate: false });
     const sayiGrup = this.add.group({ runChildUpdate: false });
     const altinGrup = this.add.group({ runChildUpdate: false });
+    const canCubuguGrup = this.add.group({ runChildUpdate: false });
 
     const enemyPool = new Pool<Enemy>(
       () => {
@@ -433,6 +451,17 @@ export class GameScene extends Phaser.Scene {
       (k) => this.#havuzDoldu('altın uçuşu', k),
     );
     this.#altinUcusu = new GoldFlightSystem(altinHavuzu, HUD_GOLD_HEDEFI.x, HUD_GOLD_HEDEFI.y);
+
+    const canCubuguHavuzu = new Pool<EnemyHealthBar>(
+      () => {
+        const b = new EnemyHealthBar(this);
+        canCubuguGrup.add(b);
+        return b;
+      },
+      POOL_PREALLOC.enemyHealthBar,
+      (k) => this.#havuzDoldu('düşman can çubuğu', k),
+    );
+    this.#enemyHealthBars = new EnemyHealthBarSystem(canCubuguHavuzu);
 
     // Asker havuzu — `research/02` §7 tablosu 24 diyor. Kışla askerleri ve
     // Takviye'nin geçici askerleri **aynı** havuzdan geliyor: ikisi de
@@ -512,6 +541,10 @@ export class GameScene extends Phaser.Scene {
       this.#eco,
       this.#waveList,
       this.#map.hpMultiplier,
+      getEnemy,
+      // `G05` — sızan düşmanın can çubuğu da havuza dönmeden önce
+      // serbest kalmalı, ölüm yoluyla aynı sözleşme (`#olumEfekti`).
+      (e) => this.#enemyHealthBars?.releaseFor(e),
     );
 
     this.#occupancy = new SpotOccupancy(this.#map.buildSpots.length);
@@ -569,7 +602,7 @@ export class GameScene extends Phaser.Scene {
       if (d !== undefined) d.clearCount = (d.clearCount ?? 0) + 1;
     });
 
-    this.#devKancalari(path, enemyPool, mermiHavuzu, sayiHavuzu, altinHavuzu);
+    this.#devKancalari(path, enemyPool, mermiHavuzu, sayiHavuzu, altinHavuzu, canCubuguHavuzu);
   }
 
   /**
@@ -598,6 +631,7 @@ export class GameScene extends Phaser.Scene {
     this.#projectiles?.update(sd, dusmanlar);
     this.#damageTexts?.update(sd);
     this.#altinUcusu?.update(sd);
+    this.#enemyHealthBars?.update(dusmanlar);
     this.#updateFlyerHint();
 
     const aktifMermi = this.#projectiles?.activeCount ?? 0;
@@ -988,6 +1022,11 @@ export class GameScene extends Phaser.Scene {
   #olumEfekti(e: Enemy): void {
     const havuz = this.#enemyPool;
     if (havuz === undefined) return;
+
+    // `G05` — düşman havuza dönmeden ÖNCE, `e` başka bir düşman için asla
+    // yeniden kullanılmadan önce. Aynı senkron çağrı, bayatlama riski yok
+    // (`EnemyHealthBarSystem`'in kendi yorumu).
+    this.#enemyHealthBars?.releaseFor(e);
 
     const olcek = this.settings.effectScale;
     if (olcek <= 0 || havuz.freeCount < 8) {
@@ -1736,6 +1775,7 @@ export class GameScene extends Phaser.Scene {
     mermiHavuzu: Pool<Projectile>,
     sayiHavuzu: Pool<DamageText>,
     altinHavuzu: Pool<GoldCoin>,
+    canCubuguHavuzu: Pool<EnemyHealthBar>,
   ): void {
     const dev = devHooks();
     if (dev === undefined) return;
@@ -1756,6 +1796,7 @@ export class GameScene extends Phaser.Scene {
     dev.projectilePeak = () => this.#mermiTepe;
     dev.damageTextActive = () => sayiHavuzu.activeCount;
     dev.goldFlightActive = () => altinHavuzu.activeCount;
+    dev.enemyHealthBarActive = () => canCubuguHavuzu.activeCount;
     dev.towerCount = () => this.#towers?.towers.length ?? 0;
     dev.placeTower = (spotIndex: number, towerId: string) => {
       const def = getTower(towerId as TowerDef['id']);

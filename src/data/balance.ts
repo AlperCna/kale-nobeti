@@ -37,6 +37,15 @@ export const POOL_PREALLOC = {
    * bitirebiliyor, bu onu karşılıyor.
    */
   goldFlight: 24,
+  /**
+   * `G05` — hasar görmüş düşman can çubuğu. Yalnız `hp < maxHp` olan
+   * düşmanlarda çıkıyor (seçenek b), yani tavan `enemy`'den çok daha
+   * düşük. Doğrulama (görevin kendi tahmini): "tepe dalgada bile aynı
+   * anda gösterilen çubuk ~10-15." 20, o tahmine makul bir pay bırakıyor
+   * — `enemy`nin (60) tam katı değil çünkü çoğu düşman ya tam canlı ya
+   * ölü, ikisi de çubuk göstermiyor.
+   */
+  enemyHealthBar: 20,
 } as const;
 
 /**

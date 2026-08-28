@@ -116,6 +116,8 @@ export interface DevHooks {
   particleCount: () => number;
   /** Havadaki altın ikonu sayısı — havuz sızıntı sağlaması. */
   goldFlightActive: () => number;
+  /** `G05` — aktif düşman can çubuğu sayısı, havuz sızıntı sağlaması. */
+  enemyHealthBarActive: () => number;
   settings: () => { sound: boolean; screenShake: boolean; effects: string; scale: number };
   setSetting: (key: string, value: unknown) => { sound: boolean; screenShake: boolean; effects: string };
 }

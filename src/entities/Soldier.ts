@@ -6,6 +6,32 @@ import { resetSoldierState } from '../systems/BarracksSystem';
 import { SOLDIER_FRAME } from '../data/spriteFrames';
 
 /**
+ * `G05` — greybox döneminde `refreshVisual()` alfa ile soluyordu; gerçek
+ * silüet sanatı geldikten sonra bu "yaralı asker hayalete dönüşüyor"
+ * okumasını üretiyordu (bkz. görevin kendi bulgusu). Silüet artık **her
+ * zaman tam opak**, can azaldıkça hafif vermilyona kayıyor — tam
+ * vermilyona DEĞİL (`VERMILION_KARISIM_TAVANI < 1`), yoksa düşük canlı
+ * bir asker düz kırmızı bir leke olurdu ve silüet detayı kaybolurdu.
+ */
+const BEYAZ = 0xffffff;
+const VERMILION = 0xb03a2e;
+const VERMILION_KARISIM_TAVANI = 0.55;
+
+/** İki rengi `oran` (0-1) ile karıştırır — kanal başına doğrusal enterpolasyon. */
+function renkKaristir(taban: number, hedef: number, oran: number): number {
+  const tr = (taban >> 16) & 0xff;
+  const tg = (taban >> 8) & 0xff;
+  const tb = taban & 0xff;
+  const hr = (hedef >> 16) & 0xff;
+  const hg = (hedef >> 8) & 0xff;
+  const hb = hedef & 0xff;
+  const r = Math.round(tr + (hr - tr) * oran);
+  const g = Math.round(tg + (hg - tg) * oran);
+  const b = Math.round(tb + (hb - tb) * oran);
+  return (r << 16) | (g << 8) | b;
+}
+
+/**
  * **Havuzlu** — TIER 1 kural 3.
  *
  * **İnce sınıf.** Dokuz engelleme kuralının tamamı `BarracksSystem`'de ve
@@ -76,10 +102,14 @@ export class Soldier extends Phaser.GameObjects.Sprite implements SoldierState, 
     this.clearTint();
   }
 
-  /** Can oranına göre soluklaşır — greybox geri bildirim, M6'da can çubuğu. */
+  /**
+   * `G05` — can oranına göre hafif vermilyona kayar, **opaklık sabit
+   * kalır**. Eski alfa çözümü (`0.4 + 0.6*oran`) greybox döneminde
+   * doğruydu; gerçek sanatla asker "hayalete" dönüşüyordu.
+   */
   refreshVisual(): void {
     if (this.maxHp <= 0) return;
     const oran = this.hp / this.maxHp;
-    this.setAlpha(0.4 + 0.6 * oran);
+    this.setTint(renkKaristir(BEYAZ, VERMILION, (1 - oran) * VERMILION_KARISIM_TAVANI));
   }
 }

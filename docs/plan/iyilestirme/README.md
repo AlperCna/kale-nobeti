@@ -69,7 +69,7 @@ Emek/etki oranına göre. **Üstteki üçü açık ara en yüksek getirili.**
 | 14 | [G08 · Vuruşta darbe geri bildirimi yok](G08-vurus-geri-bildirimi.md) | görsel | küçük | orta |
 | 15 | [Y08 · Test kapsamı — `storage.ts` testsiz](Y08-test-kapsami.md) | test | ☑ **düzeltildi** | orta-yüksek |
 | 16 | [Y03 · i18n sızıntısı, `en` %0](Y03-i18n-sizintisi.md) | yapısal | ☑ **düzeltildi (Adım 1+2)** | yüksek |
-| 17 | [G05 · Düşmanlarda can göstergesi yok](G05-dusman-can-gostergesi.md) | görsel | orta | **yüksek** |
+| 17 | [G05 · Düşmanlarda can göstergesi yok](G05-dusman-can-gostergesi.md) | görsel | ☑ **düzeltildi** | **yüksek** |
 | 18 | [G04 · `TowerInfoPanel` paletten kopuk](G04-towerinfopanel-paleti.md) | görsel | orta | orta |
 | 19 | [Y02 · `Pool.activeItems()` kare başına 7 dizi](Y02-pool-activeitems-tahsis.md) | başarım | orta | orta |
 | 20 | [Y09 · Öğretici / yönlendirme yok](Y09-ogretici-yok.md) | UX | orta-büyük | **yüksek** |
@@ -199,7 +199,17 @@ harita adları çevrilecek; S76: kule/asker dalı adları veri dosyasında
 kalıyor). **Adım 3 (en doldur + dil seçimi) bilerek yapılmadı** —
 ayrı iş. Ayrıntı: dosyanın kendi "Sonuç" bölümü.
 
-**G05** (can göstergesi — kendi başına büyük),
+**G05** — ☑ **tamamlandı (2026-08-28)**. Asker artık alfa yerine
+tint ile soluyor (silüet opak kalıyor); hasar görmüş düşmanlarda
+havuzlu, "bir kez göründüyse kalır" kurallı can çubuğu (seçenek b);
+boss'un HUD'da tek büyük can çubuğu (seçenek d). Canlı doğrulamada
+**kalıcı bir ortam bulgusu** çıktı: Browser pane'de
+`requestAnimationFrame` hiç ateşlenmiyor (oyunun "takılı" görünmesinin
+kök nedeni) — Phaser'ın kendi `forceSetTimeOut` yoluna zorlanarak
+(`window.__game.loop.raf.start(cb, true, 16)`) atlatıldı, sonraki
+oturumlar için kalıcı bir çözüm. Ayrıntı: dosyanın kendi "Sonuç"
+bölümü.
+
 **G04** (karar gerektiriyor),
 **Y09** (en büyük, Y01'den sonra ucuzlar).
 
