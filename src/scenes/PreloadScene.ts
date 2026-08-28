@@ -90,13 +90,31 @@ export class PreloadScene extends Phaser.Scene {
   // `static` yapıldı: üçü de dışarıdan, sahnesi olmayan bir bağlamdan
   // çağrılıyor ve aynı şekli paylaşıyor.
   // ---------------------------------------------------------------------
-  static queueGame(scene: Phaser.Scene): void {
-    // `exists` koruması: `GameScene` yeniden başlatmada `preload()` tekrar
-    // koşuyor (kaybedince tekrar dene, harita seçimden dönüş) — koruma
-    // olmadan her seferinde ağdan yeniden istenirdi.
+  /**
+   * Yalnız atlas — `queueGame`'in geri kalanından (arka plan, ses
+   * efektleri, sayı fontu) **kasıtlı ayrı**. `MenuScene`'in "Oyna"
+   * butonu `createParchmentButton` kullanıyor (`G01`) ve bu, `atlas`
+   * karesi istiyor — ama `Menu` `queueGame`'in tamamını çekerse M6'nın
+   * "aşamalı yükleme" hedefine geri döner (12 ses efekti + harita 1
+   * arka planı, oyuncu daha "Oyna"ya basmadan iner).
+   *
+   * **Canlı testte yakalandı:** `Menu`'nün hiç `preload()`'u yoktu, yani
+   * atlas hiçbir zaman istenmemişti — ilk ziyarette "Oyna" butonu
+   * `corner`/`edge-strip`/`middle-texture` karelerini `__MISSING`
+   * dokusundan okumaya çalışıyor, konsola üç uyarı basıyor ve buton
+   * Phaser'ın varsayılan "doku yok" deseniyle (yeşil çapraz çizgili
+   * kutu) çiziliyordu — oyuncunun gördüğü **ilk** etkileşimli öğe.
+   */
+  static queueAtlas(scene: Phaser.Scene): void {
+    // `exists` koruması: sahne yeniden başlatmada (kaybedince tekrar dene,
+    // harita seçimden dönüş, `Menu`'ye geri dönüş) tekrar istenmesin.
     if (!scene.textures.exists('atlas')) {
       scene.load.atlas('atlas', 'assets/atlas.png', 'assets/atlas.json');
     }
+  }
+
+  static queueGame(scene: Phaser.Scene): void {
+    PreloadScene.queueAtlas(scene);
     if (!scene.textures.exists('bg-degirmen-gecidi')) {
       scene.load.image('bg-degirmen-gecidi', 'assets/bg/degirmen-gecidi.webp');
     }
