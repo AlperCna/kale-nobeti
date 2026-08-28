@@ -209,3 +209,100 @@ can çubuğu kararından **bağımsız** olarak bugün yapılabilir.
 - Boss çubuğu harita değişiminde sıfırlanmıyorsa.
 - Asker hâlâ alfa ile soluyorsa.
 - Tepe dalgada FPS düştüyse.
+
+## Sonuç (2026-08-28)
+
+Öneri **(b) + (d) birlikte** uygulandı, aynı oturumda (planın "iki ayrı
+iş" önerisinin aksine — ikisi de küçük çıktı, ayırmanın getirisi yoktu).
+Asker alfa sorunu da (bağımsız, planın kendi notu) aynı oturumda kapandı.
+
+### 1. Asker — alfa yerine tint
+
+[Soldier.ts](../../../src/entities/Soldier.ts) `refreshVisual()`: artık
+`setAlpha` çağırmıyor, kanal-başına doğrusal enterpolasyonla (beyaz →
+vermilyon, tavan %55) `setTint` çağırıyor. Silüet her zaman tam opak.
+
+### 2. Boss can çubuğu (seçenek d)
+
+[BossHealthBar.ts](../../../src/fx/BossHealthBar.ts) — tek nesne, havuz
+yok (aynı anda en fazla bir boss). `GameScene.bossInfo` getter'ı
+(`#enemyPool`'daki ilk canlı `ogreSef`'i buluyor) `HudScene.update()`
+tarafından her karede okunuyor; `null` ise `hide()`, değilse `show(hp,
+maxHp)`. `createParchmentFrame` + `Rectangle.setSize` (yükleme
+çubuğuyla aynı desen) — atlas'a yeni bağımlılık yok.
+
+### 3. Düşman can çubuğu (seçenek b)
+
+[EnemyHealthBar.ts](../../../src/fx/EnemyHealthBar.ts) +
+[EnemyHealthBarSystem.ts](../../../src/fx/EnemyHealthBarSystem.ts).
+Havuzlu (`POOL_PREALLOC.enemyHealthBar = 20`), "bir kez göründüyse
+kalır" kuralı `Map<Enemy, EnemyHealthBar>` ile — tam canlıya dönen
+(Trol yenilenmesi) düşmanın çubuğu **gizlenmiyor**, güncellenmeye
+devam ediyor. Ömür, bir zamanlayıcı değil, düşmanın kendi ömrü: iki
+ayrılma yolu (`GameScene.#olumEfekti` — ölüm, `WaveManager`'ın
+`onLeak` kancası — sızma) `releaseFor(e)`'i düşman havuza dönmeden
+**önce**, aynı senkron çağrıda tetikliyor — `Map` anahtarı havuzlu bir
+referans olsa da bayatlama riski yok (ayrıntı `EnemyHealthBarSystem`'in
+kendi başlık yorumunda). Boss hariç tutuldu (`def?.id === 'ogreSef'`)
+— zaten kendi büyük çubuğu var, ikisi aynı anda görsel kirlilik olurdu.
+
+**Havuz sıfırlama bekçisi (Y08, `k.3`) genişletildi:** `EnemyHealthBar`
+kendi `HAVUZ_ALANLARI` manifestosunu taşıyor (`Active`, `Visible`,
+`Position`) — beşinci bir `Poolable` sınıf, bekçi otomatik kapsadı,
+elle bir şey eklemek gerekmedi.
+
+### Canlı doğrulama — ve bu oturumun asıl kazanımı
+
+Bu oturumda **kalıcı bir ortam bulgusu** çıktı: bu ve önceki
+oturumlarda tekrarlayan "sekme arka planda sayılıyor, oyun
+`BootScene`'de/oyun döngüsünde donuyor" sorununun **kesin kökü**
+bulundu — `requestAnimationFrame` bu Browser pane'de **hiç
+ateşlenmiyor** (`document.hidden`/`visibilityState` ne derse desin;
+çıplak bir `requestAnimationFrame` sayaç testiyle doğrulandı: 2
+saniyede **0** çağrı). Phaser'ın oyun döngüsü (`TimeStep`) tamamen
+rAF'a bağlı olduğu için `GameScene.update()` bir daha hiç çalışmıyordu.
+
+**Çözüm — Phaser'ın kendi yerleşik `setTimeout` yoluna zorlamak:**
+
+```js
+const raf = window.__game.loop.raf; // Phaser.DOM.RequestAnimationFrame
+raf.stop();
+raf.start(raf.callback, /* forceSetTimeOut */ true, /* delay ms */ 16);
+```
+
+Bu, Phaser'ın kendi `RequestAnimationFrame` sarmalayıcısının
+(`node_modules/phaser/src/dom/RequestAnimationFrame.js`) zaten
+desteklediği ama `Game` kurulumunda hiç açılmayan bir yol —
+`forceSetTimeOut` bayrağı. Uyguladıktan sonra `dev.gameFrames` gerçek
+zamanlı ilerledi, oyun tamamen normal oynanabilir hâle geldi (ekran
+görüntüleri, canlı tıklama, `devHooks` — hepsi çalıştı). **Bu oturumdan
+sonraki her oturum için**: Browser pane'de oyun "takılı" görünüyorsa
+önce bu iki satırı dene, `document.hidden`'a bakıp pes etme.
+
+Bununla:
+- **Asker tint** — piksel değil, **sayısal** doğrulama: hasarlı bir
+  askerin gerçek `tintTopLeft` değeri okundu (`14130069`) ve
+  `renkKaristir(BEYAZ, VERMILION, (1-oran)*0.55)` formülü elle
+  hesaplanıp **birebir aynı sayı** bulundu (oran ≈0,0762).
+- **Düşman can çubuğu** — ekran görüntüsünde hasar görmüş bir düşmanın
+  üstünde beliren çubuk doğrudan görüldü.
+- **Boss çubuğu** — gerçek bir boss dalgasına ulaşmak (4 kule ile
+  harita 1'de) beş denemede de başarısız oldu (dalga 9'da düşüldü,
+  scriptli oynayış Meteor/Takviye ile bile yetmedi — bu **denge
+  sorunu değil**, tek başlı bir bot'un dört kuleyle optimal oynayamaması).
+  Bunun yerine `scene.bossInfo`'yu `Object.defineProperty` ile geçici
+  olarak taklit edip (`{hp:490,maxHp:700}` sonra `null`) gerçek
+  `HudScene.update()` döngüsünün tepkisi görüldü: dolu çubuk doğru
+  oranda belirdi, `null`'da tam olarak kayboldu. Bu, `GameScene`'in
+  `bossInfo` getter'ının **dışındaki** her şeyi (HUD okuma, gösterme,
+  gizleme) uçtan uca doğruluyor; getter'ın kendisi tek satırlık bir
+  `find()` ve ayrıca doğrulanmadı (düşük risk, tip güvenli).
+
+`npm run typecheck && npm run test (727/727) && npm run guard (12/12)
+&& npm run build` temiz. `docs/KURALLAR.md` diff'i **boş** — beklenen,
+bu iş görsel/bilgi katmanı, denge sayılarına dokunmuyor.
+
+**Açık kalan uç:** boss çubuğunun `GameScene.bossInfo` getter'ı
+(havuzdaki ilk canlı `ogreSef`'i bulma) gerçek bir boss dalgasıyla
+uçtan uca görülmedi — yalnız taklit edilerek. Mantığı basit ve tip
+güvenli olduğu için risk düşük görülüyor, ama dürüstçe işaretlenmeli.

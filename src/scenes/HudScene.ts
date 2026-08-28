@@ -8,6 +8,7 @@ import { HudReadout } from '../fx/HudReadout';
 import { WaveTelegraph } from '../fx/WaveTelegraph';
 import { AbilityButtons } from '../fx/AbilityButtons';
 import { SettingsPanel } from '../fx/SettingsPanel';
+import { BossHealthBar } from '../fx/BossHealthBar';
 import { createParchmentButton, createParchmentFrame } from '../fx/ParchmentFrame';
 import { PreloadScene } from './PreloadScene';
 import { NUMBER_FONT_KEY } from '../fx/numberFont';
@@ -50,6 +51,9 @@ export class HudScene extends Phaser.Scene {
 
   /** Ayarlar paneli (M6-T12) — duraklatma perdesinin üstünde. */
   #settingsPanel?: SettingsPanel;
+
+  /** `G05` — boss sahnedeyken görünen tek can çubuğu. */
+  #bossBar?: BossHealthBar;
 
   constructor() {
     super('Hud');
@@ -101,6 +105,10 @@ export class HudScene extends Phaser.Scene {
     this.#createLabels();
     this.#readout = new HudReadout(this, MARGIN + 8, MARGIN + 16);
     this.#telegraph = new WaveTelegraph(this, MARGIN + 150, MARGIN + 94);
+    // `G05` — prep geri sayımıyla aynı yatay eksende ama biraz altında;
+    // ikisi zamanda hiç örtüşmüyor (biri yalnız `prep`'te, öbürü yalnız
+    // boss canlıyken görünür), üst üste binme riski yok.
+    this.#bossBar = new BossHealthBar(this, this.scale.width / 2, 46);
     this.#createEarlyStartButton();
     this.#abilityButtons = new AbilityButtons(
       this,
@@ -169,6 +177,10 @@ export class HudScene extends Phaser.Scene {
     });
     this.#telegraph?.show(game.upcomingWave);
     this.#abilityButtons?.update((id) => game.abilities.progress(id), game.pendingAbility);
+
+    const boss = game.bossInfo;
+    if (boss !== null) this.#bossBar?.show(boss.hp, boss.maxHp);
+    else this.#bossBar?.hide();
 
     const erkenAcik = game.earlyStartAvailable;
     this.#earlyBtn?.setVisible(erkenAcik);
