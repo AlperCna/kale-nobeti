@@ -296,7 +296,7 @@ export class HudScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
     const ipucu = this.add
-      .text(width / 2, height / 2 + 60, 'ESC / boşluk', {
+      .text(width / 2, height / 2 + 60, t('pauseHint'), {
         fontFamily: 'Spectral, serif',
         fontSize: '20px',
         color: '#8A7250',

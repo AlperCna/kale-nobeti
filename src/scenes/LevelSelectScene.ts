@@ -7,6 +7,7 @@ import { t } from '../util/i18n';
 import { PreloadScene } from './PreloadScene';
 import { createParchmentButton } from '../fx/ParchmentFrame';
 import { FRAME_STAR, FRAME_STAR_EMPTY } from '../data/spriteFrames';
+import type { StringKey } from '../data/strings';
 
 const INK = 0x14203a;
 const GOLD = 0xd4a032;
@@ -24,11 +25,18 @@ const KILITLI_KONTUR_ALFA = 0.35;
 const KART_W = 300;
 const KART_H = 190;
 
-const HARITA_ADI: Readonly<Record<string, string>> = {
-  'degirmen-gecidi': 'Değirmen Geçidi',
-  'tas-kopru': 'Taş Köprü',
-  'kul-ovasi': 'Kül Ovası',
+/** `Y03` — harita adları `strings.ts`'e taşındı (S75: çevrilecek). */
+const HARITA_ADI_ANAHTARI: Readonly<Record<string, StringKey>> = {
+  'degirmen-gecidi': 'mapDegirmenGecidi',
+  'tas-kopru': 'mapTasKopru',
+  'kul-ovasi': 'mapKulOvasi',
 };
+
+/** Bilinmeyen bir harita id'si gelirse (olmaması gerekir) ham id'ye düşer. */
+function haritaAdi(id: string): string {
+  const anahtar = HARITA_ADI_ANAHTARI[id];
+  return anahtar !== undefined ? t(anahtar) : id;
+}
 
 /**
  * Seviye seçim — `M7-T06`.
@@ -134,7 +142,7 @@ export class LevelSelectScene extends Phaser.Scene {
       }
 
       this.add
-        .text(x, y - 54, `${i + 1}. ${HARITA_ADI[m.id] ?? m.id}`, {
+        .text(x, y - 54, `${i + 1}. ${haritaAdi(m.id)}`, {
           fontFamily: '"Grenze Gotisch", serif',
           fontSize: '26px',
           color: acik ? '#14203A' : 'rgba(228,211,168,0.4)',
@@ -162,7 +170,9 @@ export class LevelSelectScene extends Phaser.Scene {
         .text(
           x,
           y + 34,
-          acik ? `${wavesFor(m.id).length} dalga · ${m.buildSpots.length} nokta` : t('locked'),
+          acik
+            ? `${wavesFor(m.id).length} ${t('wave')} · ${m.buildSpots.length} ${t('buildSpot')}`
+            : t('locked'),
           {
             fontFamily: 'Spectral, serif',
             fontSize: '16px', // Platform: minimum 16 px

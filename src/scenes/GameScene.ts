@@ -43,6 +43,8 @@ import { getEnemy, ENEMIES } from '../data/enemies';
 import { BALANCE, POOL_PREALLOC, GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI } from '../data/balance';
 import { MAP1_WAVES, wavesFor } from '../data/waves';
 import { devHooks } from '../util/devHooks';
+import { t } from '../util/i18n';
+import type { StringKey } from '../data/strings';
 import type { TargetMode, TierIndex, TowerDef } from '../types/tower';
 import type { Mover } from '../types/enemy';
 import type { Vec2 } from '../types/common';
@@ -93,18 +95,28 @@ const HUD_GOLD_HEDEFI: Vec2 = { x: 44, y: 12 };
 
 /** Beş hedefleme modu (`GAME-DESIGN.md` §4.5). Varsayılan `first`. */
 const TARGET_MODES: readonly TargetMode[] = ['first', 'last', 'strongest', 'weakest', 'closest'];
-const TOWER_LABEL: Readonly<Record<string, string>> = {
-  okcu: 'Okçu',
-  top: 'Top',
-  buyu: 'Büyü',
+/**
+ * `Y03` — kule/hedefleme etiketleri `strings.ts`'e taşındı. Harita
+ * anahtardan `StringKey`'e, çağrı yeri `t()` çağırıyor — dil bilmiyor.
+ */
+const TOWER_LABEL_KEY: Readonly<Record<string, StringKey>> = {
+  okcu: 'towerOkcu',
+  top: 'towerTop',
+  buyu: 'towerBuyu',
 };
 
-const MODE_LABEL: Readonly<Record<TargetMode, string>> = {
-  first: 'İlk',
-  last: 'Son',
-  strongest: 'Güçlü',
-  weakest: 'Zayıf',
-  closest: 'Yakın',
+/** Bilinmeyen bir `id` gelirse (olmaması gerekir) ham id'ye düşer. */
+function kuleAdi(id: string): string {
+  const anahtar = TOWER_LABEL_KEY[id];
+  return anahtar !== undefined ? t(anahtar) : id;
+}
+
+const MODE_LABEL_KEY: Readonly<Record<TargetMode, StringKey>> = {
+  first: 'modeFirst',
+  last: 'modeLast',
+  strongest: 'modeStrongest',
+  weakest: 'modeWeakest',
+  closest: 'modeClosest',
 };
 
 /**
@@ -1256,7 +1268,7 @@ export class GameScene extends Phaser.Scene {
       this.#menuButonu(
         kap,
         bx,
-        `${TOWER_LABEL[def.id] ?? def.id} ${maliyet}`,
+        `${kuleAdi(def.id)} ${maliyet}`,
         alinabilir,
         () => this.#placeTower(spotIndex, def),
       );
@@ -1266,7 +1278,7 @@ export class GameScene extends Phaser.Scene {
     this.#menuButonu(
       kap,
       (TOWERS.length - (toplam - 1) / 2) * 84,
-      `Kışla ${kislaMaliyet}`,
+      `${t('barracks')} ${kislaMaliyet}`,
       this.#eco?.canAfford(kislaMaliyet) === true,
       () => this.#placeBarracks(spotIndex),
     );
@@ -1315,7 +1327,7 @@ export class GameScene extends Phaser.Scene {
       this.#menuButonu(kap, -48, `↑ ${maliyet}`, this.#eco?.canAfford(maliyet) === true, () =>
         this.#upgradeTower(spotIndex, 1),
       );
-      this.#menuButonu(kap, 48, `Sat +${iade}`, true, () => this.#sellTower(spotIndex));
+      this.#menuButonu(kap, 48, `${t('sell')} +${iade}`, true, () => this.#sellTower(spotIndex));
     } else if (kule.tierIndex === 1) {
       // T2 → **iki dal**. `M4-T03`: dal seçimi zorunlu, kademe atlanamıyor.
       const [a, b] = kule.def.branches;
@@ -1333,11 +1345,11 @@ export class GameScene extends Phaser.Scene {
         this.#eco?.canAfford(b.cost) === true,
         () => this.#upgradeTower(spotIndex, 3),
       );
-      this.#menuButonu(kap, 96, `Sat +${iade}`, true, () => this.#sellTower(spotIndex));
+      this.#menuButonu(kap, 96, `${t('sell')} +${iade}`, true, () => this.#sellTower(spotIndex));
     } else {
       // T3 — son kademe. **Dal geri alınamıyor (S41)**; değiştirmek için
       // satmak gerekiyor ve %30 kayıp bilinçli bir bedel.
-      this.#menuButonu(kap, 0, `Sat +${iade}`, true, () => this.#sellTower(spotIndex));
+      this.#menuButonu(kap, 0, `${t('sell')} +${iade}`, true, () => this.#sellTower(spotIndex));
     }
 
     // Hedefleme modu seçici (`M4-T11`) — beş mod, kule başına. Diğer
@@ -1353,7 +1365,7 @@ export class GameScene extends Phaser.Scene {
       const cerceve = createParchmentButton(this, bx, 52, 46, 44, 8);
       if (!secili) cerceve.setAlpha(HEDEFLEME_SECILMEMIS_ALFA);
       const et = this.add
-        .text(bx, 52, MODE_LABEL[mod], {
+        .text(bx, 52, t(MODE_LABEL_KEY[mod]), {
           fontFamily: 'Spectral, serif',
           fontSize: '14px',
           color: secili ? '#B03A2E' : '#14203A',
@@ -1572,7 +1584,7 @@ export class GameScene extends Phaser.Scene {
       this.#menuButonu(kap, -48, `↑ ${m}`, this.#eco?.canAfford(m) === true, () =>
         this.#upgradeBarracks(spotIndex, 1),
       );
-      this.#menuButonu(kap, 48, `Sat +${iade}`, true, () => this.#sellBarracks(spotIndex));
+      this.#menuButonu(kap, 48, `${t('sell')} +${iade}`, true, () => this.#sellBarracks(spotIndex));
     } else if (k.tier === 1) {
       const [a, b] = KISLA.branches;
       this.#menuButonu(kap, -96, `${a.branchName} ${a.cost}`, this.#eco?.canAfford(a.cost) === true, () =>
@@ -1581,9 +1593,9 @@ export class GameScene extends Phaser.Scene {
       this.#menuButonu(kap, 0, `${b.branchName} ${b.cost}`, this.#eco?.canAfford(b.cost) === true, () =>
         this.#upgradeBarracks(spotIndex, 3),
       );
-      this.#menuButonu(kap, 96, `Sat +${iade}`, true, () => this.#sellBarracks(spotIndex));
+      this.#menuButonu(kap, 96, `${t('sell')} +${iade}`, true, () => this.#sellBarracks(spotIndex));
     } else {
-      this.#menuButonu(kap, 0, `Sat +${iade}`, true, () => this.#sellBarracks(spotIndex));
+      this.#menuButonu(kap, 0, `${t('sell')} +${iade}`, true, () => this.#sellBarracks(spotIndex));
     }
 
     this.#menuArkalikEkleVeKonumla(kap, spot.x, spot.y - 56);

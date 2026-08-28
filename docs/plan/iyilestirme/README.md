@@ -68,7 +68,7 @@ Emek/etki oranına göre. **Üstteki üçü açık ara en yüksek getirili.**
 | 13 | [Y06 · Her ölümde iki ses üst üste](Y06-ses-cakismasi.md) | ses | ☑ **düzeltildi** | orta |
 | 14 | [G08 · Vuruşta darbe geri bildirimi yok](G08-vurus-geri-bildirimi.md) | görsel | küçük | orta |
 | 15 | [Y08 · Test kapsamı — `storage.ts` testsiz](Y08-test-kapsami.md) | test | ☑ **düzeltildi** | orta-yüksek |
-| 16 | [Y03 · i18n sızıntısı, `en` %0](Y03-i18n-sizintisi.md) | yapısal | orta | yüksek |
+| 16 | [Y03 · i18n sızıntısı, `en` %0](Y03-i18n-sizintisi.md) | yapısal | ☑ **düzeltildi (Adım 1+2)** | yüksek |
 | 17 | [G05 · Düşmanlarda can göstergesi yok](G05-dusman-can-gostergesi.md) | görsel | orta | **yüksek** |
 | 18 | [G04 · `TowerInfoPanel` paletten kopuk](G04-towerinfopanel-paleti.md) | görsel | orta | orta |
 | 19 | [Y02 · `Pool.activeItems()` kare başına 7 dizi](Y02-pool-activeitems-tahsis.md) | başarım | orta | orta |
@@ -191,7 +191,14 @@ hatası** yakalandı ve düzeltildi), `enemies.test.ts` (S37/S38
 kilitlendi, S39'a işaret edildi). Ayrıntı: dosyanın kendi "Sonuç"
 bölümü.
 
-**Y03** (i18n — bekçiden başla),
+**Y03** — ☑ **Adım 1+2 tamamlandı (2026-08-28)**. `guard-rules.mjs`'e
+i18n kontrolü (k.12 — bilerek eksik net, aksansız Türkçe kelimeleri
+kaçırıyor, dürüstçe belgeli); ~20 metin `strings.ts`'e taşındı
+(`tr` dolu, `en` boş). İki karar `OPEN-QUESTIONS.md`'e yazıldı (S75:
+harita adları çevrilecek; S76: kule/asker dalı adları veri dosyasında
+kalıyor). **Adım 3 (en doldur + dil seçimi) bilerek yapılmadı** —
+ayrı iş. Ayrıntı: dosyanın kendi "Sonuç" bölümü.
+
 **G05** (can göstergesi — kendi başına büyük),
 **G04** (karar gerektiriyor),
 **Y09** (en büyük, Y01'den sonra ucuzlar).

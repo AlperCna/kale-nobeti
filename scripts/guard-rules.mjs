@@ -532,6 +532,55 @@ const sonuclar = [];
 }
 
 // ---------------------------------------------------------------------
+// 12 — i18n sızıntısı (CLAUDE.md Teknoloji) — `Y03`
+//
+// "Oyuncuya görünen hiçbir metin kodun içinde yazılmaz." Bu oturumun
+// kanıtı: kural yazılı olmasına rağmen `scenes/`+`fx/`'te ~30 metin
+// sızmıştı — bekçiye bağlı OLMAYAN tek TIER-1-komşusu kuraldı.
+//
+// SEZGİSEL (diğer bekçiler gibi): `src/scenes/` ve `src/fx/` içindeki
+// dize/şablon değişmezlerinde **Türkçe'ye özgü karakter** (ç ö ü ş ğ ı
+// İ Ç Ö Ü Ş Ğ) arıyor. Bu net, kasıtlı olarak **eksik** — "Top", "Son",
+// "Sat", "Tam", "Ses" gibi aksansız Türkçe kelimeleri YAKALAMAZ (Y03'ün
+// kendi notu). Yine de gelecekteki sızıntıların büyük çoğunluğu en az
+// bir aksanlı harf taşıyacak (mevcut ~30 metnin yalnız 7'si aksansızdı)
+// — sıfır kontrolden iyi, kanıt değil.
+//
+// Beyaz liste: marka adı ('Kale Nöbeti', S63 istisnası) ve havuz dolum
+// uyarısının dev-only etiketleri (`#havuzDoldu(` — `console.warn`'a
+// gidiyor, `import.meta.env.DEV` korumalı, oyuncu hiç görmüyor).
+// ---------------------------------------------------------------------
+{
+  let ihlalVar = false;
+  const kapsam = ['scenes', 'fx'].map((d) => join(SRC, d) + sep);
+  const trChar = /[çöüşğıÇÖÜŞĞİ]/;
+  // Tek satırlık string/template değişmezleri — çok satırlı şablon
+  // (nadir, bu kod tabanında görülmedi) kasıtlı olarak dışarıda.
+  const dizeDegismezi = /'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|`((?:[^`\\]|\\.)*)`/g;
+  const MARKA_ADI = 'Kale Nöbeti';
+
+  for (const dosya of dosyalar) {
+    if (dosya.endsWith('.test.ts')) continue;
+    if (!kapsam.some((k) => dosya.startsWith(k))) continue;
+
+    for (const s of kodSatirlari(readFileSync(dosya, 'utf8'))) {
+      if (s.metin.includes('#havuzDoldu(')) continue; // dev-only, oyuncu görmüyor
+
+      dizeDegismezi.lastIndex = 0;
+      let m;
+      while ((m = dizeDegismezi.exec(s.metin))) {
+        const deger = m[1] ?? m[2] ?? m[3] ?? '';
+        if (deger === MARKA_ADI) continue; // S63 istisnası
+        if (!trChar.test(deger)) continue;
+        ihlalVar = true;
+        ihlal('i18n', dosya, s.no, `"${deger}" — strings.ts'e taşınmalı, t() ile çağrılmalı`);
+      }
+    }
+  }
+  sonuclar.push(['i18n scenes/+fx/ içinde Türkçe metin sabiti yok (sezgisel)', !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
 
 const gecen = sonuclar.filter(([, ok]) => ok).length;
 if (taranamayan.length > 0) {

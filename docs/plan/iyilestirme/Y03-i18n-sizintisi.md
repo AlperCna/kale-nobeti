@@ -236,3 +236,87 @@ Ayrı bir iş. Adım 2 bitmeden başlanmaz.
 - Boş `en` anahtarı boş dize gösteriyorsa (geri düşme yoksa).
 - İngilizce metinler butonlardan taşıyorsa.
 - Harita adı / `branchName` kararları `OPEN-QUESTIONS.md`'e yazılmadıysa.
+
+## Sonuç (2026-08-28)
+
+Adım 1 + Adım 2 uygulandı. **Adım 3 (en doldur + dil seçimi) bilinçli
+olarak yapılmadı** — planın kendi notu: "ayrı bir iş, Adım 2 bitmeden
+başlanmaz."
+
+### Adım 1 — bekçi
+
+`guard-rules.mjs`'e 12. kontrol (`i18n`) eklendi: `src/scenes/` ve
+`src/fx/` içinde, dize/şablon değişmezlerinde Türkçe'ye özgü karakter
+(ç ö ü ş ğ ı İ Ç Ö Ü Ş Ğ) arıyor. **Bilerek eksik bir net** —
+`'Top'`/`'Son'`/`'Sat'`/`'Tam'`/`'Ses'`/`'Havan'`/`'Buz'` gibi
+aksansız Türkçe kelimeleri yakalamıyor (bu oturumda taranan ~30
+metnin 7'si böyleydi). Ama kalan ~23'ü (aksanlı) gelecekteki
+sızıntıların büyük kısmını temsil ediyor — sıfır kontrolden iyi,
+kanıt değil (`TEST-STRATEGY`'nin kendi uyarısı).
+
+Beyaz liste iki madde: marka adı (`'Kale Nöbeti'`, S63 istisnası) ve
+`#havuzDoldu(` çağrıları (`GameScene.ts`'in dev-only havuz-dolum
+uyarısı — `console.warn`'a gidiyor, oyuncu hiç görmüyor; canlı
+taramada gerçek bir yanlış-pozitif olarak yakalandı, `düşman`/`hasar
+sayısı`/`altın uçuşu` gibi pool etiketleri).
+
+**Kasıtlı bozma sınamasında bir öğrenme oldu (bekçi hatası değil, test
+tasarımı hatası):** ilk denemede `'Ayarlar'` (aksansız) geri
+sokuldu — bekçi **doğru şekilde** yeşil kaldı, çünkü bu kelime zaten
+net'in bilinen kör noktasında. İkinci denemede aksanlı bir metin
+(`'Ekran sarsıntısı'`) geri sokulunca bekçi **kırmızı** oldu, satır
+geri alınınca yeşile döndü — doğru davranış doğrulandı.
+
+### Adım 2 — metinler toplandı
+
+`strings.ts`'e **20 yeni anahtar** eklendi (`tr` dolu, `en` boş —
+plana uygun): kule/hedefleme etiketleri (`GameScene.ts` —
+`TOWER_LABEL`/`MODE_LABEL` haritaları `*_KEY` + `t()` çağıran
+`kuleAdi()`/doğrudan koda geçti), kışla/sat butonları (6 çağrı
+yeri), duraklatma ipucu (`HudScene.ts`), harita adları
+(`LevelSelectScene.ts` — `HARITA_ADI` → `HARITA_ADI_ANAHTARI` +
+`haritaAdi()`, `dalga`/`nokta` da `t()`'ye geçti — doğrulanmış eski
+"`wave` var ama kullanılmıyor" bulgusu artık geçersiz, `wave` zaten
+`HudScene`'de kullanılıyordu; `LevelSelectScene`'in kendi kopyası
+buradaydı), ayarlar paneli (`SettingsPanel.ts` — sekiz metnin hepsi).
+
+**Yazarken bulunan küçük bir hijyen sorunu:** `SettingsPanel.ts`'te
+zaten yerel bir `Text` değişkeni `t` adını kullanıyordu (iki yerde) —
+i18n `t()` import edilince isim çakışması oldu (fonksiyonel bir hata
+değil, `t` yereldeki blokta gölgeleniyordu ve o bloklarda zaten
+`t()` çağrılmıyordu, ama okunurluğu bozuyordu). İkisi de `metin` diye
+yeniden adlandırıldı.
+
+**İki karar `OPEN-QUESTIONS.md`'e yazıldı** (koda değil, planın
+istediği gibi):
+- **S75** — harita adları **çevrilecek**, özel isim değil.
+- **S76** — kule/asker dalı adları (`branchName`, 8 değer)
+  **şimdilik `strings.ts`'e taşınmıyor** — zaten `data/towers.ts`/
+  `data/barracks.ts` içinde veri olarak duruyor (TIER 1 kural 1'in
+  ruhuna uygun, sahne kodunda hardcode değil), bekçinin kapsamı
+  bilerek yalnız `scenes/`+`fx/` — bu istisna örtük değil, S76'da
+  yazılı. Çevrilecekse Adım 3'le birlikte ayrı ele alınacak.
+
+### Doğrulama
+
+`npm run typecheck && npm run test && npm run guard && npm run build`
+temiz — **727/727 test** (yeni anahtarlar `i18n.test.ts`'in genel
+"her tr metni dolu" kontrolünden otomatik geçti, ayrı test eklenmedi
+— gerek yoktu), **12/12 guard** (11 → 12). `docs/KURALLAR.md` diff'i
+**boş**. Boyut raporunda anlamsız bir artış (+1 KB, string tablosu).
+
+**Canlı doğrulama yapılmadı** — bu değişiklik saf bir kaynak
+değişikliği (`literal` → `t('anahtar')`), gösterilen Türkçe metin
+**birebir aynı** kalıyor (aynı dize, yalnız kaynağı değişti) ve
+`StringKey` birleşimi + `i18n.test.ts`'in "her tr metni dolu"
+kontrolü yazım hatalarını derleme/test aşamasında zaten yakalıyor.
+Bu, HudScene/GameScene yarış hatasından (davranış değişikliği vardı,
+canlı doğrulama zorunluydu) kasıtlı olarak farklı bir risk sınıfı.
+
+**Açık kalan uçlar** (plan zaten böyle bırakıyor):
+- Doğrulama listesinin 3-6. maddeleri (`DEFAULT_LOCALE='en'` ile tam
+  oyun taraması, taşma kontrolü, 640×360 okunurluk) Adım 3'e ait —
+  `en` dolana kadar test edilecek bir şey yok.
+- Guard'ın aksansız Türkçe kelimeleri (`Top`/`Son`/`Sat`/`Tam`/`Ses`)
+  kaçırdığı yukarıda belgelendi — kabul edilen, dürüstçe yazılı bir
+  sınır.
