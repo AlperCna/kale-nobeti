@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { GameScene } from './GameScene';
 import type { Speed } from '../types/common';
 import { t } from '../util/i18n';
+import { getSettings } from '../systems/Settings';
 import { devHooks } from '../util/devHooks';
 import { HudReadout } from '../fx/HudReadout';
 import { WaveTelegraph } from '../fx/WaveTelegraph';
@@ -107,18 +108,37 @@ export class HudScene extends Phaser.Scene {
       this.scale.height - MARGIN - 46,
       (id) => this.#game().armAbility(id),
     );
-    this.#settingsPanel = new SettingsPanel(this, this.#game().settings, () => {
+    // `settings` doğrudan paylaşılan registry'den (`getSettings`) okunuyor,
+    // `this.#game().settings`'ten DEĞİL. **Canlı testte yakalanan gerçek
+    // çökme:** `GameScene.settings` alan başlatıcısı değil, `create()`
+    // içinde atanıyor (`this.registry`'nin Phaser tarafından enjekte
+    // edilmesi sahne kurucusundan SONRA olduğu için alan başlatıcı olamaz —
+    // ayrıntı bu değişikliğin commit notunda). `LevelSelectScene` `Game`'i
+    // `start()`, `Hud`'u `launch()` ediyor; ikisi de aynı doğrultulmuş
+    // tikte kuyruklanıyor ama **hangisinin `create()`'inin önce bittiği
+    // garanti değil**. Yavaş bir cihazda/dar görünümde `HudScene.create()`
+    // `GameScene.create()`'den önce çalışırsa `this.#game().settings`
+    // hâlâ `undefined` oluyordu → `SettingsPanel.refresh()` `.state`
+    // okurken patlıyordu. `getSettings(this)` ise oyun-geneli registry'yi
+    // okuyor (`BootScene` orada bir kez kuruyor, her sahnenin `registry`'si
+    // aynı nesneye işaret ediyor) — `GameScene`'in kendi `create()`'ine
+    // bağımlı değil, `HudScene`'in kendi `registry`'si hazır olur olmaz
+    // (Phaser'ın sahne önyükleme sırası) kullanılabilir.
+    const settings = getSettings(this);
+    this.#settingsPanel = new SettingsPanel(this, settings, () => {
       // Ayar değişince oyuna anında yansı — sarsıntı bayrağı ve ses.
+      // `shake` (`GameScene`) alan başlatıcısı (`readonly shake = new
+      // ScreenShake()`) — `settings`'in aksine kurucudan itibaren güvenli.
       const g = this.#game();
-      g.shake.enabled = g.settings.state.screenShake;
-      if (!g.settings.state.screenShake) g.shake.reset();
-      this.sound.mute = !g.settings.state.sound;
+      g.shake.enabled = settings.state.screenShake;
+      if (!settings.state.screenShake) g.shake.reset();
+      this.sound.mute = !settings.state.sound;
     });
     // Başlangıçta da uygula: kayıtlı tercih ve prefers-reduced-motion.
     {
       const g = this.#game();
-      g.shake.enabled = g.settings.state.screenShake;
-      this.sound.mute = !g.settings.state.sound;
+      g.shake.enabled = settings.state.screenShake;
+      this.sound.mute = !settings.state.sound;
     }
     this.#createSettingsButton();
     this.#createPauseOverlay();

@@ -21,6 +21,19 @@ export class MenuScene extends Phaser.Scene {
     super('Menu');
   }
 
+  /**
+   * Yalnız atlas (`PreloadScene.queueAtlas`) — `#createPlayButton`'un
+   * `createParchmentButton`'ı (`G01`) atlas karesi istiyor.
+   * **Canlı testte yakalandı:** bu `preload()` yokken atlas hiç
+   * istenmiyordu, "Oyna" butonu `__MISSING` dokusuyla (yeşil çapraz
+   * çizgili kutu) çiziliyordu — bkz. `PreloadScene.queueAtlas`'ın
+   * kendi yorumu. `queueGame`'in tamamı değil, yalnız bu — geri kalanı
+   * (ses efektleri, harita 1 arka planı) hâlâ "Oyna"ya kadar bekliyor.
+   */
+  preload(): void {
+    PreloadScene.queueAtlas(this);
+  }
+
   create(): void {
     const { width, height } = this.scale;
 
