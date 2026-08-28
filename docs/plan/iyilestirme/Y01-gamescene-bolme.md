@@ -237,9 +237,47 @@ boyunca sorunsuz devam etti (`vinyetNabzi` her seferinde tetiklendi,
 konsol sessiz). Dört metodun **hepsi** gerçek oynanışta en az bir kez
 çalıştırılıp doğrulandı.
 
-**Açık kalan:** Adım 2 (`fx/MapRenderer.ts`) ve Adım 3
-(`fx/BuildMenu.ts`, G03'ten sonra artık daha güvenli — arkalık zaten
-var) hâlâ yapılmadı. `GameScene.ts` bu adımdan sonra da hâlâ
-~1750 satır (Adım 1 öncesi bu oturumda zaten G05/Y03 eklemeleriyle
-büyümüştü) — üç adımın hepsi bitmeden "hedef ~950" ölçütü
-değerlendirilemez.
+**Açık kalan (bu bölüm yazıldığında):** Adım 2 ve Adım 3 hâlâ
+yapılmamıştı. Adım 2 aynı oturumda tamamlandı, aşağıda.
+
+## Sonuç — Adım 2 (2026-08-29)
+
+[fx/MapRenderer.ts](../../../src/fx/MapRenderer.ts) — taşınan:
+`#drawMap`, `#drawCoverageOverlay`, `#drawHover`, `#updateFlyerHint`,
+`#dashedLine`, `#dashedCircle`.
+
+**Planın önerdiği gibi `#drawRally` taşınmadı** — kışla durumuna
+(`#barracksBySpot`) bağlı, `GameScene`'de kaldı. Ama onun kullandığı
+`dashedLine`/`dashedCircle` artık `MapRenderer`'ın **public** metotları
+— tek kopya, iki çağıran (`MapRenderer`'ın kendisi ve `GameScene.#drawRally`).
+Bu, planın öngörmediği ama gerekli küçük bir ek karardı: `dashedLine`/
+`dashedCircle` taşınırken `#drawRally`'nin de çağrı yerlerini
+güncellemesi gerekti (yalnız o iki satır, metodun geri kalanı dokunulmadı).
+
+**Bir de kod tekrarı bulundu ve kapatıldı, planın öngörmediği bir
+bonus:** `#ortalamaKapsama()` hem kapsama göstergesinde hem
+`dev.coverageAverage` hook'unda kullanılıyordu; taşınırken iki sınıfa
+dağılmaması için [util/coverage.ts](../../../src/util/coverage.ts)'e
+`averageCoverage()` olarak çıkarıldı (üç yeni test eşliğinde) — artık
+`MapRenderer` ve `GameScene` aynı fonksiyonu paylaşıyor.
+
+`GameScene.ts`: **213 satır silindi, 14 satır eklendi** (net **-199**)
+— planın ~190 satır tahmininin biraz üstünde (fazlası `#ortalamaKapsama`
++ ölü hâle gelen `#flyerHintOn` sıfırlama satırının da gitmesinden).
+Toplam (Adım 1+2): **1751 → 1552 satır.**
+
+### Doğrulama
+
+`npm run typecheck && npm run test (730/730, +3 yeni) && npm run guard
+(12/12) && npm run build` temiz. `docs/KURALLAR.md` diff'i **boş**.
+
+Canlı doğrulama: harita çizildi (yol, yapı noktaları, kale — hepsi
+doğru yerde), dev-only kapsama göstergesi doğru sayıları gösterdi
+(`dev.coverageAverage()` HUD'daki "ort:" metniyle eşleşti), fareyle
+yapı noktasının üstüne gelince kesikli menzil çemberi + kapsanan yol
+vurgusu belirdi, kışla kurulup seçilince toplanma noktası işaretçisi
+ve menzil çemberi (`#drawRally` → `MapRenderer.dashedCircle`/
+`dashedLine` delegasyonu) doğru çizildi. Konsol sessiz.
+
+**Açık kalan:** Adım 3 (`fx/BuildMenu.ts`, en büyük ve en riskli —
+G03'ten sonra artık daha güvenli) hâlâ yapılmadı.
