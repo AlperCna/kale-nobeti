@@ -228,3 +228,87 @@ yaşadı, beşincisi bu oturumda ve **tesadüfen** yakalandı.
 - Havuz bekçisi kasıtlı bozmayla yakalanmıyorsa.
 - Kapsam yüzdesi bir CI geçidi hâline geldiyse (S08 kararını bozar).
 - Test süresi 2 saniye şartını aştıysa.
+
+## Sonuç (2026-08-28)
+
+Seçenek (b), önerilen sırayla (1 → 2 → 3) uygulandı.
+
+**1. [storage.test.ts](../../../src/util/storage.test.ts)** — `LocalStore`'un
+sağlayıcı tarafı artık test altında. Gerçek `localStorage` API'sini
+taklit eden **çalışan** bir sahte (`SahteLocalStorage`) yazıldı —
+`Settings.test.ts`'teki "her erişim fırlıyor" sahtesinden kasıtlı
+farklı: burada normal okuma/yazma gerçekten çalışıyor, yalnız
+`bozAnahtar()` ile işaretlenen anahtarlar fırlatıyor. Bu, "prob
+(yoklama) başarılı ama gerçek yazma kota yüzünden fırlıyor" yolunu
+ayrı test etmeyi sağladı — `Settings.test.ts`'in kapsamadığı bir kod
+yolu.
+
+**Yazarken gerçek bir hata bulundu:** `#kullanilabilir` yalnız kurucuda
+ölçülüp bir daha bakılmıyordu. Prob başarılı olup örnek "kullanılabilir"
+işaretlendikten SONRA bir `set()` kota yüzünden fırlarsa, o çağrı
+yedeğe düşüyordu ama bayrak `true` kalıyordu — bir sonraki `get()`
+gerçek `localStorage`'ı tekrar deniyor ve (yazma hiç gerçekleşmediği
+için) eski/olmayan değeri döndürüyordu. Yani oyuncunun az önce
+değiştirdiği bir ayar, `#yedek`'te doğru değer dururken, okurken sanki
+hiç değişmemiş gibi geri geliyordu. Düzeltme: `#kaliciOlarakDus()` —
+herhangi bir gerçek erişim (get/set/remove, kurucu dahil) fırlarsa
+örnek **kalıcı** olarak yedeğe geçiyor; o andan sonraki her erişim
+tutarlı biçimde aynı kaynaktan (yedek) okuyor. Test dosyasında bu
+davranış hem doğrudan (`get çalışma sırasında fırlarsa da kalıcı
+düşüyor`) hem dolaylı (başka bir anahtarın da artık yedekten okunduğu)
+olarak kilitlendi.
+
+**2. Havuz sıfırlaması bekçisi** — plan (b)'nin "alternatif" olarak
+önerdiği yol seçildi: test değil, `guard-rules.mjs`'in **11. kontrolü**
+(`k.3`). Beş sınıfa (`Enemy`, `Projectile`, `Soldier`, `DamageText`,
+`GoldCoin`) `static readonly HAVUZ_ALANLARI` manifestosu eklendi —
+her biri kendi `resetForPool()`'unun dokunması gereken Phaser
+setter'larını (`Tint` özel: `clearTint`) elle bildiriyor. Bekçi,
+listelenen her ad için `resetForPool()` gövdesinde karşılığını arıyor.
+
+**Kasıtlı bozma sınamasında bekçinin KENDİSİNDE bir hata yakalandı:**
+ilk yazımda manifest ayrıştırması "ilk `]` görülene kadar birleştir"
+mantığı kullanıyordu — ama bildirim satırındaki `readonly string[]`
+**tip** ek açıklamasının kendi `]`si erken kesiyordu, `alanlar` listesi
+her zaman **boş** çıkıyordu ve kontrol sessizce hiçbir şeyi
+doğrulamıyordu (her zaman yeşil). `Enemy.resetForPool()`'dan
+`clearTint()` satırı kasten yorum satırına alınıp bekçi koşturulunca
+bu ortaya çıktı — bekçi **kırmızı olması gerekirken yeşil kaldı**.
+Kök neden: dizi köşeli parantezinin başlangıcı (`= [`) tip ek
+açıklamasının köşeli parantezinden ayırt edilmiyordu. Düzeltme: sayım
+yalnız `= [`den **sonra** başlıyor, kapanış derinlik sayılarak
+buluyor. Düzeltmeden sonra aynı kasıtlı bozma **doğru şekilde**
+yakalandı (`k.3 src/entities/Enemy.ts:149 HAVUZ_ALANLARI 'Tint'
+bildiriyor ama resetForPool() clearTint( çağırmıyor`), satır geri
+alınınca bekçi tekrar yeşile döndü. **Bu, TEST-STRATEGY'nin kendi
+uyarısını** ("bekçiler kanıt değil, ağ — negatif doğrulama olmadan
+güvenilmez") **canlı olarak doğruladı**: doğrulama listesinin 4.
+maddesi (kasıtlı bozma sınaması) süslü bir formalite değil, bu
+oturumda gerçekten bir bekçi hatası yakaladı.
+
+**3. [enemies.test.ts](../../../src/data/enemies.test.ts)** — S37
+(Şaman iyileştirme: 90 px yarıçap, 8 HP/sn, %40 büyü direnci) ve S38
+(Örümcek yavrusu: HP 30/hız 90 dışında her şey bilinçli sıfır, ana
+"altın = 3 × puan" oranını koruyor) kilitlendi. S39 (Trol yenilenmesi)
+**tekrar edilmedi** — zaten `EnemyAbilitySystem.test.ts`'te test
+ediliyordu, yeni dosya yalnız oraya işaret ediyor (izlenebilirlik
+sorunu buydu, kapsam sorunu değildi). Liste bütünlüğü (benzersiz id,
+`getEnemy` çözümü, hepsinde `leakDamage ≥ 1`) da eklendi.
+
+**4. `fx/GoldFlight`/`fx/DamageText` ömür döngüsü testi** — planın
+kendi notu gereği **yapılmadı**: "düşük öncelik... kazanç sınırlı."
+
+### Doğrulama
+
+`npm run typecheck && npm run test && npm run guard && npm run build`
+temiz — **727/727 test** (698 → 727, +29), **11/11 guard** (10 → 11,
+yeni `k.3`). `docs/KURALLAR.md` diff'i **boş** — beklenen, bu iş
+denge sayılarına dokunmuyor. `simulateWave` "10 dalga < 2 sn" şartı
+korundu (toplam test süresi ~30 sn, `Duration` alanında `tests`
+bölümü 27,66 sn — mevcut büyük testlerin (`waveSim`, `balanceChecks`)
+payı, bu oturumun eklediği testler görece küçük).
+
+**Açık kalan uç:** `util/storage.ts` ve `Enemy.ts`/`Soldier.ts`/vb.
+bu oturumda değişti (`#kaliciOlarakDus`, `HAVUZ_ALANLARI`) — davranış
+değişikliği yalnız `LocalStore`'un çalışma-zamanı-bozulma yolunda
+(yukarıda anlatıldı), oyuncuya görünen hiçbir akış değişmedi.

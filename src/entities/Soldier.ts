@@ -16,6 +16,17 @@ import { SOLDIER_FRAME } from '../data/spriteFrames';
  * `Projectile` ve `Enemy` ile aynı sözleşme.
  */
 export class Soldier extends Phaser.GameObjects.Sprite implements SoldierState, Poolable {
+  /** `Y08` — bkz. `Enemy.HAVUZ_ALANLARI`'ın başındaki gerekçe. */
+  static readonly HAVUZ_ALANLARI: readonly string[] = [
+    'Active',
+    'Visible',
+    'Position',
+    'Alpha',
+    'DisplaySize',
+    'Angle',
+    'Tint',
+  ];
+
   hp = 0;
   maxHp = 0;
   dps = 0;

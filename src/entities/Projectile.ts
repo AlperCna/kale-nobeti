@@ -14,6 +14,16 @@ import type { TowerEffect } from '../types/tower';
  * kendi alanları, sistem onları doğrudan yazıyor.
  */
 export class Projectile extends Phaser.GameObjects.Arc implements ProjectileState<Enemy>, Poolable {
+  /** `Y08` — bkz. `Enemy.HAVUZ_ALANLARI`'ın başındaki gerekçe. */
+  static readonly HAVUZ_ALANLARI: readonly string[] = [
+    'Active',
+    'Visible',
+    'Position',
+    'Alpha',
+    'Scale',
+    'FillStyle',
+  ];
+
   target: Enemy | null = null;
   damage = 0;
   damageType: DamageType = 'physical';

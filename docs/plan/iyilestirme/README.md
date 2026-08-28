@@ -67,7 +67,7 @@ Emek/etki oranına göre. **Üstteki üçü açık ara en yüksek getirili.**
 | 12 | [G06 · Düşmanlar yürüdükleri yöne dönmüyor](G06-dusman-yonelmesi.md) | görsel | ☑ **düzeltildi (kısmen)** | orta |
 | 13 | [Y06 · Her ölümde iki ses üst üste](Y06-ses-cakismasi.md) | ses | ☑ **düzeltildi** | orta |
 | 14 | [G08 · Vuruşta darbe geri bildirimi yok](G08-vurus-geri-bildirimi.md) | görsel | küçük | orta |
-| 15 | [Y08 · Test kapsamı — `storage.ts` testsiz](Y08-test-kapsami.md) | test | orta | orta-yüksek |
+| 15 | [Y08 · Test kapsamı — `storage.ts` testsiz](Y08-test-kapsami.md) | test | ☑ **düzeltildi** | orta-yüksek |
 | 16 | [Y03 · i18n sızıntısı, `en` %0](Y03-i18n-sizintisi.md) | yapısal | orta | yüksek |
 | 17 | [G05 · Düşmanlarda can göstergesi yok](G05-dusman-can-gostergesi.md) | görsel | orta | **yüksek** |
 | 18 | [G04 · `TowerInfoPanel` paletten kopuk](G04-towerinfopanel-paleti.md) | görsel | orta | orta |
@@ -182,7 +182,16 @@ JS ayrıştırma süresi. Tek kurulum, üç kararı birden açıyor.
 > "İşlenmeyen ölçüm bir sonraki oturumda yeniden yapılmak zorunda kalır."
 
 ### Tek başına duranlar
-**Y08** (test — her an), **Y03** (i18n — bekçiden başla),
+**Y08** — ☑ **tamamlandı (2026-08-28)**. `storage.test.ts` (sağlayıcı
+tarafı ilk kez test altında — yazarken `LocalStore`'da çalışma-sırası
+bozulma senaryosunda gerçek bir asimetrik-okuma hatası bulunup
+düzeltildi), `guard-rules.mjs` k.3 (beş havuzlu sınıfın `resetForPool`
+tamlığı — kasıtlı bozma sınamasında **bekçinin kendi ayrıştırma
+hatası** yakalandı ve düzeltildi), `enemies.test.ts` (S37/S38
+kilitlendi, S39'a işaret edildi). Ayrıntı: dosyanın kendi "Sonuç"
+bölümü.
+
+**Y03** (i18n — bekçiden başla),
 **G05** (can göstergesi — kendi başına büyük),
 **G04** (karar gerektiriyor),
 **Y09** (en büyük, Y01'den sonra ucuzlar).

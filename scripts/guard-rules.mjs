@@ -432,6 +432,106 @@ const sonuclar = [];
 }
 
 // ---------------------------------------------------------------------
+// 11 — Havuz sıfırlaması tamlığı (TIER 1 kural 3) — `Y08`
+//
+// Proje bu hata sınıfını (sıfırlanmayan görsel havuz durumu) **beş kez**
+// yaşadı — dördü `resetForPool()` içinde eksik kalan bir `set*` çağrısı
+// yüzünden (kural metninin kendi örneği: "sıfırlanmayan hedef referansı
+// ölü düşmanı canlı tutar"). Her biri elle gözden geçirmede yakalandı,
+// testle değil — `entities/`/`fx/` Phaser'a bağlı olduğu için (kural 11)
+// `resetForPool`'un Phaser tarafı `node`'da doğrudan test edilemiyor.
+//
+// Bekçi `Poolable` sınıflarının **kendi bildirdiği** `HAVUZ_ALANLARI`
+// listesini okuyup `resetForPool()` gövdesinde her birine karşılık gelen
+// `set${ad}(` (`Tint` özel: `clearTint(`) çağrısını arıyor. Liste elle
+// yazılıyor (kaynak metinden **çıkarılmıyor**) — Y08'in kendi notu:
+// "hangi setter'ın sıfırlanması gerektiği" Phaser bilgisi ister (ör.
+// `Enemy.setFrame` kasıtlı dışarıda, `spawn()` her zaman göstermeden
+// önce yazıyor), bir regex bunu güvenilir çıkaramaz. Bekçinin koruduğu
+// şey NEYİN sıfırlanması gerektiği değil, **listelenenin gerçekten
+// sıfırlanıp sıfırlanmadığı** — yine de listenin kendisi (kod
+// incelemesinde görünür, sınıfın en üstünde) yeni bir `set*` eklenince
+// "bunu listeye eklemeyi unuttun mu" sorusunu soran görünür bir yer.
+// ---------------------------------------------------------------------
+{
+  let ihlalVar = false;
+  for (const dosya of dosyalar) {
+    if (dosya.endsWith('.test.ts')) continue;
+    const icerik = readFileSync(dosya, 'utf8');
+    const satirlar = kodSatirlari(icerik);
+
+    const manifestSatiri = satirlar.findIndex((s) =>
+      /static\s+readonly\s+HAVUZ_ALANLARI\s*:/.test(s.metin),
+    );
+    if (manifestSatiri < 0) continue;
+
+    // Manifest bildirimi tek satıra sığmayabilir (`GoldCoin` tek satır,
+    // `Enemy` çok satır) — dizi köşeli parantezini **derinlik sayarak**
+    // kapat. İlk denemede yalnız ilk `]` arandı ve bildirim satırındaki
+    // `readonly string[]` TİP ek açıklamasının kendi `]`si erken
+    // kesiyordu — `alanlar` hep boş çıkıyordu, kontrol sessizce hiçbir
+    // şey doğrulamıyordu (kasıtlı bozma sınamasında yakalandı).
+    let manifestMetin = '';
+    let dizinDerinligi = 0;
+    let dizinBasladi = false;
+    for (let i = manifestSatiri; i < satirlar.length; i++) {
+      const metin = satirlar[i].metin;
+      // Bildirim satırındaki tip ek açıklaması (`readonly string[]`)
+      // dizi başlamadan önceki köşeli parantezleri saymasın diye,
+      // sayım yalnız `= [`den SONRAsında başlıyor.
+      const baslangicNoktasi = i === manifestSatiri ? metin.indexOf('= [') + 2 : 0;
+      for (let k = Math.max(0, baslangicNoktasi); k < metin.length; k++) {
+        const ch = metin[k];
+        if (ch === '[') {
+          dizinDerinligi++;
+          dizinBasladi = true;
+        } else if (ch === ']') dizinDerinligi--;
+      }
+      manifestMetin += metin;
+      if (dizinBasladi && dizinDerinligi <= 0) break;
+    }
+    const alanlar = [...manifestMetin.matchAll(/'([A-Za-z]+)'/g)].map((m) => m[1]);
+
+    const resetBasi = satirlar.findIndex((s) => /resetForPool\s*\(\s*\)\s*:\s*void\s*\{/.test(s.metin));
+    if (resetBasi < 0) {
+      ihlalVar = true;
+      ihlal('k.3 ', dosya, manifestSatiri + 1, 'HAVUZ_ALANLARI var ama resetForPool() bulunamadı');
+      continue;
+    }
+
+    // `resetForPool()` gövdesi — süslü parantez eşleştirmesiyle (k.10'daki
+    // `govdeCikar` ile aynı teknik, bu kontrol kendi kopyasını taşıyor).
+    let derinlik = 0;
+    let basladi = false;
+    const govdeMetinleri = [];
+    for (const s of satirlar.slice(resetBasi)) {
+      for (const ch of s.metin) {
+        if (ch === '{') {
+          derinlik++;
+          basladi = true;
+        } else if (ch === '}') derinlik--;
+      }
+      govdeMetinleri.push(s.metin);
+      if (basladi && derinlik <= 0) break;
+    }
+    const govde = govdeMetinleri.join('\n');
+
+    for (const ad of alanlar) {
+      const aranan = ad === 'Tint' ? 'clearTint(' : `set${ad}(`;
+      if (govde.includes(aranan)) continue;
+      ihlalVar = true;
+      ihlal(
+        'k.3 ',
+        dosya,
+        satirlar[resetBasi].no,
+        `HAVUZ_ALANLARI '${ad}' bildiriyor ama resetForPool() ${aranan} çağırmıyor`,
+      );
+    }
+  }
+  sonuclar.push(['k.3  HAVUZ_ALANLARI → resetForPool() tam eşleşiyor', !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
 
 const gecen = sonuclar.filter(([, ok]) => ok).length;
 if (taranamayan.length > 0) {
