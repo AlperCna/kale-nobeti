@@ -71,7 +71,7 @@ Emek/etki oranına göre. **Üstteki üçü açık ara en yüksek getirili.**
 | 16 | [Y03 · i18n sızıntısı, `en` %0](Y03-i18n-sizintisi.md) | yapısal | ☑ **düzeltildi (Adım 1+2)** | yüksek |
 | 17 | [G05 · Düşmanlarda can göstergesi yok](G05-dusman-can-gostergesi.md) | görsel | ☑ **düzeltildi** | **yüksek** |
 | 18 | [G04 · `TowerInfoPanel` paletten kopuk](G04-towerinfopanel-paleti.md) | görsel | ☑ **düzeltildi** | orta |
-| 19 | [Y02 · `Pool.activeItems()` kare başına 7 dizi](Y02-pool-activeitems-tahsis.md) | başarım | orta | orta |
+| 19 | [Y02 · `Pool.activeItems()` kare başına 7 dizi](Y02-pool-activeitems-tahsis.md) | başarım | ☑ **Adım 1 yapıldı** | orta |
 | 20 | [Y09 · Öğretici / yönlendirme yok](Y09-ogretici-yok.md) | UX | ☑ **düzeltildi** | **yüksek** |
 | 21 | [Y01 · `GameScene.ts` 1749 satır](Y01-gamescene-bolme.md) | mimari | ☑ **tamamlandı (3/3)** | orta-yüksek |
 | 22 | [Y11 · Phaser tam yapımı paketleniyor](Y11-phaser-tam-yapim.md) | boyut | orta-büyük | **belirsiz — önce ölç** |
@@ -246,6 +246,16 @@ desen. Canlı doğrulama sahne grafiği taranarak yapıldı (`tintTopLeft`)
 — gerçek isabetlerde flash görüldü, `effects:off`'ta sıfıra düştü,
 dalga sonuna kadar kalıntı tint yok. `GAME-DESIGN.md` §10 juice listesi
 artık tam. Ayrıntı: dosyanın kendi "Sonuç" bölümü.
+
+**Y02** — ⏸ **Adım 1 tamamlandı (2026-08-30), Adım 2/3 Y10'a bağlı
+erteli**. `EnemyAbilitySystem.ts`'teki `.filter()` kaldırıldı —
+`activeItems()` kare başına bir kez çağrılıp paylaşılıyor, filtre
+döngü içi `continue`'a taşındı. Kare başına tahsis 7→6, davranış ve
+sıra birebir aynı (`waveSim` değişmedi). Adım 2 (ölç) [Y10](Y10-kisitlanmis-fps-olculmedi.md)
+ile aynı araç kısıtına (CPU throttling/Performance paneli erişimi yok)
+takılıyor; Adım 3 (takas-silme + hedeflemeye `e.id` eşitlik bozucu)
+önerinin kendi şartı gereği ölçüm olmadan hiç denenmedi. Ayrıntı:
+dosyanın kendi "Sonuç" bölümü.
 
 ---
 

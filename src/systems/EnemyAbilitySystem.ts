@@ -36,10 +36,15 @@ export class EnemyAbilitySystem<T extends AbilityEnemy & Poolable> {
     const dt = scaledDelta * MS_TO_S;
     if (!(dt > 0)) return;
 
-    const canlilar = this.pool.activeItems().filter((e) => e.alive && e.def !== null);
+    // `Y02` adım 1 — tek tahsis: `activeItems()` bir kez çağrılıp hem dış
+    // hem iç döngüde paylaşılıyor; canlı/`def` filtresi (eskiden ayrı bir
+    // `.filter()` dizisiydi) artık **döngü içinde** uygulanıyor. Davranış
+    // birebir aynı (`waveSim` doğruluyor) — sıra hiç değişmedi.
+    const aktif = this.pool.activeItems();
 
-    for (const e of canlilar) {
-      const y = e.def?.ability;
+    for (const e of aktif) {
+      if (!e.alive || e.def === null) continue;
+      const y = e.def.ability;
       if (y === undefined) continue;
 
       if (y.kind === 'regen') {
@@ -56,8 +61,9 @@ export class EnemyAbilitySystem<T extends AbilityEnemy & Poolable> {
         // §5: "Yakındaki **düşmanlara**" — Şaman kendini iyileştirmiyor.
         // Yarıçap dokümanda yok (`// GEÇİCİ — S37`, `enemies.ts`).
         const yaricapKare = y.radius * y.radius;
-        for (const hedef of canlilar) {
+        for (const hedef of aktif) {
           if (hedef === e) continue;
+          if (!hedef.alive || hedef.def === null) continue;
           if (distSq(e, hedef) > yaricapKare) continue;
           this.#iyilestir(hedef, y.hps * dt);
         }
