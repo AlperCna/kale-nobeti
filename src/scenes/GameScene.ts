@@ -49,6 +49,11 @@ import { BALANCE, POOL_PREALLOC, GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI } from
 import { MAP1_WAVES, wavesFor } from '../data/waves';
 import { devHooks } from '../util/devHooks';
 import { t } from '../util/i18n';
+import { LocalStore } from '../util/storage';
+import { TutorialSystem } from '../systems/TutorialSystem';
+import type { HintId } from '../systems/TutorialSystem';
+import { TutorialHints } from '../fx/TutorialHints';
+import type { StringKey } from '../data/strings';
 import type { TargetMode, TierIndex, TowerDef } from '../types/tower';
 import type { Mover } from '../types/enemy';
 import type { Vec2 } from '../types/common';
@@ -85,6 +90,12 @@ const RALLY_COLOR = 0x3e6ca8;
  * dışında (üstünde) tutuyor, yalnız varış anının son karesi sınırda oluyor.
  */
 const HUD_GOLD_HEDEFI: Vec2 = { x: 44, y: 12 };
+
+/** `Y09` — hangi ipucunun hangi metni gösterdiği, `strings.ts` üzerinden. */
+const HINT_TEXT_KEY: Readonly<Record<HintId, StringKey>> = {
+  earlyStart: 'hintEarlyStart',
+  dragRally: 'hintDragRally',
+};
 
 /**
  * Oyun alanı. Saatin sahibi.
@@ -152,6 +163,9 @@ export class GameScene extends Phaser.Scene {
   settings!: Settings;
   /** `Y01` adım 1 — juice katmanı (parçacık, ölüm ezilmesi, meteor, vinyet). */
   #efektler?: Particles;
+  /** `Y09` — öğretici: hangi ipucu ne zaman (mantık) + parşömen balon (sunum). */
+  #tutorial?: TutorialSystem;
+  #tutorialHints?: TutorialHints;
   #kayitUyarildi = false;
 
   readonly abilities = new AbilitySystem();
@@ -242,6 +256,11 @@ export class GameScene extends Phaser.Scene {
 
   get earlyStartAvailable(): boolean {
     return this.#waves?.earlyStartAvailable ?? false;
+  }
+
+  /** `Y09` — `HudScene`'in ayarlar paneli "İpuçları" değişince çağırıyor. */
+  setHintsEnabled(enabled: boolean): void {
+    this.#tutorial?.setEnabled(enabled);
   }
 
   /**
@@ -415,6 +434,18 @@ export class GameScene extends Phaser.Scene {
     this.#rallyGfx = this.add.graphics();
     // `Y01` adım 1 — juice katmanı `fx/Particles.ts`'e taşındı.
     this.#efektler = new Particles(this, this.settings, this.clock, enemyPool, enemyHealthBars);
+
+    // `Y09` — öğretici. `SaveData`'nın (`progress`) versiyonuna dokunmuyor,
+    // aynı anahtarın kendi `tutorial` alanını kullanıyor (bkz.
+    // `TutorialSystem`'in başlık yorumu).
+    this.#tutorialHints = new TutorialHints(this);
+    this.#tutorial = new TutorialSystem(
+      new LocalStore(),
+      this.settings.state.hints,
+      (hint) => this.#tutorialHints?.show(t(HINT_TEXT_KEY[hint])),
+      this.bus,
+    );
+    this.#tutorial.start();
 
     this.#projectiles = new ProjectileSystem<Enemy, Projectile>(
       mermiHavuzu,
@@ -761,6 +792,8 @@ export class GameScene extends Phaser.Scene {
     };
     this.#barracksBySpot.set(spotIndex, kayit);
     this.#askerleriKur(spotIndex);
+    // `Y09` — öğreticinin "bayrağı sürükle" ipucu bunu dinliyor.
+    this.bus.emit('barracks:placed', { spotIndex });
     this.#drawRally();
 
     this.#buildMenu?.closeMenu();
@@ -1148,9 +1181,10 @@ export class GameScene extends Phaser.Scene {
     dev.settings = () => ({ ...this.settings.state, scale: this.settings.effectScale });
     dev.setSetting = (k: string, v: unknown) => {
       if (k === "effects") this.settings.set("effects", v as "off" | "low" | "full");
-      else this.settings.set(k as "sound" | "screenShake", v as boolean);
+      else this.settings.set(k as "sound" | "screenShake" | "hints", v as boolean);
       this.shake.enabled = this.settings.state.screenShake;
       if (!this.shake.enabled) this.shake.reset();
+      this.#tutorial?.setEnabled(this.settings.state.hints);
       return { ...this.settings.state };
     };
     dev.castReinforcements = (x: number, y: number) => {

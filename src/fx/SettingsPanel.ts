@@ -18,9 +18,9 @@ function efektEtiket(k: EffectLevel): string {
 /**
  * Ayarlar paneli — `GAME-DESIGN.md` §10 ve **TIER 1 kural 6**.
  *
- * Üç ayar: ses, ekran sarsıntısı, efekt yoğunluğu. Duraklatma perdesinin
- * üstünde açılıyor; `Hud` duraklatmada da çalıştığı için erişilebilir
- * kalıyor (`CLAUDE.md` Mimari).
+ * Dört ayar: ses, ekran sarsıntısı, öğretici ipuçları (`Y09`), efekt
+ * yoğunluğu. Duraklatma perdesinin üstünde açılıyor; `Hud` duraklatmada
+ * da çalıştığı için erişilebilir kalıyor (`CLAUDE.md` Mimari).
  *
  * ## TIER 1 kural 7
  *
@@ -35,6 +35,7 @@ export class SettingsPanel {
   readonly #kok: Phaser.GameObjects.Container;
   readonly #sesEtiketleri: Phaser.GameObjects.Text[] = [];
   readonly #sarsintiEtiketleri: Phaser.GameObjects.Text[] = [];
+  readonly #ipucuEtiketleri: Phaser.GameObjects.Text[] = [];
   readonly #efektEtiketleri = new Map<EffectLevel, Phaser.GameObjects.Text>();
 
   constructor(
@@ -47,7 +48,7 @@ export class SettingsPanel {
     this.#kok = scene.add.container(w / 2, h / 2).setDepth(200).setVisible(false);
 
     const arka = scene.add
-      .rectangle(0, 0, GENISLIK, 260, INK, 0.96)
+      .rectangle(0, 0, GENISLIK, 320, INK, 0.96)
       .setStrokeStyle(3, GOLD);
     const baslik = scene.add
       .text(0, -100, t('settingsTitle'), {
@@ -77,8 +78,15 @@ export class SettingsPanel {
       },
     );
 
+    // `Y09` — öğretici ipuçları açık/kapalı. Aynı satır deseni.
+    this.#satir(scene, SATIR_Y + 12, t('hints'), this.#ipucuEtiketleri, [t('on'), t('off')], () => {
+      this.settings.set('hints', !this.settings.state.hints);
+      this.refresh();
+      this.onChange();
+    });
+
     // Efekt yoğunluğu üç kademeli (S53) — ayrı etiket haritası.
-    const y = SATIR_Y + 12;
+    const y = SATIR_Y * 2 + 12;
     this.#kok.add(
       scene.add
         .text(-GENISLIK / 2 + 24, y, t('effects'), {
@@ -155,6 +163,8 @@ export class SettingsPanel {
     this.#sesEtiketleri[1]?.setVisible(!s.sound);
     this.#sarsintiEtiketleri[0]?.setVisible(s.screenShake);
     this.#sarsintiEtiketleri[1]?.setVisible(!s.screenShake);
+    this.#ipucuEtiketleri[0]?.setVisible(s.hints);
+    this.#ipucuEtiketleri[1]?.setVisible(!s.hints);
     for (const [k, metin] of this.#efektEtiketleri) metin.setVisible(k === s.effects);
   }
 

@@ -72,7 +72,7 @@ Emek/etki oranına göre. **Üstteki üçü açık ara en yüksek getirili.**
 | 17 | [G05 · Düşmanlarda can göstergesi yok](G05-dusman-can-gostergesi.md) | görsel | ☑ **düzeltildi** | **yüksek** |
 | 18 | [G04 · `TowerInfoPanel` paletten kopuk](G04-towerinfopanel-paleti.md) | görsel | ☑ **düzeltildi** | orta |
 | 19 | [Y02 · `Pool.activeItems()` kare başına 7 dizi](Y02-pool-activeitems-tahsis.md) | başarım | orta | orta |
-| 20 | [Y09 · Öğretici / yönlendirme yok](Y09-ogretici-yok.md) | UX | orta-büyük | **yüksek** |
+| 20 | [Y09 · Öğretici / yönlendirme yok](Y09-ogretici-yok.md) | UX | ☑ **düzeltildi** | **yüksek** |
 | 21 | [Y01 · `GameScene.ts` 1749 satır](Y01-gamescene-bolme.md) | mimari | ☑ **tamamlandı (3/3)** | orta-yüksek |
 | 22 | [Y11 · Phaser tam yapımı paketleniyor](Y11-phaser-tam-yapim.md) | boyut | orta-büyük | **belirsiz — önce ölç** |
 
@@ -217,7 +217,24 @@ panellerle aynı parşömen köşe+kenar çerçevesini taşıyor
 `GAME-DESIGN.md` §2'ye hem panelin kendi başlığına yazıldı. Canlı
 doğrulandı (gri tonlama dahil). Ayrıntı: dosyanın kendi "Sonuç" bölümü.
 
-**Y09** (en büyük, Y01'den sonra ucuzlar).
+**Y01** — ☑ **tamamlandı (3/3, 2026-08-29)**. `GameScene.ts` 1751 →
+1169 satır. Üç adım: `fx/Particles.ts`, `fx/MapRenderer.ts`,
+`fx/BuildMenu.ts` — plandaki geri-çağrım tabanlı ayrım, salt-okunur
+sorgular için doğrudan paylaşılan referansla bilinçli olarak
+gevşetildi. `BuildMenu.ts`'in dışa verdiği `BarracksKayit` tipini
+`GameScene.ts` geri içe aktarıyor — tip-only, çalışma zamanı bağı yok.
+
+**Y09** — ☑ **tamamlandı (2026-08-29)**. Öneri (a) en küçük hâliyle:
+yalnız iki ipucu (`earlyStart`, `dragRally`) — S65/S69'un ölçümle
+kanıtladığı, sonucu değiştiren iki mekanik. `TutorialSystem.ts`
+(Phaser'sız, `systems/`) + `fx/TutorialHints.ts` (zamanlayıcısız,
+tıklanınca kapanan parşömen balonu). Yeni `EventBus` olayı
+`barracks:placed`. `Settings`'e dördüncü anahtar (`hints`). **Bulgunun
+sorguladığı `SaveData` sürüm geçişi hiç gerekmedi** — yeni veri, sürüm
+numarasından bağımsız, aynı blob içinde ayrı bir üst-seviye alanda
+(`Settings`'in kendi deseniyle aynı). Canlı doğrulandı: ipucular bir
+kez görünüyor, gerçek sayfa yenilemesinde kalıcı, ayardan
+kapatılabiliyor. Ayrıntı: dosyanın kendi "Sonuç" bölümü.
 
 ---
 

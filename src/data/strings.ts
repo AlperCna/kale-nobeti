@@ -68,6 +68,12 @@ const TR = {
   off: 'Kapalı',
   effectLow: 'Düşük',
   effectFull: 'Tam',
+  /** `Y09` — ayarlardaki ipucu açma/kapama anahtarı. */
+  hints: 'İpuçları',
+  /** `Y09` — S65'in dayandığı mekanik: erken başlatma bonusu. */
+  hintEarlyStart: 'Erken başlat, kalan süre altın olur',
+  /** `Y09` — S69'un ölçtüğü mekanik: toplanma noktası sürükleme. */
+  hintDragRally: 'Bayrağı sürükle',
 } as const;
 
 export type StringKey = keyof typeof TR;
@@ -123,5 +129,8 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     off: '',
     effectLow: '',
     effectFull: '',
+    hints: '',
+    hintEarlyStart: '',
+    hintDragRally: '',
   },
 };

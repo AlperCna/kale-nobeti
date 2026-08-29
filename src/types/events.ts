@@ -24,6 +24,8 @@ export interface GameEvents {
   'gold:changed': { readonly total: number; readonly reason: GoldChangeReason };
   'life:lost': { readonly remaining: number };
   'tower:placed': { readonly spotIndex: number };
+  /** `Y09` — öğretici, ilk kışlada "bayrağı sürükle" ipucunu tetikliyor. */
+  'barracks:placed': { readonly spotIndex: number };
 
   /** S06 onaylandı. HUD hız butonu yayıyor. */
   'speed:changed': { readonly scale: Speed };

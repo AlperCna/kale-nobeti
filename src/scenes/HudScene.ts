@@ -141,6 +141,7 @@ export class HudScene extends Phaser.Scene {
       g.shake.enabled = settings.state.screenShake;
       if (!settings.state.screenShake) g.shake.reset();
       this.sound.mute = !settings.state.sound;
+      g.setHintsEnabled(settings.state.hints);
     });
     // Başlangıçta da uygula: kayıtlı tercih ve prefers-reduced-motion.
     {
