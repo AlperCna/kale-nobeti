@@ -458,6 +458,12 @@ export class GameScene extends Phaser.Scene {
           this.shake.trigger(x - e.x || 1, y - e.y, 0.5);
         }
         this.#efektler?.patlat(x, y, x - e.x, y - e.y, 4);
+        // `G08` — vuruş flaşı. Yalnız GERÇEK mermi isabetinde (bu callback
+        // yalnız buradan çağrılıyor — yanma tikleri ve sıfır-hasarlı ölüm
+        // kontrolleri `#hasarUygula`'yı DOĞRUDAN çağırıyor, buraya hiç
+        // uğramıyor). Efekt — bilgi değil — `effectScale 0`'da atlanıyor;
+        // hasar sayısı zaten bilgiyi taşıyor.
+        if (sonuc.dealt > 0 && this.settings.effectScale > 0) e.hit();
         this.#hasarUygula(e, sonuc.dealt);
       },
       // Süreli etkiler isabet anında uygulanıyor (yanma, yavaşlatma).

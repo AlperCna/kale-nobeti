@@ -66,7 +66,7 @@ Emek/etki oranına göre. **Üstteki üçü açık ara en yüksek getirili.**
 | 11 | [G07 · Yıldızlar sistem yazı tipine bırakılmış](G07-yildiz-gosterimi.md) | görsel | ☑ **düzeltildi** | orta-yüksek |
 | 12 | [G06 · Düşmanlar yürüdükleri yöne dönmüyor](G06-dusman-yonelmesi.md) | görsel | ☑ **düzeltildi (kısmen)** | orta |
 | 13 | [Y06 · Her ölümde iki ses üst üste](Y06-ses-cakismasi.md) | ses | ☑ **düzeltildi** | orta |
-| 14 | [G08 · Vuruşta darbe geri bildirimi yok](G08-vurus-geri-bildirimi.md) | görsel | küçük | orta |
+| 14 | [G08 · Vuruşta darbe geri bildirimi yok](G08-vurus-geri-bildirimi.md) | görsel | ☑ **düzeltildi** | orta |
 | 15 | [Y08 · Test kapsamı — `storage.ts` testsiz](Y08-test-kapsami.md) | test | ☑ **düzeltildi** | orta-yüksek |
 | 16 | [Y03 · i18n sızıntısı, `en` %0](Y03-i18n-sizintisi.md) | yapısal | ☑ **düzeltildi (Adım 1+2)** | yüksek |
 | 17 | [G05 · Düşmanlarda can göstergesi yok](G05-dusman-can-gostergesi.md) | görsel | ☑ **düzeltildi** | **yüksek** |
@@ -235,6 +235,17 @@ numarasından bağımsız, aynı blob içinde ayrı bir üst-seviye alanda
 (`Settings`'in kendi deseniyle aynı). Canlı doğrulandı: ipucular bir
 kez görünüyor, gerçek sayfa yenilemesinde kalıcı, ayardan
 kapatılabiliyor. Ayrıntı: dosyanın kendi "Sonuç" bölümü.
+
+**G08** — ☑ **tamamlandı (2026-08-30)**. Öneri (b): sayaç tabanlı tint
+flash (tween yok), `data/enemyVisuals.ts` (`HIT_FLASH_MS`,
+`HIT_FLASH_COLOR` — parşömen/altın tonu, beyaz değil). `hit()` çağrı
+noktası bilerek `#hasarUygula` değil, `ProjectileSystem`'in `onDamage`
+callback'i — yanma tikleri ve sıfır-hasarlı ölüm taramaları öldürülmeden
+önce flaşlanmasın diye. `effectScale > 0` koşulu `GoldFlight` ile aynı
+desen. Canlı doğrulama sahne grafiği taranarak yapıldı (`tintTopLeft`)
+— gerçek isabetlerde flash görüldü, `effects:off`'ta sıfıra düştü,
+dalga sonuna kadar kalıntı tint yok. `GAME-DESIGN.md` §10 juice listesi
+artık tam. Ayrıntı: dosyanın kendi "Sonuç" bölümü.
 
 ---
 

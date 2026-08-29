@@ -5,6 +5,7 @@ import type { Poolable } from '../util/pool';
 import { resetEnemyState } from '../systems/movers';
 import { emptyEffects, resetEffects } from '../systems/effects';
 import { enemyFrameKey } from '../data/spriteFrames';
+import { HIT_FLASH_COLOR, HIT_FLASH_MS } from '../data/enemyVisuals';
 
 /**
  * **Bu sınıf ince.** Hareket mantığı `Mover`'da, sıfırlamanın mantıksal
@@ -73,6 +74,14 @@ export class Enemy extends Phaser.GameObjects.Sprite implements Poolable, EnemyS
   /** Savaş alanı gösterim boyutu — kare değişse de sabit kalır. */
   readonly #size: number;
 
+  /**
+   * `G08` — vuruş flaşı kalan süre (ms, `scaledDelta` birimiyle azalır).
+   * Tween DEĞİL, sayaç: `resetForPool()`'un `killTweensOf`'a ihtiyaç
+   * duymadan tek satırla güvenli olması için (bkz. dosyanın başlık notu
+   * ve `G08` bulgusunun "TIER 1 kural 3 tuzağı" bölümü).
+   */
+  #flashLeft = 0;
+
   constructor(scene: Phaser.Scene, size: number) {
     // Kurucudaki kare geçici — havuz nesnesi henüz hiçbir düşmana ait değil.
     // `spawn()` gerçek kareyi yazana kadar görünmez (`setVisible(false)`).
@@ -107,9 +116,25 @@ export class Enemy extends Phaser.GameObjects.Sprite implements Poolable, EnemyS
 
   /** @param scaledDelta `GameClock.scaledDelta` (TIER 1 kural 8). */
   step(scaledDelta: number): void {
+    if (this.#flashLeft > 0) {
+      this.#flashLeft -= scaledDelta;
+      if (this.#flashLeft <= 0) this.clearTint();
+    }
     if (this.mover === null || !this.alive) return;
     this.mover.step(this, scaledDelta);
     this.syncPosition();
+  }
+
+  /**
+   * `G08` — vuruş geri bildirimi. Yalnız gerçek mermi isabetinde çağrılır
+   * (`GameScene`'in `ProjectileSystem` `onDamage` callback'i) — yanma
+   * tikleri ve `hp<=0` kontrol amaçlı sıfır-hasarlı çağrılar (`#hasarUygula`
+   * içinden) burayı **tetiklemiyor**, o yüzden `hit()` `#hasarUygula`'nın
+   * içinde değil, isabet callback'inde duruyor.
+   */
+  hit(): void {
+    this.#flashLeft = HIT_FLASH_MS;
+    this.setTint(HIT_FLASH_COLOR);
   }
 
   /** Hedeflemenin (`first`/`last`) bakacağı sayı. M2'de kullanılacak. */
@@ -158,6 +183,7 @@ export class Enemy extends Phaser.GameObjects.Sprite implements Poolable, EnemyS
     this.setAngle(0);
     this.setFlipX(false); // G06 — TIER 1 kural 3: yön de sıfırlanmalı
     this.setDisplaySize(this.#size, this.#size);
+    this.#flashLeft = 0; // G08 — TIER 1 kural 3: flaş sayacı da sıfırlanmalı
     this.clearTint();
   }
 }
