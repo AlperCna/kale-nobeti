@@ -229,17 +229,24 @@ kısmı öncelikli (`ROADMAP.md` M6 öncelik listesi).
 
 ## Orta — sessiz bozulma
 
-### R9 · Boss HP'si türetilmemiş
+### R9 · Boss HP'si türetilmemiş — ☑ **KAPANDI**
 
-**Olasılık** Orta · **Etki** Orta · **Kaynak** `research/01` §12
+**Kaynak** `research/01` §12
 
-`enemies.ts` içinde sabit bir sayı. Ekonomi veya harita geometrisi değişince
-sessizce yanlışlanıyor. Naif türetme ise Kısıt A testini **totolojiye**
-çeviriyor (`tavan > 0.92 × tavan` her zaman geçer).
+`enemies.ts` içinde sabit bir sayıydı. Ekonomi veya harita geometrisi
+değişince sessizce yanlışlanabiliyordu. Naif türetme ise Kısıt A testini
+**totolojiye** çevirirdi (`tavan > 0.92 × tavan` her zaman geçer).
 
-**Erken uyarı:** ekonomi değişti ama boss aynı kaldı.
-**Azaltma:** `research/01` §12 — türetme + karşılanabilirlik testi +
-regresyon bandı. **Taş:** M7 (`M7-T08`).
+**Çözüm:** `M7-T08` — `data/bossScaling.ts` haritaya göre boss HP'sini
+`BOSS_HP_BY_MAP` sabit tablosundan **türetiyor** ve `%80 × tavan` hedefine
+`BOSS_HP_TOLERANCE = 0,06` regresyon bandıyla bağlıyor (Kısıt A'nın
+totoloji sorunu yerine **karşılanabilirlik** + **bant** sağlaması,
+`research/01` §12'nin önerdiği gibi). `bossScaling.test.ts` üçünü de
+kilitliyor. Sayı hiç elle ayarlanmadı — geçiş boyunca (kışla eklenince,
+S73'te altın çarpanı değişince) **iki kez** yeniden türetildi, ikisinde
+de bu bant regresyonu yakaladı (`M7-SONUC.md`). Erken uyarı artık
+`npm run test`'in kendisi: sağlama kırılırsa test kırmızı çıkar, "ekonomi
+değişti ama boss aynı kaldı" sessizce olmuyor.
 
 ### R10 · Ham `delta` sızması
 
