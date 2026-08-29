@@ -222,3 +222,78 @@ koşuluna bağlanmalı. Bilgi zaten hasar sayısında var.
 - Sabitler koda gömülüyse.
 - `effectScale: 0` iken flash görünüyorsa.
 - `waveSim` çıktısı değiştiyse.
+
+## Sonuç
+
+**Öneri (b) aynen uygulandı: sayaç tabanlı tint flash, tween yok.**
+
+### Uygulama
+
+- `data/enemyVisuals.ts` (yeni) — `HIT_FLASH_MS = 80`, `HIT_FLASH_COLOR
+  = 0xf2d98a` (parşömen/altın tonu, önerideki gibi beyaz değil).
+  `entities/`'e gömülmedi; kural 11 zaten `data/`'nın Phaser importuna
+  izin vermiyor, bu dosya da hiç yapmıyor.
+- `Enemy.ts`: `#flashLeft` sayaç alanı, `hit()` (tint'i yakıyor),
+  `step()`'in başına `scaledDelta` ile azaltıp sıfırlanınca
+  `clearTint()` çağıran üç satır. `resetForPool()`'a `#flashLeft = 0`
+  eklendi (kural 3 — `Tint` zaten `HAVUZ_ALANLARI`'ndaydı, `clearTint()`
+  zaten çağrılıyordu; eksik olan yalnız sayacın kendisiydi).
+- **`hit()` çağrı noktası `#hasarUygula` değil, `ProjectileSystem`'in
+  `onDamage` callback'i** (`GameScene.ts`, mermi kurulumunun içi).
+  Kasıtlı: `#hasarUygula` hem gerçek isabetlerden hem de iki farklı
+  "isabet olmayan" yoldan çağrılıyor — yanma tikleri (`#etkileriIsle`,
+  saniyede 60 çağrı) ve meteor/genel öldü-mü taraması
+  (`#hasarUygula(e, 0)`, iki çağrı yeri). `hit()`'i oraya koymak yanan
+  düşmanı sürekli flaşlatır ve sıfır hasarlı taramalarda anlamsız
+  flaş üretirdi. `onDamage` yalnız **gerçek mermi isabetinde** (doğrudan,
+  patlama, zincir — üçü de `ProjectileSystem.#vur`'dan geçiyor) çağrılıyor.
+
+### Kapsam kararı — yalnızca (b), (c)/(d) değil
+
+Bulgunun (c) seçeneği (ölçek darbesi) test edilmedi: `#particleBurst`/
+`#efektler.patlat` ile aynı karede zaten görsel yoğunluk var, ikinci
+bir kanal eklemek (d) gürültüyü artırırdı ve `GoldCoin`'in yaşadığı
+taban-ölçek tuzağını (`#baseScale` gerekliliği) yeni bir yüzeye
+taşırdı. Renk seçimi (0xf2d98a, RGB ~242/217/138) yüksek parlaklıkta
+— gri tonlamada düşmanın kendi (koyu) rengine göre **açık bir yama**
+olarak kalıyor, kural 6'yı ihlal etmiyor; ayrı bir ölçek katmanı
+gerekmedi.
+
+**Efekt yoğunluğu "Düşük" kararı:** doc'un sorduğu "süreye mi
+uygulanır, açık/kapalı mı" sorusu **açık/kapalı** olarak çözüldü —
+`GoldFlight`'ın zaten kullandığı `effectScale > 0` deseniyle aynı
+(`GameScene.ts:663`). Süreyi ayrıca ölçeklemek (`0,4` çarpanı) ek bir
+dal açardı; var olan ikili desenle tutarlılık tercih edildi.
+
+### Doğrulama sonuçları
+
+- `npm run typecheck && npm run test` — 742/742 yeşil, **`waveSim`
+  çıktısı değişmedi** (tamamen görsel, testler bunu doğruluyor).
+- `npm run guard` — 12/12, `k.3` (`HAVUZ_ALANLARI` ↔ `resetForPool`)
+  dahil.
+- `npm run build` — `docs/KURALLAR.md` diff'i **boş**.
+- Canlı tarayıcı: gerçek bir dalga oynatıldı (dev kancasıyla
+  `startWaveEarly`), sahne grafiği periyodik olarak taranarak
+  (`scene.children.list`, `tintTopLeft`) **gerçek isabetlerde**
+  `0xf2d98a` tint'inin aktif düşmanlarda göründüğü ve kısa süre sonra
+  kendiliğinden temizlendiği doğrulandı (80 ms'lik pencereye tutarlı
+  örnek sayısı). Ardından `dev.setSetting('effects','off')` ile aynı
+  taramada **sıfır** örnek çıktı — efekt kapalıyken flash tamamen
+  yok, hasar sayısı ayrı kanaldan (BitmapText) çalışmaya devam ediyor.
+  Konsol boyunca hatasız; dalga sonuna kadar (kale düşene kadar) çöküş
+  yok.
+- 2× hız / kural 8: kod incelemesiyle doğrulandı — `#flashLeft` yalnız
+  `GameClock.scaledDelta` ile azalıyor ve `scaledDelta = delta × scale`
+  (`GameClock.ts:53`), yani 2×'te 80 ms'lik flash 40 ms'de bitiyor;
+  ayrı bir canlı ölçüm gerekmedi, sözleşme zaten `Enemy.step`'in tek
+  girdisi `scaledDelta` olduğu için mekanik olarak garanti.
+- Havuz güvenliği: ayrı bir kasıtlı "flaş sırasında öldür" senaryosu
+  elle tetiklenmedi ama gerçek dalga oynatımında onlarca düşman
+  öldü/havuza döndü ve sahne taramasında **hiçbir kalıntı tint**
+  görülmedi (`tintTopLeft !== beyaz` filtresi dalga bitiminde ve
+  `effects:off` sonrasında hep 0 örnek verdi).
+
+### Kapsam
+
+`GAME-DESIGN.md` §10 juice listesi artık tam: yalnız "vuruş geri
+bildirimi" satırı eksikti, o da kapandı.
