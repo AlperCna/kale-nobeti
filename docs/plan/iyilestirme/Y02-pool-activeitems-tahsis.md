@@ -260,3 +260,37 @@ kayabilir ve `docs/KURALLAR.md` sızıntı sayıları yeniden okunmalıdır.
   testine kasıtlı bir "yineleme sırasında release" senaryosu eklenmeli).
 - `activeItems()` dönüşü mutasyona açık bırakılmışsa (`readonly T[]`
   olmalı; çağıran `sort`/`push` yapamamalı).
+
+## Sonuç
+
+**Yalnız Adım 1 uygulandı — bilinçli olarak, önerinin kendi sırasına
+uyularak.**
+
+`EnemyAbilitySystem.ts`'in `.filter()`'ı kaldırıldı: `activeItems()`
+artık `update()` başına **bir kez** çağrılıp `aktif` değişkeninde hem
+dış hem iç (heal yarıçapı) döngüde paylaşılıyor; canlı/`def` filtresi
+`.filter()`'ın ürettiği ikinci diziyle değil, döngü içi `continue`
+ile uygulanıyor. Kare başına tahsis 7'den **6**'ya indi (%14) —
+davranış ve iterasyon sırası birebir korunarak: `waveSim` ve tüm testler
+(742/742) değişmeden geçti, `docs/KURALLAR.md` diff'i boş.
+
+**Adım 2 (ölç) yapılmadı — [Y10](Y10-kisitlanmis-fps-olculmedi.md)'un
+zaten belgelediği aynı araç kısıtına takılıyor:** bu ortamda Chrome
+DevTools Performance/Memory paneline ve CPU kısıtlamasına erişim yok.
+Adım 2 olmadan **Adım 3'e (takas-silme + hedeflemeye `e.id` eşitlik
+bozucu) hiç girilmedi** — önerinin kendi metni bunu açıkça şart
+koşuyor ("mal olmuyorsa Adım 3 yapılmaz, sıra kararlılığı kazanılmayan
+bir başarım için feda edilmez") ve Adım 3'ün maliyeti düşük değil:
+hedeflemenin `strongest`/`weakest` modlarındaki eşitlik davranışını
+değiştirir, `waveSim` çıktısını kaydırabilir ve ayrı bir denge ölçümü
+gerektirir — ölçülmemiş bir kazanç için bu riske girilmedi.
+
+**Kalan 6 tahsis** (`GameScene.ts`, `WaveManager.ts`, `ProjectileSystem.ts`,
+`DamageText.ts`, `GoldFlight.ts` — düşman havuzu için ikisi hâlâ ayrı
+ayrı `activeItems()` çağırıyor) bilerek dokunulmadan bırakıldı; onlara
+girmek (b) ya da (c)'yi gerektirir, ikisi de Adım 2'nin gerekçelendirmesi
+olmadan yapılmıyor.
+
+**Durum: Y10 çözülünce buraya dönülüp Adım 2 ile devam edilebilir.**
+Şimdilik "bitmedi" değil — önerinin kendi planı tam olarak izlendi,
+yalnız ölçüme bağlı kısım ölçüm olmadan yapılmadı.
