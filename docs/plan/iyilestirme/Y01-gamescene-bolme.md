@@ -279,5 +279,84 @@ vurgusu belirdi, kışla kurulup seçilince toplanma noktası işaretçisi
 ve menzil çemberi (`#drawRally` → `MapRenderer.dashedCircle`/
 `dashedLine` delegasyonu) doğru çizildi. Konsol sessiz.
 
-**Açık kalan:** Adım 3 (`fx/BuildMenu.ts`, en büyük ve en riskli —
-G03'ten sonra artık daha güvenli) hâlâ yapılmadı.
+**Açık kalan (bu bölüm yazıldığında):** Adım 3 hâlâ yapılmamıştı. Aynı
+oturumda tamamlandı, aşağıda.
+
+## Sonuç — Adım 3 (2026-08-29) — Y01 tamamlandı
+
+[fx/BuildMenu.ts](../../../src/fx/BuildMenu.ts) — planın en büyük ve en
+riskli parçası. Taşınan: `#openMenu`, `#openSellMenu`,
+`#openBarracksMenu`, `#closeMenu`, `#menuButonu`,
+`#menuArkalikEkleVeKonumla`, `#setTargetMode`, `#showInfoPanel`,
+`#showCartouche` + ilgili sabitler (`TARGET_MODES`, `MODE_LABEL_KEY`,
+`TOWER_LABEL_KEY`/`kuleAdi`, `MENU_PANEL_PAY`/`CORNER`/`KENAR_PAY`,
+`HEDEFLEME_SECILMEMIS_ALFA`).
+
+**Planın "geri çağrım tabanlı olmalı" kararı** birebir uygulandı, ama
+saf callback yerine **karma bir tasarım** seçildi ve bu bilinçli bir
+sapma: mutasyon gerektiren eylemler (`placeTower`, `placeBarracks`,
+`sellTower`, `sellBarracks`, `upgradeTower`, `upgradeBarracks`,
+`redrawRally`) `BuildMenuActions` callback nesnesi üzerinden
+`GameScene`'e yönlendiriliyor — ekonomi kontrolü, `SpotOccupancy`,
+gerçek `Tower`/kışla nesnesi yaratma hep `GameScene`'de kalıyor, plan
+tam bunu istiyordu. Ama **salt okuma** için (`EconomySystem`,
+`Map<number, Tower>`, `Map<number, BarracksKayit>`, `TowerInfoPanel`)
+callback yerine **paylaşılan referanslar** doğrudan kurucuya verildi —
+bunlar hiç mutasyon yapmıyor, yalnız "hangi buton görünsün" kararı
+için okunuyor, callback'e sarmak yalnız dolaylılık eklerdi. Tek
+istisna: `setTargetMode` — ekonomi kapısı olmayan salt UI tercihi,
+callback'siz doğrudan `Tower.targetMode` mutasyonu yapıyor (paylaşılan
+`Map` referansı üzerinden, `GameScene`'in gördüğü nesneyle aynı).
+
+**Planın öngörmediği bir tip paylaşımı sorunu ortaya çıktı ve çözüldü:**
+`#barracksBySpot`'un değer tipi (`{tier, rally, soldiers, marker,
+govde}`) `GameScene.ts` içinde adsız/satır içi bir tipti. `BuildMenu`
+aynı şekli okuyabilmesi için isimlendirilip **`BuildMenu.ts`'de**
+`export interface BarracksKayit` olarak tanımlandı, `GameScene.ts`
+onu geriye import ediyor (`fx/`'den `scenes/`'e tip akışı — normal
+yönün tersi ama yalnızca tip, çalışma zamanı bağımlılığı yok, kural
+11'i ihlal etmiyor).
+
+**Bonus, planın öngörmediği:** `#openSellMenu`/`dev.setTargetMode`'un
+ikisi de kullandığı `#setTargetMode` artık **public** — `BuildMenu`
+sınıfının dışından (dev kancası) tetiklenebiliyor, bu yüzden `#` yerine
+düz metot adı.
+
+`GameScene.ts`: **428 satır silindi, 45 satır eklendi** (net **-383**)
+— planın ~350 satır tahmininin oldukça üstünde (fazlası: taşınan
+sabitler + `#upgradeTower`'ın SIRA İÇİNDE kalması nedeniyle üç ayrı
+kesim gerektiren temiz bir çıkarma, ve callback bağlama kodunun
+kendisi).
+
+**Toplam (üç adım birden): `GameScene.ts` 1751 → 1169 satır — %33
+azalma.** Plan Adım 3 sonrası "~950" hedefliyordu; 1169'da kalındı
+çünkü bu oturumda ARADA (Adım 1/2'den önce) G05 ve Y03 eklemeleri
+dosyayı zaten büyütmüştü — üç adımın kendi payı (383+199+148=730 satır)
+plandan daha büyük çıktı, hedefi ıskalayan şey adımların kendisi değil,
+aynı dosyaya aynı oturumda binen başka işler.
+
+### Doğrulama — en kapsamlı canlı test bu oturumda yapıldı
+
+`npm run typecheck && npm run test (730/730) && npm run guard (12/12)
+&& npm run build` **ilk denemede** temiz çıktı — üç adımın en riskli
+parçası için beklenmedik ölçüde sorunsuz. `docs/KURALLAR.md` diff'i
+**boş**.
+
+Canlı doğrulama, planın "elle tam tur" maddesini karşılıyor:
+- **Gerçek fare tıklamasıyla** boş noktaya tıklanıp yapı menüsü
+  açıldı (dört buton: Okçu/Top/Büyü/Kışla, doğru maliyetlerle) —
+  `#setupInput`'un gerçek `POINTER_DOWN` yolu, dev kancası değil.
+- **Gerçek fare tıklamasıyla** "Okçu 70" butonuna basılıp kule
+  kuruldu, altın doğru düştü, menü kapandı.
+- `dev.selectTower` ile dolu noktaya "tıklanıp" satış menüsü +
+  hedefleme modu satırı + bilgi paneli **aynı ekranda, doğru
+  değerlerle** göründü (ekran görüntüsüyle doğrulandı).
+- Hedefleme modu değiştirildi (`setTargetMode`), kule yükseltildi
+  (T1→T2), satıldı — üçü de doğru altın/kademe değişimiyle çalıştı.
+- Kışla kuruldu, yükseltildi (T1→T2), satıldı — üçü de çalıştı.
+  T2→T3 dal yükseltmesi (hem kule hem kışla) yetersiz altında
+  **doğru şekilde reddedildi** (ekonomi kapısı hâlâ `GameScene`'de,
+  callback'in üstünden atlanmıyor).
+- Konsol oturum boyunca **sessiz**.
+
+**Açık kalan uç:** yok — Y01'in üç adımı da tamamlandı.
