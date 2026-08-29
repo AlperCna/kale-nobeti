@@ -21,12 +21,13 @@ describe('Settings — §10 + TIER 1 kural 6', () => {
     expect(s.effectScale).toBe(1);
   });
 
-  it('üç ayar da değiştirilebiliyor (TIER 1 k.6)', () => {
+  it('dört ayar da değiştirilebiliyor (TIER 1 k.6)', () => {
     const s = new Settings(new MemoryStore(), azaltma);
     s.set('sound', false);
     s.set('screenShake', false);
     s.set('effects', 'off');
-    expect(s.state).toEqual({ sound: false, screenShake: false, effects: 'off' });
+    s.set('hints', false);
+    expect(s.state).toEqual({ sound: false, screenShake: false, effects: 'off', hints: false });
     expect(s.effectScale).toBe(0);
   });
 

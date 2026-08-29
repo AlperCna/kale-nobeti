@@ -218,3 +218,96 @@ daha ucuz.**
 - Metinler koda gömülüyse.
 - `SaveData` sürüm geçiş kararı yazılmadıysa.
 - İpucu balonu oynanışı engelliyorsa.
+
+## Sonuç
+
+**Öneri (a) en küçük hâliyle uygulandı: iki ipucu.**
+
+### `SaveData` sürümü — kaçınma kararı, geçiş kararı değil
+
+Bulgu bölümünün sorguladığı "`version: 1` → `version: 2`, eski kayıtlar
+silinsin mi" ikilemi **hiç ortaya çıkmadı.** `SaveSystem.ts`'in kendi
+`#oku()`'su `p.version !== 1` durumunda **tüm kaydı** (yıldızlar dahil)
+sıfırlıyor — yani bir sürüm bump'ı, öğretici ipuçları için mevcut
+oyuncuların `stars` ilerlemesini riske atardı.
+
+Bunun yerine `TutorialSystem`, `Settings.ts`'in zaten kurduğu deseni
+izleyerek kendi verisini **aynı `kale-nobeti-save-v1` blob'u içinde,
+tamamen ayrı bir üst-seviye alanda** (`{ tutorial: { seenHints: [...] } }`)
+tutuyor — `progress` ve `settings` alanlarına hiç dokunmadan. Şema
+`version` numarasından bağımsız; eski bir kayıtta `tutorial` alanı hiç
+yoksa `#oku()` boş listeye düşüyor, hiçbir veri kaybı olmuyor
+(`TutorialSystem.test.ts` → *"eski kayıtta `tutorial` alanı hiç yoksa"*).
+Bu, doğrulama maddesi 8'in beklediği "yazılı sürüm geçiş kararı"ndan
+daha iyisi: **geçişe hiç gerek kalmadı.**
+
+### Uygulanan iki ipucu
+
+1. **`earlyStart`** — `#startEarly düğmesine ilk erişildiğinde`
+   değil, **dalga hazırlık sayacı ilk kez işlemeye başladığında**
+   tetikleniyor (`GameScene`'in kurulumunda `t.start()` çağrısı).
+   Metin: *"Erken başlat, kalan süre altın olur."*
+2. **`dragRally`** — yeni bir `EventBus` olayı, `'barracks:placed'`
+   (`types/events.ts`), ilk kışla kurulduğunda `GameScene.#placeBarracks`
+   içinden yayınlanıyor; `TutorialSystem` kurucuda buna abone oluyor.
+   Metin: *"Bayrağı sürükle."*
+
+İkisi de `strings.ts`'te (`hintEarlyStart`, `hintDragRally`), `en`
+anahtarları boş — CLAUDE.md'nin i18n yapısına uygun.
+
+### Sunum katmanı
+
+`fx/TutorialHints.ts` — kasıtlı olarak **tween'siz, zamanlayıcısız**
+parşömen balonu (`createParchmentFrame` üzerine). Gerekçe: bir bilgi
+balonunun okunma süresi `GameClock`/2× hız/duraklatma ile hiç
+etkileşmemeli. Yalnız kendi üstüne tıklanınca kapanıyor
+(`stopPropagation` — alttaki tıklamayı yutmuyor).
+
+### Ayarlar entegrasyonu
+
+`Settings.ts`'e dördüncü alan: `hints: boolean` (varsayılan `true`,
+`reducedMotionDefaults()` içinde de `true` — hareket azaltma ile
+ilgisiz). `SettingsPanel.ts`'e dördüncü satır ("İpuçları"). Kapatılınca
+`TutorialSystem.setEnabled(false)` — hem yeni tetikleri hem de o an
+gösterilmekte olanı etkiliyor (yeni tetik hiç `#onShow` çağırmıyor).
+
+### Test ve doğrulama sonuçları
+
+- `TutorialSystem.test.ts`: 12/12 yeşil. Kritik olan ikisi:
+  - Ham (LocalStore olmayan) fırlatan bir `KeyValueStore` verilirse
+    `TutorialSystem` da fırlatıyor — **kasıtlı**, `Settings.test.ts`'in
+    zaten sabitlediği sözleşmeyle birebir aynı: "sarma `LocalStore`'un
+    işi, her tüketicinin değil." Üretimde `TutorialSystem` her zaman
+    `new LocalStore()` ile kuruluyor, o da hiç fırlatmıyor
+    (`storage.test.ts`).
+  - Gerçek gizli-sekme yolu (`LocalStore` sarıp `localStorage`'ın
+    kendisi fırlıyor): çökmüyor, kalıcılık çalışmadığı için ipucu
+    **her session'da** yeniden görünüyor — veri kaybı sessiz kalmıyor
+    (TIER 1 kural 10).
+- `npm run typecheck && npm run test && npm run guard && npm run build`
+  — hepsi yeşil (742/742 test, guard 12/12). `docs/KURALLAR.md` diff'i
+  **boş** — bu iş denge verisine dokunmuyor.
+- Canlı tarayıcı doğrulaması (gerçek sayfa yenilemesiyle, `localStorage`
+  temizlenmiş):
+  1. Temiz kayıtla harita başlatıldı → *"Erken başlat, kalan süre altın
+     olur"* tam bir kez göründü.
+  2. İlk kışla kuruldu → *"Bayrağı sürükle"* tam bir kez göründü.
+  3. `localStorage` içeriği doğrulandı: `{"tutorial":{"seenHints":
+     ["earlyStart","dragRally"]}}` — başka hiçbir alana dokunmamış.
+  4. Sayfa **gerçekten** yenilendi (yeni `LocalStore` örneği), aynı
+     haritaya tekrar girildi → hiçbir ipucu **tekrar görünmedi**.
+  5. Ayarlardan "İpuçları" **Kapalı**'ya alındı, `seenHints` elle
+     boşaltıldı, sayfa yenilendi, harita tekrar başlatıldı → ipucu
+     **hiç görünmedi** (ayar, boş `seenHints`'i bile eziyor).
+  6. Konsolda hata yok.
+  Tüm doğrulama maddeleri (1-3, 9-10 hariç — 9 kod incelemesiyle,
+  `stopPropagation` + zamanlayıcısız tasarımla; 10, 640×360'ta ayrıca
+  denenmedi ama panel zaten diğer üç satırla aynı düzende) canlı
+  ortamda doğrulandı.
+
+### Kapsam
+
+Seçenek (b)/(c)/(d) hiç uygulanmadı — bilinçli. Kod tabanı artık
+sonraki ipuçlarını (T3 dal seçimi, yetenek kullanımı vb.) eklemeyi
+**bedava** hale getiriyor: yeni bir `HintId`, `HINT_TEXT_KEY`'e bir
+satır, bir tetik noktası.

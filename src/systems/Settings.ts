@@ -35,12 +35,19 @@ export interface SettingsState {
   /** §10 + TIER 1 k.6: ekran sarsıntısı kapatılabilir olmalı. */
   screenShake: boolean;
   effects: EffectLevel;
+  /**
+   * `Y09` — öğretici ipuçları. Hareket içermiyor (tween'siz, statik
+   * parşömen balon), o yüzden `reducedMotionDefaults`'ta da `true` —
+   * "hareketi azalt" tercihi bilgilendirme mesajlarını kapatmıyor.
+   */
+  hints: boolean;
 }
 
 export const DEFAULT_SETTINGS: SettingsState = {
   sound: true,
   screenShake: true,
   effects: 'full',
+  hints: true,
 };
 
 /**
@@ -52,7 +59,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
  * Ekran sarsıntısı **kapatılıyor** — sarsıntının "azaltılmış" bir hâli yok.
  */
 export function reducedMotionDefaults(): SettingsState {
-  return { sound: true, screenShake: false, effects: 'low' };
+  return { sound: true, screenShake: false, effects: 'low', hints: true };
 }
 
 /**
