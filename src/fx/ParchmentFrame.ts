@@ -33,21 +33,24 @@ export function createParchmentFrame(
     ? null
     : scene.add.tileSprite(0, 0, middleW, middleH, 'atlas', FRAME_MIDDLE).setOrigin(0.5);
 
-  const top = scene.add
-    .tileSprite(0, -height / 2 + corner / 2, middleW, corner, 'atlas', FRAME_EDGE)
-    .setOrigin(0.5);
-  const bottom = scene.add
-    .tileSprite(0, height / 2 - corner / 2, middleW, corner, 'atlas', FRAME_EDGE)
-    .setOrigin(0.5)
-    .setAngle(180);
-  const left = scene.add
-    .tileSprite(-width / 2 + corner / 2, 0, middleH, corner, 'atlas', FRAME_EDGE)
-    .setOrigin(0.5)
-    .setAngle(270);
-  const right = scene.add
-    .tileSprite(width / 2 - corner / 2, 0, middleH, corner, 'atlas', FRAME_EDGE)
-    .setOrigin(0.5)
-    .setAngle(90);
+  // Şerit karesi 32 px yüksek, band ise `corner` px — `TileSprite` dokuyu
+  // doğal boyutunda döşediği için eskiden bandın içine şeridin yalnız
+  // üst `corner` satırı sığıyordu (desenin geri kalanı kırpılıyordu).
+  // Ölçek karenin **gerçek** yüksekliğinden okunuyor; manifest değişirse
+  // burası kendini ayarlıyor.
+  const seritYuksekligi = scene.textures.getFrame('atlas', FRAME_EDGE).height;
+  const seritOlcek = corner / seritYuksekligi;
+  const serit = (sx: number, sy: number, uzunluk: number, aci: number) =>
+    scene.add
+      .tileSprite(sx, sy, uzunluk, corner, 'atlas', FRAME_EDGE)
+      .setOrigin(0.5)
+      .setTileScale(seritOlcek, seritOlcek)
+      .setAngle(aci);
+
+  const top = serit(0, -height / 2 + corner / 2, middleW, 0);
+  const bottom = serit(0, height / 2 - corner / 2, middleW, 180);
+  const left = serit(-width / 2 + corner / 2, 0, middleH, 270);
+  const right = serit(width / 2 - corner / 2, 0, middleH, 90);
 
   const koseler = [
     { dx: -width / 2 + corner / 2, dy: -height / 2 + corner / 2, angle: 0 }, // sol-üst
