@@ -33,6 +33,19 @@ const UYARI_WEBP_BYTE = 400 * 1024;
 const AZAMI_ATLAS_PX = 2048;
 const RAF_GENISLIK = 1024;
 
+/**
+ * Her atlas karesinin çevresine kopyalanan kenar pikseli (extrusion).
+ *
+ * Oyuncu geri bildirimi (2026-09-14, "Play yazısı parçalı duruyor"):
+ * `ParchmentFrame` kenar şeridini `TileSprite` ile döşüyor ve WebGL
+ * döşeme sınırında **komşu karenin** piksellerini örnekliyor — atlas'ta
+ * kareler bitişik olduğu için `edge-strip`'in yanındaki koyu örümcek
+ * karesi her 128 px'te bir dikey çizgi olarak görünüyordu. Kenarı
+ * dışa kopyalamak sınırdaki örneklemeyi karenin **kendi** rengine
+ * düşürüyor. `frame` dikdörtgeni taşırmayı DIŞARIDA bırakıyor.
+ */
+const TASIRMA_PX = 2;
+
 async function ensureDir(p) {
   await mkdir(p, { recursive: true });
 }
@@ -112,10 +125,17 @@ const KULE_DOSYALARI = [
 const MANIFEST = [
   // HUD (P02) — ring.png bilerek dışarıda (plan kararı 4: menzil çemberi
   // prosedürel Graphics olarak kalıyor).
-  { ad: 'corner', dosya: 'hud/corner.png', w: 96, h: 96 },
-  { ad: 'edge-strip', dosya: 'hud/edge-strip.png', w: 128, h: 32 },
-  { ad: 'middle-texture', dosya: 'hud/middle-texture.png', w: 64, h: 64 },
-  { ad: 'cartouche', dosya: 'hud/cartouche.png', w: 128, h: 128 },
+  // `kirp`: kaynak PNG'nin saydam kenar boşluğu kırpılıp kare **tam
+  // doldurulur** (`fit: 'fill'`). Dört çerçeve parçasının kaynağı da
+  // (ölçüldü: sol/sağ/üst/alt sütun alfası 0) saydam pay taşıyor;
+  // `contain` bu payı koruyunca `TileSprite` her tekrarında bir boşluk
+  // bırakıyor ve arkası görünüyordu — parşömen butonda mürekkep zemin
+  // (koyu çizgi), seviye kartında küçük resim (yeşil köşe). Sprite'lar
+  // (kule, düşman, ikon) `contain` kalıyor: onlar döşenmiyor, oran önemli.
+  { ad: 'corner', dosya: 'hud/corner.png', w: 96, h: 96, kirp: true },
+  { ad: 'edge-strip', dosya: 'hud/edge-strip.png', w: 128, h: 32, kirp: true },
+  { ad: 'middle-texture', dosya: 'hud/middle-texture.png', w: 64, h: 64, kirp: true },
+  { ad: 'cartouche', dosya: 'hud/cartouche.png', w: 128, h: 128, kirp: true },
   // Altın uçuşu (M6-T10 görsel iyileştirme) — greybox daireyi değiştiriyor.
   { ad: 'gold-coin', dosya: 'hud/gold-coin.png', w: YETENEK_KUTU, h: YETENEK_KUTU },
   // Yıldız derecelendirmesi (G07) — sistem yazı tipindeki `★`'ın yerine.
@@ -142,7 +162,11 @@ const MANIFEST = [
   { ad: 'takviye_icon', dosya: 'enemies/takviye_icon.png', w: YETENEK_KUTU, h: YETENEK_KUTU },
 ];
 
-/** Basit raf-paketleme: yüksekliğe göre azalan sırala, sabit genişlikte satırlara diz. */
+/**
+ * Basit raf-paketleme: yüksekliğe göre azalan sırala, sabit genişlikte
+ * satırlara diz. Her öge `TASIRMA_PX` payıyla yer kaplıyor; `x`/`y`
+ * **taşırmalı** kutunun köşesi, karenin kendisi `TASIRMA_PX` içeride.
+ */
 function rafPaketle(ogeler, azamiGenislik) {
   const sirali = [...ogeler].sort((a, b) => b.h - a.h);
   let x = 0;
@@ -151,15 +175,17 @@ function rafPaketle(ogeler, azamiGenislik) {
   let atlasGenislik = 0;
   const yerlesim = [];
   for (const oge of sirali) {
-    if (x + oge.w > azamiGenislik && x > 0) {
+    const kutuW = oge.w + TASIRMA_PX * 2;
+    const kutuH = oge.h + TASIRMA_PX * 2;
+    if (x + kutuW > azamiGenislik && x > 0) {
       x = 0;
       y += rafYuksekligi;
       rafYuksekligi = 0;
     }
     yerlesim.push({ ...oge, x, y });
-    x += oge.w;
+    x += kutuW;
     atlasGenislik = Math.max(atlasGenislik, x);
-    rafYuksekligi = Math.max(rafYuksekligi, oge.h);
+    rafYuksekligi = Math.max(rafYuksekligi, kutuH);
   }
   const atlasYukseklik = y + rafYuksekligi;
   return { yerlesim, atlasGenislik, atlasYukseklik };
@@ -178,16 +204,26 @@ async function atlasUret() {
   const frames = {};
   for (const oge of yerlesim) {
     const srcPath = path.join(SRC, oge.dosya);
-    const buffer = await sharp(srcPath)
+    let boru = sharp(srcPath);
+    if (oge.kirp === true) boru = boru.trim();
+    const buffer = await boru
       .resize(oge.w, oge.h, {
-        fit: 'contain',
+        fit: oge.kirp === true ? 'fill' : 'contain',
         background: { r: 0, g: 0, b: 0, alpha: 0 },
+      })
+      // Kenar pikselini dışa kopyala (extrusion) — bkz. `TASIRMA_PX`.
+      .extend({
+        top: TASIRMA_PX,
+        bottom: TASIRMA_PX,
+        left: TASIRMA_PX,
+        right: TASIRMA_PX,
+        extendWith: 'copy',
       })
       .png()
       .toBuffer();
     kompozitler.push({ input: buffer, left: oge.x, top: oge.y });
     frames[oge.ad] = {
-      frame: { x: oge.x, y: oge.y, w: oge.w, h: oge.h },
+      frame: { x: oge.x + TASIRMA_PX, y: oge.y + TASIRMA_PX, w: oge.w, h: oge.h },
       rotated: false,
       trimmed: false,
       spriteSourceSize: { x: 0, y: 0, w: oge.w, h: oge.h },
@@ -439,20 +475,37 @@ async function sayiFontuUret() {
   console.log(`  fonts/numbers.xml  ${charlar.length} karakter`);
 }
 
+/**
+ * Adımlar tek tek de koşturulabiliyor: `node scripts/prep-assets.mjs atlas`.
+ *
+ * Sebep: ses adımı `ffmpeg`'den geçiyor ve `.m4a` çıktısı her koşuda
+ * bayt bayt aynı olmuyor (kapsayıcı meta verisi) — yalnız atlas
+ * değişmişken tüm adımları koşturmak ses dosyalarını da "değişmiş"
+ * gösterip depoya gereksiz fark sokuyordu.
+ */
+const ADIMLAR = {
+  bg: ['Arka planlar:', arkaPlanlariUret],
+  kartlar: ['Seviye seçim kartları:', kartKucukResimleriUret],
+  atlas: ['Atlas:', atlasUret],
+  ses: ['Ses:', sesleriUret],
+  font: ['Sayı fontu:', sayiFontuUret],
+};
+
 async function main() {
   if (!existsSync(SRC)) {
     throw new Error(`${SRC} yok — assets-src/ altına kaynak dosyalar konmalı.`);
   }
-  console.log('Arka planlar:');
-  await arkaPlanlariUret();
-  console.log('Seviye seçim kartları:');
-  await kartKucukResimleriUret();
-  console.log('Atlas:');
-  await atlasUret();
-  console.log('Ses:');
-  await sesleriUret();
-  console.log('Sayı fontu:');
-  await sayiFontuUret();
+  const istenen = process.argv.slice(2);
+  const bilinmeyen = istenen.filter((a) => !(a in ADIMLAR));
+  if (bilinmeyen.length > 0) {
+    throw new Error(`Bilinmeyen adım: ${bilinmeyen.join(', ')} (geçerli: ${Object.keys(ADIMLAR).join(', ')})`);
+  }
+  const secilen = istenen.length > 0 ? istenen : Object.keys(ADIMLAR);
+  for (const ad of secilen) {
+    const [baslik, adim] = ADIMLAR[ad];
+    console.log(baslik);
+    await adim();
+  }
   console.log('Bitti.');
 }
 
