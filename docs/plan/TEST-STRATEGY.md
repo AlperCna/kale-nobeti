@@ -228,24 +228,46 @@ söyleyemez — M0'da tam olarak bu ayrım bir hatalı teşhise yol açtı.
 
 ## 4. Sürekli kontroller — `npm run guard`
 
-`M0-T10`'da kurulur. Node ile yazılır ki PowerShell'de de çalışsın.
+`M0-T10`'da dört kontrolle kuruldu; **bugün 17**. Node ile yazılır ki
+PowerShell'de de çalışsın.
 
-| # | Kontrol | Kural |
-|---|---|---|
-| 1 | Ham `delta` kullanımı (`GameClock` dışında) | TIER 1 k.8 |
-| 2 | `: any` / `<any>` / `as any` | TIER 1 k.5 |
-| 3 | `PreloadScene`'de ≥ 4 aşama fonksiyonu | ROADMAP M0 |
-| 4 | Değişen metinde `setText` (`BitmapText` değilse) | TIER 1 k.7 |
+| # | Kontrol | Kural | Geldiği iş |
+|---|---|---|---|
+| 1 | Ham `delta` (`GameClock` dışında) | TIER 1 k.8 | M0-T10 |
+| 2 | `: any` / `<any>` / `as any` | TIER 1 k.5 | M0-T10 |
+| 3 | `PreloadScene`'de ≥ 4 aşama fonksiyonu | ROADMAP M0 | M0-T10 |
+| 4 | Değişen metinde `setText` (`BitmapText` değilse) | TIER 1 k.7 | M0-T10 |
+| 5 | Saf mantıkta çalışma zamanı Phaser | TIER 1 k.11 | — |
+| 6 | `src/` altında test dosyası var | §1 | — |
+| 7 | `Math.sqrt` yalnız `math.ts` | TIER 1 k.9 | — |
+| 8 | `coverage` elle yazılmamış | mimari | — |
+| 9 | Saf mantıkta duvar saati | TIER 1 k.8 | — |
+| 10 | Sahne alanları `create()` içinde sıfırlanıyor | mimari | — |
+| 11 | `HAVUZ_ALANLARI` → `resetForPool()` tamlığı | TIER 1 k.3 | `Y08` |
+| 12 | `scenes/`+`fx/`'te Türkçe metin sabiti | Teknoloji (i18n) | `Y03` Adım 1 |
+| 13 | Yazı boyutu ≥ 16 px | Platform | `Y03` Adım 3 |
+| 14 | `localStorage` yalnız `util/storage.ts` | TIER 1 k.10 | bekçi taraması |
+| 15 | `console` yalnız `import.meta.env.DEV` korumalı | Platform | bekçi taraması |
+| 16 | Dokunmatik hedef ≥ 44 px | Platform | bekçi taraması |
+| 17 | `base: './'` | Platform · `RISKS.md` R15 | bekçi taraması |
 
 **Negatif doğrulama zorunlu** (`M0-T10`): kasten bir ihlal ekle, `guard`'ın
 exit 1 verdiğini gör, geri al. Yapılmazsa bekçilerin çalıştığı bilinmiyor.
 
-> ⚠️ **Bekçiler kanıt değil, ağ.** Dördü de düzenli ifade sezgiseli —
-> özellikle kontrol 4 (`setText`). Negatif doğrulama bekçinin
-> **ateşlendiğini** kanıtlar, **her ihlali yakaladığını** değil.
+> ⚠️ **Bekçiler kanıt değil, ağ.** Hepsi düzenli ifade sezgiseli —
+> özellikle kontrol 4 (`setText`), 12 (yalnız aksanlı Türkçe harf arıyor)
+> ve 16 (parametreyle verilen ölçüyü çözemiyor). Her birinin kör noktası
+> `guard-rules.mjs` içinde kendi başlığında **yazılı**. Negatif doğrulama
+> bekçinin **ateşlendiğini** kanıtlar, **her ihlali yakaladığını** değil.
 > Bir görev `guard` yeşil diye kural 7'ye uygun sayılmaz; asıl koruma
 > görevin kendi kabul kriteri ve kod incelemesi. Bekçi yalnız sessiz
 > gerilemeleri (regression) yakalar.
+
+**Bekçisiz kalan kurallar** (bilerek): TIER 1 k.1 (denge verisi koda
+gömülmez), k.4 (dinamik yol bulma), k.6 (erişilebilirlik), ESC/boşluk
+duraklatma, ses biçimi, doku sayısı. Her biri ya düzenli ifadeyle
+güvenilir taranamıyor ya da yanlış pozitif riski faydasını aşıyor —
+bunlar görev kabul kriterlerine ve kod incelemesine bırakıldı.
 
 ### Taş sonu komutu
 

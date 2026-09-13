@@ -300,6 +300,34 @@ sıfırlama tamlığı (beş kez hata), "sahneler ince olur" (1749 satır).
 > **Y03, Y08, Y01** bu kökten. En yüksek getirili tek hamle:
 > **bekçiye kural eklemek**, sızıntıyı tek tek temizlemek değil.
 
+**Kök sistematik olarak kapatıldı (2026-09-14).** Bu desen bir kez daha
+doğrulandı — `Y03` Adım 3'ün 640×360 denetiminde, `CLAUDE.md`'de yazılı
+ama bekçisiz olan "minimum yazı 16 px" kuralı **ihlal edilmiş** halde
+bulundu. Bunun üzerine `CLAUDE.md`'nin TIER 1 + Platform kuralları tek
+tek bekçi kapsamıyla karşılaştırıldı ve kapsanmayanlardan ucuz/net
+olanlar bağlandı. Bekçi **10 → 17 kontrol**:
+
+| # | Kural | Nereden geldi |
+|---|---|---|
+| k.3 | `HAVUZ_ALANLARI` → `resetForPool` tamlığı | Y08 |
+| k.12 | i18n — `scenes/`+`fx/`'te Türkçe metin sabiti | Y03 Adım 1 |
+| k.13 | Platform — yazı ≥ 16 px | Y03 Adım 3 denetimi (**ihlal buldu**) |
+| k.14 | TIER 1 k.10 — `localStorage` yalnız `util/storage.ts` | bu tarama |
+| k.15 | Platform — `console` yalnız `import.meta.env.DEV` korumalı | bu tarama |
+| k.16 | Platform — dokunmatik hedef ≥ 44 px | bu tarama |
+| k.17 | Platform — `base: './'` (**R15**) | bu tarama |
+
+k.14-17 eklendiğinde kod tabanı **zaten uyumluydu**; bunlar sızıntı
+temizlemedi, gelecekteki sessiz gerilemeyi kapattı. Dördü de kasıtlı
+bozma ile sınandı (`TEST-STRATEGY` §4'ün şartı).
+
+**Hâlâ bekçisiz kalanlar** — bilerek: TIER 1 k.1 (denge verisi koda
+gömülmez), k.4 (dinamik yol bulma yok), k.6 (erişilebilirlik), ESC/boşluk
+duraklatma, ses biçimi (`.m4a`), doku sayısı ≤ 16. Bunların her biri ya
+düzenli ifadeyle güvenilir taranamıyor ya da yanlış pozitif üretme
+riski faydasından büyük — *"bekçiler kanıt değil, ağ"* (`TEST-STRATEGY`
+§4).
+
 ### 3. Testler üst sınır kontrol ediyor, eşitlik değil
 
 Bu oturumda kanıtlandı: çok girişli harita hatası düzeltilince sızıntı
