@@ -3,6 +3,8 @@ import type { Wave } from '../types/wave';
 import type { EnemyId } from '../types/enemy';
 import { NUMBER_FONT_KEY } from './numberFont';
 import { enemyFrameKey } from '../data/spriteFrames';
+import { enemySummary } from './enemyLabel';
+import { getEnemy } from '../data/enemies';
 
 /**
  * Dalga telegrafı — `GAME-DESIGN.md` §7, **zorunlu özellik**.
@@ -22,6 +24,8 @@ const BANT_PAY = 8;
 export class WaveTelegraph {
   readonly #kap: Phaser.GameObjects.Container;
   readonly #scene: Phaser.Scene;
+  /** `M8-T02` — ikon başına özet satırı; aynı anda en çok biri görünür. */
+  readonly #ozetler: Phaser.GameObjects.Text[] = [];
   #gosterilenDalga = -1;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
@@ -47,6 +51,7 @@ export class WaveTelegraph {
 
     this.#gosterilenDalga = wave.index;
     this.#kap.removeAll(true);
+    this.#ozetler.length = 0; // `removeAll(true)` nesneleri yok etti
 
     // Aynı düşman birden çok grupta olabilir — tek satırda topla.
     const adet = new Map<EnemyId, number>();
@@ -70,6 +75,30 @@ export class WaveTelegraph {
         .bitmapText(bx + ICON, 0, NUMBER_FONT_KEY, String(sayi))
         .setOrigin(0, 0.5)
         .setTint(0xe4d3a8);
+
+      // `M8-T02` — ikonun üstüne gelince "Zırhlı Ork — zırh 8" satırı.
+      // Her tip için ayrı statik `Text`, yalnız görünürlük değişiyor
+      // (TIER 1 kural 7; bu dosya zaten `setText` çağırmıyor).
+      const def = getEnemy(enemy);
+      if (def !== undefined) {
+        const ozet = this.#scene.add
+          .text(0, ICON, enemySummary(def), {
+            fontFamily: 'Spectral, serif',
+            fontSize: '16px', // bekçi k.13
+            color: '#E4D3A8',
+          })
+          .setOrigin(0, 0)
+          .setVisible(false);
+        kare.setInteractive({ useHandCursor: true });
+        kare.on(Phaser.Input.Events.POINTER_OVER, () => {
+          for (const o of this.#ozetler) o.setVisible(false);
+          ozet.setVisible(true);
+        });
+        kare.on(Phaser.Input.Events.POINTER_OUT, () => ozet.setVisible(false));
+        this.#ozetler.push(ozet);
+        this.#kap.add(ozet);
+      }
+
       this.#kap.add([kare, yazi]);
       i++;
     }

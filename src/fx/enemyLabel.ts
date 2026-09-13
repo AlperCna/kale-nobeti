@@ -1,0 +1,55 @@
+import type { EnemyDef, EnemyId } from '../types/enemy';
+import type { StringKey } from '../data/strings';
+import { t } from '../util/i18n';
+
+/**
+ * `M8-T02` — düşman adı ve savunma özeti.
+ *
+ * Dalga telgrafı (§7'nin zorunlu özelliği) yalnız ikon + adet
+ * gösteriyordu; ikonu tanımayan oyuncu için bilgi değil süstü. Bu dosya
+ * hangi düşmanın ne olduğunu **veriden** cümleye çeviriyor — sayı
+ * uydurulmuyor, `enemies.ts` okunuyor.
+ *
+ * TIER 1 kural 11: Phaser'a dokunmaz, `node`'da test edilir.
+ */
+
+const AD_ANAHTARI: Readonly<Record<EnemyId, StringKey>> = {
+  goblin: 'enemyGoblin',
+  orkSavasci: 'enemyOrkSavasci',
+  kurtBinicisi: 'enemyKurtBinicisi',
+  harpi: 'enemyHarpi',
+  zirhliOrk: 'enemyZirhliOrk',
+  saman: 'enemySaman',
+  trol: 'enemyTrol',
+  orumcekAna: 'enemyOrumcekAna',
+  orumcekYavrusu: 'enemyOrumcekYavrusu',
+  ogreSef: 'enemyOgreSef',
+};
+
+export function enemyName(id: EnemyId): string {
+  return t(AD_ANAHTARI[id]);
+}
+
+/**
+ * "Zırhlı Ork — zırh 8, uçar" gibi tek satır.
+ *
+ * Yalnız **sıfırdan farklı** savunmalar yazılıyor: goblin için "zırh 0,
+ * büyü direnci 0" yazmak bilgi değil gürültü olurdu. Yetenekler
+ * (`ability`) oyuncunun karşı-oyun kararını değiştiren tek şey olduğu
+ * için hep yazılıyor.
+ */
+export function enemySummary(def: EnemyDef): string {
+  const parcalar: string[] = [];
+  if (def.armor > 0) parcalar.push(`${t('statArmor')} ${def.armor}`);
+  if (def.magicResist > 0) {
+    parcalar.push(`${t('statResist')} %${Math.round(def.magicResist * 100)}`);
+  }
+  if (def.flying) parcalar.push(t('statFlying'));
+  const y = def.ability?.kind;
+  if (y === 'regen') parcalar.push(t('statRegen'));
+  else if (y === 'split') parcalar.push(t('statSplit'));
+  else if (y === 'heal') parcalar.push(t('statHeals'));
+
+  const ad = enemyName(def.id);
+  return parcalar.length === 0 ? ad : `${ad} — ${parcalar.join(', ')}`;
+}
