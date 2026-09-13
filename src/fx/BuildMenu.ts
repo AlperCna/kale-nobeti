@@ -40,10 +40,27 @@ import type { TowerInfoPanel } from './TowerInfoPanel';
  * `Tower` nesnesi aynı, değişiklik anında görünür.
  */
 
-const HEDEFLEME_SECILMEMIS_ALFA = 0.8;
+/**
+ * Seçili olmayan hedefleme modu butonlarının alfası. Oyuncu geri
+ * bildirimi (2026-09-14): seçili mod eskiden **kırmızı yazıyla**
+ * işaretleniyordu ve parşömen üstünde okunmuyordu ("kırmızıyla yazan
+ * yazı net değil"). Yazı artık her butonda mürekkep; seçim yalnız
+ * çerçeve (vermilyon kontur) + soluklukla veriliyor. 0,8 → 0,55: fark
+ * gözle seçilecek kadar büyümeli, yoksa kontur tek başına kalıyor
+ * (TIER 1 kural 6, "yalnız renge dayanmaz").
+ */
+const HEDEFLEME_SECILMEMIS_ALFA = 0.55;
 const MENU_PANEL_PAY = 16;
 const MENU_PANEL_CORNER = 16;
 const MENU_KENAR_PAY = 16;
+/**
+ * Menü her zaman kartuşun ve kule/düşman sprite'larının ÜSTÜNDE.
+ * Oyuncu geri bildirimi (2026-09-14): altın kartuş "Strong" butonunu
+ * örtüyordu — `BuildMenu` hiç `setDepth` çağırmıyordu, çizim sırası
+ * eklenme sırasıydı. `TutorialHints` 300'de, o balon menünün de üstünde
+ * kalmalı.
+ */
+const MENU_DERINLIK = 150;
 
 /**
  * Menü buton ölçüleri — `Y03` Adım 3'te ölçülerek ayarlandı.
@@ -81,6 +98,13 @@ const MOD_BUTON_ARA = 64;
 const VERMILION = 0xb03a2e;
 /** P03 brifi — kule/kışla gövdesi oyun içi gösterim boyutu (`Tower.ts`/`GameScene.ts` ile aynı). */
 const TOWER_DISPLAY_SIZE = 64;
+/**
+ * Menü panelinin alt kenarı ile yapı noktasının merkezi arasındaki
+ * boşluk: kartuşun yarısı (`(TOWER_DISPLAY_SIZE + 16) / 2`) + 8 px.
+ * Eskiden menü `spot.y - 56`'ya konuyor ve hedefleme satırı (+52)
+ * tam noktanın üstüne düşüyordu.
+ */
+const MENU_NOKTA_BOSLUK = (TOWER_DISPLAY_SIZE + 16) / 2 + 8;
 
 const TARGET_MODES: readonly TargetMode[] = ['first', 'last', 'strongest', 'weakest', 'closest'];
 
@@ -213,7 +237,7 @@ export class BuildMenu {
       () => this.#actions.placeBarracks(spotIndex),
     );
 
-    this.#menuArkalikEkleVeKonumla(kap, spot.x, spot.y - 56);
+    this.#menuArkalikEkleVeKonumla(kap, spot);
     this.#menu = kap;
   }
 
@@ -298,10 +322,9 @@ export class BuildMenu {
     // Hedefleme modu seçici (`M4-T11`) — beş mod, kule başına. Diğer
     // menülerle aynı parşömen buton; seçili olan `#menuButonu`'nun dolgu
     // rengi ayrımını taşıyamıyor (9-slice doku, düz renk değil), o yüzden
-    // seçim vermilyon çerçeve + soluk-olmayan dolgu ile işaretleniyor
-    // (`G03`: kontur tek başına TIER 1 kural 6'nın "yalnız renge
-    // dayanmaz" ruhuna zayıf bir cevaptı — diğer butonlar hafifçe
-    // soluklaştırılıp seçili olan şekilsel de ayrışıyor).
+    // seçim **vermilyon kontur + tam alfa**, diğerleri soluk (bkz.
+    // `HEDEFLEME_SECILMEMIS_ALFA`). Yazı her butonda mürekkep — kırmızı
+    // yazı parşömende okunmuyordu.
     TARGET_MODES.forEach((mod, i) => {
       const bx = (i - (TARGET_MODES.length - 1) / 2) * MOD_BUTON_ARA;
       const secili = kule.targetMode === mod;
@@ -311,9 +334,10 @@ export class BuildMenu {
         .text(bx, 52, t(MODE_LABEL_KEY[mod]), {
           fontFamily: 'Spectral, serif',
           fontSize: '16px', // bekçi k.13 — Platform alt sınırı, satır içi kalmalı
-          color: secili ? '#B03A2E' : '#14203A',
+          color: '#14203A',
         })
         .setOrigin(0.5);
+      if (!secili) et.setAlpha(HEDEFLEME_SECILMEMIS_ALFA);
       cerceve.on(
         Phaser.Input.Events.POINTER_DOWN,
         (_p: unknown, _x: number, _y: number, olay: Phaser.Types.Input.EventData) => {
@@ -323,11 +347,15 @@ export class BuildMenu {
       );
       kap.add([cerceve, et]);
       if (secili) {
-        kap.add(this.#scene.add.rectangle(bx, 52, 46, 44, 0, 0).setStrokeStyle(3, VERMILION));
+        // Kontur butonla aynı genişlikte — eskiden 46 sabitti, buton 60'a
+        // çıkınca kontur butonun içinde dar bir dikdörtgen olarak kalmıştı.
+        kap.add(
+          this.#scene.add.rectangle(bx, 52, MOD_BUTON_W, 44, 0, 0).setStrokeStyle(3, VERMILION),
+        );
       }
     });
 
-    this.#menuArkalikEkleVeKonumla(kap, spot.x, spot.y - 56);
+    this.#menuArkalikEkleVeKonumla(kap, spot);
     this.#selectedSpot = spotIndex;
     this.#showCartouche(spot);
     this.#showInfoPanel(spotIndex);
@@ -392,7 +420,7 @@ export class BuildMenu {
       );
     }
 
-    this.#menuArkalikEkleVeKonumla(kap, spot.x, spot.y - 56);
+    this.#menuArkalikEkleVeKonumla(kap, spot);
     this.#menu = kap;
     this.#actions.redrawRally();
   }
@@ -518,11 +546,8 @@ export class BuildMenu {
    * (`OPEN-QUESTIONS.md` S19'un bıraktığı not: "Clamp payı panelin
    * yarısı olmalı, sabit değil").
    */
-  #menuArkalikEkleVeKonumla(
-    kap: Phaser.GameObjects.Container,
-    istenenX: number,
-    istenenY: number,
-  ): void {
+  #menuArkalikEkleVeKonumla(kap: Phaser.GameObjects.Container, spot: Vec2): void {
+    kap.setDepth(MENU_DERINLIK);
     const b = kap.getBounds();
     const yerelSol = b.left - kap.x;
     const yerelSag = b.right - kap.x;
@@ -559,8 +584,17 @@ export class BuildMenu {
     const maxX = this.#scene.scale.width - MENU_KENAR_PAY - panelSag;
     const minY = MENU_KENAR_PAY - panelUst;
     const maxY = this.#scene.scale.height - MENU_KENAR_PAY - panelAlt;
+
+    // Panelin ALT kenarı noktanın üstünde biter — hedefleme satırı da
+    // dahil hiçbir buton kartuşun/kulenin üstüne düşmez. Üste sığmıyorsa
+    // (ekranın üst kenarındaki noktalar) aynı boşlukla noktanın ALTINA
+    // çevriliyor; kenetlemeyle noktanın üstüne bastırmak eski hatayı
+    // geri getirirdi.
+    let istenenY = spot.y - MENU_NOKTA_BOSLUK - panelAlt;
+    if (istenenY < minY) istenenY = spot.y + MENU_NOKTA_BOSLUK - panelUst;
+
     kap.setPosition(
-      Phaser.Math.Clamp(istenenX, minX, maxX),
+      Phaser.Math.Clamp(spot.x, minX, maxX),
       Phaser.Math.Clamp(istenenY, minY, maxY),
     );
   }
