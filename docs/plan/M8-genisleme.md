@@ -1,0 +1,367 @@
+# M8 — Genişleme: içerik, cila, hata avı (yayın öncesi)
+
+**Karar (sahip, 2026-09-14):** ROADMAP'in "v1 sonrası yönü veriden oku"
+felsefesi bu taşla **askıya alındı** — yayından önce oyun büyütülecek.
+Bu dosya 15 fazı sırayla tanımlar; her faz kendi başına oynanabilir bir
+oyun bırakır (`CLAUDE.md` TIER 2), her biri ayrı commit(ler)le kapanır.
+
+**Çalışma tarzı:** faz faz, soru sorulmadan; ürün kararlarında makul
+varsayılan seçilip gerekçesi bu dosyaya/`OPEN-QUESTIONS.md`'ye yazılır.
+Kapsam dışı (ROADMAP §12 uyarıları): meta yükseltme ağacı, kahraman,
+sıralama, harita editörü, çoklu oyuncu.
+
+---
+
+## 0. Oturum başlangıcı
+
+Sırayla oku, başka dosya açma: `CLAUDE.md` → bu dosya → ilgili fazın
+"Doküman" satırındaki bölümler → `docs/plan/iyilestirme/T3-oyuncu-geri-bildirimi.md`
+(oyuncunun gözüyle neyin bozuk göründüğü).
+
+Canlı doğrulama: Browser pane'de `requestAnimationFrame` çalışmıyor;
+her yüklemeden sonra `raf.start(raf.callback, true, 16)`. Her fazın
+sonunda ekran görüntüsüne **oyuncu gözüyle** bak (hafıza notu).
+
+## 1. Amaç ve bitiş durumu
+
+Oyun 3 → **5 harita**, her harita bitince **sonsuz mod**, **başarımlar**,
+duraklatma menüsü ve oyun sonu istatistikleri, satın almadan önce kule
+bilgisi, üç zorluk, mobil cila, kule/mermi/düşman animasyon katmanı,
+ses seviyesi ayarları, daha dolu menü ve seviye seçim. Paket boyutu ölçülüp
+küçültülmeye çalışılmış; itch.io paketi hazır.
+
+**Olmayan:** yeni düşman/kule ailesi (sanat gerektirir), yeni yetenek,
+sunucu isteyen her şey. Yeni harita arka planları **geçici** (mevcut
+sanattan türetilmiş); gerçek görsel için brif yazılır.
+
+---
+
+## 2. Fazlar
+
+### Faz 1 — Hata avı ve temiz tur — `M8-T01`
+
+| | |
+|---|---|
+| **Kimlik** | `M8-T01` |
+| **Durum** | ☐ bekliyor |
+| **Süre** | ~45 dk kod + canlı tur |
+| **Önkoşul** | — |
+| **TIER 1** | k.3, k.7 |
+| **Doküman** | `T3-oyuncu-geri-bildirimi.md` "Ertelenen yan gözlemler" · `HudScene.ts` kart yerleşimi · `BuildMenu.#menuArkalikEkleVeKonumla` |
+
+**Dosyalar**
+- `src/fx/BuildMenu.ts` — değişiklik — menü HUD kartıyla çakışırsa sağa kaydır
+- `src/scenes/HudScene.ts` — değişiklik — dalga telgrafı kartın içine (kart genişler)
+- `scripts/smoke-play.mjs` — yeni — dev kancalarıyla üç haritayı baştan sona oynatan tarayıcı betiği (Browser pane JS'i olarak da kullanılabilir), sonuç: harita, can, yıldız, konsol hatası sayısı
+
+**Yapılacak**
+- Üç haritayı referans tahtaya yakın bir dizilimle 2×'te sonuna kadar oynat; her sonucu (can/yıldız/konsol) not et; çıkan her hatayı düzelt.
+- Menü, HUD kartı dikdörtgeniyle (`0..224 × 0..140`) kesişiyorsa panelin sol kenarını `224 + 16`'ya kaydır.
+- HUD kartını 216 → 260 genişlet, telgrafı kartın içinde tut.
+
+**Kabul kriteri** — `npm run test` yeşil; canlı: üç harita "Kale ayakta" ile bitiyor, konsol sessiz; harita 1 nokta 1 menüsü kartla kesişmiyor (ekran görüntüsü).
+
+**Bitmedi sayılır eğer:** bir harita canlı turda bitirilemiyorsa ve sebebi yazılmadıysa.
+
+### Faz 2 — Satın almadan önce kule bilgisi — `M8-T02`
+
+| | |
+|---|---|
+| **Kimlik** | `M8-T02` |
+| **Durum** | ☐ bekliyor |
+| **Süre** | ~45 dk |
+| **Önkoşul** | `M8-T01` |
+| **TIER 1** | k.7, k.6 |
+| **Doküman** | `GAME-DESIGN.md` §4 (aile rolleri), §11 · `fx/BuildMenu.ts` `openMenu` |
+
+**Dosyalar**
+- `src/data/strings.ts` — değişiklik — 4 aile için rol cümlesi (`roleOkcu`…), `buildInfoHint`
+- `src/fx/BuildMenu.ts` — değişiklik — yapı menüsünde imleç bir aile butonunun üstündeyken altta tek satır rol şeridi (`Text`, görünürlükle seçiliyor, `setText` yok); dokunmatikte "?" butonu dört satırlık açıklamayı açıp kapatıyor
+- `src/fx/WaveTelegraph.ts` — değişiklik — düşman ikonuna gelince ad + zırh/direnç/uçan (görünürlükle)
+
+**Kabul kriteri** — `npm run guard` (k.4/k.12/k.13) yeşil; canlı: Büyü butonuna gelince "Zırh delen, uçana vurur, tek hedef" şeridi görünüyor; "?" dört satırı açıyor.
+
+**Bitmedi sayılır eğer:** dokunmatikte (hover yok) bilgiye ulaşmanın yolu yoksa.
+
+### Faz 3 — Duraklatma menüsü + oyun sonu istatistikleri — `M8-T03`
+
+| | |
+|---|---|
+| **Kimlik** | `M8-T03` |
+| **Durum** | ☐ bekliyor |
+| **Süre** | ~45 dk |
+| **Önkoşul** | `M8-T01` |
+| **TIER 1** | k.7, k.8 |
+| **Doküman** | `GAME-DESIGN.md` §1 Kontroller, §9 Yıldız · `HudScene.#createPauseOverlay` · `GameOverScene.ts` |
+
+**Dosyalar**
+- `src/scenes/HudScene.ts` — değişiklik — perde: Devam / Yeniden başla / Ana menü / Ayarlar (parşömen butonlar)
+- `src/systems/RunStats.ts` — yeni — öldürülen, kazanılan altın, harcanan altın, süre (duvar saati), tepe dalga; `bus` dinleyerek, Phaser'sız, testli
+- `src/scenes/GameOverScene.ts` — değişiklik — istatistik satırları (`BitmapText`) + yıldız eşiği açıklaması (statik `Text`)
+- `src/data/strings.ts` — değişiklik
+
+**Kabul kriteri** — `npm run test -- RunStats` ≥ 5 test; canlı: ESC → dört buton; kaybet/kazan → istatistikler doğru (dev kancasıyla karşılaştır).
+
+**Bitmedi sayılır eğer:** "Yeniden başla" `GameOverScene.#haritayaGec` ile aynı stop/start sırasını kullanmıyorsa (bayat perde hatası).
+
+### Faz 4 — Harita 4 "Kar Geçidi" — `M8-T04`, `M8-P01`
+
+| | |
+|---|---|
+| **Kimlik** | `M8-T04` |
+| **Durum** | ☐ bekliyor |
+| **Süre** | ~45 dk kod + ölçüm turu |
+| **Önkoşul** | `M8-T01` |
+| **TIER 1** | k.1, k.4 |
+| **Açık soru** | S77 (HP/altın çarpanı ilerlemesi), S78 (boss zırhı harita 4-5) |
+| **Doküman** | `GAME-DESIGN.md` §9 (kapsama bandı **kol başına 285-311 px**, yıldız, boss ölçekleme), §5 kadro, §7 dalga · `maps.ts` MAP_2 türetme notu (S57) · `bossScaling.ts` · `waves.ts` MAP3 deseni |
+
+**Tasarım (varsayılan, gerekçesiyle):** tek giriş, **S kıvrımı (3 keskin viraj)**, 10 nokta — harita 1'in geometrisini zorlaştıran ama iki giriş/Y karmaşıklığı olmayan bir ara adım; kadro 9 düşmanın tamamı (boss dahil), yeni tanıtım yok (tüm mekanikler harita 3'te tanıtıldı) → zorluk kaynağı yalnız çarpanlar ve kıvrım. Çarpanlar S73 yöntemiyle **ölçülür**: `hpMultiplier` monoton (>2,6; başlangıç 3,4), `goldMultiplier` tam-yükseltme doyum taramasıyla. Boss HP `deriveBossHp`, zırh S78.
+
+**Dosyalar**
+- `src/data/maps.ts` — değişiklik — `MAP_4` (koordinatlar kapsama hedefinden geriye, MAP_2 yöntemi), `MAPS`'e ekle
+- `src/data/waves.ts` — değişiklik — `MAP4_WAVES` (bütçe ±%10, nefes 4/7, boss 10)
+- `src/data/bossScaling.ts` — değişiklik — `BOSS_HP_BY_MAP`/`BOSS_ARMOR_BY_MAP` harita 4
+- `src/data/strings.ts` — değişiklik — `mapKarGecidi` (tr/en)
+- `assets-src/bg/kar-gecidi.png` + `public/assets/lazy/kar-gecidi.webp` — **geçici**: `degirmen-gecidi.png`'den `sharp` ile soğuk tonlama (`modulate`/`tint`), `// GEÇİCİ — M8-P01`
+- `scripts/prep-assets.mjs` — değişiklik — yeni arka plan ve kart küçük resmi
+- `src/scenes/PreloadScene.ts` — değişiklik — `queueLazy` harita 4
+- `src/data/maps.test.ts`, `waves.test.ts`, `bossScaling.test.ts` — değişiklik — tabloya harita 4
+- `docs/plan/M8-sanat-brifi.md` — yeni — `M8-P01` Kar Geçidi arka plan brifi (P01 biçimi)
+
+**Kabul kriteri** — `npm run test` yeşil (kapsama bandı, Kısıt A kol başına, boss bandı ±%6, dalga bütçesi); `npm run build` → `KURALLAR.md` diff'i **harita 4 satırlarını içeriyor ve başka satır değişmiyor**; `waveSim` referans tahtayla 10 dalga ≤ 20 can kaybı; canlı: harita 3 bitince harita 4 açılıyor, oynanıyor.
+
+**Bitmedi sayılır eğer:** `hpMultiplier`/`goldMultiplier`/zırh **ölçülmeden** yazıldıysa.
+
+### Faz 5 — Harita 5 "Kadim Harabe" — `M8-T05`, `M8-P02`
+
+Aynı şablon; **iki giriş + Y birleşme** (harita 2 ve 3'ün mekaniklerinin bileşimi), 12 nokta, kadro tam, çarpanlar ölçülür (`hpMultiplier` > harita 4). Boss tek kapıdan, refakat diğerinden (harita 3 kararı). Geçici arka plan `kul-ovasi.png`'den ton kaydırma; brif `M8-P02`.
+
+**Kabul kriteri** — Faz 4 ile aynı + `MAPS` sırası ve `isUnlocked` zinciri beş harita.
+
+### Faz 6 — Sonsuz mod — `M8-T06`
+
+| | |
+|---|---|
+| **Kimlik** | `M8-T06` |
+| **Durum** | ☐ bekliyor |
+| **Süre** | ~45 dk |
+| **Önkoşul** | `M8-T03` (istatistik), `M8-T05` |
+| **TIER 1** | k.1, k.3 (havuz tavanı), k.8 |
+| **Açık soru** | S79 (sonsuzda boss sıklığı) |
+| **Doküman** | ROADMAP "Sonsuz mod beklenenden ucuz" · `waves.ts` `budget(n)` · `WaveManager` "havuz dolu → ertele" · `SaveSystem` |
+
+**Dosyalar**
+- `src/systems/endlessWaves.ts` — yeni, Phaser'sız — `generateWave(n, roster, seed)`: `budget(n)`'i kadrodan puanla doldurur (deterministik, tohumlu), her 10. dalga boss + refakat
+- `src/systems/WaveManager.ts` — değişiklik — 10. dalga bitince `endless` bayrağıyla üretilen dalgalara geçiş
+- `src/systems/SaveSystem.ts` — değişiklik — `endlessBest: Record<mapId, number>` **ayrı alan** (sürüm değişmiyor, `TutorialSystem` deseni)
+- `src/scenes/GameOverScene.ts` — değişiklik — kazanınca "Sonsuz moda devam" butonu; sonsuzda kaybedince "En iyi: dalga N"
+- `src/scenes/HudScene.ts` — değişiklik — sonsuzda dalga sayacı `N` (toplam yok)
+- `src/systems/endlessWaves.test.ts` — yeni
+
+**Kabul kriteri** — `npm run test -- endless`: bütçe ±%10, yalnız kadro, deterministik, dalga 30 simülasyonu < 2 sn, tepe düşman ≤ havuz; canlı: harita 1 bitir → devam → dalga 11+ geliyor, HUD "11".
+
+**Bitmedi sayılır eğer:** havuz dolunca dalga sessizce eksiliyorsa (WaveManager erteleme korunmalı).
+
+### Faz 7 — Başarımlar — `M8-T07`
+
+| | |
+|---|---|
+| **Kimlik** | `M8-T07` |
+| **Durum** | ☐ bekliyor |
+| **Süre** | ~45 dk |
+| **Önkoşul** | `M8-T03`, `M8-T06` |
+| **TIER 1** | k.7, k.10 |
+| **Doküman** | ROADMAP "Başarımlar — ucuz dönüş sebebi" · `EventBus` olayları · `TutorialSystem` (aynı kalıcılık deseni) |
+
+**Dosyalar**
+- `src/data/achievements.ts` — yeni — 12 başarım tanımı (kimlik, koşul türü, eşik, metin anahtarı)
+- `src/systems/AchievementSystem.ts` — yeni, Phaser'sız — `bus` dinler, `RunStats`/`SaveSystem` okur, `save.achievements` **ayrı alan**; `onUnlock` callback
+- `src/fx/AchievementToast.ts` — yeni — sağ üstte parşömen bant, 3 sn sonra kayarak gider (`scene.time`, oyun mantığı değil)
+- `src/scenes/MenuScene.ts` — değişiklik — "Başarımlar" düğmesi → liste sahnesi `AchievementsScene`
+- `src/systems/AchievementSystem.test.ts` — yeni
+
+**Başarımlar (varsayılan liste):** ilk kule · ilk T3 · her harita ★★★ (5) · sızmasız harita · boss'u sızdırmadan öldür · sonsuz dalga 15 · sonsuz dalga 20 · Meteor'la 5 düşman tek atışta · 100 düşman öldür · kule satmadan harita bitir.
+
+**Kabul kriteri** — `npm run test -- Achievement` ≥ 8; canlı: ilk kule → bant çıkıyor; menüde liste ✓/✗.
+
+### Faz 8 — Görsel cila 1: kule ve mermi — `M8-T08`
+
+| | |
+|---|---|
+| **Kimlik** | `M8-T08` |
+| **Durum** | ☐ bekliyor |
+| **Süre** | ~45 dk |
+| **Önkoşul** | `M8-T01` |
+| **TIER 1** | k.3, k.6, k.8 |
+| **Doküman** | `GAME-DESIGN.md` §10 · `fx/Particles.ts` · `data/projectileVisuals.ts` · `Tower.ts` (S23 "dönüş animasyonu yok") |
+
+**Yapılacak**
+- Kule ateşlerken 90 ms geri tepme (ölçek 1 → 0,92 → 1, tween; `prefers-reduced-motion`/`effectScale 0` → yok).
+- Namlu parıltısı: aile rengiyle 3 parçacık (`Particles.patlat` renk parametresi alır).
+- Büyü mermisi izi: mermiyi izleyen kısa parçacık kuyruğu, havuzlu emitter, 2×'te yarı.
+- Gülle: uçuşta `scaleY` ile hafif kabarma (yay hissi), çarpışta toz halkası.
+- İsabet parıltısı hasar tipine göre renk (fiziksel altın, büyü lapis).
+
+**Kabul kriteri** — `dev.particleCount()` tepe dalgada ≤ 300; havuz k.3 bekçisi yeşil; canlı ekran görüntüsünde üç aile ayırt ediliyor; `effects: off` ile hiçbiri yok.
+
+### Faz 9 — Görsel cila 2: düşman — `M8-T09`
+
+| | |
+|---|---|
+| **Kimlik** | `M8-T09` |
+| **Durum** | ☐ bekliyor |
+| **Süre** | ~45 dk |
+| **Önkoşul** | `M8-T08` |
+| **TIER 1** | k.3 (Angle/Alpha manifestte), k.8 |
+| **Doküman** | §10 squash & stretch · `Enemy.step` · `Particles.olumEfekti` |
+
+**Yapılacak**
+- Yürüme sallantısı: `Enemy.step` içinde hıza bağlı ±4° açı (`scaledDelta` ile faz), uçanlarda kanat çırpma hissi için ±6°.
+- Doğum: 200 ms alfa 0 → 1.
+- Ölüm: mevcut ezilme + 180 ms dönerek düşme (yerdekiler) / yukarı sönme (uçanlar).
+- Boss girişi: "BOSS" parşömen bandı (statik `Text`, `t()`), 300 ms sarsıntı, boss çubuğu zaten var.
+
+**Kabul kriteri** — `resetForPool` bekçisi yeşil; canlı: 2×'te sallantı okunabilir; `effects: off`'ta sallantı kalıyor (bilgi değil ama hareket — `reducedMotion`'da kapanıyor, karar yazılı).
+
+### Faz 10 — Ses cilası — `M8-T10`, `M8-P03`
+
+| | |
+|---|---|
+| **Kimlik** | `M8-T10` |
+| **Durum** | ☐ bekliyor |
+| **Süre** | ~45 dk |
+| **Önkoşul** | `M8-T01` |
+| **TIER 1** | k.7 |
+| **Doküman** | §12 · `SoundSystem` havuzu · `SettingsPanel` |
+
+**Dosyalar**
+- `src/systems/Settings.ts` — değişiklik — `musicLevel`/`sfxLevel: 'off'|'low'|'full'` (efekt yoğunluğu deseni, k.7 uyumlu), `sound` bayrağı ikisinin toplamı olarak korunuyor
+- `src/fx/SettingsPanel.ts` — değişiklik — iki satır (panel 380 → 440)
+- `src/fx/SoundSystem.ts` — değişiklik — `ui_click`, `countdown_tick` (son 3 sn), `boss_music` anahtarları; **yoksa sessizce atlar** (Y14 deseni)
+- `docs/plan/M8-sanat-brifi.md` — `M8-P03`: üç ses için üretim brifi (M6 ses brifi biçimi)
+
+**Kabul kriteri** — `npm run test -- Settings` (yeni alanlar + geri düşme); canlı: müzik "Düşük"te müzik kısılıyor efekt değişmiyor.
+
+### Faz 11 — Zorluk seviyeleri — `M8-T11`
+
+| | |
+|---|---|
+| **Kimlik** | `M8-T11` |
+| **Durum** | ☐ bekliyor |
+| **Süre** | ~45 dk |
+| **Önkoşul** | `M8-T05` |
+| **TIER 1** | k.1 |
+| **Açık soru** | S80 (Zor çarpanı — ölçülecek) |
+| **Doküman** | §6 Denge ilkesi, §9 · `waveSim` · `kisitB.test.ts` |
+
+**Yapılacak**
+- `data/balance.ts`: `DIFFICULTY = { kolay: 0.85, normal: 1, zor: ? }` — Zor çarpanı, referans tahtayla beş haritanın da `waveSim`'de geçilebildiği en yüksek 0,05 adımı (**ölçülerek**), bulunan değer S80'e yazılır.
+- Seviye seçimde üç düğme (kalıcı tercih `Settings.difficulty`), HUD'da küçük rozet.
+- Yıldız yalnız Normal ve Zor'da kaydedilir (Kolay öğrenme modu; karar yazılı).
+- Denge testleri Normal'de koşmaya devam eder + Zor için "geçilebilir" testi.
+
+**Kabul kriteri** — `npm run test` yeşil; `KURALLAR.md` zorluk tablosu eklenmiş.
+
+### Faz 12 — Mobil / dokunmatik cila — `M8-T12`
+
+| | |
+|---|---|
+| **Kimlik** | `M8-T12` |
+| **Durum** | ☐ bekliyor |
+| **Süre** | ~45 dk |
+| **Önkoşul** | `M8-T02` |
+| **TIER 1** | Platform (44 px, yatay) |
+| **Doküman** | `CLAUDE.md` Platform · `research/05` §1 · Browser pane mobil ön ayarı |
+
+**Yapılacak**
+- Tam ekran düğmesi (menü + HUD dişlisinin yanı), `scale.startFullscreen`.
+- Dikey yönde "Cihazı yatay çevir" perdesi (`orientationchange`, itch.io için; Poki kendisi yapıyor).
+- `index.html`: `touch-action: manipulation` (çift dokunma yakınlaştırmasını keser).
+- Toplanma noktası sürükleme dokunmatikte doğrulanır (mobil ön ayar, `pointer` olayları).
+
+**Kabul kriteri** — Browser pane mobil ön ayarında (375×812 → yatay) menü→harita→kule kur→bayrak sürükle tamamlanıyor; ekran görüntüleri.
+
+### Faz 13 — Menü ve seviye seçim — `M8-T13`
+
+| | |
+|---|---|
+| **Kimlik** | `M8-T13` |
+| **Durum** | ☐ bekliyor |
+| **Süre** | ~45 dk |
+| **Önkoşul** | `M8-T07` |
+| **TIER 1** | k.6, k.7 |
+| **Doküman** | §2 sanat yönü · `LevelSelectScene` · `MapRenderer.dashedLine` |
+
+**Yapılacak**
+- Menü: alt başlık satırı (`t('tagline')`), başlıkta altın parıltı tween'i (reduced-motion → yok), sürüm etiketi (`package.json` sürümü build'de gömülü), "Nasıl oynanır" düğmesi → tek sayfa statik açıklama (tr/en).
+- Seviye seçim: kart üstüne yolun kesikli çizimi (`MapDef.paths`'ten, küçük resme ölçekli), en iyi sonsuz dalga, kilitli kartta "Önce N. haritayı bitir".
+
+**Kabul kriteri** — canlı ekran görüntüleri; `guard` k.12/k.13 yeşil.
+
+### Faz 14 — Paket boyutu ve başarım — `M8-T14`
+
+| | |
+|---|---|
+| **Kimlik** | `M8-T14` |
+| **Durum** | ☐ bekliyor |
+| **Süre** | ~45 dk |
+| **Önkoşul** | `M8-T13` |
+| **Doküman** | `iyilestirme/Y11-phaser-tam-yapim.md` · `Y02` · `report-size.mjs` |
+
+**Yapılacak**
+- Phaser özel yapımı dene (yalnız kullanılan alt sistemler); `report-size` ile **ölçülen** fark; kazanç < %15 ise geri al ve yaz.
+- Ses efektleri ilk dalgadan sonra tembel (müzik gibi) — ilk indirme küçülür.
+- Y02 adım 3 yalnız Y10 ölçümü gelirse.
+
+**Kabul kriteri** — `npm run build` boyut raporu önce/sonra dosyaya yazılmış.
+
+### Faz 15 — Yayın hazırlığı — `M8-T15`
+
+| | |
+|---|---|
+| **Kimlik** | `M8-T15` |
+| **Durum** | ☐ bekliyor |
+| **Süre** | ~45 dk |
+| **Önkoşul** | tüm fazlar |
+| **Doküman** | `M7-itchio-yayin-brifi.md` · `results/README.md` |
+
+**Yapılacak**
+- `scripts/package-itch.mjs`: `dist/` içeriğini **kökte `index.html`** olacak şekilde `kale-nobeti-itch.zip`'e paketler, doğrular.
+- İki dilde üretim QA turu (beş harita, sonsuz, başarım, ayarlar), konsol sessiz.
+- itch.io sayfa metni tr/en, üretim yapısından ekran görüntüleri (`docs/results/M8-ekran/`).
+- `docs/results/M8-SONUC.md`, `ROADMAP.md`/`plan/README.md` güncel.
+
+**Kabul kriteri** — `unzip -l kale-nobeti-itch.zip | head` ilk satırda `index.html`; `npx serve dist` 4 seviye derin yoldan açılıyor.
+
+---
+
+## 3. Açık sorular (bu taşta ilk kez)
+
+| # | Soru | Varsayılan |
+|---|---|---|
+| S77 | Harita 4-5 HP/altın çarpanı ilerlemesi | Monoton artış; altın tam-yükseltme doyumuyla ölçülür (S73 yöntemi) |
+| S78 | Harita 4-5 boss zırhı | Tahtanın ortalama kademesine göre tarama (M7 yöntemi); 2'nin altına inmez |
+| S79 | Sonsuzda boss sıklığı | Her 10. dalga, refakat bütçenin kalanı |
+| S80 | Zor çarpanı | Ölçülür: beş haritada referans tahta geçebilen en yüksek değer |
+
+## 4. Riskler
+
+| Risk | Erken uyarı | Hafifletme |
+|---|---|---|
+| Yeni harita dengesi ölçülmeden yazılır | `KURALLAR.md` diff'inde harita dışı satır değişiyor | Faz 4/5 "bitmedi sayılır" maddesi; her çarpan taramayla |
+| Sonsuzda havuz tavanı | `dev.poolExhausted` artıyor | Erteleme korunur, dalga üreteci puan/adet tavanına bakar |
+| Cila katmanı FPS'i düşürür (ölçemiyorum) | `dev.particleCount` > 300, 2×'te tahsis sayacı | Her efekt `effectScale`'e bağlı, 2×'te yarı; tahsis ölçümü (SFX havuzu yöntemi) |
+| Geçici arka planlar "bitmiş" sanılır | — | Dosya adında ve `strings`'te değil, `maps.ts` yorumunda `GEÇİCİ — M8-P0x`; brif yazılı |
+
+## 5. Taş sonu kontrol listesi
+
+- [ ] Beş harita `MAPS`'te, hepsi `waveSim`'de geçilebilir, `KURALLAR.md` güncel
+- [ ] Sonsuz mod beş haritada açılıyor, en iyi dalga kaydediliyor
+- [ ] 12 başarım, menüden liste
+- [ ] ESC menüsü, oyun sonu istatistikleri
+- [ ] Zorluk üçlü, Zor çarpanı S80'de ölçülü
+- [ ] Mobil ön ayarda tam tur
+- [ ] `npm run typecheck && npm run test && npm run guard && npm run build` yeşil
+- [ ] `kale-nobeti-itch.zip` kökte `index.html`
+- [ ] `docs/results/M8-SONUC.md` yazıldı

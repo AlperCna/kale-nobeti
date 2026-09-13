@@ -26,7 +26,8 @@ görevler.
 | M4 — Tam kule/düşman seti, yükseltme, bilgi paneli | [M4-tam-set-yukseltme-panel.md](M4-tam-set-yukseltme-panel.md) | 11 | — | 4 gün | **☑** |
 | M5 — Kışla, askerler, yetenekler | [M5-kisla-asker-yetenek.md](M5-kisla-asker-yetenek.md) | 9 | — | 3 gün | **☑** |
 | M6 — Sanat, juice, ses | [M6-sanat-juice-ses.md](M6-sanat-juice-ses.md) | 12 | 4 | **3-4 hafta** | **☑** |
-| M7 — Harita 2-3, denge geçişi, yayın | [M7-harita23-denge-yayin.md](M7-harita23-denge-yayin.md) | 11 | 2 | 5-7 gün | ▶ **10/11** (yalnız `T11` itch.io yayını — insan eylemi) |
+| M7 — Harita 2-3, denge geçişi, yayın | [M7-harita23-denge-yayin.md](M7-harita23-denge-yayin.md) | 11 | 2 | 5-7 gün | ▶ **10/11** (`T11` yayın **M8 sonuna ertelendi** — sahip kararı, 2026-09-14) |
+| M8 — Genişleme: içerik, cila, hata avı | [M8-genisleme.md](M8-genisleme.md) | 15 | 3 | — | ▶ **0/15** |
 
 **82 kod görevi + 6 üretim bloğu. Toplam takvim: 7-9 hafta** kesintisiz
 çalışmayla ([`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) Takvim).
