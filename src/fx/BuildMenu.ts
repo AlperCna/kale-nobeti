@@ -61,6 +61,8 @@ const MENU_KENAR_PAY = 16;
  * kalmalı.
  */
 const MENU_DERINLIK = 150;
+/** HUD'un sol üst alanı (kart + telgraf satırı) + `MENU_KENAR_PAY` — bkz. `#menuArkalikEkleVeKonumla`. */
+const HUD_ALANI = { sag: 224 + 16, alt: 190 + 16 } as const;
 
 /**
  * Menü buton ölçüleri — `Y03` Adım 3'te ölçülerek ayarlandı.
@@ -596,10 +598,18 @@ export class BuildMenu {
     let istenenY = spot.y - MENU_NOKTA_BOSLUK - panelAlt;
     if (istenenY < minY) istenenY = spot.y + MENU_NOKTA_BOSLUK - panelUst;
 
-    kap.setPosition(
-      Phaser.Math.Clamp(spot.x, minX, maxX),
-      Phaser.Math.Clamp(istenenY, minY, maxY),
-    );
+    let istenenX = Phaser.Math.Clamp(spot.x, minX, maxX);
+    const y = Phaser.Math.Clamp(istenenY, minY, maxY);
+    // M8-T01 — HUD kartı ve dalga telgrafı sol üstte (`HudScene`: kart
+    // 8..224 × 8..136, telgraf satırı 172±17). Menü o dikdörtgene giriyorsa
+    // sağa kaydır: harita 1 nokta 1 (300,65) aşağı çevrilince kartın
+    // üstüne düşüyordu. Sabitler `HudScene`'in yerleşimini yansıtıyor —
+    // orası değişirse burası da değişmeli (yorumla bağlı, kodla değil).
+    if (y + panelUst < HUD_ALANI.alt && istenenX + panelSol < HUD_ALANI.sag) {
+      istenenX = Math.min(HUD_ALANI.sag - panelSol, maxX);
+    }
+
+    kap.setPosition(istenenX, y);
   }
 
   /** Seçili kule/kışlanın üstüne altın kartuş (P02) — `closeMenu` kaldırıyor. */

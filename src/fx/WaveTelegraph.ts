@@ -15,6 +15,9 @@ import { enemyFrameKey } from '../data/spriteFrames';
 
 const ICON = 22;
 const SPACING = 74;
+const INK = 0x14203a;
+/** Şeridin arkasındaki koyu bant — ikon + sayı açık zeminde (harita 1 çimeni) okunsun. */
+const BANT_PAY = 8;
 
 export class WaveTelegraph {
   readonly #kap: Phaser.GameObjects.Container;
@@ -48,6 +51,14 @@ export class WaveTelegraph {
     // Aynı düşman birden çok grupta olabilir — tek satırda topla.
     const adet = new Map<EnemyId, number>();
     for (const g of wave.groups) adet.set(g.enemy, (adet.get(g.enemy) ?? 0) + g.count);
+
+    // M8-T01 — kendi bandı: telgraf artık HUD kartının DIŞINDA, altında
+    // kendi satırında (5 tipe kadar 370 px; kart 216 px'ti, sığmıyordu ve
+    // dışarı taşıyordu — oyuncu geri bildirimi turunun yan gözlemi).
+    const bant = this.#scene.add
+      .rectangle(-BANT_PAY, 0, adet.size * SPACING + BANT_PAY, ICON + 12, INK, 0.55)
+      .setOrigin(0, 0.5);
+    this.#kap.add(bant);
 
     let i = 0;
     for (const [enemy, sayi] of adet) {

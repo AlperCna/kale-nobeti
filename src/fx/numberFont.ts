@@ -20,6 +20,21 @@ export const NUMBER_FONT_KEY = 'sayilar';
  * deseni) — `ensureNumberFont`'un aksine artık **eşzamansız** bir ağ/önbellek
  * yüklemesi, `create()`'te değil `preload()`'da olmalı.
  */
+/**
+ * **İki sahne aynı fontu kuyruğa atabilir — bu KASITLI.**
+ *
+ * `Game` ve `Hud` aynı tikte `preload` ediyor; her sahnenin kendi
+ * `LoaderPlugin`'i var, o yüzden ikisi de `cache.has` kontrolünde `false`
+ * görüp aynı fontu istiyor. Sonuç: Phaser'ın `Texture key already in use:
+ * sayilar` uyarısı (dev'de görünür; gerçek akışta `LevelSelect` önce
+ * yüklediği için çıkmıyor).
+ *
+ * `M8-T01`'de bu uyarıyı susturmak için modül düzeyinde bir "yükleniyor"
+ * bayrağı denendi ve **oyunu çökertti**: `Hud` kuyruğa atmayı atlayınca
+ * *beklemeyi* de atlıyor, `create()` font gelmeden koşuyor,
+ * `Invalid BitmapText key: sayilar`. Çift kuyruk zararsız; her sahnenin
+ * kendi yükleyicisini beklemesi ise **zorunlu**.
+ */
 export function queueNumberFont(scene: Phaser.Scene): void {
   if (scene.cache.bitmapFont.has(NUMBER_FONT_KEY)) return;
   scene.load.bitmapFont(NUMBER_FONT_KEY, 'assets/fonts/numbers.png', 'assets/fonts/numbers.xml');
