@@ -189,6 +189,16 @@ const TR = {
   statSplit: 'bölünür',
   statHeals: 'iyileştirir',
 
+  /** `M8-T03` — duraklatma menüsü ve oyun sonu istatistikleri. */
+  restart: 'Yeniden başla',
+  settingsButton: 'Ayarlar',
+  statKills: 'Öldürülen',
+  statGoldEarned: 'Kazanılan altın',
+  statGoldSpent: 'Harcanan altın',
+  statTowers: 'Kurulan yapı',
+  statDuration: 'Süre',
+  statPeakWave: 'Ulaşılan dalga',
+
   /**
    * Oyuncu geri bildirimi (2026-09-14) ile eklenen iki ipucu. İkisi de
    * Y09 altyapısıyla tek seferlik: hedefleme satırı ilk açıldığında ve
@@ -303,6 +313,14 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     statRegen: 'regenerates',
     statSplit: 'splits',
     statHeals: 'heals',
+    restart: 'Restart',
+    settingsButton: 'Settings',
+    statKills: 'Kills',
+    statGoldEarned: 'Gold earned',
+    statGoldSpent: 'Gold spent',
+    statTowers: 'Buildings placed',
+    statDuration: 'Time',
+    statPeakWave: 'Wave reached',
     hintTargetModes:
       'Targeting — First: furthest along the path · Last: furthest back · Strong: most HP · Weak: least HP · Near: closest to the tower',
     hintFlyers: 'The dashed line is the flyers’ route — they ignore the path. Only Archer and Magic deal full damage to them.',
