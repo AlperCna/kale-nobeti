@@ -125,6 +125,118 @@ const TOWER_LABEL_KEY: Readonly<Record<string, StringKey>> = {
   buyu: 'towerBuyu',
 };
 
+/** `M8-T02` — satın almadan önce rol. `data/towers.ts` `role` alanının çevrilebilir kopyası. */
+const ROLE_KEY: Readonly<Record<string, StringKey>> = {
+  okcu: 'roleOkcu',
+  top: 'roleTop',
+  buyu: 'roleBuyu',
+};
+
+/**
+ * Rol şeridi: buton satırı 0'da (44 px yüksek), şerit onun altında.
+ *
+ * **Aynı anda yalnız BİR satır görünüyor.** İlk denemede `?` dördünü
+ * birden açıyordu ve iki şey birden bozuldu: satırlar üst üste bindi
+ * (sarılan metin 2 satır oluyor, sabit 20 px aralık yetmiyor) ve arka
+ * paneli örtemedi — panel `getBounds()` ile **bir kez** kuruluyor, sonradan
+ * büyüyemiyor. Tek satır = sabit yükseklik = panel her zaman doğru.
+ */
+const ROL_Y = 40;
+
+/**
+ * `M8-T02` — yapı menüsünün altındaki rol şeridi.
+ *
+ * Oyuncu geri bildirimi (2026-09-14): dört aile "isim + fiyat" dışında
+ * hiçbir şey söylemiyordu; hangi kulenin ne işe yaradığı ancak satın alıp
+ * denemekle öğreniliyordu.
+ *
+ * **İki giriş yolu, çünkü dokunmatikte imleç yok:**
+ * - Fare: bir aile butonunun üstüne gelince o ailenin satırı görünüyor.
+ * - Dokunmatik: satırın sağındaki `?` düğmesi rolleri **sırayla geziyor**
+ *   (`pointerover` hiç gelmeyen cihazlar için tek erişim yolu — görevin
+ *   "bitmedi sayılır eğer" maddesi tam olarak bu). Dördü birden değil:
+ *   bkz. `ROL_Y`'nin notu.
+ *
+ * TIER 1 kural 7: her rol için ayrı statik `Text`, yalnız görünürlük
+ * değişiyor. `setText` yok — `SettingsPanel`'in deseni.
+ */
+class RolSeridi {
+  readonly #satirlar = new Map<StringKey, Phaser.GameObjects.Text>();
+  readonly #kap: Phaser.GameObjects.Container;
+  readonly #scene: Phaser.Scene;
+  readonly #genislik: number;
+  /** `?` ile gezilen sıra; `-1` = hiçbiri sabitlenmedi (fare modu). */
+  #sabitIndex = -1;
+
+  constructor(scene: Phaser.Scene, kap: Phaser.GameObjects.Container, butonSayisi: number) {
+    this.#scene = scene;
+    this.#kap = kap;
+    this.#genislik = butonSayisi * BUTON_ARA;
+  }
+
+  /** Bir aile butonunu rol satırına bağlar ve satırı (gizli) yaratır. */
+  bagla(cerceve: Phaser.GameObjects.Container, anahtar: StringKey): void {
+    if (!this.#satirlar.has(anahtar)) {
+      const yazi = this.#scene.add
+        .text(0, ROL_Y, t(anahtar), {
+          fontFamily: 'Spectral, serif',
+          fontSize: '16px', // bekçi k.13 — Platform alt sınırı
+          color: '#14203A',
+          align: 'center',
+          wordWrap: { width: this.#genislik },
+        })
+        .setOrigin(0.5, 0)
+        .setVisible(false);
+      this.#satirlar.set(anahtar, yazi);
+      this.#kap.add(yazi);
+    }
+    cerceve.on(Phaser.Input.Events.POINTER_OVER, () => this.#goster(anahtar));
+    cerceve.on(Phaser.Input.Events.POINTER_OUT, () => this.#gizle());
+  }
+
+  /** Satırın sağ ucunda `?` — dokunmatik yolu. */
+  soruButonuEkle(butonSayisi: number): void {
+    const bx = ((butonSayisi - 1) / 2) * BUTON_ARA + BUTON_ARA * 0.72;
+    const cerceve = createParchmentButton(this.#scene, bx, 0, 44, 44, 10);
+    const etiket = this.#scene.add
+      .text(bx, 0, t('infoToggle'), {
+        fontFamily: 'Spectral, serif',
+        fontSize: '20px',
+        color: '#14203A',
+      })
+      .setOrigin(0.5);
+    cerceve.on(
+      Phaser.Input.Events.POINTER_DOWN,
+      (_p: unknown, _x: number, _y: number, olay: Phaser.Types.Input.EventData) => {
+        olay.stopPropagation(); // sahne dinleyicisi menüyü kapatmasın
+        // Sırayla gez, sonuncudan sonra kapat (-1).
+        this.#sabitIndex = this.#sabitIndex + 1 >= this.#satirlar.size ? -1 : this.#sabitIndex + 1;
+        this.#uygula();
+      },
+    );
+    this.#kap.add([cerceve, etiket]);
+  }
+
+  #goster(anahtar: StringKey): void {
+    if (this.#sabitIndex >= 0) return; // `?` ile sabitlenmişken hover karışmasın
+    for (const [k, y] of this.#satirlar) y.setVisible(k === anahtar);
+  }
+
+  #gizle(): void {
+    if (this.#sabitIndex >= 0) return;
+    for (const y of this.#satirlar.values()) y.setVisible(false);
+  }
+
+  /** `?` seçimini uygular — tek satır görünür, hepsi aynı y'de. */
+  #uygula(): void {
+    let i = 0;
+    for (const y of this.#satirlar.values()) {
+      y.setVisible(i === this.#sabitIndex);
+      i++;
+    }
+  }
+}
+
 /** Bilinmeyen bir `id` gelirse (olmaması gerekir) ham id'ye düşer. */
 function kuleAdi(id: string): string {
   const anahtar = TOWER_LABEL_KEY[id];
@@ -222,24 +334,29 @@ export class BuildMenu {
     // Dört aile: üç kule + kışla (§4). Kışla ayrı tip olduğu için ayrı
     // buton — `TOWERS` dizisine sokmak `TowerDef` sözleşmesini bozardı.
     const toplam = TOWERS.length + 1;
+    const roller = new RolSeridi(this.#scene, kap, toplam);
+
     TOWERS.forEach((def, i) => {
       const bx = (i - (toplam - 1) / 2) * BUTON_ARA;
       const maliyet = def.tiers[0].cost;
       const alinabilir = this.#economy.canAfford(maliyet);
 
-      this.#menuButonu(kap, bx, `${kuleAdi(def.id)} ${maliyet}`, alinabilir, () =>
+      const cerceve = this.#menuButonu(kap, bx, `${kuleAdi(def.id)} ${maliyet}`, alinabilir, () =>
         this.#actions.placeTower(spotIndex, def),
       );
+      roller.bagla(cerceve, ROLE_KEY[def.id] ?? 'roleOkcu');
     });
 
     const kislaMaliyet = barracksTierAt(KISLA, 0).cost;
-    this.#menuButonu(
+    const kislaCerceve = this.#menuButonu(
       kap,
       (TOWERS.length - (toplam - 1) / 2) * BUTON_ARA,
       `${t('barracks')} ${kislaMaliyet}`,
       this.#economy.canAfford(kislaMaliyet),
       () => this.#actions.placeBarracks(spotIndex),
     );
+    roller.bagla(kislaCerceve, 'roleKisla');
+    roller.soruButonuEkle(toplam);
 
     this.#menuArkalikEkleVeKonumla(kap, spot);
     this.#menu = kap;
@@ -501,7 +618,7 @@ export class BuildMenu {
     etkin: boolean,
     onClick: () => void,
     genislik: number = BUTON_W,
-  ): void {
+  ): Phaser.GameObjects.Container {
     const cerceve = createParchmentButton(this.#scene, bx, 0, genislik, 44, 10);
     if (!etkin) cerceve.setAlpha(0.55);
 
@@ -534,6 +651,7 @@ export class BuildMenu {
     );
 
     kap.add([cerceve, etiket]);
+    return cerceve;
   }
 
   /**

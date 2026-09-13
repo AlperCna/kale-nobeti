@@ -149,6 +149,47 @@ const TR = {
   abilityTakviye: 'Takviye',
 
   /**
+   * `M8-T02` — satın almadan ÖNCE kule rolü. Oyuncu geri bildirimi
+   * (2026-09-14): dört aile "isim + fiyat" dışında hiçbir şey
+   * söylemiyordu (Y09'un kendi tablosunda da ❌ işaretliydi).
+   *
+   * Metinler `data/towers.ts`'in `role` alanıyla aynı bilgi ama oradaki
+   * Türkçe dizeler **doküman üreticisinin** (`kurallar.mjs`) girdisi;
+   * arayüzdeki kopya çevrilebilir olmak zorunda, o yüzden anahtarla
+   * burada (S76 ile birebir aynı gerekçe).
+   */
+  roleOkcu: 'Tek hedef, hızlı, ucuz. Zırha karşı zayıf.',
+  roleTop: 'Alan hasarı, yavaş. Kalabalığın cevabı. Uçana vurmaz.',
+  roleBuyu: 'Zırh delen. Büyü dirençli düşmanlara zayıf.',
+  roleKisla: 'Asker çıkarır, yolu tıkar. Bayrağı sürükleyerek konumlandır.',
+  /** "?" düğmesi — dokunmatikte imleç yok, roller böyle açılıyor. */
+  infoToggle: '?',
+
+  /**
+   * `M8-T02` — dalga telgrafındaki düşman adları. Telgraf §7'nin zorunlu
+   * özelliği ("körlemesine oynamak türün en yaygın şikâyeti") ama yalnız
+   * ikon + adet gösteriyordu; ikonu tanımayan oyuncu için bilgi değil
+   * süstü. Üstüne gelince ad + savunma özeti çıkıyor.
+   */
+  enemyGoblin: 'Goblin',
+  enemyOrkSavasci: 'Ork Savaşçı',
+  enemyKurtBinicisi: 'Kurt Binicisi',
+  enemyHarpi: 'Harpi',
+  enemyZirhliOrk: 'Zırhlı Ork',
+  enemySaman: 'Şaman',
+  enemyTrol: 'Trol',
+  enemyOrumcekAna: 'Örümcek Ana',
+  enemyOrumcekYavrusu: 'Örümcek Yavrusu',
+  enemyOgreSef: 'Ogre Şef',
+  /** Savunma özeti parçaları — sayılar `enemies.ts`'ten geliyor. */
+  statArmor: 'zırh',
+  statResist: 'büyü direnci',
+  statFlying: 'uçar',
+  statRegen: 'yenilenir',
+  statSplit: 'bölünür',
+  statHeals: 'iyileştirir',
+
+  /**
    * Oyuncu geri bildirimi (2026-09-14) ile eklenen iki ipucu. İkisi de
    * Y09 altyapısıyla tek seferlik: hedefleme satırı ilk açıldığında ve
    * ilk uçan dalga yaklaşınca (kesikli rota görünürken).
@@ -241,6 +282,27 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     infoDpsVs: 'DPS vs. selected',
     abilityMeteor: 'Meteor',
     abilityTakviye: 'Reinforce',
+    roleOkcu: 'Single target, fast, cheap. Weak against armor.',
+    roleTop: 'Splash damage, slow. The answer to crowds. Cannot hit flyers.',
+    roleBuyu: 'Pierces armor. Weak against magic-resistant enemies.',
+    roleKisla: 'Spawns soldiers that block the path. Drag the flag to position them.',
+    infoToggle: '?',
+    enemyGoblin: 'Goblin',
+    enemyOrkSavasci: 'Orc Warrior',
+    enemyKurtBinicisi: 'Wolf Rider',
+    enemyHarpi: 'Harpy',
+    enemyZirhliOrk: 'Armored Orc',
+    enemySaman: 'Shaman',
+    enemyTrol: 'Troll',
+    enemyOrumcekAna: 'Spider Mother',
+    enemyOrumcekYavrusu: 'Spiderling',
+    enemyOgreSef: 'Ogre Chief',
+    statArmor: 'armor',
+    statResist: 'magic resist',
+    statFlying: 'flies',
+    statRegen: 'regenerates',
+    statSplit: 'splits',
+    statHeals: 'heals',
     hintTargetModes:
       'Targeting — First: furthest along the path · Last: furthest back · Strong: most HP · Weak: least HP · Near: closest to the tower',
     hintFlyers: 'The dashed line is the flyers’ route — they ignore the path. Only Archer and Magic deal full damage to them.',
