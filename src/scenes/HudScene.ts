@@ -282,7 +282,13 @@ export class HudScene extends Phaser.Scene {
    */
   #createEarlyStartButton(): void {
     const x = this.scale.width / 2;
-    const y = this.scale.height - MARGIN - 26;
+    // Üst-orta, geri sayımın hemen altında — oyuncu geri bildirimi
+    // (2026-09-14, harita 3): alt-ortadayken kalenin ve iki yapı
+    // noktasının üstüne düşüyordu (harita 3'ün kalesi ekranın alt
+    // ortasında). Geri sayım (y 16, 32 px) ile boss çubuğu (y 46) aynı
+    // yerde ama bu buton yalnız hazırlıkta görünüyor, boss çubuğu yalnız
+    // boss canlıyken — hiç çakışmıyorlar.
+    const y = 82;
 
     this.#earlyBtn = createParchmentButton(this, x, y, 180, 52, 14).setVisible(false);
     this.#earlyLabel = this.add
