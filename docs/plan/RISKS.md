@@ -317,8 +317,12 @@ delme. Hasar rengi üç renkten **ikiye** indi.
 Mutlak yol kullanılırsa oyun portalda **hiç yüklenmez**. `npm run dev`'de
 fark edilmez.
 
-**Erken uyarı:** `dist/` alt klasörden servis edilince beyaz ekran.
-**Azaltma:** `M0-T01` "bitmedi sayılır eğer"; `E5` elle testi; `M7-T10`.
+**Erken uyarı:** ~~yok~~ → **`npm run guard` (k.17, 2026-09-14)**. Eskiden
+yalnız `dist/` alt klasörden servis edilince görülüyordu, yani ancak
+yayın anında.
+**Azaltma:** `M0-T01` "bitmedi sayılır eğer"; `E5` elle testi; `M7-T10`;
+**bekçi k.17** `vite.config.ts`'te `base: './'` olmasını her koşuda
+doğruluyor.
 **Taş:** M0, M7.
 
 ### R16 · Gizli sekmede `localStorage` çökmesi

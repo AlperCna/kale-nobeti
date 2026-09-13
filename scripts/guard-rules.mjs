@@ -621,6 +621,143 @@ const sonuclar = [];
 }
 
 // ---------------------------------------------------------------------
+// 14 — `localStorage` yalnız `util/storage.ts` (TIER 1 kural 10)
+//
+// Kural "her `localStorage` erişimi try/catch içinde" diyor. Bunu satır
+// satır kovalamak yerine **tek kapı** zorlanıyor: erişim yalnız
+// `LocalStore`'un içinde yaşıyor ve try/catch orada, testli. k.9'un
+// (`Math.sqrt` yalnız `math.ts`) birebir aynı deseni.
+//
+// Gizli sekmede `localStorage`'ın **varlığını okumak** bile fırlatıyor
+// (`storage.ts`'in kendi notu), yani "sadece kontrol ediyorum" diyen bir
+// satır da ihlal — bu yüzden net kelimenin kendisini arıyor, çağrıyı
+// değil.
+// ---------------------------------------------------------------------
+{
+  let ihlalVar = false;
+  const izinli = join(SRC, 'util', 'storage.ts');
+
+  for (const dosya of dosyalar) {
+    if (dosya.endsWith('.test.ts')) continue;
+    if (dosya === izinli) continue;
+
+    for (const s of kodSatirlari(readFileSync(dosya, 'utf8'))) {
+      if (!s.metin.includes('localStorage')) continue;
+      ihlalVar = true;
+      ihlal('k.10', dosya, s.no, 'localStorage yalnız util/storage.ts içinde — try/catch orada');
+    }
+  }
+  sonuclar.push(['k.10 localStorage yalnız util/storage.ts', !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
+// 15 — Yayın yapısında konsol çıktısı yok (CLAUDE.md "Platform kısıtları")
+//
+// "Yayın yapısında konsol çıktısı, hata ayıklama tuşları ve FPS sayacı
+// bulunmaz." Kod tabanındaki iki `console` çağrısı da
+// `import.meta.env.DEV` korumalı ve üretimde siliniyor (doğrulandı:
+// `dist/` içinde `[havuz]`/`[can]` etiketleri yok).
+//
+// Net aynı satırda koruma arıyor. Çok satırlı bir `if (DEV) { … }` bloğu
+// yanlış pozitif verir — kod tabanındaki desen tek satır olduğu için
+// kabul edildi; çıkarsa ya satır tek satıra indirilir ya buraya istisna
+// yazılır. `dist/`'teki Phaser'ın kendi uyarıları bu kuralın konusu
+// değil (kütüphane davranışı, bizim çıktımız değil).
+// ---------------------------------------------------------------------
+{
+  let ihlalVar = false;
+  const konsol = /\bconsole\.\w+\s*\(/;
+
+  for (const dosya of dosyalar) {
+    if (dosya.endsWith('.test.ts')) continue;
+
+    for (const s of kodSatirlari(readFileSync(dosya, 'utf8'))) {
+      if (!konsol.test(s.metin)) continue;
+      if (s.metin.includes('import.meta.env.DEV')) continue;
+      ihlalVar = true;
+      ihlal('platform', dosya, s.no, 'console çağrısı import.meta.env.DEV ile korunmalı');
+    }
+  }
+  sonuclar.push(['platform console yalnız DEV korumalı', !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
+// 16 — Dokunmatik hedef alt sınırı (CLAUDE.md "Platform kısıtları")
+//
+// k.13'ün cümlesinin diğer yarısı: "minimum dokunmatik hedef 44×44 px
+// (1280×720 ölçeğinde)". `Y03` Adım 3'ün 640×360 denetiminde elle
+// tarandı; bir daha elle taranmasın diye bağlanıyor.
+//
+// SEZGİSEL: `createParchmentButton(scene, x, y, W, H, …)` çağrılarının
+// 4. ve 5. argümanını okuyor. Sayı değişmezlerini ve **aynı dosyadaki
+// modül düzeyi `const AD = <sayı>;` tanımlarını** çözebiliyor
+// (`BTN`, `KART_W`, `MOD_BUTON_W` böyle yakalanıyor). Parametre ya da
+// ifade (`genislik`, `w`, `h`) **çözülemiyor ve sessizce atlanıyor** —
+// kasıtlı kör nokta, k.12'nin aksansız-Türkçe kör noktasıyla aynı
+// dürüstlük düzeyinde: sıfır kontrolden iyi, kanıt değil.
+// ---------------------------------------------------------------------
+{
+  let ihlalVar = false;
+  const ASGARI_HEDEF = 44;
+  const sabitTanim = /^\s*const\s+([A-Za-z_$][\w$]*)\s*=\s*(\d+)\s*;/;
+  const cagri = /createParchmentButton\(\s*[^,]+,\s*[^,]+,\s*[^,]+,\s*([^,]+),\s*([^,)]+)/;
+
+  for (const dosya of dosyalar) {
+    if (dosya.endsWith('.test.ts')) continue;
+    const satirlar = kodSatirlari(readFileSync(dosya, 'utf8'));
+
+    const sabitler = new Map();
+    for (const s of satirlar) {
+      const m = sabitTanim.exec(s.metin);
+      if (m !== null) sabitler.set(m[1], Number(m[2]));
+    }
+    const coz = (ifade) => {
+      const t = ifade.trim();
+      if (/^\d+$/.test(t)) return Number(t);
+      if (sabitler.has(t)) return sabitler.get(t);
+      return null; // parametre/ifade — bu net göremiyor
+    };
+
+    for (const s of satirlar) {
+      const m = cagri.exec(s.metin);
+      if (m === null) continue;
+      for (const [i, ad] of [
+        [1, 'genişlik'],
+        [2, 'yükseklik'],
+      ]) {
+        const v = coz(m[i]);
+        if (v === null || v >= ASGARI_HEDEF) continue;
+        ihlalVar = true;
+        ihlal('platform', dosya, s.no, `dokunmatik hedef ${ad} ${v}px < ${ASGARI_HEDEF}px`);
+      }
+    }
+  }
+  sonuclar.push([`platform dokunmatik hedef ≥ ${ASGARI_HEDEF}px (çözülebilen ölçüler)`, !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
+// 17 — `base: './'` (CLAUDE.md "Platform kısıtları" · `RISKS.md` **R15**)
+//
+// R15: "Mutlak yol kullanılırsa oyun portalda **hiç yüklenmez**.
+// `npm run dev`'de fark edilmez." Erken uyarısı "dist/ alt klasörden
+// servis edilince beyaz ekran" — yani ancak yayın anında görülüyor.
+// Tek satırlık bir hata, yüksek etki: bekçilenmesi bedava.
+//
+// `src/` dışında olduğu için tek dosya doğrudan okunuyor.
+// ---------------------------------------------------------------------
+{
+  const yol = 'vite.config.ts';
+  let ok = false;
+  try {
+    ok = /base:\s*'\.\/'/.test(readFileSync(yol, 'utf8'));
+  } catch (e) {
+    taranamayan.push(`${yol} (${e.code ?? 'hata'})`);
+  }
+  if (!ok) ihlal('platform', yol, 0, "base: './' yok — mutlak yol portalda beyaz ekran (R15)");
+  sonuclar.push(["platform vite base: './' (R15)", ok]);
+}
+
+// ---------------------------------------------------------------------
 
 const gecen = sonuclar.filter(([, ok]) => ok).length;
 if (taranamayan.length > 0) {
