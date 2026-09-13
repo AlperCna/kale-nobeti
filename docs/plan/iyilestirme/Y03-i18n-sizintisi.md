@@ -320,3 +320,170 @@ canlı doğrulama zorunluydu) kasıtlı olarak farklı bir risk sınıfı.
 - Guard'ın aksansız Türkçe kelimeleri (`Top`/`Son`/`Sat`/`Tam`/`Ses`)
   kaçırdığı yukarıda belgelendi — kabul edilen, dürüstçe yazılı bir
   sınır.
+
+---
+
+## Sonuç — Adım 3 (2026-09-13)
+
+**`en` dolduruldu, dil seçimi ayarlar paneline eklendi. Y03 kapandı.**
+
+### Sözlük
+
+46 anahtar çevrildi, **12 yeni anahtar** eklendi (toplam 58):
+
+| Yeni anahtar | Neden |
+|---|---|
+| `waves` | `wave`'in çoğulu. Türkçede sayıdan sonra çoğul eki yok (`12 dalga`), İngilizcede var (`12 waves`) — tek anahtar iki dilbilgisi bağlamına yetmiyordu. Seviye seçim alt başlığı bunu kullanıyor, HUD etiketi hâlâ `wave`. |
+| `language`, `langTr`, `langEn` | Dil satırı. **Dil adları çevrilmiyor** — her dil kendi adıyla (`Türkçe`/`English`), iki sözlükte de aynı. İngilizce arayüzde `Turkish` yazsaydı, İngilizce bilmeyen bir oyuncu kendi dilini listede tanıyamazdı. |
+| 8 × `branch*` | S76 — aşağıda. |
+
+Çeviri kararlarından ikisi sözlük çevirisi değil: `Kundakçı` →
+`Incendiary` ("arsonist" kişiyi anlatıyor, kule dalı adı olarak tuhaf
+kaçıyor), `Buz` → `Frost` (`Ice` değil — tezhip/ortaçağ tonu).
+
+### S76 kapandı — dal adları çevrildi
+
+Dal adları `data/towers.ts`/`data/barracks.ts` içinde düz Türkçe dizeydi.
+Artık `branchNameKey: StringKey` — değer hâlâ **veride** (TIER 1 kural 1),
+metin `strings.ts`'te ve çevrilebilir. `types/tower.ts` ve
+`types/barracks.ts` alan tipi değişti; `BuildMenu`'deki 4 okuma noktası
+`dalAdi()` üzerinden çözüyor.
+
+`scripts/kurallar.mjs` dal adını **`STRINGS.tr`'den** çözüyor, etkin
+dilden değil — `docs/KURALLAR.md` Türkçe bir denge referansı, oyuncunun
+diline göre değişmemeli. Doğrulaması kesin: **`KURALLAR.md` diff'i boş
+çıktı**, yani refactor dokümanın tek baytını bile değiştirmedi.
+
+> Bu dosyayı düzenlerken bir tuzak: `kurallar.mjs` üreteceği test
+> dosyasını bir **şablon dizesi** içinde tutuyor. Oraya eklenen yoruma
+> ters tırnak konursa şablon erken kapanıyor ve `npm run build`
+> `SyntaxError` veriyor. Yorum ters tırnaksız yazıldı, sebebi de
+> dosyanın içine.
+
+### Çalışma zamanında dil değişimi
+
+`t(key, locale = mevcut)` — `util/i18n.ts` artık modül düzeyinde bir
+etkin dil tutuyor, tek yazıcısı `setLocale`. Alternatif `locale`'i 20
+çağrı yerinden geçirmekti; o da "çağrı yerleri dil bilmez"
+sözleşmesini bozardı.
+
+**`setLocale`'i yalnız `Settings` çağırıyor** — kurucuda ve
+`set('locale', …)`'de. Tercihi saklayan ile uygulayanı ayırmamak
+bilinçli: `Y04` ("ses tercihi açılışta uygulanmıyor") tam olarak o
+ayrımdan doğmuştu.
+
+### Ekranın yenilenmesi — neden sahne yeniden kuruluyor
+
+Dil değişince ekrandaki `Text` nesneleri bayat kalıyor. **Bekçi kural 4
+`setText`'i `Text` üreten bir dosyada yasaklıyor**, yani etiketler
+yerinde güncellenemiyor — yeniden üretilmeleri gerekiyor. Çözüm
+`HudScene`'in kendini `scene.restart(data)` ile kurması
+(`GameOverScene`'in `stop`/`start` deseniyle aynı aile).
+
+Kapsam beklenenden küçük çıktı, çünkü:
+- `GameScene`'de **kalıcı çevrili metin yok** — tek istisna öğretici
+  balonu, o da her gösterimde baştan kuruluyor. Yani `Game` hiç
+  yeniden başlatılmıyor, oyun kesintisiz sürüyor.
+- `BuildMenu` her açılışta yeniden kuruluyor, kendiliğinden düzeliyor.
+- `Menu`/`LevelSelect`/`GameOver` o an çalışmıyor; sonra girildiğinde
+  zaten yeni dille doğuyorlar.
+
+Yeniden kurulumda **iki şey veriyle taşınıyor**: açık olan ayarlar
+paneli (oyuncu sonucu görsün ve fikrini değiştirebilsin) ve **hız**.
+İkincisi gerçek bir tuzaktı: `HudScene.create()` `#speed`'i 1'e
+sıfırlıyor ve bunun gerekçesi dosyada yazılı (2×'te kaybedip yeniden
+başlayınca gösterge yalan söylüyordu). Dil değişiminde ise `Game`
+çalışmaya devam ediyor ve saati 2×'te olabilir — sıfırlama bu kez
+**tersinden** aynı hatayı üretirdi. Hız artık `data.speed` ile
+korunuyor, hız etiketi de sabit `'1×'` yerine `#speed`'ten türüyor.
+
+### Tarayıcı dili algılama
+
+`detectLocale(nav?)` — `prefersReducedMotion` ile birebir aynı
+enjeksiyon deseni. Sıra da aynı: tarayıcı dili bir **sistem tercihi**,
+oyuncunun kayıtlı seçimi onu eziyor.
+
+Gerekçe kapsam kararından çıktı: dil seçici **yalnız ayarlar
+panelinde** ve panele ancak bir haritanın içinden ulaşılıyor
+(`MenuScene`'de ayar yüzeyi yok). Algılama olmasaydı, yabancı bir
+oyuncunun dili değiştirmek için önce Türkçe bir menüyü çözmesi
+gerekirdi.
+
+Türkçe dışındaki **her** dil `en`'e düşüyor — çevirisi olmayan bir
+dile değil, var olan iki dilden uluslararası olanına.
+
+Bozuk kayıt ayrıca eleniyor (`gecerliLocale`): diğer alanlardan farklı
+olarak bozuk bir `locale` `STRINGS[bozuk][key]` okumasını `undefined`
+alanı okumaya çevirip oyunu **açılışta çökertirdi**.
+
+### Taşma — doğrulamanın asıl bulgusu
+
+Doğrulama listesi "taşma riski gerçek" diyordu. **Ölçüldü ve risk
+tahmin edilenden büyüktü; üstelik bir kısmı Türkçede zaten vardı:**
+
+| Satır | Eski buton | En uzun metin | Ölçülen | Yeni buton |
+|---|---|---|---|---|
+| Dal (T3) | 88 px | `Keskin Nişancı 170` | **136 px** | 152 px |
+| Dal (T3) | 88 px | `Sharpshooter 170` | 123 px | 152 px |
+| Kule | 88 px | `Cannon 110` | 85 px | 100 px |
+| Hedefleme | 46 px | `Güçlü` | 38 px | 52 px |
+
+`Keskin Nişancı 170` **48 px taşıyordu** — Adım 3'ten bağımsız, var
+olan bir hata. Ayrıca kule satırı 88 px butonu 84 px aralıkla
+diziyordu, yani komşu parşömenler 4 px üst üste biniyordu. Aralık
+artık her zaman genişlikten büyük.
+
+Hedefleme modlarında **buton büyütmek tek başına yetmedi**: Türkçesi
+zaten kısaltılmış (`Güçlü`, "En Güçlü" değil), İngilizcesi de öyle
+seçildi — `Strongest` (~62 px) yerine `Strong` (42 px), `Closest`
+yerine `Near`. Beş buton yan yana ve satırın toplam genişliği
+menü panelini büyütüyor.
+
+### Doğrulama
+
+`npm run typecheck && npm run test && npm run guard && npm run build`
+— **753/753 test** (11 yeni), guard 12/12, **`KURALLAR.md` diff'i boş**.
+
+Testlerde bir tuzak yakalandı: `node`'un `navigator.language`'ı
+**makineye göre** değişiyor (bu makinede `tr-TR`, CI'da muhtemelen
+`en-US`). `DEFAULT_SETTINGS` karşılaştırmaları enjekte edilmiş dille
+yapılıyor, yoksa test geliştiricinin işletim sistemi diline bağlı
+olurdu.
+
+`i18n.test.ts`'in "boş çeviride geri düşer" testi `en` dolunca anlamsız
+kalacaktı; anahtarı geçici olarak boşaltıp geri koyan bir biçime
+çevrildi — geri düşme yolu **yeni eklenecek anahtarlar için** hâlâ ağ,
+ve `en` tamlığı ayrı bir testle kilitlendi.
+
+**Canlı doğrulama** (gerçek tarayıcı, sayısal ölçümle):
+
+1. Türkçe tarayıcıda temiz kayıtla açılış → menü Türkçe ✓
+2. Ayarlar paneli beş satır, hepsi panel içinde ✓
+3. **2× hızdayken** dil `English` yapıldı → HUD + panel anında
+   İngilizce, panel açık kaldı, **hız göstergesi 2× kaldı ve
+   `GameClock.scale` da 2** (ayrışma yok) ✓
+4. Yapı menüsü iki dilde ölçüldü — yukarıdaki tablo; hepsi buton
+   içinde ✓
+5. `Settings` üretim yolundan (`new Settings(store)`, enjeksiyonsuz)
+   `de-DE`/`fr`/`en-US` → `en`, `tr-TR` → `tr` ✓
+6. Kayıtlı `en` ile sayfa yenilendi → `Play`, `Select Level`,
+   `Mill Pass`/`Stone Bridge`/`Ash Plain`, `Locked`, `← Back`,
+   `10 waves · 8 spots` (124 px / 300 px kart) ✓
+7. Oyun sonu ekranı İngilizce: `The castle has fallen`,
+   `0 / 20 lives left`, `Try again`, `Main menu` ✓
+8. Konsol hatasız ✓
+
+`DEFAULT_LOCALE`'ü geçici olarak `'en'` yapma adımı (doğrulama 3)
+**gerekmedi ve yapılmadı** — artık kalıcı bir dil seçici var, gerçek
+oyuncu yolundan aynı şey sınandı. `DEFAULT_LOCALE`'ün anlamı da
+değişti: "açılıştaki dil" değil, **geri düşme dili**.
+
+### Yapılmayan
+
+- **640×360 okunurluk (doğrulama 6) ölçülmedi.** Metinler 16 px alt
+  sınırının üstünde ve ölçekleme oransal, ama bu bir çıkarım, ölçüm
+  değil.
+- `MenuScene`'e dil seçici konmadı (karar: yalnız ayarlar paneli).
+  Tarayıcı algılaması bu boşluğun büyük kısmını kapatıyor ama
+  **Türkçe tarayıcıdan İngilizce oynamak isteyen** biri hâlâ önce bir
+  haritaya girmek zorunda.

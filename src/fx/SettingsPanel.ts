@@ -9,6 +9,17 @@ const INK = 0x14203a;
 /** Platform: minimum dokunmatik hedef 44×44 px, minimum yazı 16 px. */
 const SATIR_Y = 58;
 const GENISLIK = 420;
+/**
+ * `Y03` Adım 3 — beşinci satır (dil) eklenince yeniden ölçüldü.
+ *
+ * Satırlar `ILK_SATIR_Y + SATIR_Y * i` formülüyle diziliyor (eskiden dört
+ * ayrı elle yazılmış y vardı). Son satırın buton alt kenarı
+ * `148 + 22 = 170`, panelin yarı yüksekliği `190` — 20 px pay. Başlığın
+ * üst kenarı `-154 - 16 = -170`, aynı pay.
+ */
+const YUKSEKLIK = 380;
+const BASLIK_Y = -154;
+const ILK_SATIR_Y = -84;
 
 /** `Y03` — panel etiketleri `strings.ts`'e taşındı. */
 function efektEtiket(k: EffectLevel): string {
@@ -18,9 +29,9 @@ function efektEtiket(k: EffectLevel): string {
 /**
  * Ayarlar paneli — `GAME-DESIGN.md` §10 ve **TIER 1 kural 6**.
  *
- * Dört ayar: ses, ekran sarsıntısı, öğretici ipuçları (`Y09`), efekt
- * yoğunluğu. Duraklatma perdesinin üstünde açılıyor; `Hud` duraklatmada
- * da çalıştığı için erişilebilir kalıyor (`CLAUDE.md` Mimari).
+ * Beş ayar: dil (`Y03` Adım 3), ses, ekran sarsıntısı, öğretici ipuçları
+ * (`Y09`), efekt yoğunluğu. Duraklatma perdesinin üstünde açılıyor; `Hud`
+ * duraklatmada da çalıştığı için erişilebilir kalıyor (`CLAUDE.md` Mimari).
  *
  * ## TIER 1 kural 7
  *
@@ -33,6 +44,7 @@ function efektEtiket(k: EffectLevel): string {
  */
 export class SettingsPanel {
   readonly #kok: Phaser.GameObjects.Container;
+  readonly #dilEtiketleri: Phaser.GameObjects.Text[] = [];
   readonly #sesEtiketleri: Phaser.GameObjects.Text[] = [];
   readonly #sarsintiEtiketleri: Phaser.GameObjects.Text[] = [];
   readonly #ipucuEtiketleri: Phaser.GameObjects.Text[] = [];
@@ -42,16 +54,17 @@ export class SettingsPanel {
     scene: Phaser.Scene,
     private readonly settings: Settings,
     private readonly onChange: () => void,
+    private readonly onLocaleChange: () => void,
   ) {
     const w = scene.scale.width;
     const h = scene.scale.height;
     this.#kok = scene.add.container(w / 2, h / 2).setDepth(200).setVisible(false);
 
     const arka = scene.add
-      .rectangle(0, 0, GENISLIK, 320, INK, 0.96)
+      .rectangle(0, 0, GENISLIK, YUKSEKLIK, INK, 0.96)
       .setStrokeStyle(3, GOLD);
     const baslik = scene.add
-      .text(0, -100, t('settingsTitle'), {
+      .text(0, BASLIK_Y, t('settingsTitle'), {
         fontFamily: '"Grenze Gotisch", serif',
         fontSize: '32px',
         color: '#E4D3A8',
@@ -59,15 +72,43 @@ export class SettingsPanel {
       .setOrigin(0.5);
     this.#kok.add([arka, baslik]);
 
-    this.#satir(scene, -SATIR_Y + 12, t('sound'), this.#sesEtiketleri, [t('on'), t('off')], () => {
-      this.settings.set('sound', !this.settings.state.sound);
-      this.refresh();
-      this.onChange();
-    });
+    /**
+     * `Y03` Adım 3 — dil **en üstte**: diğer dört satırın metnini de o
+     * belirliyor.
+     *
+     * Değiştirince `onLocaleChange` `Hud`'u yeniden kuruyor (bekçi k.4
+     * `Text` üreten dosyada `setText`'i yasakladığı için tek yol bu) —
+     * yani `refresh()` çağırmanın anlamı yok, bu panel birazdan yok
+     * olacak ve yenisi doğru dille doğacak.
+     */
+    this.#satir(
+      scene,
+      ILK_SATIR_Y,
+      t('language'),
+      this.#dilEtiketleri,
+      [t('langTr'), t('langEn')],
+      () => {
+        this.settings.set('locale', this.settings.state.locale === 'tr' ? 'en' : 'tr');
+        this.onLocaleChange();
+      },
+    );
 
     this.#satir(
       scene,
-      12,
+      ILK_SATIR_Y + SATIR_Y,
+      t('sound'),
+      this.#sesEtiketleri,
+      [t('on'), t('off')],
+      () => {
+        this.settings.set('sound', !this.settings.state.sound);
+        this.refresh();
+        this.onChange();
+      },
+    );
+
+    this.#satir(
+      scene,
+      ILK_SATIR_Y + SATIR_Y * 2,
       t('screenShake'),
       this.#sarsintiEtiketleri,
       [t('on'), t('off')],
@@ -79,14 +120,21 @@ export class SettingsPanel {
     );
 
     // `Y09` — öğretici ipuçları açık/kapalı. Aynı satır deseni.
-    this.#satir(scene, SATIR_Y + 12, t('hints'), this.#ipucuEtiketleri, [t('on'), t('off')], () => {
-      this.settings.set('hints', !this.settings.state.hints);
-      this.refresh();
-      this.onChange();
-    });
+    this.#satir(
+      scene,
+      ILK_SATIR_Y + SATIR_Y * 3,
+      t('hints'),
+      this.#ipucuEtiketleri,
+      [t('on'), t('off')],
+      () => {
+        this.settings.set('hints', !this.settings.state.hints);
+        this.refresh();
+        this.onChange();
+      },
+    );
 
     // Efekt yoğunluğu üç kademeli (S53) — ayrı etiket haritası.
-    const y = SATIR_Y * 2 + 12;
+    const y = ILK_SATIR_Y + SATIR_Y * 4;
     this.#kok.add(
       scene.add
         .text(-GENISLIK / 2 + 24, y, t('effects'), {
@@ -159,6 +207,8 @@ export class SettingsPanel {
   /** Görünürlükleri duruma göre ayarlar — `setText` yok (TIER 1 k.7). */
   refresh(): void {
     const s = this.settings.state;
+    this.#dilEtiketleri[0]?.setVisible(s.locale === 'tr');
+    this.#dilEtiketleri[1]?.setVisible(s.locale === 'en');
     this.#sesEtiketleri[0]?.setVisible(s.sound);
     this.#sesEtiketleri[1]?.setVisible(!s.sound);
     this.#sarsintiEtiketleri[0]?.setVisible(s.screenShake);

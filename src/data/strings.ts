@@ -4,14 +4,21 @@
  * Düz nesne DEĞİL, **dil haritası**. Kullanım `t('play')` biçimindedir
  * (bkz. `src/util/i18n.ts`) — çağrı yerleri dil bilmez.
  *
- * `en` şimdilik boş. Çeviri M7'de bir oturumluk iş; **yapıyı** sonradan
- * eklemek `scenes/`'in tamamına dokunmak demek (CLAUDE.md Teknoloji).
+ * `Y03` Adım 3 (2026-09-13): `en` dolduruldu. Etkin dil artık çalışma
+ * zamanında değişebiliyor (`i18n.setLocale`, `Settings.locale`);
+ * `DEFAULT_LOCALE` bundan sonra **geri düşme** dili anlamına geliyor,
+ * "açılıştaki dil" değil — onu `Settings` tarayıcıdan tespit ediyor.
  *
  * TIER 1 kural 11: bu dosya Phaser'a dokunmaz.
  */
 
 export type Locale = 'tr' | 'en';
 
+/**
+ * Bir anahtarın karşılığı boşsa düşülecek dil. Oyunun yazıldığı dil bu
+ * olduğu için `tr`: yeni bir anahtar eklenip `en`'i unutulursa oyuncu boş
+ * buton değil Türkçe metin görür.
+ */
 export const DEFAULT_LOCALE: Locale = 'tr';
 
 /** Türkçe tam sözlük. Anahtar kümesini bu tanımlıyor. */
@@ -24,6 +31,12 @@ const TR = {
   gold: 'altın',
   lives: 'can',
   wave: 'dalga',
+  /**
+   * Sayıdan sonra gelen "dalga" (`12 dalga`). Türkçede `wave` ile aynı
+   * kelime ama İngilizcede sayıdan sonra çoğullanıyor (`12 waves`) —
+   * ayrı anahtar olmasının tek sebebi bu.
+   */
+  waves: 'dalga',
   startWave: 'Dalgayı başlat',
   victory: 'Kale ayakta',
   defeat: 'Kale düştü',
@@ -41,12 +54,17 @@ const TR = {
 
   /**
    * `Y03` — Adım 2: `scenes/`/`fx/`'te kodun içine yazılmış ~20 metin
-   * buraya taşındı. `en` şimdilik boş (Adım 3, ayrı bir iş — bkz.
-   * `docs/plan/iyilestirme/Y03-i18n-sizintisi.md`).
+   * buraya taşındı.
    */
   towerOkcu: 'Okçu',
   towerTop: 'Top',
   towerBuyu: 'Büyü',
+  /**
+   * Hedefleme modları. Türkçesi zaten kısaltılmış (`Güçlü`, `En Güçlü`
+   * değil) — İngilizcesi de aynı terse kalıyor (`Strong`, `Strongest`
+   * değil). Sebep teknik: bu beş buton 46 px genişlikte ve 50 px
+   * aralıkta (`fx/BuildMenu.ts`), `Strongest` komşusuna taşardı.
+   */
   modeFirst: 'İlk',
   modeLast: 'Son',
   modeStrongest: 'Güçlü',
@@ -74,6 +92,34 @@ const TR = {
   hintEarlyStart: 'Erken başlat, kalan süre altın olur',
   /** `Y09` — S69'un ölçtüğü mekanik: toplanma noktası sürükleme. */
   hintDragRally: 'Bayrağı sürükle',
+
+  /**
+   * `Y03` Adım 3 — dil seçimi. Dil **adları çevrilmiyor**: her dil kendi
+   * adıyla yazılıyor (`Türkçe` / `English`), yani iki değer de iki
+   * sözlükte aynı. Yaygın i18n pratiği — İngilizce arayüzde "Turkish"
+   * yazsaydı, Türkçe bilen ama İngilizce bilmeyen oyuncu kendi dilini
+   * listede tanıyamazdı.
+   */
+  language: 'Dil',
+  langTr: 'Türkçe',
+  langEn: 'English',
+
+  /**
+   * `Y03` Adım 3 — T3 dal adları (**S76 burada kapandı**). Önceden
+   * `data/towers.ts`/`data/barracks.ts` içinde düz Türkçe dizeydiler;
+   * artık `branchNameKey` ile buraya bağlılar. Çeviriler sözlük çevirisi
+   * değil **ürün kararı**: `Kundakçı` → `Incendiary` (yakan ok, "kundakçı"
+   * kişiyi anlatıyor ama bir kule dalı adı olarak İngilizcede tuhaf
+   * kaçıyor), `Buz` → `Frost` (`Ice` yerine — tezhip/ortaçağ tonu).
+   */
+  branchSharpshooter: 'Keskin Nişancı',
+  branchIncendiary: 'Kundakçı',
+  branchMortar: 'Havan',
+  branchPowderKeg: 'Barut Fıçısı',
+  branchLightning: 'Yıldırım',
+  branchFrost: 'Buz',
+  branchPaladin: 'Paladin',
+  branchOutlaws: 'Haydutlar',
 } as const;
 
 export type StringKey = keyof typeof TR;
@@ -86,51 +132,63 @@ export type StringKey = keyof typeof TR;
 export const STRINGS: Record<Locale, Record<StringKey, string>> = {
   tr: TR,
   en: {
-    play: '',
-    pause: '',
-    paused: '',
-    resume: '',
-    speed: '',
-    gold: '',
-    lives: '',
-    wave: '',
-    startWave: '',
-    victory: '',
-    defeat: '',
-    livesLeft: '',
-    backToMenu: '',
-    levelSelect: '',
-    locked: '',
-    back: '',
-    retry: '',
-    nextMap: '',
-    assetLoadError: '',
-    reloadPage: '',
-    towerOkcu: '',
-    towerTop: '',
-    towerBuyu: '',
-    modeFirst: '',
-    modeLast: '',
-    modeStrongest: '',
-    modeWeakest: '',
-    modeClosest: '',
-    barracks: '',
-    sell: '',
-    pauseHint: '',
-    buildSpot: '',
-    mapDegirmenGecidi: '',
-    mapTasKopru: '',
-    mapKulOvasi: '',
-    settingsTitle: '',
-    sound: '',
-    screenShake: '',
-    effects: '',
-    on: '',
-    off: '',
-    effectLow: '',
-    effectFull: '',
-    hints: '',
-    hintEarlyStart: '',
-    hintDragRally: '',
+    play: 'Play',
+    pause: 'Pause',
+    paused: 'Paused',
+    resume: 'Resume',
+    speed: 'Speed',
+    gold: 'gold',
+    lives: 'lives',
+    wave: 'wave',
+    waves: 'waves',
+    startWave: 'Start wave',
+    victory: 'The castle stands',
+    defeat: 'The castle has fallen',
+    livesLeft: 'lives left',
+    backToMenu: 'Main menu',
+    levelSelect: 'Select Level',
+    locked: 'Locked',
+    back: '← Back',
+    retry: 'Try again',
+    nextMap: 'Next map',
+    assetLoadError: 'Assets failed to load. Check your connection and reload the page.',
+    reloadPage: 'Reload page',
+    towerOkcu: 'Archer',
+    towerTop: 'Cannon',
+    towerBuyu: 'Magic',
+    modeFirst: 'First',
+    modeLast: 'Last',
+    modeStrongest: 'Strong',
+    modeWeakest: 'Weak',
+    modeClosest: 'Near',
+    barracks: 'Barracks',
+    sell: 'Sell',
+    pauseHint: 'ESC / space',
+    buildSpot: 'spots',
+    mapDegirmenGecidi: 'Mill Pass',
+    mapTasKopru: 'Stone Bridge',
+    mapKulOvasi: 'Ash Plain',
+    settingsTitle: 'Settings',
+    sound: 'Sound',
+    screenShake: 'Screen shake',
+    effects: 'Effects',
+    on: 'On',
+    off: 'Off',
+    effectLow: 'Low',
+    effectFull: 'Full',
+    hints: 'Hints',
+    hintEarlyStart: 'Start early — leftover time turns to gold',
+    hintDragRally: 'Drag the flag',
+    language: 'Language',
+    langTr: 'Türkçe',
+    langEn: 'English',
+    branchSharpshooter: 'Sharpshooter',
+    branchIncendiary: 'Incendiary',
+    branchMortar: 'Mortar',
+    branchPowderKeg: 'Powder Keg',
+    branchLightning: 'Lightning',
+    branchFrost: 'Frost',
+    branchPaladin: 'Paladin',
+    branchOutlaws: 'Outlaws',
   },
 };

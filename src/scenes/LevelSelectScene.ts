@@ -171,7 +171,7 @@ export class LevelSelectScene extends Phaser.Scene {
           x,
           y + 34,
           acik
-            ? `${wavesFor(m.id).length} ${t('wave')} · ${m.buildSpots.length} ${t('buildSpot')}`
+            ? `${wavesFor(m.id).length} ${t('waves')} · ${m.buildSpots.length} ${t('buildSpot')}`
             : t('locked'),
           {
             fontFamily: 'Spectral, serif',

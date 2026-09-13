@@ -161,7 +161,7 @@ describe('towers.ts — T3 dalları (12 kademe)', () => {
   it('üç ailenin de iki dalı var, hepsi adlandırılmış', () => {
     for (const def of TOWERS) {
       expect(def.branches).toHaveLength(2);
-      for (const b of def.branches) expect(b.branchName).toBeTruthy();
+      for (const b of def.branches) expect(b.branchNameKey).toBeTruthy();
     }
   });
 

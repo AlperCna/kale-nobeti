@@ -73,7 +73,17 @@ export class HudScene extends Phaser.Scene {
     PreloadScene.queueGame(this);
   }
 
-  create(): void {
+  /**
+   * `Y03` Adım 3 — dil değişiminde `Hud` kendini yeniden kuruyor
+   * (`scene.restart(data)`), çünkü bekçi kural 4 `Text` üreten bir
+   * dosyada `setText`'i yasaklıyor: çevrili etiketler yerinde
+   * güncellenemiyor, yeniden üretilmeleri gerekiyor. `Game` bu yoldan
+   * hiç etkilenmiyor — orada kalıcı çevrili metin yok (tek istisna
+   * öğretici balonu, o da her gösterimde baştan kuruluyor).
+   *
+   * Yeniden kurulumda korunması gereken iki şey bu veriyle taşınıyor.
+   */
+  create(data?: { readonly speed?: Speed; readonly settingsOpen?: boolean }): void {
     this.#bitti = false;
     // **Bekçi kural 10'un bulduğu iki gerçek hata.**
     //
@@ -89,7 +99,11 @@ export class HudScene extends Phaser.Scene {
     // İkisi de M0/M4/M5/M6'da dört kez çıkan tuzağın aynısı: alan
     // başlatıcısı bir kez, `create()` her seferinde.
     this.#paused = false;
-    this.#speed = 1;
+    // Varsayılan 1 — yeni oyunda `GameClock` da 1×'ten başlıyor. Dil
+    // değişiminden gelen yeniden kurulumda ise `Game` çalışmaya devam
+    // ediyor ve saati 2×'te olabilir; o durumda gösterge yalan
+    // söylememesi için gerçek hız veriyle taşınıyor.
+    this.#speed = data?.speed ?? 1;
     this.#createSpeedButton();
     // Altın/can/dalga sayaç kartı — P02 brifi "HUD sol üstte üç parşömen
     // kart" (`docs/plan/M6-sanat-uretim-brifi.md`). Etiket+sayı bloğunun
@@ -133,16 +147,25 @@ export class HudScene extends Phaser.Scene {
     // bağımlı değil, `HudScene`'in kendi `registry`'si hazır olur olmaz
     // (Phaser'ın sahne önyükleme sırası) kullanılabilir.
     const settings = getSettings(this);
-    this.#settingsPanel = new SettingsPanel(this, settings, () => {
-      // Ayar değişince oyuna anında yansı — sarsıntı bayrağı ve ses.
-      // `shake` (`GameScene`) alan başlatıcısı (`readonly shake = new
-      // ScreenShake()`) — `settings`'in aksine kurucudan itibaren güvenli.
-      const g = this.#game();
-      g.shake.enabled = settings.state.screenShake;
-      if (!settings.state.screenShake) g.shake.reset();
-      this.sound.mute = !settings.state.sound;
-      g.setHintsEnabled(settings.state.hints);
-    });
+    this.#settingsPanel = new SettingsPanel(
+      this,
+      settings,
+      () => {
+        // Ayar değişince oyuna anında yansı — sarsıntı bayrağı ve ses.
+        // `shake` (`GameScene`) alan başlatıcısı (`readonly shake = new
+        // ScreenShake()`) — `settings`'in aksine kurucudan itibaren güvenli.
+        const g = this.#game();
+        g.shake.enabled = settings.state.screenShake;
+        if (!settings.state.screenShake) g.shake.reset();
+        this.sound.mute = !settings.state.sound;
+        g.setHintsEnabled(settings.state.hints);
+      },
+      () => {
+        // Dil değişti: çevrili her etiket yeniden üretilmeli. Panel de
+        // çevrili, o yüzden açık kalsın diye veriyle birlikte gidiyor.
+        this.scene.restart({ speed: this.#speed, settingsOpen: true });
+      },
+    );
     // Başlangıçta da uygula: kayıtlı tercih ve prefers-reduced-motion.
     {
       const g = this.#game();
@@ -152,6 +175,9 @@ export class HudScene extends Phaser.Scene {
     this.#createSettingsButton();
     this.#createPauseOverlay();
     this.#bindKeys();
+    // Dil değişiminden geldiyse panel açık kalıyor — oyuncu tek tıkla
+    // hem sonucu görüyor hem de fikrini değiştirip geri dönebiliyor.
+    if (data?.settingsOpen === true) this.#settingsPanel.setVisible(true);
 
     const dev = devHooks();
     if (dev !== undefined) {
@@ -275,7 +301,11 @@ export class HudScene extends Phaser.Scene {
     const cerceve = createParchmentButton(this, x, y, BTN, BTN, 12);
 
     // Parşömen zeminde mürekkep — altın burada okunmuyor.
-    this.#hizYazi = this.add.bitmapText(x, y, NUMBER_FONT_KEY, '1×').setOrigin(0.5).setTint(INK);
+    // Etiket `#speed`'ten türüyor, sabit `'1×'` değil: dil değişiminde
+    // sahne yeniden kuruluyor ve hız korunuyor (`create`'in `data.speed`
+    // notu). Normal başlangıçta `#speed` zaten 1, çıktı aynı.
+    const hizEtiketi = this.#speed === 1 ? '1×' : '2×';
+    this.#hizYazi = this.add.bitmapText(x, y, NUMBER_FONT_KEY, hizEtiketi).setOrigin(0.5).setTint(INK);
 
     cerceve.on('pointerup', () => {
       this.#toggleSpeed();

@@ -10,6 +10,9 @@
 
 import type { KeyValueStore } from '../util/storage';
 import { SAVE_KEY } from '../util/storage';
+import type { Locale } from '../data/strings';
+import { DEFAULT_LOCALE } from '../data/strings';
+import { setLocale } from '../util/i18n';
 
 /**
  * Efekt yoğunluğu kademeleri — **S53**.
@@ -41,6 +44,15 @@ export interface SettingsState {
    * "hareketi azalt" tercihi bilgilendirme mesajlarını kapatmıyor.
    */
   hints: boolean;
+  /**
+   * `Y03` Adım 3 — arayüz dili. Diğer ayarlardan bir farkı var: değeri
+   * yalnız burada durmuyor, `i18n`'in modül düzeyindeki etkin diline de
+   * yazılıyor (`setLocale`). Bunu **`Settings`'in kendisi** yapıyor,
+   * çağıran değil — `Y04`'ün dersi: "ses tercihi açılışta uygulanmıyor"
+   * hatası tam olarak tercihi saklayan ile uygulayan ayrı olduğu için
+   * doğmuştu.
+   */
+  locale: Locale;
 }
 
 export const DEFAULT_SETTINGS: SettingsState = {
@@ -48,6 +60,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   screenShake: true,
   effects: 'full',
   hints: true,
+  locale: DEFAULT_LOCALE,
 };
 
 /**
@@ -59,7 +72,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
  * Ekran sarsıntısı **kapatılıyor** — sarsıntının "azaltılmış" bir hâli yok.
  */
 export function reducedMotionDefaults(): SettingsState {
-  return { sound: true, screenShake: false, effects: 'low', hints: true };
+  return { sound: true, screenShake: false, effects: 'low', hints: true, locale: DEFAULT_LOCALE };
 }
 
 /**
@@ -81,6 +94,46 @@ export function prefersReducedMotion(mm?: MatchMedia): boolean {
   }
 }
 
+/** `navigator.language` yüzeyi — `MatchMedia` ile aynı enjeksiyon gerekçesi. */
+export interface NavigatorDili {
+  readonly language?: string;
+}
+
+/**
+ * `Y03` Adım 3 — açılış dili tarayıcıdan.
+ *
+ * Poki/CrazyGames global: menüye düşen yabancı oyuncu ilk kareden
+ * itibaren İngilizce görmeli, çünkü dil seçici **ayarlar panelinde** ve
+ * panele ancak bir haritanın içinden ulaşılıyor. Yani algılama olmasa,
+ * dili değiştirmek için önce Türkçe bir menüyü çözmek gerekirdi.
+ *
+ * Türkçe dışındaki her dil `en`'e düşüyor — `en` çevirisi olmayan bir
+ * dile değil, var olan iki dilden uluslararası olanına.
+ *
+ * Okunamadığında `DEFAULT_LOCALE`: `node` test ortamında `navigator`
+ * yok ve `prefersReducedMotion` ile aynı sebeple (TIER 1 kural 11 /
+ * `TEST-STRATEGY` ortam kararı) doğrudan çağrılmıyor.
+ */
+export function detectLocale(nav?: NavigatorDili): Locale {
+  const n = nav ?? (globalThis as { navigator?: NavigatorDili }).navigator;
+  const dil = n?.language;
+  if (typeof dil !== 'string') return DEFAULT_LOCALE;
+  return dil.toLowerCase().startsWith('tr') ? 'tr' : 'en';
+}
+
+/**
+ * Kayıttan okunan dil değerini doğrular.
+ *
+ * Diğer alanlardan farklı olarak bu **zorunlu**: bozuk bir `effects`
+ * değeri yalnız `EFFECT_SCALE[bozuk]` → `undefined` üretir (çirkin ama
+ * çökmez), bozuk bir `locale` ise `STRINGS[bozuk][key]` okumasını
+ * `undefined`'ın alanını okumaya çevirir ve oyun **açılışta çöker**.
+ * Sınır burası: JSON'un tipsiz dünyadan girdiği yer.
+ */
+function gecerliLocale(deger: unknown): deger is Locale {
+  return deger === 'tr' || deger === 'en';
+}
+
 interface KayitBicimi {
   readonly settings?: Partial<SettingsState>;
 }
@@ -96,12 +149,18 @@ export class Settings {
   #durum: SettingsState;
   readonly #store: KeyValueStore;
 
-  constructor(store: KeyValueStore, mm?: MatchMedia) {
+  constructor(store: KeyValueStore, mm?: MatchMedia, nav?: NavigatorDili) {
     this.#store = store;
     // Önce sistem tercihi, sonra kayıtlı tercih. Sıra önemli: oyuncunun
-    // açıkça yaptığı seçim sistem varsayılanını **ezer**.
+    // açıkça yaptığı seçim sistem varsayılanını **ezer**. Dil de aynı
+    // sırada: tarayıcının dili bir sistem tercihi, kayıtlı seçim onu ezer.
     const taban = prefersReducedMotion(mm) ? reducedMotionDefaults() : { ...DEFAULT_SETTINGS };
-    this.#durum = { ...taban, ...this.#oku() };
+    taban.locale = detectLocale(nav);
+    const kayitli = this.#oku();
+    this.#durum = { ...taban, ...kayitli };
+    // Bozuk/eski kayıt tipsiz geliyor — `t()` çökmeden önce burada elenir.
+    if (!gecerliLocale(this.#durum.locale)) this.#durum.locale = taban.locale;
+    setLocale(this.#durum.locale);
   }
 
   get state(): Readonly<SettingsState> {
@@ -114,6 +173,8 @@ export class Settings {
 
   set<K extends keyof SettingsState>(key: K, value: SettingsState[K]): void {
     this.#durum = { ...this.#durum, [key]: value };
+    // Dil, saklandığı yerde uygulanıyor — bkz. `SettingsState.locale`.
+    if (key === 'locale') setLocale(this.#durum.locale);
     this.#yaz();
   }
 

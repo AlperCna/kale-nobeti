@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { KISLA, BLOCK, barracksTierAt, meleeDps, MELEE_DPS_PER_POINT, SOLDIER_SPEED } from './barracks';
 import { ENEMIES, GOBLIN, TROL, OGRE_SEF } from './enemies';
+import { STRINGS } from './strings';
 
 describe('Kışla tablosu — GAME-DESIGN.md §4.4 birebir', () => {
   it('T1: 90 / 2 asker / 45 HP / 5 DPS / 8 sn', () => {
@@ -23,7 +24,8 @@ describe('Kışla tablosu — GAME-DESIGN.md §4.4 birebir', () => {
 
   it('Paladin (T3a): 210 / 2 / 140 / 11 / 6 sn', () => {
     const t = barracksTierAt(KISLA, 2);
-    expect(t.branchName).toBe('Paladin');
+    expect(t.branchNameKey).toBe('branchPaladin');
+    expect(STRINGS.tr.branchPaladin).toBe('Paladin');
     expect(t.cost).toBe(210);
     expect(t.soldierCount).toBe(2);
     expect(t.soldierHp).toBe(140);
@@ -33,7 +35,8 @@ describe('Kışla tablosu — GAME-DESIGN.md §4.4 birebir', () => {
 
   it('Haydutlar (T3b): 210 / 3 / 70 / 9 / 5 sn / %25 kaçınma', () => {
     const t = barracksTierAt(KISLA, 3);
-    expect(t.branchName).toBe('Haydutlar');
+    expect(t.branchNameKey).toBe('branchOutlaws');
+    expect(STRINGS.tr.branchOutlaws).toBe('Haydutlar');
     expect(t.cost).toBe(210);
     expect(t.soldierCount).toBe(3);
     expect(t.soldierHp).toBe(70);

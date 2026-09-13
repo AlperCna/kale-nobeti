@@ -6,14 +6,34 @@ import type { Locale, StringKey } from '../data/strings';
  *
  * Çağrı yerleri dil bilmez: `t('play')` yazılır, `STRINGS.tr.play` değil.
  *
- * Boş çeviri **varsayılan dile düşer** — `en` doldurulana kadar oyun
- * Türkçe görünür, boş buton çıkmaz. Varsayılan da boşsa anahtarın kendisi
- * döner: eksik metin ekranda hemen görünür olsun diye, sessizce boş
- * kalmasın.
+ * Boş çeviri **varsayılan dile düşer** — eksik bir anahtar boş buton
+ * değil Türkçe metin üretir. Varsayılan da boşsa anahtarın kendisi döner:
+ * eksik metin ekranda hemen görünür olsun diye, sessizce boş kalmasın.
  *
  * TIER 1 kural 11: bu dosya Phaser'a dokunmaz.
  */
-export function t(key: StringKey, locale: Locale = DEFAULT_LOCALE): string {
+
+/**
+ * Etkin dil. Modül düzeyinde **değişken** — `Y03` Adım 3.
+ *
+ * Alternatif, `locale`'i 20 çağrı yerinin hepsinden geçirmekti; bu
+ * `t('play')` sözleşmesini ("çağrı yerleri dil bilmez") bozardı. Tek
+ * yazıcı `setLocale` ve onu yalnız `Settings` çağırıyor (kurucuda ve
+ * `set('locale', …)`'de), yani durum iki yerde tutulmuyor: kalıcı kayıt
+ * `Settings`'te, etkin değer burada, ikincisi birincisinden türüyor.
+ */
+let mevcut: Locale = DEFAULT_LOCALE;
+
+/** Yalnız `systems/Settings.ts` çağırır — bkz. `mevcut` yorumu. */
+export function setLocale(locale: Locale): void {
+  mevcut = locale;
+}
+
+export function getLocale(): Locale {
+  return mevcut;
+}
+
+export function t(key: StringKey, locale: Locale = mevcut): string {
   const value = STRINGS[locale][key];
   if (value !== '') return value;
 

@@ -1,33 +1,50 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import {
   Settings,
   DEFAULT_SETTINGS,
   EFFECT_SCALE,
   reducedMotionDefaults,
   prefersReducedMotion,
+  detectLocale,
   getSettings,
   SETTINGS_REGISTRY_KEY,
 } from './Settings';
+import { t, getLocale, setLocale } from '../util/i18n';
+import { DEFAULT_LOCALE } from '../data/strings';
 import { LocalStore, MemoryStore, SAVE_KEY } from '../util/storage';
 import type { KeyValueStore } from '../util/storage';
 
 const azalt = (q: string) => ({ matches: q.includes('reduce') });
 const azaltma = () => ({ matches: false });
+/**
+ * Dil de enjekte ediliyor — `node`'un kendi `navigator.language`'ı
+ * **makineye göre** değişiyor (bu makinede `tr-TR`, CI'da büyük ihtimalle
+ * `en-US`). Enjekte edilmezse `DEFAULT_SETTINGS` karşılaştırmaları
+ * geliştiricinin işletim sistemi diline bağlı olurdu.
+ */
+const trDil = { language: 'tr-TR' };
 
 describe('Settings — §10 + TIER 1 kural 6', () => {
   it('varsayılanlar: ses açık, sarsıntı açık, efekt tam', () => {
-    const s = new Settings(new MemoryStore(), azaltma);
+    const s = new Settings(new MemoryStore(), azaltma, trDil);
     expect(s.state).toEqual(DEFAULT_SETTINGS);
     expect(s.effectScale).toBe(1);
   });
 
-  it('dört ayar da değiştirilebiliyor (TIER 1 k.6)', () => {
+  it('beş ayar da değiştirilebiliyor (TIER 1 k.6)', () => {
     const s = new Settings(new MemoryStore(), azaltma);
     s.set('sound', false);
     s.set('screenShake', false);
     s.set('effects', 'off');
     s.set('hints', false);
-    expect(s.state).toEqual({ sound: false, screenShake: false, effects: 'off', hints: false });
+    s.set('locale', 'en');
+    expect(s.state).toEqual({
+      sound: false,
+      screenShake: false,
+      effects: 'off',
+      hints: false,
+      locale: 'en',
+    });
     expect(s.effectScale).toBe(0);
   });
 
@@ -49,6 +66,61 @@ describe('Settings — §10 + TIER 1 kural 6', () => {
     expect(EFFECT_SCALE.low).toBeGreaterThan(0);
     expect(EFFECT_SCALE.low).toBeLessThan(1);
     expect(EFFECT_SCALE.off).toBe(0);
+  });
+});
+
+describe('dil — Y03 Adım 3', () => {
+  // `Settings` kurucusu etkin dili yazıyor; sızmasın.
+  afterEach(() => {
+    setLocale(DEFAULT_LOCALE);
+  });
+
+  it('tarayıcı dili Türkçeyse tr, değilse en', () => {
+    expect(detectLocale({ language: 'tr-TR' })).toBe('tr');
+    expect(detectLocale({ language: 'tr' })).toBe('tr');
+    expect(detectLocale({ language: 'en-US' })).toBe('en');
+    // Çevirisi olmayan bir dil `en`'e düşüyor, `tr`'ye değil: iki dilden
+    // uluslararası olanı o.
+    expect(detectLocale({ language: 'de-DE' })).toBe('en');
+    expect(detectLocale({ language: 'fr' })).toBe('en');
+  });
+
+  it('okunamayan dilde geri düşme diline iniyor — node ortamı', () => {
+    expect(detectLocale({})).toBe(DEFAULT_LOCALE);
+  });
+
+  it('tarayıcı dili varsayılanı belirliyor', () => {
+    const s = new Settings(new MemoryStore(), azaltma, { language: 'en-GB' });
+    expect(s.state.locale).toBe('en');
+  });
+
+  it('oyuncunun KAYITLI seçimi tarayıcı dilini EZİYOR', () => {
+    const depo = new MemoryStore();
+    new Settings(depo, azaltma, { language: 'en-GB' }).set('locale', 'tr');
+    expect(new Settings(depo, azaltma, { language: 'en-GB' }).state.locale).toBe('tr');
+  });
+
+  it('kurucu etkin dili UYGULUYOR — Y04 hatası tekrarlanmasın', () => {
+    // Tercihi saklayan ile uygulayan ayrı olsaydı, "ses tercihi açılışta
+    // uygulanmıyor" hatasının (Y04) dil sürümü doğardı.
+    new Settings(new MemoryStore(), azaltma, { language: 'en-US' });
+    expect(getLocale()).toBe('en');
+    expect(t('play')).toBe('Play');
+  });
+
+  it('set(locale) etkin dili ANINDA uyguluyor', () => {
+    const s = new Settings(new MemoryStore(), azaltma, { language: 'tr' });
+    expect(t('play')).toBe('Oyna');
+    s.set('locale', 'en');
+    expect(t('play')).toBe('Play');
+  });
+
+  it('bozuk kayıttaki dil oyunu çökertmiyor — t() undefined okumuyor', () => {
+    const depo = new MemoryStore();
+    depo.set(SAVE_KEY, JSON.stringify({ settings: { locale: 'klingon' } }));
+    const s = new Settings(depo, azaltma, { language: 'en-US' });
+    expect(s.state.locale).toBe('en');
+    expect(() => t('play')).not.toThrow();
   });
 });
 
@@ -160,7 +232,7 @@ describe('TIER 1 kural 10 — localStorage her zaman try/catch içinde', () => {
   it('bozuk JSON kaydı oyunu çökertmiyor', () => {
     const depo = new MemoryStore();
     depo.set(SAVE_KEY, '{bozuk json');
-    const s = new Settings(depo, azaltma);
+    const s = new Settings(depo, azaltma, trDil);
     expect(s.state).toEqual(DEFAULT_SETTINGS);
   });
 
