@@ -52,6 +52,7 @@ import { devHooks } from '../util/devHooks';
 import { t } from '../util/i18n';
 import { LocalStore } from '../util/storage';
 import { TutorialSystem } from '../systems/TutorialSystem';
+import { RunStats } from '../systems/RunStats';
 import type { HintId } from '../systems/TutorialSystem';
 import { TutorialHints } from '../fx/TutorialHints';
 import type { StringKey } from '../data/strings';
@@ -128,6 +129,8 @@ export class GameScene extends Phaser.Scene {
   #buildMenu?: BuildMenu;
   /** M6-T11 — `HudScene` `soundSystem` getter'ıyla erişiyor (zafer/yenilgi). */
   #soundSystem?: SoundSystem;
+  /** `M8-T03` — bu elin istatistikleri; `HudScene` oyun sonunda okuyor. */
+  #runStats?: RunStats;
   #infoPanel?: TowerInfoPanel;
   #hoveredSpot = -1;
   #mermiTepe = 0;
@@ -217,6 +220,16 @@ export class GameScene extends Phaser.Scene {
   }
 
   // ------------------------------------------------- HUD'un okuduğu durum
+
+  /** `M8-T03` — oyun sonu ekranı bunu okuyor. */
+  get runStats(): RunStats | undefined {
+    return this.#runStats;
+  }
+
+  /** `M8-T03` — duraklatma menüsünün "Yeniden başla"sı aynı haritayı istiyor. */
+  get mapId(): string {
+    return this.#map.id;
+  }
 
   get gold(): number {
     return this.#eco?.gold ?? 0;
@@ -480,6 +493,9 @@ export class GameScene extends Phaser.Scene {
     );
 
     this.#soundSystem = new SoundSystem(this, this.bus, this.#waveList);
+    // `M8-T03` — yalnız `bus` dinliyor. Duvar saati enjekte ediliyor:
+    // `RunStats` saf mantık, zamanı kendi okumaz (bekçi k.8).
+    this.#runStats = new RunStats(this.bus, () => performance.now(), this.#map.startGold);
 
     this.#towers = new TowerSystem((kule, tier, hedef) => {
       // Uçan çarpanı **mermiye girmeden önce** uygulanıyor: o kulenin

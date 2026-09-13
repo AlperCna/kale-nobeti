@@ -7,12 +7,15 @@ import { devHooks } from '../util/devHooks';
 import { createParchmentButton } from '../fx/ParchmentFrame';
 import { MAPS } from '../data/maps';
 import { FRAME_STAR, FRAME_STAR_EMPTY } from '../data/spriteFrames';
+import type { RunStatsData } from '../systems/RunStats';
 
 const INK = 0x14203a;
 
 export interface GameOverData {
   readonly won: boolean;
   readonly lives: number;
+  /** `M8-T03` — `HudScene` `Game` durmadan önce veriyi kopyalayıp yolluyor. */
+  readonly stats?: RunStatsData;
 }
 
 /**
@@ -37,7 +40,12 @@ export class GameOverScene extends Phaser.Scene {
   }
 
   init(data: Partial<GameOverData> & { mapId?: string }): void {
-    this.#data = { won: data.won ?? false, lives: data.lives ?? 0, mapId: data.mapId };
+    this.#data = {
+      won: data.won ?? false,
+      lives: data.lives ?? 0,
+      mapId: data.mapId,
+      stats: data.stats,
+    };
 
     // **Sonuç burada kaydediliyor** — `init` her sahne başlatmasında
     // koşuyor, yani tekrar oynanan her el kaydediliyor. `recordResult`
@@ -54,11 +62,13 @@ export class GameOverScene extends Phaser.Scene {
   create(): void {
     const { width, height } = this.scale;
     const { won, lives, mapId } = this.#data;
+    /** İstatistik bloğu eklenince tüm yerleşim yukarı çekildi. */
+    const UST = height / 2 - 240;
 
     this.add.rectangle(0, 0, width, height, INK, 0.9).setOrigin(0);
 
     this.add
-      .text(width / 2, height / 2 - 90, won ? t('victory') : t('defeat'), {
+      .text(width / 2, UST, won ? t('victory') : t('defeat'), {
         fontFamily: '"Grenze Gotisch", serif',
         fontSize: '64px',
         color: won ? '#D4A032' : '#B03A2E',
@@ -66,7 +76,7 @@ export class GameOverScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.add
-      .text(width / 2, height / 2 - 20, `${lives} / ${BALANCE.startLives} ${t('livesLeft')}`, {
+      .text(width / 2, UST + 60, `${lives} / ${BALANCE.startLives} ${t('livesLeft')}`, {
         fontFamily: 'Spectral, serif',
         fontSize: '24px',
         color: '#E4D3A8',
@@ -84,12 +94,38 @@ export class GameOverScene extends Phaser.Scene {
         this.add
           .image(
             width / 2 + (i - 1) * ADIM,
-            height / 2 + 20,
+            UST + 104,
             'atlas',
             i < yildizSayisi ? FRAME_STAR : FRAME_STAR_EMPTY,
           )
           .setDisplaySize(36, 36);
       }
+    }
+
+    // `M8-T03` — elin özeti. Oyun sonu ekranı bugüne kadar yalnız kalan
+    // canı gösteriyordu; oyuncu ne öldürdüğünü, parasını nereye
+    // harcadığını, ne kadar oynadığını hiç görmüyordu.
+    //
+    // Sayılar `Text` (BitmapText değil): bu sahne her açılışta baştan
+    // kuruluyor ve hiç `setText` çağırmıyor — TIER 1 kural 7'nin
+    // "bir kez yazılan metin" istisnası, dosyanın başlık notu.
+    const s = this.#data.stats;
+    if (s !== undefined) {
+      const satirlar: ReadonlyArray<readonly [string, string]> = [
+        [t('statKills'), String(s.kills)],
+        [t('statTowers'), String(s.towersBuilt)],
+        [t('statGoldEarned'), String(s.goldEarned)],
+        [t('statGoldSpent'), String(s.goldSpent)],
+        [t('statPeakWave'), String(s.peakWave)],
+        [t('statDuration'), `${Math.floor(s.durationSec / 60)}:${String(s.durationSec % 60).padStart(2, '0')}`],
+      ];
+      const stil = { fontFamily: 'Spectral, serif', fontSize: '18px', color: '#8A7250' } as const;
+      const ust = UST + 150;
+      satirlar.forEach(([ad, deger], i) => {
+        const y = ust + i * 26;
+        this.add.text(width / 2 - 150, y, ad, stil).setOrigin(0, 0.5);
+        this.add.text(width / 2 + 150, y, deger, { ...stil, color: '#E4D3A8' }).setOrigin(1, 0.5);
+      });
     }
 
     // `Y07` — sıradaki harita. S62: kilit yalnız bitirmeye bağlı, yani
@@ -101,7 +137,11 @@ export class GameOverScene extends Phaser.Scene {
     const sonrakiId = suankiIndex >= 0 ? ids[suankiIndex + 1] : undefined;
     const sonrakiVar = won && sonrakiId !== undefined;
 
-    const birincilEylem = this.#butonlariKur(width / 2, height / 2 + 96, {
+    // Yerleşim ölçülerek kuruldu: 6 istatistik satırı (26 px) + 3 buton
+    // (64 px) 720 px'e ancak sığıyor — canlı testte son buton ekranın
+    // altından taşmıştı.
+    const butonUst = this.#data.stats === undefined ? height / 2 + 96 : UST + 330;
+    const birincilEylem = this.#butonlariKur(width / 2, butonUst, {
       kaybetti: !won,
       sonrakiVar,
       haritayaGec: (hedefMapId: string) => this.#haritayaGec(hedefMapId),

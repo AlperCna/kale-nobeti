@@ -9,7 +9,7 @@ import { WaveTelegraph } from '../fx/WaveTelegraph';
 import { AbilityButtons } from '../fx/AbilityButtons';
 import { SettingsPanel } from '../fx/SettingsPanel';
 import { BossHealthBar } from '../fx/BossHealthBar';
-import { createParchmentButton, createParchmentFrame } from '../fx/ParchmentFrame';
+import { createParchmentButton, createParchmentFrame, addPressFeedback } from '../fx/ParchmentFrame';
 import { PreloadScene } from './PreloadScene';
 import { NUMBER_FONT_KEY } from '../fx/numberFont';
 
@@ -242,7 +242,14 @@ export class HudScene extends Phaser.Scene {
     this.#bitti = true;
     game.soundSystem?.playOutcome(kazandi);
     this.scene.stop('Game');
-    this.scene.start('GameOver', { won: kazandi, lives: game.lives, mapId: game.map.id });
+    this.scene.start('GameOver', {
+      won: kazandi,
+      lives: game.lives,
+      mapId: game.map.id,
+      // `M8-T03` — `Game` birazdan duruyor; istatistik **veri olarak**
+      // taşınıyor, nesne referansı olarak değil.
+      stats: game.runStats?.data,
+    });
   }
 
   /**
@@ -346,19 +353,31 @@ export class HudScene extends Phaser.Scene {
   // Duraklatma
   // -------------------------------------------------------------------
 
+  /**
+   * `M8-T03` — duraklatma perdesi artık bir **menü**.
+   *
+   * Eskiden yalnız "Duraklatıldı" + tuş ipucu vardı: oyundan çıkmanın ya
+   * da baştan başlamanın tek yolu kaybetmeyi beklemekti. Dört eylem:
+   * Devam · Yeniden başla · Ayarlar · Ana menü.
+   *
+   * "Yeniden başla" ve "Ana menü" `GameOverScene`'in stop/start sırasını
+   * **birebir** tekrarlıyor (`#haritayaGec`/`#anaMenuyeDon`): `sleep`/
+   * `wake` kullanılsaydı önceki elin altını ve kuleleri kalırdı — o
+   * hatanın gerekçesi `GameOverScene`'de yazılı.
+   */
   #createPauseOverlay(): void {
     const { width, height } = this.scale;
 
     const perde = this.add.rectangle(0, 0, width, height, INK, 0.72).setOrigin(0);
     const yazi = this.add
-      .text(width / 2, height / 2, t('paused'), {
+      .text(width / 2, height / 2 - 150, t('paused'), {
         fontFamily: '"Grenze Gotisch", serif',
         fontSize: '56px',
         color: '#E4D3A8',
       })
       .setOrigin(0.5);
     const ipucu = this.add
-      .text(width / 2, height / 2 + 60, t('pauseHint'), {
+      .text(width / 2, height / 2 - 100, t('pauseHint'), {
         fontFamily: 'Spectral, serif',
         fontSize: '20px',
         color: '#8A7250',
@@ -366,6 +385,38 @@ export class HudScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.#overlay = this.add.container(0, 0, [perde, yazi, ipucu]).setVisible(false);
+
+    const ARA = 64;
+    let i = 0;
+    const buton = (metin: string, onClick: () => void): void => {
+      const y = height / 2 - 40 + i++ * ARA;
+      const cerceve = createParchmentButton(this, width / 2, y, 240, 52, 14);
+      addPressFeedback(cerceve);
+      const etiket = this.add
+        .text(width / 2, y, metin, {
+          fontFamily: 'Spectral, serif',
+          fontSize: '20px',
+          color: '#14203A',
+        })
+        .setOrigin(0.5);
+      cerceve.on('pointerup', onClick);
+      this.#overlay?.add([cerceve, etiket]);
+    };
+
+    buton(t('resume'), () => this.#togglePause());
+    buton(t('restart'), () => {
+      const mapId = this.#game().mapId;
+      this.scene.stop('Hud');
+      this.scene.stop('Game');
+      this.scene.start('Game', { mapId });
+      this.scene.launch('Hud');
+    });
+    buton(t('settingsButton'), () => this.#settingsPanel?.setVisible(true));
+    buton(t('backToMenu'), () => {
+      this.scene.stop('Hud');
+      this.scene.stop('Game');
+      this.scene.start('LevelSelect');
+    });
   }
 
   /**
