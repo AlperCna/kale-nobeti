@@ -123,7 +123,9 @@ export class HudScene extends Phaser.Scene {
     createParchmentFrame(this, MARGIN + 96, MARGIN + 66, 216, 140, 16);
     this.#createLabels();
     this.#readout = new HudReadout(this, MARGIN + 8, MARGIN + 16);
-    this.#telegraph = new WaveTelegraph(this, MARGIN + 150, MARGIN + 94);
+    // Etiket kolonu 136'ya kayınca "dalga"/"wave" ~176'da bitiyor; telgraf
+    // ikonu aynı satırda, onun sağında kalmalı.
+    this.#telegraph = new WaveTelegraph(this, MARGIN + 180, MARGIN + 94);
     // `G05` — prep geri sayımıyla aynı yatay eksende ama biraz altında;
     // ikisi zamanda hiç örtüşmüyor (biri yalnız `prep`'te, öbürü yalnız
     // boss canlıyken görünür), üst üste binme riski yok.
@@ -265,9 +267,13 @@ export class HudScene extends Phaser.Scene {
   /** Statik etiketler — bir kez yazılıyor, `setText` yok (TIER 1 k.7). */
   #createLabels(): void {
     const stil = { fontFamily: 'Spectral, serif', fontSize: '16px', color: '#8A7250' };
-    this.add.text(MARGIN + 92, MARGIN + 20, t('gold'), stil);
-    this.add.text(MARGIN + 92, MARGIN + 54, t('lives'), stil);
-    this.add.text(MARGIN + 92, MARGIN + 88, t('wave'), stil);
+    // Etiket kolonu x=136 — oyuncu geri bildirimi (2026-09-14): harita 3
+    // 1064 altınla başlıyor, sayı fontunun glif ilerlemesi 25 px, dört
+    // hane x=28'den 128'e uzanıyor ve etiket 112'deyken "1064" "gold"un
+    // üstüne biniyordu. Kart 3 hane için ölçülmüştü.
+    this.add.text(MARGIN + 116, MARGIN + 20, t('gold'), stil);
+    this.add.text(MARGIN + 116, MARGIN + 54, t('lives'), stil);
+    this.add.text(MARGIN + 116, MARGIN + 88, t('wave'), stil);
   }
 
   /**
