@@ -134,6 +134,11 @@ export class LevelSelectScene extends Phaser.Scene {
         // Küçük resim + üstünde yalnız köşe/kenar (orta dolgu yok —
         // varsa küçük resmi kapatırdı).
         this.add.image(x, y, `card-${m.id}`).setDisplaySize(KART_W, KART_H);
+        // Ad ve alt yazı için mürekkep bant — küçük resmin üstünde doğrudan
+        // yazı okunmuyordu (lav haritasında "Kül Ovası" zor, "10 dalga ·
+        // 12 nokta" neredeyse görünmez). Yazı rengi de parşömene döndü.
+        this.add.rectangle(x, y - 54, KART_W - 40, 34, INK, 0.72);
+        this.add.rectangle(x, y + 34, KART_W - 40, 26, INK, 0.72);
         kart = createParchmentButton(this, x, y, KART_W, KART_H, 20, true);
       } else {
         kart = this.add
@@ -145,7 +150,7 @@ export class LevelSelectScene extends Phaser.Scene {
         .text(x, y - 54, `${i + 1}. ${haritaAdi(m.id)}`, {
           fontFamily: '"Grenze Gotisch", serif',
           fontSize: '26px',
-          color: acik ? '#14203A' : 'rgba(228,211,168,0.4)',
+          color: acik ? '#E4D3A8' : 'rgba(228,211,168,0.4)',
         })
         .setOrigin(0.5);
 
@@ -176,7 +181,7 @@ export class LevelSelectScene extends Phaser.Scene {
           {
             fontFamily: 'Spectral, serif',
             fontSize: '16px', // Platform: minimum 16 px
-            color: acik ? '#8A7250' : 'rgba(228,211,168,0.4)',
+            color: acik ? '#E4D3A8' : 'rgba(228,211,168,0.4)',
           },
         )
         .setOrigin(0.5);
