@@ -4,7 +4,7 @@
 |---|---|
 | **Kaynak** | Kullanıcı oyunu kendi tarayıcısında oynadı (2026-09-14): 10 ekran görüntüsü + serbest metin. `M7-P02` "3 kişiye oynatma"nın ilk gerçek girdisi |
 | **Kapsam** | 12 kullanıcı gözlemi + 3 kendi bulgum = 15 madde |
-| **Sonuç** | 12 madde 9 commit'te kapandı; 1 soru açık (2×); 2 yan gözlem ertelendi |
+| **Sonuç** | 13 madde 10 commit'te kapandı (2× dahil); 2 yan gözlem ertelendi |
 
 ---
 
@@ -118,13 +118,34 @@ tam yükseltme noktası olarak **ölçüldü**, testi var. Bilinçli.
 üretim paketinde **yok** (dist'te doğrulandı). `npm run dev`'de
 görünüyor. Dev'de HUD kartının altında kalması can sıkıcı; ertelendi.
 
-## D — Açık
+## D — 2× (ikinci turda netleşti, kapandı)
 
-### 15. "2×'e alınca biraz sıkıntı oldu"
-Ne olduğu anlaşılmadı — düşman mı zıpladı, mermi mi ıskaladı, arayüz mü
-takıldı? Kod tarafında 2× için bilinen tek tuzak (düşük FPS'te
-tünelleme) süpürülmüş çarpışmayla kapalı (`ProjectileSystem` başlığı).
-**Kullanıcıdan ayrıntı bekleniyor.**
+### 15. "2×'te kasma oldu, müzik biraz takıldı" — SFX havuzu commit'i
+**Belirti:** kasma + müzik takılması birlikte ve yalnız 2×'te → ana iş
+parçacığı tıkanması. 2×'te oyun-zamanı başına iş aynı ama **duvar saati
+saniyesi başına her olay iki kat** (atış, ölüm, hasar sayısı).
+**Elenenler (koddan):** hit-stop 2×'te kapalı (`HitStop.trigger`,
+`speed === 2` → return); ses arka ucu WebAudio (`main.ts` AUTO);
+parçacık 2×'te yarıya iniyor (§10); hasar sayısı/altın/can çubuğu
+havuzlu.
+**Kök:** `SoundSystem.#cal` her efektte `scene.sound.play(key)` çağırıyordu
+— Phaser her çağrıda **yeni bir `Sound` nesnesi** (WebAudio düğüm
+grafiğiyle) yaratıp bitince yok ediyor. `enemy_death` Y06'da
+kısıtlanmıştı; **kule atışı için hiç kısıtlama yoktu.**
+**Ölçüm (dalga 1, 4 kule, 2×, 20 sn, `SoundManager.add` sayacı):**
+önce **68 nesne** (3,4/sn) — sonra **19**, yalnız havuz kurulumu, atış
+başına sıfır. Atış sesi 200 örneğin 136'sında çalarken yakalandı; sahne
+kapanışında havuz boşalıyor (yalnız iki müzik kalıyor). Tam tahtada
+dalga 8-10'da fark kat kat büyük.
+**Düzeltme:** anahtar başına 3 önceden yaratılmış örnek, sırayla
+(`SFX_POOL_PER_KEY`, `data/audio.ts` — kural 3'ün ses hâli);
+`SoundSystem.destroy()` `GameScene` kapanışında (`SoundManager` oyun
+geneli, örnekler sahneyle gitmiyor).
+**Dürüstlük:** FPS **ölçülmedi** — Browser pane'de `requestAnimationFrame`
+çalışmıyor (Y10'un aynı kısıtı); ölçülen şey tahsis. Kasma sürerse
+sıradaki şüpheliler: dev sunucusu yükü (üretim yapısıyla dene:
+`npm run build && npx serve dist`), Y02'nin kare başına 6 dizisi,
+2×'te iki kat `DamageText.setText`.
 
 ## Ertelenen yan gözlemler
 
