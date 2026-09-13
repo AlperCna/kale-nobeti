@@ -26,9 +26,15 @@ import type { EventBus } from './EventBus';
  * kaybı yok.
  */
 
-export type HintId = 'earlyStart' | 'dragRally';
+/**
+ * `targetModes` ve `flyers` oyuncu geri bildirimiyle eklendi
+ * (2026-09-14): "First/Last/Strong ne demek belli değil", "menziller
+ * (kesikli yaylar) ne ifade ediyor net değil". Y09'un öngördüğü gibi her
+ * biri bir anahtar + bir tetik.
+ */
+export type HintId = 'earlyStart' | 'dragRally' | 'targetModes' | 'flyers';
 
-const HINT_IDS: readonly HintId[] = ['earlyStart', 'dragRally'];
+const HINT_IDS: readonly HintId[] = ['earlyStart', 'dragRally', 'targetModes', 'flyers'];
 
 function gecerliHint(deger: unknown): deger is HintId {
   return typeof deger === 'string' && (HINT_IDS as readonly string[]).includes(deger);
@@ -52,6 +58,8 @@ export class TutorialSystem {
     this.#seen = new Set(this.#oku());
 
     bus.on('barracks:placed', () => this.#tetikle('dragRally'));
+    bus.on('targeting:opened', () => this.#tetikle('targetModes'));
+    bus.on('wave:flyers', () => this.#tetikle('flyers'));
   }
 
   /** `GameScene.create()`'in sonunda **bir kez** — ilk hazırlık aşaması için. */

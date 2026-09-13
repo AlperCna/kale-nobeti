@@ -26,6 +26,17 @@ export interface GameEvents {
   'tower:placed': { readonly spotIndex: number };
   /** `Y09` — öğretici, ilk kışlada "bayrağı sürükle" ipucunu tetikliyor. */
   'barracks:placed': { readonly spotIndex: number };
+  /**
+   * Oyuncu geri bildirimi (2026-09-14) — bir kulenin menüsü (hedefleme
+   * satırıyla) açıldı. Öğretici ilk seferinde modların ne olduğunu anlatıyor.
+   */
+  'targeting:opened': { readonly spotIndex: number };
+  /**
+   * Uçan rota ipucu (`MapRenderer.updateFlyerHint`) **görünür oldu** —
+   * yalnız kapalı→açık geçişinde, her karede değil. Öğretici ilk seferinde
+   * kesikli hattın ne olduğunu anlatıyor.
+   */
+  'wave:flyers': Record<string, never>;
 
   /** S06 onaylandı. HUD hız butonu yayıyor. */
   'speed:changed': { readonly scale: Speed };

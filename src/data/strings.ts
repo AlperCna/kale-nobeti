@@ -138,6 +138,26 @@ const TR = {
   infoHitsAir: 'Uçana vurur',
   infoNoAir: 'Uçana vurmaz',
   infoDpsVs: 'Seçili düşmana DPS',
+
+  /**
+   * Yetenek butonu etiketleri — oyuncu geri bildirimi (2026-09-14):
+   * İngilizce arayüzde "Meteor / Takviye" Türkçe kalmıştı. `fx/AbilityButtons.ts`
+   * içinde sabit dizeydiler; bekçi k.12 yakalayamadı çünkü ikisinde de
+   * aksanlı harf yok — dosyada yazılı kör nokta, tam öngörüldüğü gibi.
+   */
+  abilityMeteor: 'Meteor',
+  abilityTakviye: 'Takviye',
+
+  /**
+   * Oyuncu geri bildirimi (2026-09-14) ile eklenen iki ipucu. İkisi de
+   * Y09 altyapısıyla tek seferlik: hedefleme satırı ilk açıldığında ve
+   * ilk uçan dalga yaklaşınca (kesikli rota görünürken).
+   * "Yalnız Okçu ve Büyü tam hasar verir" — `towers.ts`: okçu ve büyü
+   * `airMultiplier` 1, Top 0 (yalnız Barut Fıçısı 0,5). Cümle doğru.
+   */
+  hintTargetModes:
+    'Hedefleme — İlk: yolda en öndeki · Son: en gerideki · Güçlü: en çok canı olan · Zayıf: en az canı olan · Yakın: kuleye en yakın',
+  hintFlyers: 'Kesikli hat uçanların rotası — yolu izlemezler. Yalnız Okçu ve Büyü onlara tam hasar verir.',
 } as const;
 
 export type StringKey = keyof typeof TR;
@@ -219,5 +239,10 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     infoHitsAir: 'Hits flyers',
     infoNoAir: 'No flyers',
     infoDpsVs: 'DPS vs. selected',
+    abilityMeteor: 'Meteor',
+    abilityTakviye: 'Reinforce',
+    hintTargetModes:
+      'Targeting — First: furthest along the path · Last: furthest back · Strong: most HP · Weak: least HP · Near: closest to the tower',
+    hintFlyers: 'The dashed line is the flyers’ route — they ignore the path. Only Archer and Magic deal full damage to them.',
   },
 };

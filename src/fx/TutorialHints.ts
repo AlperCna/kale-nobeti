@@ -15,7 +15,9 @@ import { createParchmentFrame } from './ParchmentFrame';
  */
 
 const GENISLIK = 480;
-const YUKSEKLIK = 60;
+/** Tek satırlık ipucunun yüksekliği; uzun metin (hedefleme modları, 3 satır) balonu büyütüyor. */
+const ASGARI_YUKSEKLIK = 60;
+const DIKEY_PAY = 24;
 
 export class TutorialHints {
   readonly #scene: Phaser.Scene;
@@ -31,7 +33,9 @@ export class TutorialHints {
     const { width, height } = this.#scene.scale;
     const kap = this.#scene.add.container(width / 2, height - 90).setDepth(300);
 
-    const cerceve = createParchmentFrame(this.#scene, 0, 0, GENISLIK, YUKSEKLIK, 12);
+    // Metin önce: balonun yüksekliği sarılmış metnin gerçek yüksekliğinden
+    // çıkıyor. Eskiden 60 sabitti; üç satırlık ipucu (hedefleme modları)
+    // çerçeveden taşardı.
     const etiket = this.#scene.add
       .text(0, 0, text, {
         fontFamily: 'Spectral, serif',
@@ -41,11 +45,13 @@ export class TutorialHints {
         wordWrap: { width: GENISLIK - 40 },
       })
       .setOrigin(0.5);
+    const yukseklik = Math.max(ASGARI_YUKSEKLIK, Math.ceil(etiket.height) + DIKEY_PAY);
+    const cerceve = createParchmentFrame(this.#scene, 0, 0, GENISLIK, yukseklik, 12);
     kap.add([cerceve, etiket]);
 
-    kap.setSize(GENISLIK, YUKSEKLIK);
+    kap.setSize(GENISLIK, yukseklik);
     kap.setInteractive(
-      new Phaser.Geom.Rectangle(-GENISLIK / 2, -YUKSEKLIK / 2, GENISLIK, YUKSEKLIK),
+      new Phaser.Geom.Rectangle(-GENISLIK / 2, -yukseklik / 2, GENISLIK, yukseklik),
       Phaser.Geom.Rectangle.Contains,
     );
     kap.on(

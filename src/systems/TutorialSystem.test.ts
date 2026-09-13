@@ -32,6 +32,24 @@ describe('TutorialSystem — Y09, iki ipucu (S65, S69)', () => {
     expect(gosterilen).toEqual(['dragRally']);
   });
 
+  it('targeting:opened → targetModes ipucu, yalnız ilk kez (oyuncu geri bildirimi)', () => {
+    const bus = new EventBus();
+    const gosterilen: string[] = [];
+    new TutorialSystem(new MemoryStore(), true, (h) => gosterilen.push(h), bus);
+    bus.emit('targeting:opened', { spotIndex: 3 });
+    bus.emit('targeting:opened', { spotIndex: 5 }); // ikinci kule menüsü
+    expect(gosterilen).toEqual(['targetModes']);
+  });
+
+  it('wave:flyers → flyers ipucu, yalnız ilk kez', () => {
+    const bus = new EventBus();
+    const gosterilen: string[] = [];
+    new TutorialSystem(new MemoryStore(), true, (h) => gosterilen.push(h), bus);
+    bus.emit('wave:flyers', {});
+    bus.emit('wave:flyers', {}); // ikinci uçan dalga
+    expect(gosterilen).toEqual(['flyers']);
+  });
+
   it('iki ipucu birbirinden bağımsız — biri görülse diğeri hâlâ tetiklenir', () => {
     const bus = new EventBus();
     const gosterilen: string[] = [];

@@ -171,17 +171,18 @@ export class MapRenderer {
    * Hat **yalnız o dalgada uçan varsa** ve **yalnız hazırlıkta** görünüyor;
    * dalga başlayınca sönüyor.
    */
-  updateFlyerHint(upcomingWave: Wave | undefined): void {
+  /** @returns `true` yalnız hattın **bu karede görünür olduğu** geçişte. */
+  updateFlyerHint(upcomingWave: Wave | undefined): boolean {
     const g = this.#flyerGfx;
 
     const ucanVar =
       upcomingWave !== undefined &&
       upcomingWave.groups.some((gr) => getEnemy(gr.enemy)?.flying === true);
 
-    if (ucanVar === this.#flyerHintOn) return;
+    if (ucanVar === this.#flyerHintOn) return false;
     this.#flyerHintOn = ucanVar;
     g.clear();
-    if (!ucanVar) return;
+    if (!ucanVar) return false;
 
     // Soluk kesikli altın çizgi (§5).
     g.lineStyle(3, GOLD, 0.45);
@@ -193,6 +194,7 @@ export class MapRenderer {
         this.dashedLine(g, a, b, 18);
       }
     }
+    return true;
   }
 
   /**

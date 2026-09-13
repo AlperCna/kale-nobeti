@@ -95,6 +95,8 @@ const HUD_GOLD_HEDEFI: Vec2 = { x: 44, y: 12 };
 const HINT_TEXT_KEY: Readonly<Record<HintId, StringKey>> = {
   earlyStart: 'hintEarlyStart',
   dragRally: 'hintDragRally',
+  targetModes: 'hintTargetModes',
+  flyers: 'hintFlyers',
 };
 
 /**
@@ -541,6 +543,7 @@ export class GameScene extends Phaser.Scene {
         sellBarracks: (spotIndex) => this.#sellBarracks(spotIndex),
         upgradeTower: (spotIndex, tier) => this.#upgradeTower(spotIndex, tier),
         upgradeBarracks: (spotIndex, tier) => this.#upgradeBarracks(spotIndex, tier),
+        targetingShown: (spotIndex) => this.bus.emit('targeting:opened', { spotIndex }),
         redrawRally: () => this.#drawRally(),
       },
     );
@@ -629,7 +632,10 @@ export class GameScene extends Phaser.Scene {
     this.#damageTexts?.update(sd);
     this.#altinUcusu?.update(sd);
     this.#enemyHealthBars?.update(dusmanlar);
-    this.#mapRenderer?.updateFlyerHint(this.#waves?.upcomingWave);
+    // `true` yalnız hattın GÖRÜNDÜĞÜ karede — öğretici bir kez tetiklensin.
+    if (this.#mapRenderer?.updateFlyerHint(this.#waves?.upcomingWave) === true) {
+      this.bus.emit('wave:flyers', {});
+    }
 
     const aktifMermi = this.#projectiles?.activeCount ?? 0;
     if (aktifMermi > this.#mermiTepe) this.#mermiTepe = aktifMermi;
