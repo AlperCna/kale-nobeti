@@ -156,6 +156,8 @@ export interface BuildMenuActions {
   upgradeBarracks: (spotIndex: number, tier: 0 | 1 | 2 | 3) => void;
   /** Kışla menüsü açılışında ve her menü kapanışında — `#drawRally` `GameScene`'de kaldı. */
   redrawRally: () => void;
+  /** Hedefleme satırı ekrana geldi — öğretici (`targeting:opened`) buradan. */
+  targetingShown: (spotIndex: number) => void;
 }
 
 export class BuildMenu {
@@ -360,6 +362,7 @@ export class BuildMenu {
     this.#showCartouche(spot);
     this.#showInfoPanel(spotIndex);
     this.#menu = kap;
+    this.#actions.targetingShown(spotIndex);
   }
 
   /**

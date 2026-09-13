@@ -3,6 +3,8 @@ import type { AbilityId } from '../types/ability';
 import { ABILITIES } from '../data/abilities';
 import { createParchmentButton } from './ParchmentFrame';
 import { METEOR_FRAME, TAKVIYE_FRAME } from '../data/spriteFrames';
+import type { StringKey } from '../data/strings';
+import { t } from '../util/i18n';
 
 const GOLD = 0xd4a032;
 const INK = 0x14203a;
@@ -11,9 +13,15 @@ const INK = 0x14203a;
 const BTN = 64;
 const IKON_BOYUT = 40;
 
-const ETIKET: Readonly<Record<AbilityId, string>> = {
-  meteor: 'Meteor',
-  takviye: 'Takviye',
+/**
+ * Etiketler `strings.ts` anahtarı — oyuncu geri bildirimi (2026-09-14):
+ * İngilizce arayüzde "Takviye" Türkçe kalıyordu. Sabit dizeydi ve bekçi
+ * k.12 yakalayamadı: iki kelimede de aksanlı harf yok (dosyada yazılı kör
+ * nokta). Bu dosyada oyuncuya görünen başka metin yok.
+ */
+const ETIKET: Readonly<Record<AbilityId, StringKey>> = {
+  meteor: 'abilityMeteor',
+  takviye: 'abilityTakviye',
 };
 
 const IKON_KARE: Readonly<Record<AbilityId, string>> = {
@@ -75,7 +83,7 @@ export class AbilityButtons {
         .setStrokeStyle(2, GOLD);
 
       const yazi = scene.add
-        .text(0, BTN / 2 + 12, ETIKET[def.id], {
+        .text(0, BTN / 2 + 12, t(ETIKET[def.id]), {
           fontFamily: 'Spectral, serif',
           fontSize: '16px', // Platform: minimum 16 px
           color: '#8A7250',
