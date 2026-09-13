@@ -10,6 +10,7 @@
  */
 
 import type { Vec2 } from './common';
+import type { StringKey } from '../data/strings';
 import type { EnemyDef } from './enemy';
 
 /** Kışla kademesi. `GAME-DESIGN.md` §4.4 tablosunun bir satırı. */
@@ -38,8 +39,8 @@ export interface BarracksTier {
    * belirlenimci kalıyor.
    */
   readonly evasion?: number;
-  /** Yalnız T3 dallarında: kullanıcıya görünen dal adı. */
-  readonly branchName?: string;
+  /** Yalnız T3 dallarında: dal adının anahtarı — bkz. `TowerTier.branchNameKey`. */
+  readonly branchNameKey?: StringKey;
 }
 
 /**

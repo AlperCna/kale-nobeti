@@ -28,6 +28,13 @@ import { BOSS_ARMOR_BY_MAP, BOSS_HP_BY_MAP, BOSS_HP_TOLERANCE } from './data/bos
 import { MAPS, COVERAGE_REFERENCE_RANGE } from './data/maps';
 import { MAP1_WAVES, MAP2_WAVES, MAP3_WAVES, budget, wavePoints, waveEnemyCount, spawnDelayFor } from './data/waves';
 import { ABILITIES } from './data/abilities';
+// Y03 Adım 3 / S76: dal adları artık strings.ts anahtarı. Doküman
+// Türkçe, o yüzden burada açıkça tr sözlüğünden çözülüyor — etkin
+// dilden (t()) DEĞİL, yoksa doküman oyuncunun diline göre değişirdi.
+// (Ters tırnak YOK: bu satırlar kurallar.mjs içinde bir şablon
+// dizesinin içinde yaşıyor, ters tırnak onu erken kapatıyor.)
+import { STRINGS } from './data/strings';
+const dalAdi = (k) => (k === undefined ? null : STRINGS.tr[k]);
 import { BALANCE, POOL_PREALLOC, GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI, SPAWN_K } from './data/balance';
 import { EFFECT_SCALE, DEFAULT_SETTINGS, reducedMotionDefaults } from './systems/Settings';
 import { SHAKE_MIN_SEC, SHAKE_MAX_SEC } from './fx/ScreenShake';
@@ -45,7 +52,7 @@ it('dokum', () => {
     id: t.id, role: t.role, damageType: t.damageType,
     kademeler: [0, 1, 2, 3].map((i) => {
       const k = tierAt(t, i);
-      return { ad: AD[i], branchName: k.branchName ?? null, cost: k.cost, damage: k.damage,
+      return { ad: AD[i], branchName: dalAdi(k.branchNameKey), cost: k.cost, damage: k.damage,
         fireRate: k.fireRate, range: k.range, splashRadius: k.splashRadius ?? null,
         airMultiplier: k.airMultiplier, effect: k.effect ?? null,
         dps: +(k.damage * k.fireRate).toFixed(2) };
@@ -56,7 +63,7 @@ it('dokum', () => {
     role: KISLA.role,
     kademeler: [0, 1, 2, 3].map((i) => {
       const k = barracksTierAt(KISLA, i);
-      return { ad: AD[i], branchName: k.branchName ?? null, cost: k.cost, soldierCount: k.soldierCount,
+      return { ad: AD[i], branchName: dalAdi(k.branchNameKey), cost: k.cost, soldierCount: k.soldierCount,
         soldierHp: k.soldierHp, soldierDps: k.soldierDps, respawnSeconds: k.respawnSeconds,
         shield: k.shield ?? null, evasion: k.evasion ?? null };
     }),
@@ -74,7 +81,7 @@ it('dokum', () => {
     for (let i = 0; i < 4; i++) {
       const k = tierAt(t, i);
       matris.push({
-        kule: t.id, kademe: AD[i], dal: k.branchName ?? null,
+        kule: t.id, kademe: AD[i], dal: dalAdi(k.branchNameKey),
         hucre: ENEMIES.map((e) => {
           const carpan = e.flying ? k.airMultiplier : 1;
           if (carpan === 0) return null;

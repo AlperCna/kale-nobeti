@@ -35,7 +35,7 @@ export const KISLA: BarracksDef = {
       soldierHp: 140,
       soldierDps: 11,
       respawnSeconds: 6,
-      branchName: 'Paladin',
+      branchNameKey: 'branchPaladin',
     },
     // 3b Haydutlar — `9 + kaçınma %25`.
     {
@@ -45,7 +45,7 @@ export const KISLA: BarracksDef = {
       soldierDps: 9,
       respawnSeconds: 5,
       evasion: 0.25,
-      branchName: 'Haydutlar',
+      branchNameKey: 'branchOutlaws',
     },
   ],
 };

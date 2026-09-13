@@ -30,7 +30,7 @@ export const OKCU: TowerDef = {
       fireRate: 0.6,
       range: 260,
       airMultiplier: 1,
-      branchName: 'Keskin Nişancı',
+      branchNameKey: 'branchSharpshooter',
     },
     // 3b Kundakçı — 9 hasar + 4/sn yanma (4 sn).
     {
@@ -39,7 +39,7 @@ export const OKCU: TowerDef = {
       fireRate: 1.4,
       range: 165,
       airMultiplier: 1,
-      branchName: 'Kundakçı',
+      branchNameKey: 'branchIncendiary',
       effect: { kind: 'burn', dps: 4, seconds: 4 },
     },
   ],
@@ -70,7 +70,7 @@ export const TOP: TowerDef = {
       range: 230,
       splashRadius: 70,
       airMultiplier: 0,
-      branchName: 'Havan',
+      branchNameKey: 'branchMortar',
     },
     // 3b Barut Fıçısı — esnek: uçana %50, ve %40 yavaşlatma (2 sn).
     {
@@ -80,7 +80,7 @@ export const TOP: TowerDef = {
       range: 150,
       splashRadius: 65,
       airMultiplier: 0.5,
-      branchName: 'Barut Fıçısı',
+      branchNameKey: 'branchPowderKeg',
       effect: { kind: 'slow', factor: 0.4, seconds: 2 },
     },
   ],
@@ -110,7 +110,7 @@ export const BUYU: TowerDef = {
       fireRate: 0.7,
       range: 170,
       airMultiplier: 1,
-      branchName: 'Yıldırım',
+      branchNameKey: 'branchLightning',
       effect: { kind: 'chain', targets: 3, falloff: 0.7 },
     },
     // 3b Buz — %50 yavaşlatma (2,5 sn).
@@ -120,7 +120,7 @@ export const BUYU: TowerDef = {
       fireRate: 0.8,
       range: 180,
       airMultiplier: 1,
-      branchName: 'Buz',
+      branchNameKey: 'branchFrost',
       effect: { kind: 'slow', factor: 0.5, seconds: 2.5 },
     },
   ],

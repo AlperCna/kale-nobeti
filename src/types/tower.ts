@@ -6,6 +6,7 @@
  */
 
 import type { DamageType, Targetable } from './enemy';
+import type { StringKey } from '../data/strings';
 
 /** Kademe indeksi: 0 = T1, 1 = T2, 2 = T3a, 3 = T3b. */
 export type TierIndex = 0 | 1 | 2 | 3;
@@ -54,8 +55,16 @@ export interface TowerTier {
    * `0` = hiç vuramaz ve hedef listesinden **elenir** (`GAME-DESIGN.md` §4.2).
    */
   readonly airMultiplier: 0 | 0.5 | 1;
-  /** Yalnız T3 dallarında: kullanıcıya görünen dal adı. */
-  readonly branchName?: string;
+  /**
+   * Yalnız T3 dallarında: kullanıcıya görünen dal adının **anahtarı**.
+   *
+   * `Y03` Adım 3 / **S76**: önceden düz Türkçe dizeydi. Dizeyi burada
+   * tutmak TIER 1 kural 1'e uygundu (veri, koda gömülü metin değil) ama
+   * İngilizce oynayan biri yapı menüsünde `Keskin Nişancı` görüyordu.
+   * Anahtar tutmak ikisini birden çözüyor: değer hâlâ veride, metin
+   * `strings.ts`'te ve çevrilebilir.
+   */
+  readonly branchNameKey?: StringKey;
   readonly effect?: TowerEffect;
 }
 

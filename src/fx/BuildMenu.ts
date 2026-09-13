@@ -44,6 +44,28 @@ const HEDEFLEME_SECILMEMIS_ALFA = 0.8;
 const MENU_PANEL_PAY = 16;
 const MENU_PANEL_CORNER = 16;
 const MENU_KENAR_PAY = 16;
+
+/**
+ * Menü buton ölçüleri — `Y03` Adım 3'te ölçülerek ayarlandı.
+ *
+ * Etiketler `wordWrap` taşımıyor (tek satır olmaları gerekiyor), yani
+ * genişlik metnin kendisine göre seçilmek zorunda. Üç ayrı ölçü var
+ * çünkü üç satırın en uzun metni çok farklı:
+ * `Sat +54` ≪ `Barracks 90` ≪ `Sharpshooter 170`.
+ *
+ * Aralık her zaman genişlikten **büyük**: eskiden kule satırı 88 px
+ * butonu 84 px aralıkla diziyordu, yani komşu parşömenler 4 px üst üste
+ * biniyordu.
+ */
+const BUTON_W = 100;
+const BUTON_ARA = 104;
+const DAL_BUTON_W = 152;
+const DAL_BUTON_ARA = 156;
+/** İkili satır (yükselt + sat) — tek ölçü, ortadan eşit uzaklık. */
+const IKILI_OFSET = BUTON_ARA / 2;
+/** Hedefleme modu satırı: beş buton, kısa etiketler, daha küçük yazı. */
+const MOD_BUTON_W = 52;
+const MOD_BUTON_ARA = 56;
 const VERMILION = 0xb03a2e;
 /** P03 brifi — kule/kışla gövdesi oyun içi gösterim boyutu (`Tower.ts`/`GameScene.ts` ile aynı). */
 const TOWER_DISPLAY_SIZE = 64;
@@ -69,6 +91,15 @@ const TOWER_LABEL_KEY: Readonly<Record<string, StringKey>> = {
 function kuleAdi(id: string): string {
   const anahtar = TOWER_LABEL_KEY[id];
   return anahtar !== undefined ? t(anahtar) : id;
+}
+
+/**
+ * `Y03` Adım 3 / S76 — T3 dal adı. `branchNameKey` tipte isteğe bağlı
+ * (T1/T2 kademelerinde yok), veride her dalda dolu; `yedek` yalnız tip
+ * sözleşmesinin gereği.
+ */
+function dalAdi(anahtar: StringKey | undefined, yedek: string): string {
+  return anahtar !== undefined ? t(anahtar) : yedek;
 }
 
 /** `GameScene.#barracksBySpot`'un değer tipi — burada tanımlı, orada içe aktarılıyor. */
@@ -152,7 +183,7 @@ export class BuildMenu {
     // buton — `TOWERS` dizisine sokmak `TowerDef` sözleşmesini bozardı.
     const toplam = TOWERS.length + 1;
     TOWERS.forEach((def, i) => {
-      const bx = (i - (toplam - 1) / 2) * 84;
+      const bx = (i - (toplam - 1) / 2) * BUTON_ARA;
       const maliyet = def.tiers[0].cost;
       const alinabilir = this.#economy.canAfford(maliyet);
 
@@ -164,7 +195,7 @@ export class BuildMenu {
     const kislaMaliyet = barracksTierAt(KISLA, 0).cost;
     this.#menuButonu(
       kap,
-      (TOWERS.length - (toplam - 1) / 2) * 84,
+      (TOWERS.length - (toplam - 1) / 2) * BUTON_ARA,
       `${t('barracks')} ${kislaMaliyet}`,
       this.#economy.canAfford(kislaMaliyet),
       () => this.#actions.placeBarracks(spotIndex),
@@ -211,10 +242,10 @@ export class BuildMenu {
     if (kule.tierIndex === 0) {
       // T1 → T2, tek seçenek.
       const maliyet = kule.def.tiers[1].cost;
-      this.#menuButonu(kap, -48, `↑ ${maliyet}`, this.#economy.canAfford(maliyet), () =>
+      this.#menuButonu(kap, -IKILI_OFSET, `↑ ${maliyet}`, this.#economy.canAfford(maliyet), () =>
         this.#actions.upgradeTower(spotIndex, 1),
       );
-      this.#menuButonu(kap, 48, `${t('sell')} +${iade}`, true, () =>
+      this.#menuButonu(kap, IKILI_OFSET, `${t('sell')} +${iade}`, true, () =>
         this.#actions.sellTower(spotIndex),
       );
     } else if (kule.tierIndex === 1) {
@@ -222,20 +253,27 @@ export class BuildMenu {
       const [a, b] = kule.def.branches;
       this.#menuButonu(
         kap,
-        -96,
-        `${a.branchName ?? '3a'} ${a.cost}`,
+        -DAL_BUTON_ARA,
+        `${dalAdi(a.branchNameKey, '3a')} ${a.cost}`,
         this.#economy.canAfford(a.cost),
         () => this.#actions.upgradeTower(spotIndex, 2),
+        DAL_BUTON_W,
       );
       this.#menuButonu(
         kap,
         0,
-        `${b.branchName ?? '3b'} ${b.cost}`,
+        `${dalAdi(b.branchNameKey, '3b')} ${b.cost}`,
         this.#economy.canAfford(b.cost),
         () => this.#actions.upgradeTower(spotIndex, 3),
+        DAL_BUTON_W,
       );
-      this.#menuButonu(kap, 96, `${t('sell')} +${iade}`, true, () =>
-        this.#actions.sellTower(spotIndex),
+      this.#menuButonu(
+        kap,
+        DAL_BUTON_ARA,
+        `${t('sell')} +${iade}`,
+        true,
+        () => this.#actions.sellTower(spotIndex),
+        DAL_BUTON_W,
       );
     } else {
       // T3 — son kademe. **Dal geri alınamıyor (S41)**; değiştirmek için
@@ -253,9 +291,9 @@ export class BuildMenu {
     // dayanmaz" ruhuna zayıf bir cevaptı — diğer butonlar hafifçe
     // soluklaştırılıp seçili olan şekilsel de ayrışıyor).
     TARGET_MODES.forEach((mod, i) => {
-      const bx = (i - (TARGET_MODES.length - 1) / 2) * 50;
+      const bx = (i - (TARGET_MODES.length - 1) / 2) * MOD_BUTON_ARA;
       const secili = kule.targetMode === mod;
-      const cerceve = createParchmentButton(this.#scene, bx, 52, 46, 44, 8);
+      const cerceve = createParchmentButton(this.#scene, bx, 52, MOD_BUTON_W, 44, 8);
       if (!secili) cerceve.setAlpha(HEDEFLEME_SECILMEMIS_ALFA);
       const et = this.#scene.add
         .text(bx, 52, t(MODE_LABEL_KEY[mod]), {
@@ -304,22 +342,37 @@ export class BuildMenu {
 
     if (k.tier === 0) {
       const m = barracksTierAt(KISLA, 1).cost;
-      this.#menuButonu(kap, -48, `↑ ${m}`, this.#economy.canAfford(m), () =>
+      this.#menuButonu(kap, -IKILI_OFSET, `↑ ${m}`, this.#economy.canAfford(m), () =>
         this.#actions.upgradeBarracks(spotIndex, 1),
       );
-      this.#menuButonu(kap, 48, `${t('sell')} +${iade}`, true, () =>
+      this.#menuButonu(kap, IKILI_OFSET, `${t('sell')} +${iade}`, true, () =>
         this.#actions.sellBarracks(spotIndex),
       );
     } else if (k.tier === 1) {
       const [a, b] = KISLA.branches;
-      this.#menuButonu(kap, -96, `${a.branchName} ${a.cost}`, this.#economy.canAfford(a.cost), () =>
-        this.#actions.upgradeBarracks(spotIndex, 2),
+      this.#menuButonu(
+        kap,
+        -DAL_BUTON_ARA,
+        `${dalAdi(a.branchNameKey, '3a')} ${a.cost}`,
+        this.#economy.canAfford(a.cost),
+        () => this.#actions.upgradeBarracks(spotIndex, 2),
+        DAL_BUTON_W,
       );
-      this.#menuButonu(kap, 0, `${b.branchName} ${b.cost}`, this.#economy.canAfford(b.cost), () =>
-        this.#actions.upgradeBarracks(spotIndex, 3),
+      this.#menuButonu(
+        kap,
+        0,
+        `${dalAdi(b.branchNameKey, '3b')} ${b.cost}`,
+        this.#economy.canAfford(b.cost),
+        () => this.#actions.upgradeBarracks(spotIndex, 3),
+        DAL_BUTON_W,
       );
-      this.#menuButonu(kap, 96, `${t('sell')} +${iade}`, true, () =>
-        this.#actions.sellBarracks(spotIndex),
+      this.#menuButonu(
+        kap,
+        DAL_BUTON_ARA,
+        `${t('sell')} +${iade}`,
+        true,
+        () => this.#actions.sellBarracks(spotIndex),
+        DAL_BUTON_W,
       );
     } else {
       this.#menuButonu(kap, 0, `${t('sell')} +${iade}`, true, () =>
@@ -389,7 +442,12 @@ export class BuildMenu {
    * hâlâ "S19 geçici" diyordu). Kartuş resmi değil: `cartouche.png`
    * `#showCartouche`'un sabit en-boylu süsü, bu buton her satırda farklı
    * genişlikte olabildiği için 9-slice `createParchmentButton` kullanıyor.
-   * 88×44 — Platform dokunmatik hedef alt sınırı.
+   * Yükseklik 44 — Platform dokunmatik hedef alt sınırı.
+   *
+   * `genislik` satır başına değişiyor (`BUTON_W` / `DAL_BUTON_W`): dal
+   * adları diğer etiketlerden belirgin biçimde uzun (`Keskin Nişancı 170`,
+   * `Sharpshooter 170`) ve `Text` burada sarılmıyor — dar buton metni
+   * parşömenin dışına taşırır.
    */
   #menuButonu(
     kap: Phaser.GameObjects.Container,
@@ -397,8 +455,9 @@ export class BuildMenu {
     metin: string,
     etkin: boolean,
     onClick: () => void,
+    genislik: number = BUTON_W,
   ): void {
-    const cerceve = createParchmentButton(this.#scene, bx, 0, 88, 44, 10);
+    const cerceve = createParchmentButton(this.#scene, bx, 0, genislik, 44, 10);
     if (!etkin) cerceve.setAlpha(0.55);
 
     const etiket = this.#scene.add
