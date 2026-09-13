@@ -581,6 +581,46 @@ const sonuclar = [];
 }
 
 // ---------------------------------------------------------------------
+// 13 — Platform yazı boyutu alt sınırı (CLAUDE.md "Platform kısıtları")
+//
+// "UI, 640×360'a küçültüldüğünde okunur kalmalı: minimum yazı 16 px."
+// Mantıksal çözünürlük 1280×720 ve `Scale.FIT` yarıya indiriyor, yani
+// 16 px'in altı o boyutta 8 fiziksel pikselin altına düşüyor.
+//
+// Bu kontrol `Y03` Adım 3'ün 640×360 denetiminden doğdu: kural
+// `CLAUDE.md`'de yazılıydı ama bekçiye bağlı değildi ve **ihlal
+// edilmişti** (`BuildMenu`'nün hedefleme satırı 14 px). k.12'nin
+// gerekçesiyle birebir aynı ders: bağlanmayan kural tutmuyor.
+//
+// Kapsam `scenes/`+`fx/` — oyuncuya görünen her `Text` orada üretiliyor.
+// `BitmapText`'in boyutu `fontSize` ile verilmiyor, bu net onu hiç
+// görmüyor (sayı fontu zaten tek boyutlu bir doku).
+// ---------------------------------------------------------------------
+{
+  let ihlalVar = false;
+  const kapsam = ['scenes', 'fx'].map((d) => join(SRC, d) + sep);
+  const ASGARI_PX = 16;
+  const yaziBoyutu = /fontSize:\s*'(\d+)px'/g;
+
+  for (const dosya of dosyalar) {
+    if (dosya.endsWith('.test.ts')) continue;
+    if (!kapsam.some((k) => dosya.startsWith(k))) continue;
+
+    for (const s of kodSatirlari(readFileSync(dosya, 'utf8'))) {
+      yaziBoyutu.lastIndex = 0;
+      let m;
+      while ((m = yaziBoyutu.exec(s.metin))) {
+        const px = Number(m[1]);
+        if (px >= ASGARI_PX) continue;
+        ihlalVar = true;
+        ihlal('platform', dosya, s.no, `${px}px < ${ASGARI_PX}px — 640×360'ta okunmaz`);
+      }
+    }
+  }
+  sonuclar.push([`platform yazı boyutu ≥ ${ASGARI_PX}px (scenes/+fx/)`, !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
 
 const gecen = sonuclar.filter(([, ok]) => ok).length;
 if (taranamayan.length > 0) {

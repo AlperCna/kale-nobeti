@@ -205,6 +205,13 @@ veriyle korunuyor. Canlı ölçüm **var olan bir taşmayı** da ortaya
 çıkardı: `Keskin Nişancı 170` 136 px'ken buton 88 px'di. Ayrıntı:
 dosyanın kendi "Sonuç" bölümü.
 
+> **Adım 3'ün 640×360 denetimi ayrı bir bulgu üretti:** Platform
+> kısıtının "minimum yazı 16 px" kuralı `CLAUDE.md`'de yazılıydı ama
+> bekçide yoktu ve **ihlal edilmişti** (`BuildMenu` hedefleme satırı
+> 14 px, Adım 3'ten eski). Düzeltildi ve **bekçiye bağlandı (k.13)** —
+> k.12'nin i18n için yaşadığı dersin aynısı, aşağıdaki "Tekrarlayan
+> dört desen" §2.
+
 **G05** — ☑ **tamamlandı (2026-08-28)**. Asker artık alfa yerine
 tint ile soluyor (silüet opak kalıyor); hasar görmüş düşmanlarda
 havuzlu, "bir kez göründüyse kalır" kurallı can çubuğu (seçenek b);
