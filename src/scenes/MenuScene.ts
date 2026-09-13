@@ -3,6 +3,7 @@ import { t } from '../util/i18n';
 import { getSettings } from '../systems/Settings';
 import { PreloadScene } from './PreloadScene';
 import { createParchmentButton, addPressFeedback } from '../fx/ParchmentFrame';
+import { SettingsPanel } from '../fx/SettingsPanel';
 
 /**
  * Dokunmatik hedef en az 44×44 px (CLAUDE.md Platform, 1280×720 ölçeğinde).
@@ -15,8 +16,13 @@ const BTN_H = 64;
 /** Minimum yazı 16 px. Poki 640×360'a küçültüyor (research/05 §1). */
 const BTN_FONT_PX = 28;
 const TITLE_FONT_PX = 72;
+/** Ayarlar düğmesi — `HudScene`'in dişlisiyle aynı ölçü ve köşe. */
+const AYAR_BTN = 56;
+const MARGIN = 20;
 
 export class MenuScene extends Phaser.Scene {
+  #settingsPanel?: SettingsPanel;
+
   constructor() {
     super('Menu');
   }
@@ -34,7 +40,12 @@ export class MenuScene extends Phaser.Scene {
     PreloadScene.queueAtlas(this);
   }
 
-  create(): void {
+  /**
+   * `data.settingsOpen`: dil değişimi menüyü yeniden kuruyor (`Hud`'la
+   * aynı sebep — bekçi k.4 yüzünden çevrili `Text` yerinde
+   * güncellenemiyor) ve panel açık kalsın diye bayrak taşınıyor.
+   */
+  create(data?: { readonly settingsOpen?: boolean }): void {
     const { width, height } = this.scale;
 
     // M6-T05 — ilk izlenim ekranı. Kompozisyon üst-orta boşluk bırakacak
@@ -79,6 +90,41 @@ export class MenuScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.#createPlayButton(width / 2, height / 2 + 40);
+    this.#createSettingsButton(width - MARGIN - AYAR_BTN / 2, MARGIN + AYAR_BTN / 2);
+    if (data?.settingsOpen === true) this.#settingsPanel?.setVisible(true);
+  }
+
+  /**
+   * Ayarlar (dil dahil) menüden — oyuncu geri bildirimi (2026-09-14):
+   * "ana menü çok sade" ve Y03 Adım 3'ün açık bıraktığı boşluk: dil
+   * seçici yalnız oyun içindeki paneldeydi, Türkçe tarayıcıdan İngilizce
+   * oynamak isteyen önce bir haritaya girmek zorundaydı.
+   *
+   * Panel `HudScene`'dekiyle aynı sınıf. `onChange` burada yalnız sesi
+   * uyguluyor (menü müziği); sarsıntı/ipucu/efekt kaydediliyor ve
+   * `HudScene.create()` haritaya girince zaten uyguluyor.
+   */
+  #createSettingsButton(x: number, y: number): void {
+    const settings = getSettings(this);
+    this.#settingsPanel = new SettingsPanel(
+      this,
+      settings,
+      () => {
+        this.sound.mute = !settings.state.sound;
+      },
+      () => {
+        this.scene.restart({ settingsOpen: true });
+      },
+    );
+
+    const cerceve = createParchmentButton(this, x, y, AYAR_BTN, AYAR_BTN, 12);
+    addPressFeedback(cerceve);
+    this.add
+      .text(x, y, '⚙', { fontFamily: 'Spectral, serif', fontSize: '26px', color: '#14203A' })
+      .setOrigin(0.5);
+    cerceve.on('pointerup', () => {
+      this.#settingsPanel?.setVisible(!(this.#settingsPanel?.visible ?? false));
+    });
   }
 
   /**
