@@ -113,6 +113,34 @@ export class PreloadScene extends Phaser.Scene {
     }
   }
 
+  /**
+   * `Hud`'un **gerçekten kullandığı** iki varlık: atlas (parşömen
+   * çerçeveler, yetenek ikonları) ve sayı bitmap fontu (`HudReadout`,
+   * hız etiketi). Arka planı hiç çizmiyor, ses de çalmıyor — yalnız
+   * `sound.mute` yazıyor.
+   *
+   * `queueGame`'den ayrı olmasının sebebi **niyet**, ölçülmüş bir hata
+   * değil: `Hud`'un `queueGame` çağırması, hiç çizmediği bir arka planı
+   * ve hiç çalmadığı 12 ses efektini kendi yükleme listesine koyması
+   * demekti.
+   *
+   * `HudScene.preload()`'un eski yorumu "`exists()` koruması sayesinde
+   * çakışmıyor" diyordu; bu gerekçe **sağlam değil** — `exists()`
+   * kuyruğa atarken bakıyor, oysa `Game` ve `Hud` aynı tikte başlıyor
+   * (`scene.start('Game')` + `launch('Hud')`) ve ikisinin `preload()`'u
+   * da yükleme bitmeden koşuyor, yani ikisi de "yok" görebilir.
+   *
+   * **Gerçek akışta bu yarış oluşmuyor** (ölçüldü: tek `atlas.png`, tek
+   * `numbers.png`, konsol temiz) çünkü `LevelSelectScene.preload()`
+   * zaten `queueGame` çağırıyor ve kartlar çizilmeden önce yükleme
+   * bitiyor. Yine de doğru gerekçeyle durmak, yanlış gerekçeyle doğru
+   * sonuca varmaktan iyi.
+   */
+  static queueHud(scene: Phaser.Scene): void {
+    PreloadScene.queueAtlas(scene);
+    queueNumberFont(scene);
+  }
+
   static queueGame(scene: Phaser.Scene): void {
     PreloadScene.queueAtlas(scene);
     if (!scene.textures.exists('bg-degirmen-gecidi')) {

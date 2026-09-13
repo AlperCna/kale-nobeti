@@ -65,12 +65,17 @@ export class HudScene extends Phaser.Scene {
    * `Hud`'un kendi `preload()`'u olmazsa Phaser onu hemen `create()`'e
    * geçirir, `GameScene.preload()`'daki atlas yüklemesi bitmeden.
    * Canlı testte yakalandı: `corner`/`edge-strip`/`middle-texture`
-   * kareleri "yok" uyarısı veriyordu. `queueGame`'in kendi `exists()`
-   * koruması sayesinde burada tekrar çağırmak GameScene'inkiyle
-   * çakışmıyor — ikisinden hangisi önce biterse.
+   * kareleri "yok" uyarısı veriyordu.
+   *
+   * **`queueGame` değil `queueHud`:** eski hâli `Game`'in tüm varlık
+   * listesini (harita arka planı + 12 ses efekti) kuyruğa atıyordu, oysa
+   * `Hud` ikisini de hiç kullanmıyor — yalnız atlas (parşömen çerçeve)
+   * ve sayı fontu. Eski yorumdaki "`exists()` koruması sayesinde
+   * çakışmıyor" gerekçesi de sağlam değildi; ayrıntı ve ölçüm
+   * `PreloadScene.queueHud`'un notunda.
    */
   preload(): void {
-    PreloadScene.queueGame(this);
+    PreloadScene.queueHud(this);
   }
 
   /**
