@@ -120,6 +120,24 @@ const TR = {
   branchFrost: 'Buz',
   branchPaladin: 'Paladin',
   branchOutlaws: 'Haydutlar',
+
+  /**
+   * Kule bilgi paneli etiketleri — oyuncu geri bildirimi (2026-09-14):
+   * panel yalnız sayı gösteriyordu ("61.16.6 / 150 / 260 / +49"), hiçbir
+   * göstergenin adı yoktu. §11'in yedi göstergesi artık adlandırılmış.
+   * `infoRate` kısa: değer kolonu geniş, etiket kolonu dar.
+   */
+  infoDamage: 'Hasar',
+  infoRate: 'Atış/sn',
+  infoRange: 'Menzil',
+  infoCoverage: 'Kapsanan yol',
+  infoUpgrade: 'Yükseltme',
+  infoRefund: 'Satış iadesi',
+  infoPhysical: 'Fiziksel',
+  infoMagic: 'Büyü',
+  infoHitsAir: 'Uçana vurur',
+  infoNoAir: 'Uçana vurmaz',
+  infoDpsVs: 'Seçili düşmana DPS',
 } as const;
 
 export type StringKey = keyof typeof TR;
@@ -190,5 +208,16 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     branchFrost: 'Frost',
     branchPaladin: 'Paladin',
     branchOutlaws: 'Outlaws',
+    infoDamage: 'Damage',
+    infoRate: 'Shots/s',
+    infoRange: 'Range',
+    infoCoverage: 'Path covered',
+    infoUpgrade: 'Upgrade',
+    infoRefund: 'Sell refund',
+    infoPhysical: 'Physical',
+    infoMagic: 'Magic',
+    infoHitsAir: 'Hits flyers',
+    infoNoAir: 'No flyers',
+    infoDpsVs: 'DPS vs. selected',
   },
 };

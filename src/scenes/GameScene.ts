@@ -348,8 +348,8 @@ export class GameScene extends Phaser.Scene {
     // Bilgi paneli: harita 1 kadrosunun düşmanları (S42).
     this.#infoPanel = new TowerInfoPanel(
       this,
-      this.scale.width - 262,
-      this.scale.height - 222,
+      this.scale.width - 12 - TowerInfoPanel.W,
+      this.scale.height - 12 - TowerInfoPanel.H,
       ENEMIES.filter((e) => this.#map.enemyRoster.includes(e.id)),
     );
 

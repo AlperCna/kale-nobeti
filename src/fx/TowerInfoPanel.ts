@@ -6,12 +6,13 @@ import { effectiveDps } from '../systems/balanceChecks';
 import { applyDamage } from '../systems/combat';
 import { enemyFrameKey } from '../data/spriteFrames';
 import { createParchmentFrame } from './ParchmentFrame';
+import { TowerInfoLabels, SATIRLAR } from './TowerInfoLabels';
 
 /**
  * Kule bilgi paneli — `GAME-DESIGN.md` §11.
  *
  * "Bilgi eksikliği türün 1 numaralı şikâyeti." §11'in yedi göstergesi:
- * ham hasar + atış hızı · hasar tipi rozeti · **seçili düşmana karşı etkin
+ * ham hasar + atış hızı · hasar tipi · **seçili düşmana karşı etkin
  * DPS** · menzil + kapsanan yol · uçana vurur/vurmaz · yükseltme farkı ·
  * satış iadesi.
  *
@@ -20,37 +21,39 @@ import { createParchmentFrame } from './ParchmentFrame';
  * karşı etkin DPS yazılıyor. Hesap `applyDamage` üzerinden — yeni matematik
  * yok.
  *
- * TIER 1 kural 7: değişen **sayılar** `BitmapText`. Bu dosya `Text`
- * üretmiyor; sabit etiketler `HudScene`'de.
+ * ## Etiketler — oyuncu geri bildirimi (2026-09-14)
+ *
+ * Panel bir zamanlar yalnız sayı gösteriyordu; oyuncu için "hiçbir şey
+ * ifade etmiyordu". İki hata birden vardı:
+ * 1. Hiçbir göstergenin adı yoktu (bu dosyanın eski yorumu "etiketler
+ *    `HudScene`'de" diyordu — yanlıştı, `HudScene` bu panel için etiket
+ *    çizmiyor).
+ * 2. İlk satır `"16x1.0=16.0"` yazıyordu ama sayı fontunda **`x` ve `=`
+ *    yok** (`%+,-./0-9×›`); glifler kaybolup sayılar birbirine yapışıyordu
+ *    ("61.16.6").
+ * Etiketler `TowerInfoLabels`'ta (ayrı dosya — bekçi k.4: `setText` çağıran
+ * dosya `Text` üretmez), değerler yalnız fontun bildiği karakterlerle.
+ *
+ * TIER 1 kural 7: değişen **sayılar** `BitmapText`. Bu dosya `Text` üretmiyor.
  *
  * ## Zemin: koyu, ama çerçeve parşömen — `G04`
  *
- * M6'da bütün paneller parşömen çerçeveye geçti, bu panel **tek istisna**
- * kaldı ve G03'ten sonra yapı menüsünün hemen yanında açıldığı için
- * tutarsızlık daha da göze battı. Tam parşömen dönüşümü (zemin de açık)
- * **yapılmadı** — panelin yedi göstergesi (§11) açık renkli metin
- * (`PARCHMENT`/`GOLD`) üstüne kurulu; açık zemine geçmek her rengi
- * yeniden atamayı, rozet kontrastını yeniden ölçmeyi gerektirirdi ve
- * risk §11'in çözdüğü "bilgi eksikliği" sorununu geri getirmek olurdu.
- *
- * Seçilen kural (`docs/plan/iyilestirme/G04-towerinfopanel-paleti.md`):
- * **parşömen zemin eylem yüzeylerinde** (buton, menü, ayar), **koyu
- * zemin yoğun bilgi yüzeylerinde** (bu panel) — **çerçeve her ikisinde
- * de parşömen.** `createParchmentFrame`'in `skipMiddle=true`'su tam bu
- * yüzden var: köşe + kenar dokusu çiziliyor, orta dolgu atlanıp yerine
- * mevcut `INK` dikdörtgeni bırakılıyor. Metin renklerinin hiçbiri
- * değişmedi — okunurluk aynen korunuyor.
+ * Parşömen zemin eylem yüzeylerinde (buton, menü, ayar), koyu zemin yoğun
+ * bilgi yüzeylerinde (bu panel) — çerçeve her ikisinde de parşömen
+ * (`createParchmentFrame`'in `skipMiddle=true`'su tam bu yüzden var).
  */
 
 const GOLD = 0xd4a032;
 const PARCHMENT = 0xe4d3a8;
 const INK = 0x14203a;
 const VERMILION = 0xb03a2e;
-const LAPIS = 0x3e5ca8;
 
-const W = 250;
-const H = 210;
+const SOL_PAY = 12;
 const ICON = 20;
+/** Değer kolonunun sağ kenarı — sayılar sağa dayalı. */
+const W = 270;
+/** Son satır (ikon şeridi, y=236) + yarı ikon + alt band. */
+const H = 268;
 
 export interface TowerInfoState {
   readonly def: TowerDef;
@@ -66,21 +69,24 @@ export interface TowerInfoState {
 }
 
 export class TowerInfoPanel {
+  /** Panelin dış ölçüsü — `GameScene` konumu bundan türetiyor. */
+  static readonly W = W;
+  static readonly H = H;
+
   readonly #kap: Phaser.GameObjects.Container;
   readonly #scene: Phaser.Scene;
   readonly #roster: readonly EnemyDef[];
+  readonly #etiketler: TowerInfoLabels;
 
   /** Değişen sayılar — hepsi `BitmapText`. */
   readonly #hasar: Phaser.GameObjects.BitmapText;
+  readonly #atisHizi: Phaser.GameObjects.BitmapText;
   readonly #menzil: Phaser.GameObjects.BitmapText;
   readonly #kapsama: Phaser.GameObjects.BitmapText;
   readonly #iade: Phaser.GameObjects.BitmapText;
   readonly #etkinDps: Phaser.GameObjects.BitmapText;
   readonly #yukseltme: Phaser.GameObjects.BitmapText;
 
-  #tipRozeti: Phaser.GameObjects.Rectangle;
-  #ucanIkon: Phaser.GameObjects.Rectangle;
-  #ucanCizik: Phaser.GameObjects.Rectangle;
   /** Seçili düşman halkası — sprite'ın kendisi değil, çevresindeki çerçeve. */
   readonly #ikonlar: Phaser.GameObjects.Rectangle[] = [];
 
@@ -92,47 +98,42 @@ export class TowerInfoPanel {
     this.#roster = roster;
     this.#kap = scene.add.container(x, y).setVisible(false);
 
-    // `G04` — zemin koyu kalıyor (bilinçli, yukarıdaki gerekçe), ama
-    // artık kenarlığı KENDİ `setStrokeStyle`'ı DEĞİL, diğer panellerle
-    // aynı parşömen çerçeve (`skipMiddle=true` — orta doku atlanıp
-    // `INK` dikdörtgeni görünür kalıyor) çiziyor.
     const arka = scene.add.rectangle(0, 0, W, H, INK, 0.9).setOrigin(0);
     const cerceve = createParchmentFrame(scene, W / 2, H / 2, W, H, 16, true);
     this.#kap.add([arka, cerceve]);
 
-    const sayi = (dx: number, dy: number, renk: number): Phaser.GameObjects.BitmapText => {
-      const t = scene.add.bitmapText(dx, dy, NUMBER_FONT_KEY, '').setScale(0.7).setTint(renk);
-      this.#kap.add(t);
-      return t;
+    this.#etiketler = new TowerInfoLabels(scene, SOL_PAY, W / 2 + 8);
+    this.#kap.add(this.#etiketler.nesneler);
+
+    // Sayılar sağa dayalı: etiket solda, değer sağda — kolon hizası.
+    const sayi = (dy: number, renk: number, olcek = 0.7): Phaser.GameObjects.BitmapText => {
+      const n = scene.add
+        .bitmapText(W - SOL_PAY, dy, NUMBER_FONT_KEY, '')
+        .setOrigin(1, 0)
+        .setScale(olcek)
+        .setTint(renk);
+      this.#kap.add(n);
+      return n;
     };
 
-    this.#hasar = sayi(12, 10, PARCHMENT);
-    this.#menzil = sayi(12, 36, PARCHMENT);
-    this.#kapsama = sayi(12, 62, GOLD);
-    this.#iade = sayi(12, 88, GOLD);
-    this.#yukseltme = sayi(12, 114, PARCHMENT);
-    this.#etkinDps = scene.add
-      .bitmapText(W - 12, 140, NUMBER_FONT_KEY, '')
-      .setOrigin(1, 0)
-      .setTint(VERMILION);
-    this.#kap.add(this.#etkinDps);
-
-    // Hasar tipi rozeti — renk + konum, yazı yok (§11 "rozet").
-    this.#tipRozeti = scene.add.rectangle(W - 26, 16, 14, 14, LAPIS).setStrokeStyle(1, GOLD);
-    // Uçana vurur/vurmaz: kare + üstü çizili.
-    this.#ucanIkon = scene.add.rectangle(W - 52, 16, 14, 14, PARCHMENT).setStrokeStyle(1, GOLD);
-    this.#ucanCizik = scene.add.rectangle(W - 52, 16, 20, 3, VERMILION).setVisible(false);
-    this.#kap.add([this.#tipRozeti, this.#ucanIkon, this.#ucanCizik]);
+    this.#hasar = sayi(SATIRLAR.damage, PARCHMENT);
+    this.#atisHizi = sayi(SATIRLAR.rate, PARCHMENT);
+    this.#menzil = sayi(SATIRLAR.range, PARCHMENT);
+    this.#kapsama = sayi(SATIRLAR.coverage, GOLD);
+    this.#yukseltme = sayi(SATIRLAR.upgrade, PARCHMENT);
+    this.#iade = sayi(SATIRLAR.refund, GOLD);
+    // §11'in en kritik sayısı büyük ve vermilyon.
+    this.#etkinDps = sayi(SATIRLAR.dps - 6, VERMILION, 0.9);
 
     // Düşman ikonu şeridi — **S42: o haritanın kadrosu.** Hepsini
     // listelemek oyuncuya henüz görmediği düşmanları gösterirdi.
     roster.forEach((e, i) => {
-      const bx = 16 + i * 30;
+      const bx = SOL_PAY + ICON / 2 + i * 30;
       const halka = scene.add
-        .rectangle(bx, 168, ICON + 6, ICON + 6, 0x000000, 0)
+        .rectangle(bx, SATIRLAR.ikonlar, ICON + 6, ICON + 6, 0x000000, 0)
         .setStrokeStyle(2, GOLD);
       const ikon = scene.add
-        .image(bx, 168, 'atlas', enemyFrameKey(e.id))
+        .image(bx, SATIRLAR.ikonlar, 'atlas', enemyFrameKey(e.id))
         .setDisplaySize(ICON, ICON)
         .setInteractive({ useHandCursor: true });
       ikon.on(Phaser.Input.Events.POINTER_OVER, () => {
@@ -153,27 +154,26 @@ export class TowerInfoPanel {
     this.#state = s;
     this.#kap.setVisible(true);
 
-    // §11: ham hasar + atış hızı, ve DPS.
-    const dps = s.tier.damage * s.tier.fireRate;
-    this.#hasar.setText(`${s.tier.damage}x${s.tier.fireRate}=${dps.toFixed(1)}`);
+    // §11: ham hasar + atış hızı. Yalnız fontun bildiği karakterler:
+    // rakam, `.`, `+`, `-`, `›`, `×`.
+    this.#hasar.setText(String(s.tier.damage));
+    this.#atisHizi.setText(s.tier.fireRate.toFixed(1));
     this.#menzil.setText(String(s.tier.range));
     this.#kapsama.setText(String(Math.round(s.coveredPx)));
     this.#iade.setText(`+${s.refund}`);
 
-    // §11: yükseltme farkı (öncesi → sonrası). §6 yükseltmenin altın
+    // §11: yükseltme farkı (öncesi › sonrası, DPS). §6 yükseltmenin altın
     // başına verimsiz olduğunu söylüyor ve panel bunu **gizlemiyor**.
+    const dps = s.tier.damage * s.tier.fireRate;
     if (s.nextTier === undefined) {
       this.#yukseltme.setText('-');
     } else {
       const yeni = s.nextTier.damage * s.nextTier.fireRate;
-      this.#yukseltme.setText(`${dps.toFixed(1)}-${yeni.toFixed(1)}`);
+      this.#yukseltme.setText(`${dps.toFixed(1)}›${yeni.toFixed(1)}`);
     }
 
-    // Hasar tipi rozeti: lapis = büyü, vermilyon = fiziksel.
-    this.#tipRozeti.setFillStyle(s.def.damageType === 'magic' ? LAPIS : VERMILION);
-    // Uçana vurur mu.
-    this.#ucanCizik.setVisible(s.tier.airMultiplier === 0);
-    this.#ucanIkon.setFillStyle(s.tier.airMultiplier === 0 ? 0x6b6558 : PARCHMENT);
+    this.#etiketler.setType(s.def.damageType === 'magic');
+    this.#etiketler.setAir(s.tier.airMultiplier > 0);
 
     this.#dpsYaz();
   }
