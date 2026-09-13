@@ -63,9 +63,21 @@ const DAL_BUTON_W = 152;
 const DAL_BUTON_ARA = 156;
 /** İkili satır (yükselt + sat) — tek ölçü, ortadan eşit uzaklık. */
 const IKILI_OFSET = BUTON_ARA / 2;
-/** Hedefleme modu satırı: beş buton, kısa etiketler, daha küçük yazı. */
-const MOD_BUTON_W = 52;
-const MOD_BUTON_ARA = 56;
+/**
+ * Hedefleme modu satırı: beş buton yan yana.
+ *
+ * Yazı 16 px — **Platform alt sınırı** (`CLAUDE.md`: "minimum yazı 16 px,
+ * 640×360'a küçültüldüğünde okunur kalmalı"). Uzun süre 14 px'di; 640×360
+ * denetiminde kod tabanındaki **tek** ihlal olarak yakalandı. Buton
+ * genişliği bu yüzden etiketten türetildi: en uzun etiket 16 px'te ~48 px
+ * (`Strong`), 60 px buton her iki dilde de altı şar piksel pay bırakıyor.
+ *
+ * Yazı boyutu **sabite alınmadı, çağrı yerinde duruyor** — bekçi k.13
+ * satır içi `fontSize: '<n>px'` değişmezini tarıyor; sabite taşımak onu
+ * tam da bu kurala karşı kör ederdi.
+ */
+const MOD_BUTON_W = 60;
+const MOD_BUTON_ARA = 64;
 const VERMILION = 0xb03a2e;
 /** P03 brifi — kule/kışla gövdesi oyun içi gösterim boyutu (`Tower.ts`/`GameScene.ts` ile aynı). */
 const TOWER_DISPLAY_SIZE = 64;
@@ -298,7 +310,7 @@ export class BuildMenu {
       const et = this.#scene.add
         .text(bx, 52, t(MODE_LABEL_KEY[mod]), {
           fontFamily: 'Spectral, serif',
-          fontSize: '14px',
+          fontSize: '16px', // bekçi k.13 — Platform alt sınırı, satır içi kalmalı
           color: secili ? '#B03A2E' : '#14203A',
         })
         .setOrigin(0.5);

@@ -478,11 +478,37 @@ ve `en` tamlığı ayrı bir testle kilitlendi.
 oyuncu yolundan aynı şey sınandı. `DEFAULT_LOCALE`'ün anlamı da
 değişti: "açılıştaki dil" değil, **geri düşme dili**.
 
+### 640×360 denetimi (2026-09-14) — bir ihlal buldu
+
+Yukarıda "yapılmayan" olarak bırakılan doğrulama 6 ayrıca koşuldu ve
+**göz kararı yerine kuralın kendisi ölçüldü**: `CLAUDE.md` Platform
+kısıtı "minimum yazı 16 px, minimum dokunmatik hedef 44×44 px
+(1280×720 ölçeğinde)" diyor, ikisi de sayılabilir.
+
+- Dokunmatik hedefler: `createParchmentButton` çağrılarının **hepsi**
+  ≥44×44 (en küçüğü hedefleme satırı, 44 px yükseklik — sınırda ama
+  uygun).
+- Yazı boyutu: `scenes/`+`fx/` içindeki 25 `fontSize` değerinden
+  **biri ihlal** — `BuildMenu`'nün hedefleme modu satırı **14 px**.
+  Adım 3'ten eski; 640×360'ta 7 fiziksel piksele iniyordu.
+
+Düzeltildi: 16 px + buton 52→60 px, aralık 56→64 px (en uzun etiket
+16 px'te `Strong` = 48 px, ölçüldü). Türkçe `Güçlü` 43 px.
+
+**Bekçiye bağlandı — k.13.** Gerekçe README'nin kendi dersiyle aynı
+("bekçiye bağlanan kurallar tuttu, bağlanmayan tutmadı"): bu kural
+`CLAUDE.md`'de yazılıydı, bekçide yoktu ve ihlal edilmişti — k.12'nin
+i18n için yaşadığının aynısı. Kontrol `scenes/`+`fx/` içinde satır içi
+`fontSize: '<n>px'` değişmezlerini tarıyor; kasıtlı bozma sınamasında
+doğru dosya:satırı verdi.
+
+> Bunu yazarken kendi tuzağıma düştüm: yazı boyutunu önce adlandırılmış
+> bir sabite aldım ve **bekçiyi tam o kurala karşı kör ettim** (regex
+> satır içi değişmez arıyor). Değer çağrı yerine geri kondu, sebebi de
+> yanına yazıldı.
+
 ### Yapılmayan
 
-- **640×360 okunurluk (doğrulama 6) ölçülmedi.** Metinler 16 px alt
-  sınırının üstünde ve ölçekleme oransal, ama bu bir çıkarım, ölçüm
-  değil.
 - `MenuScene`'e dil seçici konmadı (karar: yalnız ayarlar paneli).
   Tarayıcı algılaması bu boşluğun büyük kısmını kapatıyor ama
   **Türkçe tarayıcıdan İngilizce oynamak isteyen** biri hâlâ önce bir
