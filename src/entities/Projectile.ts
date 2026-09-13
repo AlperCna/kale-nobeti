@@ -4,6 +4,7 @@ import type { Enemy } from './Enemy';
 import type { ProjectileState } from '../types/projectile';
 import type { Poolable } from '../util/pool';
 import type { TowerEffect } from '../types/tower';
+import type { ProjectileLook } from '../data/projectileVisuals';
 
 /**
  * Greybox mermi. **Havuzlu** — TIER 1 kural 3: oyun içinde asla `new` ile
@@ -22,6 +23,7 @@ export class Projectile extends Phaser.GameObjects.Arc implements ProjectileStat
     'Alpha',
     'Scale',
     'FillStyle',
+    'Angle', // `setLook` oku hedefe döndürüyor — havuza dönen mermi 0'a dönmeli
   ];
 
   target: Enemy | null = null;
@@ -50,6 +52,20 @@ export class Projectile extends Phaser.GameObjects.Arc implements ProjectileStat
   }
 
   /**
+   * Aileye/dala göre görünüm (`data/projectileVisuals.ts`) — oyuncu geri
+   * bildirimi: "atış şekli hiç değişmiyor". `fire`'dan SONRA, `activate`'ten
+   * ÖNCE: konum ve hedef dolu olmalı ki ok hedefe dönük çizilsin. Havuz
+   * sıfırlaması ölçeği, rengi ve açıyı geri alıyor (kural 3).
+   */
+  setLook(look: ProjectileLook): void {
+    this.setFillStyle(look.color);
+    this.setScale(look.scaleX, look.scaleY);
+    if (look.rotateToTarget && this.target !== null) {
+      this.setRotation(Math.atan2(this.target.y - this.y, this.target.x - this.x));
+    }
+  }
+
+  /**
    * TIER 1 kural 3: **tüm** durum sıfırlanır.
    *
    * `target` sıfırlanmazsa havuzdaki mermi ölü düşmana referans tutar ve
@@ -72,6 +88,7 @@ export class Projectile extends Phaser.GameObjects.Arc implements ProjectileStat
     this.setPosition(0, 0);
     this.setAlpha(1);
     this.setScale(1);
+    this.setAngle(0);
     this.setFillStyle(this.#baseColor);
   }
 }

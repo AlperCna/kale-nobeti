@@ -44,6 +44,7 @@ import { PreloadScene } from './PreloadScene';
 import type { MapDef } from '../types/map';
 import { TOWERS, getTower, tierAt } from '../data/towers';
 import { towerFrameKey } from '../data/spriteFrames';
+import { projectileLook } from '../data/projectileVisuals';
 import { getEnemy, ENEMIES } from '../data/enemies';
 import { BALANCE, POOL_PREALLOC, GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI } from '../data/balance';
 import { MAP1_WAVES, wavesFor } from '../data/waves';
@@ -495,6 +496,8 @@ export class GameScene extends Phaser.Scene {
         hitRadius: MERMI_ISABET_YARICAPI,
         effect: tier.effect,
       });
+      // Görünüm `fire`'dan sonra (konum/hedef dolu), `activate`'ten önce.
+      m?.setLook(projectileLook(kule.def.id, tier.effect?.kind));
       m?.activate();
       this.#soundSystem?.playTowerShot(kule.def.id);
     }, this.bus);
