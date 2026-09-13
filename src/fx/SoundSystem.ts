@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import type { EventBus } from '../systems/EventBus';
 import type { TowerId } from '../types/tower';
 import type { Wave } from '../types/wave';
-import { ENEMY_DEATH_THROTTLE_MS } from '../data/audio';
+import { ENEMY_DEATH_THROTTLE_MS, SFX_POOL_PER_KEY } from '../data/audio';
 
 /**
  * M6-T11 — `docs/plan/M6-ses-uretim-brifi.md`.
@@ -32,6 +32,14 @@ export class SoundSystem {
   readonly #scene: Phaser.Scene;
   /** Duvar saati — `enemy_death` kısıtlamasının son çalış zamanı (Y06). */
   #sonOlumSesi = -Infinity;
+  /**
+   * Anahtar başına önceden yaratılmış ses örnekleri, sırayla çalınıyor —
+   * TIER 1 kural 3'ün ses hâli. Gerekçe `data/audio.ts`
+   * `SFX_POOL_PER_KEY`'de. `SoundManager` oyun geneli (sahneye bağlı
+   * değil), bu yüzden örnekler sahne kapanışında `destroy()` ile elle
+   * yok ediliyor — yoksa her "tekrar dene" bir tur daha biriktirirdi.
+   */
+  readonly #havuz = new Map<string, { sesler: Phaser.Sound.BaseSound[]; sira: number }>();
 
   constructor(scene: Phaser.Scene, bus: EventBus, waveList: readonly Wave[]) {
     this.#scene = scene;
@@ -95,6 +103,24 @@ export class SoundSystem {
    */
   #cal(anahtar: string): void {
     if (!this.#scene.cache.audio.has(anahtar)) return;
-    this.#scene.sound.play(anahtar, { rate: rastgeleHiz() });
+    let kayit = this.#havuz.get(anahtar);
+    if (kayit === undefined) {
+      kayit = { sesler: [], sira: 0 };
+      for (let i = 0; i < SFX_POOL_PER_KEY; i++) kayit.sesler.push(this.#scene.sound.add(anahtar));
+      this.#havuz.set(anahtar, kayit);
+    }
+    const ses = kayit.sesler[kayit.sira];
+    kayit.sira = (kayit.sira + 1) % kayit.sesler.length;
+    // Çalmakta olan örnek yeniden başlıyor (Phaser `play` durdurup başlatır)
+    // — kısa efektlerde duyulmuyor, tahsis hiç yok.
+    ses?.play({ rate: rastgeleHiz() });
+  }
+
+  /** `GameScene` kapanışında — bkz. `#havuz`. */
+  destroy(): void {
+    for (const kayit of this.#havuz.values()) {
+      for (const ses of kayit.sesler) ses.destroy();
+    }
+    this.#havuz.clear();
   }
 }

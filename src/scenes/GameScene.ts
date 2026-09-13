@@ -601,6 +601,9 @@ export class GameScene extends Phaser.Scene {
       // M6-T11 — `Game`den çıkarken oyun müziği susuyor; `Menu` kendi
       // müziğini kendi başlatıyor (`MenuScene.create()`).
       this.sound.stopByKey('music_game');
+      // Ses efekti örnekleri `SoundManager`'da (oyun geneli) yaşıyor —
+      // sahneyle birlikte gitmiyor, elle bırakılıyor.
+      this.#soundSystem?.destroy();
       const d = devHooks();
       if (d !== undefined) d.clearCount = (d.clearCount ?? 0) + 1;
     });

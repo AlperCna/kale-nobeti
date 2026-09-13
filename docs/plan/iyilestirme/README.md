@@ -277,8 +277,9 @@ dosyanın kendi "Sonuç" bölümü.
 İlk iki tur kod tarama ve ölçümden çıkmıştı; üçüncüsü **gerçek bir
 oyuncudan** — kullanıcı oyunu kendi tarayıcısında oynayıp 10 ekran
 görüntüsüyle 12 gözlem bıraktı (`M7-P02`'nin ilk gerçek verisi). Üç
-kendi bulgumla 15 madde: 12'si 9 commit'te kapandı, biri (2×) ayrıntı
-bekliyor, ikisi yan gözlem olarak ertelendi. Ayrıntı:
+kendi bulgumla 15 madde: 13'ü 10 commit'te kapandı (2× kasması dahil —
+kök: her kule atışında yeni `Sound` nesnesi, 20 sn'de 68 → 19), ikisi
+yan gözlem olarak ertelendi. Ayrıntı:
 [T3-oyuncu-geri-bildirimi.md](T3-oyuncu-geri-bildirimi.md).
 
 En ağır bulgular: parşömen çerçevede her ekranda görünen dikişler
