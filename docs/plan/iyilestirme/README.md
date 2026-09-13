@@ -272,6 +272,25 @@ dosyanın kendi "Sonuç" bölümü.
 
 ---
 
+## Tur 3 — oyuncu geri bildirimi (2026-09-14)
+
+İlk iki tur kod tarama ve ölçümden çıkmıştı; üçüncüsü **gerçek bir
+oyuncudan** — kullanıcı oyunu kendi tarayıcısında oynayıp 10 ekran
+görüntüsüyle 12 gözlem bıraktı (`M7-P02`'nin ilk gerçek verisi). Üç
+kendi bulgumla 15 madde: 12'si 9 commit'te kapandı, biri (2×) ayrıntı
+bekliyor, ikisi yan gözlem olarak ertelendi. Ayrıntı:
+[T3-oyuncu-geri-bildirimi.md](T3-oyuncu-geri-bildirimi.md).
+
+En ağır bulgular: parşömen çerçevede her ekranda görünen dikişler
+(atlas'ta saydam kenar payı + sıfır boşluk), etiketsiz ve fontta olmayan
+karakter yazan bilgi paneli, kartuşun menü butonunu örtmesi, `Takviye`
+sızıntısı (k.12'nin yazılı kör noktası tam öngörüldüğü gibi vurdu).
+
+> **Bu turun dersi** desen §5 sayılabilir: bulguların çoğu benim kendi
+> ekran görüntülerimde de vardı ve ölçtüğüm şeye bakıp geçmiştim. Sayısal
+> doğrulama görsel doğrulamanın yerini tutmuyor — bundan sonra her canlı
+> kontrolde "göze batan var mı" sorusu ölçümün yanında.
+
 ## Tekrarlayan dört desen
 
 Bulguların çoğu dört kökten çıkıyor. Tek tek düzeltmek yerine kökü
