@@ -123,9 +123,11 @@ export class HudScene extends Phaser.Scene {
     createParchmentFrame(this, MARGIN + 96, MARGIN + 66, 216, 140, 16);
     this.#createLabels();
     this.#readout = new HudReadout(this, MARGIN + 8, MARGIN + 16);
-    // Etiket kolonu 136'ya kayınca "dalga"/"wave" ~176'da bitiyor; telgraf
-    // ikonu aynı satırda, onun sağında kalmalı.
-    this.#telegraph = new WaveTelegraph(this, MARGIN + 180, MARGIN + 94);
+    // M8-T01 — telgraf kartın ALTINDA kendi satırında (x 28, y 172): beş
+    // düşman tipine kadar 370 px, kartın içine hiçbir zaman sığmıyordu.
+    // Yapı noktalarıyla çakışmıyor: en üstteki nokta harita 1'de y=215
+    // (yarıçap 22 → 193), satır 172±17 → 189'da bitiyor.
+    this.#telegraph = new WaveTelegraph(this, MARGIN + 8, MARGIN + 152);
     // `G05` — prep geri sayımıyla aynı yatay eksende ama biraz altında;
     // ikisi zamanda hiç örtüşmüyor (biri yalnız `prep`'te, öbürü yalnız
     // boss canlıyken görünür), üst üste binme riski yok.
