@@ -52,6 +52,7 @@ import { projectileLook } from '../data/projectileVisuals';
 import { getEnemy, ENEMIES } from '../data/enemies';
 import { BALANCE, POOL_PREALLOC, GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI } from '../data/balance';
 import { MUSIC_BASE_VOLUME } from '../data/audio';
+import { portal } from '../systems/Portal';
 
 import { MAP1_WAVES, wavesFor } from '../data/waves';
 import { devHooks } from '../util/devHooks';
@@ -1256,6 +1257,19 @@ export class GameScene extends Phaser.Scene {
     });
 
     this.input.on(Phaser.Input.Events.POINTER_DOWN, (p: Phaser.Input.Pointer) => {
+      /**
+       * `M9-T01` — `gameplayStart` oyuncunun **ilk etkileşiminde**.
+       *
+       * Poki'nin şartı açık: *"yüklemede değil"*. Harita açılışında
+       * çağırmak yanlış olurdu — oyuncu daha bakıyor olabilir. Burası
+       * sahnedeki ilk `pointerdown`, yani gerçek etkileşim.
+       *
+       * Her tıklamada çağrılıyor ve bu **kasıtlı**: yinelenen çağrıyı
+       * `Portal` yutuyor (`Portal.test.ts`), yani burada bayrak tutmaya
+       * gerek yok ve duraklatmadan dönüşte de doğru davranıyor.
+       */
+      portal.gameplayStart();
+
       const nokta = { x: p.worldX, y: p.worldY };
 
       // 1) Bekleyen yetenek her şeyin önünde — tıkla-hedefle (§8).
