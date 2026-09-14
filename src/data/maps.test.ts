@@ -153,7 +153,9 @@ describe('Harita 2 ve 3 — GAME-DESIGN.md §9 tablosu', () => {
     expect(MAP_3.id).toBe('kul-ovasi');
     expect(MAP_3.buildSpots).toHaveLength(12);
     expect(MAP_3.paths).toHaveLength(2); // iki giriş
-    expect(MAP_3.hpMultiplier).toBe(2.6);
+    // S82 — 2,6 → 2,5. `waveSim` düşman yeteneklerini simüle etmeye
+    // başlayınca harita 3 Zor'da geçilemez çıktı (14 can, sınır 12).
+    expect(MAP_3.hpMultiplier).toBe(2.5);
     expect(MAP_3.goldMultiplier).toBe(3.8); // S73 — HP çarpanından ayrıştı
     expect(MAP_3.startGold).toBe(1064); // 280 × 3,8
   });

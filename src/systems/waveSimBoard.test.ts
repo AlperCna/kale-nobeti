@@ -71,14 +71,56 @@ describe('Borç 1 — tahta hedefleme modu taşıyor', () => {
     expect(yakin.killedCount).toBeGreaterThan(ilk.killedCount);
   });
 
-  it('Şaman senaryosu artık ÖLÇÜLEBİLİR — M4’te ölçülemiyordu', () => {
-    // §5: "Şaman → Keskin Nişancı (`last` ile arkadan seç) veya Yıldırım".
-    // M4-SONUC §1: "simülasyon hedefleme modunu taşımadığı için senaryo
-    // uçtan uca ölçülemedi". Artık ölçülüyor.
-    const ilk = simulateWave(dalga('saman', 6, 0.6), tahtaYap(4, 'first'), MAP_1);
-    const son = simulateWave(dalga('saman', 6, 0.6), tahtaYap(4, 'last'), MAP_1);
-    // Fark küçük ama gerçek: `last` dalgayı daha erken bitiriyor.
-    expect(son.durationSec).toBeLessThan(ilk.durationSec);
+  /**
+   * **Şaman senaryosu — `M10-T03`'te yeniden ölçüldü (S83).**
+   *
+   * Bu test eskiden "`last` dalgayı daha erken bitiriyor" diyordu ve
+   * §5'in tavsiyesini (*"Şaman → Keskin Nişancı (`last` ile arkadan
+   * seç)"*) doğruluyordu. O ölçüm **kördü**: `waveSim` düşman
+   * yeteneklerini simüle etmiyordu, yani şamanlar birbirini
+   * iyileştirmiyordu.
+   *
+   * İyileştirme açılınca senaryo tamamen değişti ve tavsiyenin **ikinci
+   * yarısı tersine döndü.** Ölçülen (6 şaman, 0,6 sn aralık):
+   *
+   * | Tahta | `first` | `last` | `closest` |
+   * |---|---|---|---|
+   * | 4 kule T2 | 0 ölü | 0 ölü | 0 ölü |
+   * | 8 kule T2 | 0 ölü | 0 ölü | 0 ölü |
+   * | 6 kule T3 | **6 ölü** | 2 ölü | 6 ölü |
+   *
+   * İki bulgu: (1) karşılıklı iyileştirme **T2 okçuyu tümden yeniyor**
+   * — sekiz tane bile tek şaman öldüremiyor, yani §5'in "Keskin
+   * Nişancı" (T3 patlayıcı vuruş) tavsiyesi doğru ve **zorunlu**;
+   * (2) `last` artık **kötü** seçim, çünkü odağı dağıtmak iyileştirme
+   * hızının altına düşüyor — odaklanmak (`first`) gerekiyor.
+   */
+  const samanTahtasi = (n: number, tier: 1 | 2, mod: TargetMode): ReferenceBoard => ({
+    waveIndex: 10,
+    cumulativeCost: 0,
+    towers: KAPSAMA_SIRALI.slice(0, n).map((spotIndex) => ({
+      spotIndex,
+      towerId: 'okcu' as const,
+      tier,
+      targetMode: mod,
+    })),
+  });
+
+  it('karşılıklı iyileştirme T2 okçuyu YENİYOR — sekiz kule bile öldüremiyor', () => {
+    for (const mod of ['first', 'last', 'closest'] as const) {
+      const r = simulateWave(dalga('saman', 6, 0.6), samanTahtasi(8, 1, mod), MAP_1);
+      expect(r.killedCount, mod).toBe(0);
+    }
+  });
+
+  it('T3’te hedefleme modu senaryoyu BELİRLİYOR — odaklanmak şart', () => {
+    const odak = simulateWave(dalga('saman', 6, 0.6), samanTahtasi(6, 2, 'first'), MAP_1);
+    const dagit = simulateWave(dalga('saman', 6, 0.6), samanTahtasi(6, 2, 'last'), MAP_1);
+    expect(odak.killedCount).toBe(6);
+    expect(odak.leakedCount).toBe(0);
+    // §5'in "`last` ile arkadan seç" tavsiyesi iyileştirme modellenince
+    // TERSİNE döndü: odağı dağıtmak iyileştirme hızının altına düşüyor.
+    expect(dagit.killedCount).toBeLessThan(odak.killedCount);
   });
 });
 

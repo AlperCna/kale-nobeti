@@ -509,7 +509,7 @@ kenar bir kez parlar.
 |---|---|---|---|---|---|---|---|---|
 | 1 | Değirmen Geçidi | Yeşil vadi, değirmen | Tek yol, 2 keskin viraj | 8 | 1 | 1,0 | 1,0 | 280 |
 | 2 | Taş Köprü | Nehir, taş köprü, sis | Y şeklinde ikiye ayrılır, köprüde birleşir | 10 | 1 | 1,6 | 1,6 | 448 |
-| 3 | Kül Ovası | Yanmış toprak, volkanik | İki ayrı giriş, kalede birleşir | 12 | 2 | 2,6 | **3,8** | **1064** |
+| 3 | Kül Ovası | Yanmış toprak, volkanik | İki ayrı giriş, kalede birleşir | 12 | 2 | **2,5** | **3,8** | **1064** |
 
 **Altın çarpanı ≥ HP çarpanı** (M7, S70/S72/S73). Eskiden "eşit" kuralı
 vardı ve yalnız öldürme altınına uygulanıyordu; kule maliyetleri sabit
@@ -524,6 +524,11 @@ düzeltildi:
   haritada aynı sayıda kule alırken düşman HP'si haritayla büyüyordu ve
   ilk dalgalar sızdırıyordu.
 - **S73** — harita 3'te altın çarpanı HP çarpanından **ayrıştı** (2,6 → 3,8).
+- **S82** — harita 3'ün HP çarpanı **2,6 → 2,5**. `waveSim` M10'a kadar
+  düşman yeteneklerini (Şaman iyileştirmesi, Trol yenilenmesi, Örümcek
+  Ana bölünmesi) **hiç** simüle etmiyordu; etmeye başlayınca harita 3
+  Zor'da 14 can kaybediyor çıktı (sınır 12). 2,5 iki ölçütü de (Zor'da
+  geçilebilir + zorluk monoton) karşılayan en küçük değişiklik.
   Eşit tutulunca 12 nokta tam yükseltilemiyordu; tarama sonucu 3,8'de
   tahta maliyeti **doyuyor** (üstü fazladan kule almıyor) — sayı seçilmedi,
   tam yükseltme noktası olarak ölçüldü.

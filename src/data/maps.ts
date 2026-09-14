@@ -289,7 +289,28 @@ export const MAP_3: MapDef = {
   buildSpots: MAP3_BUILD_SPOTS,
   flyerPaths: [MAP3_FLYER_A, MAP3_FLYER_B],
   castle: MAP3_KALE,
-  hpMultiplier: 2.6,
+  /**
+   * `M10-T03` (S82): **2,6 → 2,4.** Yetenekler simüle edilmeye
+   * başlayınca harita 3 Zor'da (can 12) **14 can** kaybediyordu, yani
+   * `difficulty.ts`'in "öğrenme yayı (harita 1-3) Zor'da hâlâ
+   * geçilebilir" ölçütü düşüyordu.
+   *
+   * İki ölçüt birden tutmak zorunda: Zor'da can kaybı **< 12** ve
+   * zorluk **monoton** (harita 2 < harita 3 < harita 4). Ölçülen ince
+   * tarama — can kaybı, gerçekçi referans tahta (h2 = 8, h4 = 15):
+   *
+   * | hpMultiplier | Zor | Monoton + geçilebilir |
+   * |---|---|---|
+   * | 2,6 (eski) | 14 | ✗ geçilemiyor |
+   * | 2,55 | 12 | ✗ tam sınırda |
+   * | **2,5** | **11** | **✓** |
+   * | 2,45 | 10 | ✓ |
+   * | 2,4 | 8 | ✗ harita 2 ile eşit |
+   *
+   * 2,5 iki ölçütü de karşılayan **en küçük** değişiklik. Altın çarpanı
+   * etkilenmiyor: S73 onu zaten HP'den ayırmış (3,8).
+   */
+  hpMultiplier: 2.5,
   /**
    * **S73 — altın çarpanı HP çarpanından AYRIŞTI (2,6 → 3,8).**
    *
