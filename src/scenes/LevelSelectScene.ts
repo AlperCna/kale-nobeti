@@ -7,6 +7,7 @@ import { t } from '../util/i18n';
 import { PreloadScene } from './PreloadScene';
 import { createParchmentButton } from '../fx/ParchmentFrame';
 import { getSettings } from '../systems/Settings';
+import { EndlessRecords } from '../systems/EndlessRecords';
 import { DIFFICULTY } from '../data/difficulty';
 import type { Difficulty } from '../data/difficulty';
 import { FRAME_STAR, FRAME_STAR_EMPTY } from '../data/spriteFrames';
@@ -177,6 +178,7 @@ export class LevelSelectScene extends Phaser.Scene {
     this.#zorlukSecici(width);
 
     const ids = MAPS.map((m) => m.id);
+    const sonsuz = new EndlessRecords(new LocalStore());
     MAPS.forEach((m, i) => {
       const { x, y } = izgaraKonumu(i, MAPS.length, width);
       const acik = this.#save!.isUnlocked(ids, m.id);
@@ -187,6 +189,15 @@ export class LevelSelectScene extends Phaser.Scene {
         // Küçük resim + üstünde yalnız köşe/kenar (orta dolgu yok —
         // varsa küçük resmi kapatırdı).
         this.add.image(x, y, `card-${m.id}`).setDisplaySize(KART_W, KART_H);
+        // `M8-T13` — yolun kendisi kartın üstünde. Küçük resimler haritanın
+        // **arka planı**; yol onların üstüne oyun içinde çiziliyor, yani
+        // karta bakan oyuncu haritanın şeklini hiç görmüyordu. Aynı
+        // `MapDef.paths` verisi karta ölçekleniyor.
+        //
+        // Sıra önemli: küçük resmin **hemen ardında**, mürekkep bantların
+        // ve yıldızların ALTINDA. İlk denemede bantlardan sonra çiziliyordu
+        // ve yol yazının üstünden geçiyordu (canlı ekran görüntüsü).
+        this.#yoluCiz(m, x, y);
         // Ad ve alt yazı için mürekkep bant — küçük resmin üstünde doğrudan
         // yazı okunmuyordu (lav haritasında "Kül Ovası" zor, "10 dalga ·
         // 12 nokta" neredeyse görünmez). Yazı rengi de parşömene döndü.
@@ -238,12 +249,17 @@ export class LevelSelectScene extends Phaser.Scene {
           .setDisplaySize(30, 30);
       }
 
+      const enIyiSonsuz = sonsuz.bestOf(m.id);
       this.add
         .text(
           x,
           y + 34,
           acik
-            ? `${wavesFor(m.id).length} ${t('waves')} · ${m.buildSpots.length} ${t('buildSpot')}`
+            ? `${wavesFor(m.id).length} ${t('waves')} · ${m.buildSpots.length} ${t('buildSpot')}` +
+              // `M8-T13` — sonsuz rekoru varsa kartta. Rekor yoksa satır
+              // uzamıyor: hiç oynanmamış bir haritada "Sonsuz: 0" yazmak
+              // bilgi değil gürültü.
+              (enIyiSonsuz > 0 ? ` · ${t('endlessBestShort')} ${enIyiSonsuz}` : '')
             : t('locked'),
           {
             fontFamily: 'Spectral, serif',
@@ -253,7 +269,19 @@ export class LevelSelectScene extends Phaser.Scene {
         )
         .setOrigin(0.5);
 
-      if (!acik) return;
+      if (!acik) {
+        // `M8-T13` — kilitli kart neden kilitli olduğunu söylüyor.
+        // Eskiden yalnız "Kilitli" yazıyordu ve oyuncu ne yapması
+        // gerektiğini kartta göremiyordu.
+        this.add
+          .text(x, y + 58, t('lockedHint'), {
+            fontFamily: 'Spectral, serif',
+            fontSize: '16px', // Platform: minimum 16 px
+            color: 'rgba(228,211,168,0.4)',
+          })
+          .setOrigin(0.5);
+        return;
+      }
       kart.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => {
         this.scene.start('Game', { mapId: m.id });
         this.scene.launch('Hud');
@@ -269,6 +297,47 @@ export class LevelSelectScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true })
       .on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => this.scene.start('Menu'));
+  }
+
+  /**
+   * Haritanın yolunu kartın küçük resmi üstüne çizer — `M8-T13`.
+   *
+   * Koordinatlar `MapDef.paths`'ten geliyor ve mantıksal 1280×720'den
+   * kart ölçüsüne indiriliyor. Ekran dışı doğum noktaları (x = -60) kartın
+   * kenarında kırpılıyor — `Graphics` kendi dikdörtgeninin dışına taşmasın
+   * diye maske değil **kırpma yok**: çizgi zaten kartın içinde kalıyor,
+   * çünkü ölçek 1280 → 300 ve -60 → -14, kart yarım genişliği 150.
+   */
+  #yoluCiz(m: (typeof MAPS)[number], x: number, y: number): void {
+    const g = this.add.graphics().setPosition(x, y);
+    const ox = KART_W / 1280;
+    const oy = KART_H / 720;
+    // Ekran dışı doğum noktaları (x = -60) kartın **dışına** taşıyordu:
+    // -60 → -164, kartın yarı genişliği 150 (canlı ekran görüntüsünde
+    // kartların yanından çıkan çizgiler olarak görüldü). Kırpma payı
+    // çerçeve kalınlığını da hesaba katıyor.
+    const sinirX = KART_W / 2 - 10;
+    const sinirY = KART_H / 2 - 10;
+    const kirp = (v: number, s: number): number => Math.max(-s, Math.min(s, v));
+    g.lineStyle(2, GOLD, 0.45);
+    for (const yol of m.paths) {
+      yol.forEach((nokta, i) => {
+        const px = kirp((nokta.x - 640) * ox, sinirX);
+        const py = kirp((nokta.y - 360) * oy, sinirY);
+        if (i === 0) g.moveTo(px, py);
+        else g.lineTo(px, py);
+      });
+      g.strokePath();
+      g.beginPath();
+    }
+    // Kale — yolun bittiği yer, küçük dolu kare.
+    g.fillStyle(GOLD, 0.9);
+    g.fillRect(
+      kirp((m.castle.x - 640) * ox, sinirX) - 3,
+      kirp((m.castle.y - 360) * oy, sinirY) - 3,
+      6,
+      6,
+    );
   }
 
   /**

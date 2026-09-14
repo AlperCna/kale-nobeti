@@ -742,12 +742,12 @@ bayrak `(700,240) → (700,313)` taşındı (yola sabitlenerek).
 dokunmayla taşındı. Tam ekran düğmesi sağ kenarda, HUD'un hiçbir parçasıyla
 çakışmıyor.
 
-### Faz 13 — Menü ve seviye seçim — `M8-T13`
+### Faz 13 — Menü ve seviye seçim — `M8-T13`  ☑
 
 | | |
 |---|---|
 | **Kimlik** | `M8-T13` |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ **bitti** (2026-09-14) |
 | **Süre** | ~45 dk |
 | **Önkoşul** | `M8-T07` |
 | **TIER 1** | k.6, k.7 |
@@ -758,6 +758,47 @@ dokunmayla taşındı. Tam ekran düğmesi sağ kenarda, HUD'un hiçbir parças�
 - Seviye seçim: kart üstüne yolun kesikli çizimi (`MapDef.paths`'ten, küçük resme ölçekli), en iyi sonsuz dalga, kilitli kartta "Önce N. haritayı bitir".
 
 **Kabul kriteri** — canlı ekran görüntüleri; `guard` k.12/k.13 yeşil.
+
+**Durum:** ☑ **bitti** (2026-09-14)
+
+#### Sonuç — `M8-T13`
+
+**Menü.** Alt başlık (`t('tagline')` — "Kale senin nöbetinde"): başlık tek
+başına oyunun ne olduğunu söylemiyordu, oyuncu geri bildirimi "burası çok
+sade duruyor" tam buydu. Başlıkta çok yavaş bir altın parıltısı (alfa
+1 ↔ 0,72, 2,2 sn); **`screenShake` ayarına bağlı** — `M8-T09`'daki kararla
+aynı gerekçe: bilgi taşımayan görüntü hareketi ve `reducedMotionDefaults`
+onu zaten kapatıyor. "Nasıl oynanır" düğmesi ve sürüm etiketi eklendi.
+
+**Sürüm etiketi tek kaynaktan.** `vite.config.ts` `define` ile
+`package.json`'dan geliyor (`__APP_VERSION__`); sürüm `0.0.0` → **`0.8.0`**
+oldu. Tarayıcıda dosya sistemi yok, elle ikinci bir yere yazmak iki
+kaynağın sessizce ayrışması demekti. `dist/` içinde gömülü olduğu
+doğrulandı.
+
+**`HowToScene`** — tek sayfa, statik, yedi satır, hepsi `strings.ts`'te
+(tr/en). Oyunun kendi öğreticisinin (`TutorialSystem`, `Y09`) yerine
+geçmiyor; "bir şeyi kaçırdım" diyen oyuncunun bakacağı yer.
+
+**Seviye seçim kartlarında haritanın YOLU.** Küçük resimler haritanın
+arka planı; yol onların üstüne oyun içinde çiziliyor, yani karta bakan
+oyuncu haritanın şeklini hiç görmüyordu. Aynı `MapDef.paths` verisi karta
+ölçekleniyor — ikinci bir veri kaynağı yok.
+
+**Canlı kontrolden iki düzeltme, ikisi de ilk denemede görülmedi:**
+
+1. **Yol kartın DIŞINA taşıyordu.** Ekran dışı doğum noktası (`x = -60`)
+   kart ölçeğinde `-164`'e düşüyor, kartın yarı genişliği ise 150 —
+   kartların yanından çıkan gold çizgiler olarak göründü. Noktalar artık
+   kart sınırına kırpılıyor.
+2. **Yol yazının ÜSTÜNDEN geçiyordu.** Çizim mürekkep bantlardan sonra
+   yapılıyordu; harita adı ve yıldızlar çizginin altında kalıyordu. Artık
+   küçük resmin hemen ardında, bantların **altında**.
+
+**Kartta sonsuz rekoru** (varsa) ve **kilitli kartta ne yapılacağı**
+("Önce önceki haritayı bitir") — eskiden yalnız "Kilitli" yazıyordu.
+Rekor yoksa satır uzamıyor: hiç oynanmamış haritada "Sonsuz: 0" bilgi
+değil gürültü.
 
 ### Faz 14 — Paket boyutu ve başarım — `M8-T14`
 

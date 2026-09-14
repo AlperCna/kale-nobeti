@@ -7,6 +7,7 @@ import { GameScene } from './scenes/GameScene';
 import { HudScene } from './scenes/HudScene';
 import { GameOverScene } from './scenes/GameOverScene';
 import { AchievementsScene } from './scenes/AchievementsScene';
+import { HowToScene } from './scenes/HowToScene';
 import { OverlayScene } from './scenes/OverlayScene';
 
 /**
@@ -48,6 +49,7 @@ const config: Phaser.Types.Core.GameConfig = {
     HudScene,
     GameOverScene,
     AchievementsScene,
+    HowToScene,
     // `M8-T12` — **en sonda**: her zaman en üstte çizilsin (tam ekran
     // düğmesi + yatay çevirme perdesi). `BootScene` `launch` ediyor.
     OverlayScene,
