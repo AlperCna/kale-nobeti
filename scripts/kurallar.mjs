@@ -26,7 +26,7 @@ import { KISLA, barracksTierAt, BLOCK, SOLDIER_SPEED, MELEE_DPS_PER_POINT, melee
 import { ENEMIES, getEnemyForMap } from './data/enemies';
 import { BOSS_ARMOR_BY_MAP, BOSS_HP_BY_MAP, BOSS_HP_TOLERANCE } from './data/bossScaling';
 import { MAPS, COVERAGE_REFERENCE_RANGE } from './data/maps';
-import { MAP1_WAVES, MAP2_WAVES, MAP3_WAVES, budget, wavePoints, waveEnemyCount, spawnDelayFor } from './data/waves';
+import { wavesFor, budget, wavePoints, waveEnemyCount, spawnDelayFor } from './data/waves';
 import { ABILITIES } from './data/abilities';
 // Y03 Adım 3 / S76: dal adları artık strings.ts anahtarı. Doküman
 // Türkçe, o yüzden burada açıkça tr sözlüğünden çözülüyor — etkin
@@ -45,7 +45,6 @@ import { simulateAllWaves } from './systems/waveSim';
 import { measureCoverage } from './util/coverage';
 
 it('dokum', () => {
-  const dalgaHarita = { 'degirmen-gecidi': MAP1_WAVES, 'tas-kopru': MAP2_WAVES, 'kul-ovasi': MAP3_WAVES };
   const AD = ['T1', 'T2', 'T3a', 'T3b'];
 
   const kuleler = TOWERS.map((t) => ({
@@ -94,7 +93,10 @@ it('dokum', () => {
   }
 
   const haritalar = MAPS.map((m) => {
-    const w = dalgaHarita[m.id] ?? [];
+    // \`wavesFor\` — elle tutulan id->dalga tablosu DEĞİL. Harita 4 eklenince
+    // o tablo güncellenmedi ve dokümanda sessizce boş dalga listesi, boş
+    // Kısıt A tablosu ve \"0 sızıntı\" yazdı (ölçüm 10 diyordu).
+    const w = wavesFor(m.id);
     const kaps = measureCoverage(m.paths, m.buildSpots, COVERAGE_REFERENCE_RANGE);
     const boards = buildReferenceBoards(m, w, kaps, false);
     const boardsG = buildReferenceBoards(m, w, kaps, true);
@@ -167,11 +169,31 @@ const yuzde = (x) => (x === null ? '—' : `%${String(x).replace('.', ',')}`);
 const tablo = (basliklar, satirlar) =>
   [`| ${basliklar.join(' | ')} |`, `|${basliklar.map(() => '---').join('|')}|`, ...satirlar.map((s) => `| ${s.join(' | ')} |`)].join('\n');
 
-const HARITA_ADI = {
-  'degirmen-gecidi': '1 · Değirmen Geçidi',
-  'tas-kopru': '2 · Taş Köprü',
-  'kul-ovasi': '3 · Kül Ovası',
+/**
+ * Dokümandaki harita başlıkları. Sıra numarası `MAPS` dizisinden geliyor,
+ * elle yazılmıyor.
+ *
+ * `?? m.id` düşüşü **bilerek yok**: harita 4 eklenince tablolarda ham
+ * `kar-gecidi` yazdı ve kimse fark etmedi. Eksik ad artık `npm run build`'i
+ * durduruyor — denge dokümanı sessizce bozulmasın.
+ */
+const HARITA_GOSTERIM_ADI = {
+  'degirmen-gecidi': 'Değirmen Geçidi',
+  'tas-kopru': 'Taş Köprü',
+  'kul-ovasi': 'Kül Ovası',
+  'kar-gecidi': 'Kar Geçidi',
 };
+const HARITA_ADI = Object.fromEntries(
+  D.haritalar.map((m, i) => {
+    const ad = HARITA_GOSTERIM_ADI[m.id];
+    if (ad === undefined) {
+      throw new Error(
+        `kurallar.mjs: '${m.id}' için gösterim adı yok — HARITA_GOSTERIM_ADI'ya ekle.`,
+      );
+    }
+    return [m.id, `${i + 1} · ${ad}`];
+  }),
+);
 const DUSMAN_ADI = {
   goblin: 'Goblin', orkSavasci: 'Ork Savaşçı', kurtBinicisi: 'Kurt Binicisi', harpi: 'Harpi',
   zirhliOrk: 'Zırhlı Ork', saman: 'Şaman', trol: 'Trol', orumcekAna: 'Örümcek Ana',
@@ -358,7 +380,7 @@ function olustur() {
   y(tablo(['Harita', 'Boss zırhı', 'Boss HP', 'Tavan', 'Oran (hedef %75-85)'],
     D.haritalar.map((m) => {
       const boss = m.kisitA.find((k) => k.id === 'ogreSef');
-      return [HARITA_ADI[m.id] ?? m.id, `**${n(m.bossZirh)}**`, `**${n(m.bossHp)}**`,
+      return [HARITA_ADI[m.id], `**${n(m.bossZirh)}**`, `**${n(m.bossHp)}**`,
         n(boss?.tavan), boss ? yuzde(boss.oran) : '—'];
     })), '');
   y(`**Zırh haritayla düşüyor** ve bu ters değil, mekanik gereği: geç haritalarda`);
@@ -413,7 +435,7 @@ function olustur() {
   y(`**karşılamadığını** gösterdi — 12 nokta ×2,6 altınla tam yükseltilemiyor,`);
   y(`tahta 3820'de takılıyor ve oyuncu 34 can kaybediyordu (20 canla kayıp).`, '');
   y(tablo(['Harita', 'HP çarpanı', 'Altın çarpanı', 'Tahta maliyeti', 'Can kaybı'],
-    D.haritalar.map((m) => [HARITA_ADI[m.id] ?? m.id, `×${n(m.hpMultiplier)}`,
+    D.haritalar.map((m) => [HARITA_ADI[m.id], `×${n(m.hpMultiplier)}`,
       `×${n(m.goldMultiplier)}${m.goldMultiplier !== m.hpMultiplier ? ' **←ayrıştı**' : ''}`,
       n(m.tahta10?.maliyet), `${n(m.canKaybi)} / 20${m.canKaybi < 20 ? ' ✓' : ' ✗'}`])), '');
   y(`Türetilebilir kural: **altın, haritanın noktalarını tam yükseltmeye`);
@@ -441,7 +463,7 @@ function olustur() {
   y(`Doğum penceresi \`SPAWN_K = ${n(D.balance.spawnK)}\` (saniye × düşman). **Uydurulmadı,`);
   y(`ölçüldü**: sekiz farklı değerle 10 dalga koşturulup sızıntı sayıldı.`, '');
   for (const m of D.haritalar) {
-    y('', `### ${HARITA_ADI[m.id] ?? m.id}`, '');
+    y('', `### ${HARITA_ADI[m.id]}`, '');
     y(tablo(['Dalga', 'Bütçe', 'Puan', 'Adet', 'Aralık', 'Kompozisyon'],
       m.dalgalar.map((w) => [
         `**${n(w.index)}**${D.balance.breatherWaves.includes(w.index) ? ' _(nefes)_' : ''}`,
@@ -456,7 +478,7 @@ function olustur() {
   y(`Kaynak: \`src/data/maps.ts\` · \`GAME-DESIGN.md\` §9`, '');
   y(tablo(['Harita', 'Yol', 'Nokta', 'HP/Altın çarpanı', 'Başlangıç altını', 'Uçan hattı', 'Kadro'],
     D.haritalar.map((m) => [
-      HARITA_ADI[m.id] ?? m.id, `${n(m.kollar)} kol`, n(m.spots), `×${n(m.hpMultiplier)}`,
+      HARITA_ADI[m.id], `${n(m.kollar)} kol`, n(m.spots), `×${n(m.hpMultiplier)}`,
       n(m.startGold), `${n(m.ucanHat)} hat, ${n(m.ucanKesen)}/${n(m.spots)} nokta kesiyor`,
       `${m.roster.length} tip`,
     ])), '');
@@ -469,7 +491,7 @@ function olustur() {
   y(`ortak gövdeyi paylaşınca aynı fiziksel yol iki kez sayılıyor.`, '');
   y(tablo(['Harita', ...D.haritalar[2].kolKapsama.map((_, i) => `Kol ${i}`)],
     D.haritalar.map((m) => [
-      HARITA_ADI[m.id] ?? m.id,
+      HARITA_ADI[m.id],
       ...m.kolKapsama.map((k) => `**${n(k.ort)} px** (${n(k.n)}/${n(m.spots)} nokta) ${k.ort >= 285 && k.ort <= 311 ? '✓' : '✗'}`),
       ...Array(Math.max(0, D.haritalar[2].kolKapsama.length - m.kolKapsama.length)).fill('—'),
     ])), '');
@@ -489,7 +511,7 @@ function olustur() {
   y(`Eşik: \`tavan > efektifHP × ${n(D.balance.safetyMargin)}\`, yani oran **≤ %87**.`);
   y(`Ayrık yolda **en zayıf kol** belirleyici — düşman hangi kolu seçeceğini sormuyor.`, '');
   for (const m of D.haritalar) {
-    y('', `**${HARITA_ADI[m.id] ?? m.id}** — dalga 10 tahtası (muhafazakâr):`, '');
+    y('', `**${HARITA_ADI[m.id]}** — dalga 10 tahtası (muhafazakâr):`, '');
     y(tablo(['Düşman', 'Efektif HP', 'Tavan', m.kollar > 1 ? 'Kollar' : '', 'Oran'].filter(Boolean),
       m.kisitA.map((k) => [
         DUSMAN_ADI[k.id] ?? k.id, n(k.eHp), n(k.tavan),
@@ -510,13 +532,13 @@ function olustur() {
   y(`\`BarracksSystem\`, aynı \`applyDamage\`, aynı \`TowerSystem\`.`, '');
   y(tablo(['Harita', 'Sızan düşman', 'Sızan HP', 'Dalga dağılımı'],
     D.haritalar.map((m) => [
-      HARITA_ADI[m.id] ?? m.id, `**${n(m.kisitB.sizanAdet)}**`, n(m.kisitB.sizanHp),
+      HARITA_ADI[m.id], `**${n(m.kisitB.sizanAdet)}**`, n(m.kisitB.sizanHp),
       m.kisitB.dalga.map((v, i) => `d${i + 1}:${v}`).join(' '),
     ])), '');
   y('', `**Hangi düşman sızıyor** — toplam sayı *neyin* sızdığını söylemiyor ve`);
   y(`bu ikisi farklı düzeltmeler gerektiriyor:`, '');
   y(tablo(['Harita', 'Sızan düşmanlar (çok → az)'],
-    D.haritalar.map((m) => [HARITA_ADI[m.id] ?? m.id,
+    D.haritalar.map((m) => [HARITA_ADI[m.id],
       Object.entries(m.kisitB.kirilim).sort((a, b) => b[1] - a[1])
         .map(([id, adet]) => `${DUSMAN_ADI[id] ?? id} ×${adet}`).join(' · ') || '**hiç yok**'])), '');
   y(`**Kısıt A ile Kısıt B aynı şeyi ölçmüyor.** Kısıt A *tek* düşman için`);
@@ -532,7 +554,7 @@ function olustur() {
   y(`kapsamalı** noktaya kuruluyor.`, '');
   y(tablo(['Harita', 'Nokta dolma', 'Altın (muhafazakâr)', 'Altın (gerçekçi)', 'Dalga 10 tahtası'],
     D.haritalar.map((m) => [
-      HARITA_ADI[m.id] ?? m.id, `dalga ${n(m.noktaDolma)}`, n(m.altinMuhafazakar), n(m.altinGercekci),
+      HARITA_ADI[m.id], `dalga ${n(m.noktaDolma)}`, n(m.altinMuhafazakar), n(m.altinGercekci),
       m.tahta10 ? `${m.tahta10.kule.length} kule${m.tahta10.kisla.length ? ` + ${m.tahta10.kisla.length} kışla` : ''} (${n(m.tahta10.maliyet)} altın)` : '—',
     ])), '');
 

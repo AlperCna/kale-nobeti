@@ -12,8 +12,8 @@ import {
   BOSS_HP_TOLERANCE,
   bossFor,
 } from './bossScaling';
-import { MAP_1, MAP_2, MAP_3, MAPS, COVERAGE_REFERENCE_RANGE } from './maps';
-import { MAP1_WAVES, MAP2_WAVES, MAP3_WAVES } from './waves';
+import { MAP_1, MAP_2, MAP_3, MAP_4, MAPS, COVERAGE_REFERENCE_RANGE } from './maps';
+import { MAP1_WAVES, MAP2_WAVES, MAP3_WAVES, MAP4_WAVES } from './waves';
 import { OGRE_SEF, getEnemyForMap } from './enemies';
 import {
   BOSS_CEILING_RATIO,
@@ -29,6 +29,7 @@ const H = [
   { map: MAP_1, waves: MAP1_WAVES },
   { map: MAP_2, waves: MAP2_WAVES },
   { map: MAP_3, waves: MAP3_WAVES },
+  { map: MAP_4, waves: MAP4_WAVES },
 ];
 
 const tahta = (m: (typeof H)[number]) => {
@@ -42,12 +43,18 @@ describe('Boss ölçeklemesi — zırh düşer, HP türetilir', () => {
     expect(BOSS_ARMOR_BY_MAP['degirmen-gecidi']).toBe(OGRE_SEF.armor);
   });
 
-  it('zırh haritayla DÜŞÜYOR: 10 → 5 → 2', () => {
+  it('zırh haritayla DÜŞÜYOR: 10 → 5 → 2 → 2', () => {
     // Harita 3'ün zırhı 3'ten 2'ye indi: referans tahta artık kışla satın
     // alıyor (§5 Trol) ve kışla bir kule noktasını işgal ediyor, tavan
     // düşüyor. Regresyon bandı testi bunu yakaladı.
+    //
+    // Harita 4 de 2'de kaldı — `M8-T04` zırh taraması (0-5) tavanı yalnız
+    // %12 oynattı (2441 → 2141), yani zırh burada artık bağlayıcı kısıt
+    // değil; asıl zorluk HP çarpanında. Zırhı 3'e çıkarmak tavanı düşürüp
+    // türetilen HP'yi de düşüreceği için net etkisi ≈ 0 olurdu.
     expect(BOSS_ARMOR_BY_MAP['tas-kopru']).toBe(5);
     expect(BOSS_ARMOR_BY_MAP['kul-ovasi']).toBe(2);
+    expect(BOSS_ARMOR_BY_MAP['kar-gecidi']).toBe(2);
   });
 
   it('**boss HP’si MONOTON ARTIYOR** — zorluk eğrisi korunuyor', () => {
@@ -70,7 +77,7 @@ describe('Boss ölçeklemesi — zırh düşer, HP türetilir', () => {
     }
   });
 
-  it('boss tasarım bandında (%75-85) — harita 2 ve 3', () => {
+  it('boss tasarım bandında (%75-85) — harita 2’den itibaren', () => {
     for (const m of H) {
       if (m.map.id === 'degirmen-gecidi') continue;
       const boss = bossFor(m.map);
@@ -105,12 +112,21 @@ describe('Boss ölçeklemesi — zırh düşer, HP türetilir', () => {
   });
 
   it('700 × çarpan olsaydı GEÇİLEMEZDİ — düzeltmenin kanıtı', () => {
+    // Savunulan iddia: naif `700 × hpMultiplier` boss HP'sini tavanın
+    // **üstüne** koyuyor, yani dalga 10 hiç geçilemiyor. Eşik bu yüzden
+    // 1,0 — eskiden 1,5 yazıyordu ve o sayının bir gerekçesi yoktu,
+    // yalnızca harita 2-3'ün ölçülen değeriydi.
+    //
+    // Ölçülen oranlar: harita 2 ≈ 2,6 · harita 3 ≈ 1,9 · harita 4 ≈ 1,29.
+    // Harita 4'te düşük olmasının sebebi: 12 nokta + tek kol, yani tavan
+    // yüksek; çarpan 3,4 ile birlikte naif HP 2380, tavan 1841. Hâlâ
+    // geçilemez ama daha az dramatik — kanıt yine de duruyor.
     for (const m of H) {
       if (m.map.id === 'degirmen-gecidi') continue;
       const eski = { ...OGRE_SEF };
       const tavan = Math.min(...ceilingAPerBranch(tahta(m), eski, m.map));
       const oran = (eski.hp * m.map.hpMultiplier) / tavan;
-      expect(oran, `${m.map.id} eski oran`).toBeGreaterThan(1.5);
+      expect(oran, `${m.map.id} eski oran ${oran.toFixed(2)}`).toBeGreaterThan(1.0);
     }
   });
 
@@ -118,7 +134,9 @@ describe('Boss ölçeklemesi — zırh düşer, HP türetilir', () => {
     const g1 = cumulativeGold(MAP_1, MAP1_WAVES, 10, false);
     const g2 = cumulativeGold(MAP_2, MAP2_WAVES, 10, false);
     const g3 = cumulativeGold(MAP_3, MAP3_WAVES, 10, false);
+    const g4 = cumulativeGold(MAP_4, MAP4_WAVES, 10, false);
     expect(g2 / g1).toBeGreaterThan(1.4);
     expect(g3 / g1).toBeGreaterThan(2.2);
+    expect(g4).toBeGreaterThan(g3);
   });
 });

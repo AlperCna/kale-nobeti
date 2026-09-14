@@ -15,8 +15,8 @@
  * biri diğerinin yerine geçmiyor.
  */
 import { describe, expect, it } from 'vitest';
-import { MAP_1, MAP_2, MAP_3, COVERAGE_REFERENCE_RANGE } from '../data/maps';
-import { MAP1_WAVES, MAP2_WAVES, MAP3_WAVES } from '../data/waves';
+import { MAP_1, MAP_2, MAP_3, MAP_4, COVERAGE_REFERENCE_RANGE } from '../data/maps';
+import { MAP1_WAVES, MAP2_WAVES, MAP3_WAVES, MAP4_WAVES } from '../data/waves';
 import { buildReferenceBoards } from './balanceChecks';
 import { simulateAllWaves } from './waveSim';
 import { measureCoverage } from '../util/coverage';
@@ -62,20 +62,39 @@ describe('Kısıt B — düşman kırılımı', () => {
       [MAP_1, MAP1_WAVES],
       [MAP_2, MAP2_WAVES],
       [MAP_3, MAP3_WAVES],
+      [MAP_4, MAP4_WAVES],
     ] as const) {
       expect(kosu(m, w).toplam.ogreSef ?? 0, m.id).toBe(0);
     }
   });
 
-  it('**üç harita da GEÇİLEBİLİR** — kaybedilen can 20’nin altında', () => {
+  it('**her harita GEÇİLEBİLİR** — kaybedilen can 20’nin altında', () => {
     // Asıl kabul ölçütü bu: sızıntı sayısı değil, **can kaybı**. Farklı
     // düşmanların sızma cezası farklı (Trol 2, boss 10).
     for (const [m, w] of [
       [MAP_1, MAP1_WAVES],
       [MAP_2, MAP2_WAVES],
       [MAP_3, MAP3_WAVES],
+      [MAP_4, MAP4_WAVES],
     ] as const) {
       expect(canKaybi(m, w), m.id).toBeLessThan(20);
+    }
+  });
+
+  it('**zorluk MONOTON** — çarpan değil, ölçülen can kaybı (M8-T04)', () => {
+    // `M8-T04` dersi: monoton `hpMultiplier` monoton zorluk vermiyor.
+    // Harita 4 ilk turda 3,4 çarpanla **sıfır** can kaybı verdi (harita
+    // 3'ün 10'unun altında) çünkü tek yol + 12 nokta savunmayı bölmüyor.
+    // Bu test o hatanın geri gelmesini engelliyor: ölçüt geometriyi de
+    // kapsayan **çıktı**, girdi değil.
+    const kayip = [
+      canKaybi(MAP_1, MAP1_WAVES),
+      canKaybi(MAP_2, MAP2_WAVES),
+      canKaybi(MAP_3, MAP3_WAVES),
+      canKaybi(MAP_4, MAP4_WAVES),
+    ];
+    for (let i = 1; i < kayip.length; i++) {
+      expect(kayip[i]!, `harita ${i + 1}: ${kayip.join(' → ')}`).toBeGreaterThan(kayip[i - 1]!);
     }
   });
 
@@ -92,6 +111,7 @@ describe('Kısıt B — düşman kırılımı', () => {
     for (const [m, w] of [
       [MAP_2, MAP2_WAVES],
       [MAP_3, MAP3_WAVES],
+      [MAP_4, MAP4_WAVES],
     ] as const) {
       expect(kosu(m, w).sim[0]!.leakedCount, `${m.id} dalga 1`).toBe(0);
     }
@@ -101,6 +121,7 @@ describe('Kısıt B — düşman kırılımı', () => {
     // Sayılar iyileşirse bu test bilinçli gevşetilir; kötüleşirse kırılır.
     expect(kosu(MAP_2, MAP2_WAVES).adet).toBeLessThanOrEqual(8);
     expect(kosu(MAP_3, MAP3_WAVES).adet).toBeLessThanOrEqual(25);
+    expect(kosu(MAP_4, MAP4_WAVES).adet).toBeLessThanOrEqual(14);
   });
 
   it('kırılım toplamı sızıntı sayısıyla TUTARLI', () => {
@@ -108,6 +129,7 @@ describe('Kısıt B — düşman kırılımı', () => {
       [MAP_1, MAP1_WAVES],
       [MAP_2, MAP2_WAVES],
       [MAP_3, MAP3_WAVES],
+      [MAP_4, MAP4_WAVES],
     ] as const) {
       const r = kosu(m, w);
       const kirilimToplam = Object.values(r.toplam).reduce((a, b) => a + (b ?? 0), 0);

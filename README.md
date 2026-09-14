@@ -2,12 +2,15 @@
 
 Fantastik ortaçağ temalı, tarayıcıda çalışan tower defense oyunu.
 Model: Kingdom Rush (sabit yol + belirli yapı noktaları).
-Hedef: 3 harita × 10 dalga, 4 kule ailesi, 2 aktif yetenek.
+İlk hedef 3 haritaydı; **M8 genişlemesi** bunu artırıyor —
+şu an **4 harita × 10 dalga**, 4 kule ailesi, 2 aktif yetenek.
 
-**Durum: tasarım aşaması.** Henüz kod yok — bu depo şu an tasarım
-dokümanları ve araştırma bulgularından oluşuyor.
+**Durum: oynanabilir.** M0-M7 bitti (oyun uçtan uca oynanıyor: menü,
+seviye seçim, 4 harita, boss, yıldız, kayıt, ayarlar, ses). Şu an
+`docs/plan/M8-genisleme.md` yürüyor — 15 fazlık içerik + cila turu.
 
-Teknoloji planı: Phaser 3 + TypeScript (strict) + Vite.
+Teknoloji: Phaser 3 + TypeScript (strict) + Vite. `npm run dev` ile açılır;
+kapı `npm run typecheck && npm run test && npm run guard && npm run build`.
 
 ---
 
