@@ -31,6 +31,7 @@ interface PokiGlobal {
   gameplayStart: () => void;
   gameplayStop: () => void;
   commercialBreak: (beforeAd?: () => void) => Promise<void>;
+  measure?: (kategori: string, ne: string, eylem: string) => void;
 }
 
 interface CrazyGlobal {
@@ -75,10 +76,20 @@ export function pokiAdapter(): PortalAdapter | null {
         .catch(() => {})
         .finally(() => sesiKis(false));
     },
+    // `sdk.poki.com/game-events` — `start`/`complete`/`fail` özel anlamlı.
+    measure: (k, n, e) => sdk.measure?.(k, n, e),
   };
 }
 
-/** CrazyGames v3. */
+/**
+ * CrazyGames v3.
+ *
+ * `measure` **uygulanmıyor**: dokümanlarında özel oyun olayı API'si
+ * bulunamadı (zorunlu `gameplayStart`/`gameplayStop` var, özel olay
+ * yok). `Portal.olc` isteğe bağlı çağırdığı için bu sessizce düşüyor —
+ * yani `olcum.ts`'teki olaylar Poki yapımında gidiyor, CrazyGames
+ * yapımında gitmiyor ve **hiçbir sahne bunu bilmek zorunda değil**.
+ */
 export function crazyAdapter(): PortalAdapter | null {
   const cg = kuresel<CrazyGlobal>('CrazyGames');
   if (cg === null) return null;

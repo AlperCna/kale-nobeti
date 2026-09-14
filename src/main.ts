@@ -107,4 +107,14 @@ const game = new Phaser.Game(config);
 // üretimde derleyici tarafından tamamen siliniyor.
 if (import.meta.env.DEV) {
   (globalThis as { __game?: Phaser.Game }).__game = game;
+  /**
+   * `M9-T02` — portal örneğine kararlı tutamak.
+   *
+   * Dev sunucusunda `import('/src/systems/Portal.ts')` bir düzenlemeden
+   * sonra `?t=` damgalı **ayrı bir modül örneği** veriyor; sahnelerin
+   * kullandığı tekil nesneye o yoldan ulaşılamıyor ve ölçüm sessizce
+   * boş çıkıyor (bir kez yanılttı). Üretimde tek paket, tek örnek —
+   * bu dal orada zaten derlenmiyor.
+   */
+  (globalThis as { __portal?: unknown }).__portal = portal;
 }
