@@ -864,6 +864,21 @@ export class GameScene extends Phaser.Scene {
    * Geri dönüş yok: boss dalgası haritanın son dalgası, ardından zafer
    * ya da yenilgi geliyor ve ikisi de müziği durduruyor.
    */
+  /**
+   * Dil değişince sahnenin bir-kez-kurulan çevrili arayüzünü tazeler —
+   * `M8-B04`. `HudScene` kendini `scene.restart()` ile yeniliyor ama bu
+   * sahne yenilenemez (kuleler, altın, dalga kaybolurdu), o yüzden
+   * yalnız etkilenen parçalar elden geçiriliyor.
+   *
+   * Açık bir yapı menüsü de kapatılıyor: `openSellMenu` bir sonraki
+   * açılışta zaten yeni dille kuruluyor, ama ekranda duran eski menü
+   * kullanıcıya iki dilli bir ekran gösterirdi.
+   */
+  dilYenile(): void {
+    this.#infoPanel?.dilYenile();
+    this.#buildMenu?.closeMenu();
+  }
+
   #bossMuzigi(): void {
     if (!this.cache.audio.exists('boss_music')) return;
     if (this.settings.musicScale <= 0) return;
