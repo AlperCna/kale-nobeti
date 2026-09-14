@@ -35,18 +35,34 @@ export function createParchmentFrame(
     ? null
     : scene.add.tileSprite(0, 0, middleW, middleH, 'atlas', FRAME_MIDDLE).setOrigin(0.5);
 
-  // Şerit karesi 32 px yüksek, band ise `corner` px — `TileSprite` dokuyu
-  // doğal boyutunda döşediği için eskiden bandın içine şeridin yalnız
-  // üst `corner` satırı sığıyordu (desenin geri kalanı kırpılıyordu).
-  // Ölçek karenin **gerçek** yüksekliğinden okunuyor; manifest değişirse
-  // burası kendini ayarlıyor.
-  const seritYuksekligi = scene.textures.getFrame('atlas', FRAME_EDGE).height;
-  const seritOlcek = corner / seritYuksekligi;
+  /**
+   * Kenar şeridi **1:1 çiziliyor — ölçeklenmiyor.**
+   *
+   * Bir ara `setTileScale(corner / 32)` eklenmişti; gerekçesi "şeridin
+   * tamamı banda sığsın"dı ve sonucu **tarama çizgisi** oldu. Sebep
+   * dokunun kendisinde: `edge-strip` karesinin ilk 12 satırı tezhip
+   * bandı, kalan 20 satır düz parşömen. Satır lumaları:
+   *
+   *     24 · 60 · 212 · 207 · 165 · 162 · 204 · 216 · 176 · 157 · 193 · 215
+   *     ├──── mürekkep kontur ────┤   ├─ üç koyu/açık çift (süsleme) ─┤
+   *
+   * Oyunda `corner` 8-20 px (çoğu yerde 10-14). 32 satırı oraya
+   * sıkıştırmak 12 satırlık süsü **3-5 piksele** eziyor: üç koyu/açık
+   * çift birer piksele düşüyor ve göz bunu süs değil **çizgi** olarak
+   * görüyor. Canlı ölçüm (menüdeki "Oyna" düğmesinin üst kenarı):
+   * `209 · 164 · 211 · 166 · 203` — birer piksellik dönüşümlü satırlar.
+   *
+   * 1:1'de doku yeniden örneklenmiyor, yani çizgilenme kaynağında
+   * ortadan kalkıyor. Karşılığı: `corner < 12` olduğunda süsün iç
+   * satırları kırpılıyor. Bu **kabul edilebilir, hatta doğru** — dokunun
+   * 0. satırı şeridin DIŞ kenarı (çerçevenin mürekkep konturu), kırpılan
+   * taraf iç kenar, yani orta parşömene karışan taraf. Süsün en kuvvetli
+   * kısmı her zaman görünür kalıyor.
+   */
   const serit = (sx: number, sy: number, uzunluk: number, aci: number) =>
     scene.add
       .tileSprite(sx, sy, uzunluk, corner, 'atlas', FRAME_EDGE)
       .setOrigin(0.5)
-      .setTileScale(seritOlcek, seritOlcek)
       .setAngle(aci);
 
   const top = serit(0, -height / 2 + corner / 2, middleW, 0);
@@ -60,10 +76,32 @@ export function createParchmentFrame(
     { dx: width / 2 - corner / 2, dy: height / 2 - corner / 2, angle: 180 }, // sağ-alt
     { dx: -width / 2 + corner / 2, dy: height / 2 - corner / 2, angle: 270 }, // sol-alt
   ] as const;
+  /**
+   * Köşe de **1:1** — `Image` + `setDisplaySize` değil, `TileSprite`.
+   *
+   * Kenar şeridiyle birebir aynı hata köşede daha beterdi: kare 96×96 ve
+   * `setDisplaySize(corner, corner)` onu 12 piksele indiriyordu, yani
+   * **8 kat** küçültme. Karenin satır lumaları:
+   *
+   *     31 · 31 · 37 | 188 · 205 · 173 · 151 ... 184 · 207 · 156 | 119 (×65)
+   *     ├─ kontur ─┤ ├────── tezhip, ~24 satır ──────┤ ├─ düz dolgu ─┤
+   *
+   * Yani anlamlı süs ilk ~32 satırda; kalan 64 satır düz. Tamamını 12
+   * piksele sıkıştırmak süsü 4 piksele indiriyor ve köşe bir "leke"
+   * olarak okunuyordu.
+   *
+   * `TileSprite` dokuyu ölçeklemeden gösteriyor, yani `corner × corner`
+   * kutuda karenin **sol üst `corner × corner` pikseli** çıkıyor: dış
+   * kontur ve tezhibin başı doğal çözünürlükte. `setAngle` her köşeyi
+   * döndürüyor, gösterilen bölge hep dokunun süslü köşesi.
+   *
+   * `corner` (≤ 20) her zaman 96'dan küçük olduğu için döşeme tekrarı
+   * oluşmuyor.
+   */
   const koseGorselleri = koseler.map((k) =>
     scene.add
-      .image(k.dx, k.dy, 'atlas', FRAME_CORNER)
-      .setDisplaySize(corner, corner)
+      .tileSprite(k.dx, k.dy, corner, corner, 'atlas', FRAME_CORNER)
+      .setOrigin(0.5)
       .setAngle(k.angle),
   );
 
