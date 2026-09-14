@@ -79,16 +79,27 @@ export class OverlayScene extends Phaser.Scene {
    * düğmesiyle kapatmak, oyuncunun bakması gereken tek noktayı
    * gizlemek demek.
    *
-   * Yeni yer sağ üstteki yığının devamı: hız (`y≈48`), ayar (`y≈116`),
-   * zorluk rozeti (`y≈178`), tam ekran (`y=250`). Beş haritanın kalesi
-   * de (`y` 360/560/600/660/690) ve bütün yapı noktaları bu şeridin
-   * dışında — `x = 1232`, en sağdaki nokta `x = 1120`.
+   * Yeni yer `(888, 664)` — **alt şerit, yetenek düğmelerinin sağı**.
+   * `M8-B01`'de bütün ekran tarandı: düğme + etiket kutusu (56×68) beş
+   * haritanın her yolundan, yapı noktasından, kalesinden ve öbür HUD
+   * kutusundan ne kadar uzak durabiliyor? Kazanan bu nokta, **45 px**
+   * payla. Köşeler bu oyunda serbest değil: sağ alt köşede en iyi pay
+   * 12 px, `y = 654`'te ise harita 5'in kalesine `(1180, 600)` ve ona
+   * giden yola **2 px** kalıyordu — düzeltmeye çalıştığım kusurun
+   * aynısı.
+   *
+   * Taramanın kutusu düğmenin kendisi değil **düğme + altındaki etiket**
+   * (80×78): ilk denemede yalnız düğme ölçülmüştü ve etiket ekranın alt
+   * kenarından taşıp kırpıldı (ekran görüntüsüyle görüldü).
+   *
+   * Sağ kenar yerine alt orta "alışılmadık" görünebilir ama beş haritanın
+   * yolları köşeleri kullanıyor; ölçüm alışkanlığı yendi.
    */
   #tamEkranDugmesi(): void {
     if (!this.scale.fullscreen.available) return;
 
-    const x = this.scale.width - MARGIN - BTN / 2;
-    const y = 250;
+    const x = 888;
+    const y = 664;
     const cerceve = createParchmentButton(this, x, y, BTN, BTN, 12);
     addPressFeedback(cerceve);
     this.add
@@ -111,8 +122,15 @@ export class OverlayScene extends Phaser.Scene {
       .text(x, y + BTN / 2 + 12, t('fullscreen'), {
         fontFamily: 'Spectral, serif',
         fontSize: '16px', // Platform: minimum 16 px
-        color: '#8A7250',
+        color: '#E4D3A8',
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      // Düğmenin kendisi parşömen çerçeve içinde, **etiket değil** — o
+      // doğrudan haritanın üstünde duruyor ve artık beş farklı zemin
+      // görüyor. Soluk altın (#8A7250) harita 5'in koyu yeşil zemininde
+      // okunmuyordu (canlı ekran görüntüsü); menü alt başlığında
+      // çözülmüş olan aynı sorun. Parşömen rengi + mürekkep gölge,
+      // zemin ne olursa olsun kontrastı garantiliyor.
+      .setShadow(0, 2, '#14203A', 4, false, true);
   }
 }
