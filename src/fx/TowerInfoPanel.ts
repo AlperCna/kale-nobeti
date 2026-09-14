@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { EnemyDef } from '../types/enemy';
+import { PANEL_W, PANEL_H, panelKonumu } from '../data/panelLayout';
 import type { TargetMode, TowerDef, TowerTier } from '../types/tower';
 import { NUMBER_FONT_KEY } from './numberFont';
 import { effectiveDps } from '../systems/balanceChecks';
@@ -51,9 +52,9 @@ const VERMILION = 0xb03a2e;
 const SOL_PAY = 12;
 const ICON = 20;
 /** Değer kolonunun sağ kenarı — sayılar sağa dayalı. */
-const W = 270;
+const W = PANEL_W;
 /** Son satır (ikon şeridi, y=236) + yarı ikon + alt band. */
-const H = 268;
+const H = PANEL_H;
 
 export interface TowerInfoState {
   readonly def: TowerDef;
@@ -66,6 +67,8 @@ export interface TowerInfoState {
   readonly refund: number;
   /** Bir sonraki kademe (varsa) — yükseltme farkı için. */
   readonly nextTier?: TowerTier;
+  /** Seçili yapı noktasının konumu — panel karşı köşeye geçsin diye. */
+  readonly spot: { readonly x: number; readonly y: number };
 }
 
 export class TowerInfoPanel {
@@ -170,8 +173,34 @@ export class TowerInfoPanel {
     this.#state = null;
   }
 
+  /**
+   * Panelin iki yerleşimi — **seçili kulenin karşı tarafı**.
+   *
+   * Oyuncu geri bildirimi: *"şuradaki konum çok iyi değil"*, *"şuradaki
+   * yazılar da tam gözükmüyor"*. Panel sabit sağ-alttaydı (`998,440 –
+   * 1268,708`) ve %90 opak. Ölçüldü: harita 1'in **7 numaralı yapı
+   * noktası `(1120, 485)` tamamen panelin altında**, 6 numara
+   * `(950, 485)` kenarında. Panel açıkken o nokta ne görünüyor ne
+   * tıklanabiliyor — ve daha kötüsü, sağ alttaki bir kuleyi seçtiğinde
+   * panel **incelediğin kuleyi** örtüyordu.
+   *
+   * Aynı sebeple yükseltme menüsüyle de çakışıyordu: menü kulenin
+   * yanında açılıyor, panel sabit duruyordu.
+   *
+   * Sabit bir "boş köşe" yok — panel 270×268, yani ekranın %8'i; beş
+   * haritanın hiçbir köşesi bu boyutta serbest değil (`M8-B01`'deki
+   * tarama bunu zaten göstermişti). O yüzden çözüm sabit yer değil
+   * **kaçınma**: kule sağdaysa panel sola, soldaysa sağa.
+   *
+   * Sol yerleşim yetenek düğmelerinin (`28,622 – 170,707`) **üstünde**
+   * duruyor; sağ yerleşim eskisiyle aynı.
+   */
   show(s: TowerInfoState): void {
     this.#state = s;
+    // Konum ve eşik `data/panelLayout.ts`'te (TIER 1 kural 1); orası
+    // Phaser'a dokunmuyor, yani değişmez kural `node`'da test edilebiliyor.
+    const yer = panelKonumu(s.spot.x);
+    this.#kap.setPosition(yer.x, yer.y);
     this.#kap.setVisible(true);
 
     // §11: ham hasar + atış hızı. Yalnız fontun bildiği karakterler:
