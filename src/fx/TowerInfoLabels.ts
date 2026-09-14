@@ -43,6 +43,7 @@ export class TowerInfoLabels {
   readonly #buyu: Phaser.GameObjects.Text;
   readonly #ucanaVurur: Phaser.GameObjects.Text;
   readonly #ucanaVurmaz: Phaser.GameObjects.Text;
+  readonly #sonKademe: Phaser.GameObjects.Text;
 
   constructor(scene: Phaser.Scene, solPay: number, tipSutunX: number) {
     const etiket = (y: number, metin: string, x = solPay, renk: string = PARCHMENT) => {
@@ -65,6 +66,19 @@ export class TowerInfoLabels {
     this.#buyu = etiket(SATIRLAR.tip, t('infoMagic'), solPay, LAPIS);
     this.#ucanaVurur = etiket(SATIRLAR.tip, t('infoHitsAir'), tipSutunX);
     this.#ucanaVurmaz = etiket(SATIRLAR.tip, t('infoNoAir'), tipSutunX, '#9A948A');
+
+    // Son kademede yükseltme satırı eskiden yalnız `-` basıyordu; tire
+    // "veri yok" mu "yükseltme yok" mu belli değildi (oyuncu geri
+    // bildirimi). Sayı alanının yerine geçen, bir kez yazılan bir etiket:
+    // TIER 1 kural 7'ye uyuyor, `setText` yok — görünürlük açılıp
+    // kapanıyor, `Fiziksel`/`Büyü` çiftiyle aynı desen.
+    this.#sonKademe = etiket(SATIRLAR.upgrade, t('infoMaxTier'), tipSutunX, '#9A948A');
+    this.#sonKademe.setVisible(false);
+  }
+
+  /** Son kademe mi? Öyleyse yükseltme sayısının yerine etiket çıkıyor. */
+  setMaxTier(max: boolean): void {
+    this.#sonKademe.setVisible(max);
   }
 
   setType(magic: boolean): void {

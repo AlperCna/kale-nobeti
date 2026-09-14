@@ -118,6 +118,15 @@ const MODE_LABEL_KEY: Readonly<Record<TargetMode, StringKey>> = {
   closest: 'modeClosest',
 };
 
+/** Seçili modun bir satırlık açıklaması — metinler `strings.ts`'te. */
+const MODE_DESC_KEY: Readonly<Record<TargetMode, StringKey>> = {
+  first: 'modeFirstDesc',
+  last: 'modeLastDesc',
+  strongest: 'modeStrongestDesc',
+  weakest: 'modeWeakestDesc',
+  closest: 'modeClosestDesc',
+};
+
 /** `Y03` — kule etiketleri `strings.ts`'e taşındı. */
 const TOWER_LABEL_KEY: Readonly<Record<string, StringKey>> = {
   okcu: 'towerOkcu',
@@ -475,6 +484,26 @@ export class BuildMenu {
         );
       }
     });
+
+    /**
+     * Seçili modun açıklaması — düğme satırının altında tek satır.
+     *
+     * `setText` YOK: menü her gösterildiğinde baştan kuruluyor ve mod
+     * değişince de yeniden kuruluyor, yani bu metin bir kez yazılıp bir
+     * daha değişmiyor. TIER 1 kural 7'nin `Text` için verdiği izin tam
+     * olarak bu durum; bekçi k.4 de bu dosyada `setText` aramıyor.
+     *
+     * Buton satırı y=52 ve 44 px yüksek (alt kenar 74); açıklama 88'de.
+     */
+    kap.add(
+      this.#scene.add
+        .text(0, 88, t(MODE_DESC_KEY[kule.targetMode]), {
+          fontFamily: 'Spectral, serif',
+          fontSize: '16px', // bekçi k.13 — Platform alt sınırı
+          color: '#8A7250',
+        })
+        .setOrigin(0.5),
+    );
 
     this.#menuArkalikEkleVeKonumla(kap, spot);
     this.#selectedSpot = spotIndex;

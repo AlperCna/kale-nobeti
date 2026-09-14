@@ -93,9 +93,19 @@ export class TowerInfoPanel {
   #state: TowerInfoState | null = null;
   #seciliDusman = 0;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, roster: readonly EnemyDef[]) {
+  /** Haritanın bütün yollarının toplam uzunluğu — kapsama yüzdesi için. */
+  readonly #toplamYol: number;
+
+  constructor(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    roster: readonly EnemyDef[],
+    toplamYol: number,
+  ) {
     this.#scene = scene;
     this.#roster = roster;
+    this.#toplamYol = Math.max(1, toplamYol);
     this.#kap = scene.add.container(x, y).setVisible(false);
 
     const arka = scene.add.rectangle(0, 0, W, H, INK, 0.9).setOrigin(0);
@@ -122,8 +132,18 @@ export class TowerInfoPanel {
     this.#kapsama = sayi(SATIRLAR.coverage, GOLD);
     this.#yukseltme = sayi(SATIRLAR.upgrade, PARCHMENT);
     this.#iade = sayi(SATIRLAR.refund, GOLD);
-    // §11'in en kritik sayısı büyük ve vermilyon.
-    this.#etkinDps = sayi(SATIRLAR.dps - 6, VERMILION, 0.9);
+    /**
+     * §11'in en kritik sayısı büyük — ama **altın, vermilyon değil.**
+     *
+     * Oyuncu geri bildirimi: "kırmızıyla yazan yazı tam net değil".
+     * Haklıydı ve sebebi palet çelişkisi: `GAME-DESIGN.md` §2
+     * vermilyonu **"düşman, tehlike, can kaybı"** olarak tanımlıyor.
+     * Oyuncunun kendi hasarını tehlike rengiyle yazmak, paletin her
+     * yerde öğrettiği anlamı tam tersine çeviriyordu. Altın varak
+     * paletin "vurgu/değer" rengi ve panelin öbür iki iyi sayısı
+     * (kapsama, satış iadesi) zaten altın.
+     */
+    this.#etkinDps = sayi(SATIRLAR.dps - 6, GOLD, 0.9);
 
     // Düşman ikonu şeridi — **S42: o haritanın kadrosu.** Hepsini
     // listelemek oyuncuya henüz görmediği düşmanları gösterirdi.
@@ -159,15 +179,18 @@ export class TowerInfoPanel {
     this.#hasar.setText(String(s.tier.damage));
     this.#atisHizi.setText(s.tier.fireRate.toFixed(1));
     this.#menzil.setText(String(s.tier.range));
-    this.#kapsama.setText(String(Math.round(s.coveredPx)));
+    // Ham piksel oyuncuya hiçbir şey söylemiyordu ("294" neyin 294'ü?).
+    // Yolun **payı** olarak yazılıyor: kıyas ölçüsü kendi içinde.
+    this.#kapsama.setText(`${Math.round((s.coveredPx / this.#toplamYol) * 100)}%`);
     this.#iade.setText(`+${s.refund}`);
 
     // §11: yükseltme farkı (öncesi › sonrası, DPS). §6 yükseltmenin altın
     // başına verimsiz olduğunu söylüyor ve panel bunu **gizlemiyor**.
     const dps = s.tier.damage * s.tier.fireRate;
-    if (s.nextTier === undefined) {
-      this.#yukseltme.setText('-');
-    } else {
+    const sonKademe = s.nextTier === undefined;
+    this.#yukseltme.setVisible(!sonKademe);
+    this.#etiketler.setMaxTier(sonKademe);
+    if (s.nextTier !== undefined) {
       const yeni = s.nextTier.damage * s.nextTier.fireRate;
       this.#yukseltme.setText(`${dps.toFixed(1)}›${yeni.toFixed(1)}`);
     }
