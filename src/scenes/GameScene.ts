@@ -53,6 +53,7 @@ import { getEnemy, ENEMIES } from '../data/enemies';
 import { BALANCE, POOL_PREALLOC, GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI } from '../data/balance';
 import { MUSIC_BASE_VOLUME } from '../data/audio';
 import { portal } from '../systems/Portal';
+import { haritaBasladi } from '../systems/olcum';
 
 import { MAP1_WAVES, wavesFor } from '../data/waves';
 import { devHooks } from '../util/devHooks';
@@ -724,6 +725,10 @@ export class GameScene extends Phaser.Scene {
      * `musicScale <= 0` ise dosya **hiç indirilmiyor** (`Y04`'ün bedava
      * kazancı, `MenuScene`'deki aynı desen).
      */
+    // `M9-T02` — `ROADMAP`'in teşhis matrisi için. Olay sözcüğü
+    // `systems/olcum.ts`'te; burası yalnız "ne zaman" diyor.
+    haritaBasladi(portal, this.#map.id, this.settings.state.difficulty);
+
     this.sound.stopByKey('music_menu');
 
     if (this.settings.musicScale > 0) {

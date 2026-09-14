@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { yenidenKurOverlay } from './OverlayScene';
 import { portal } from '../systems/Portal';
+import { haritaKazanildi, haritaKaybedildi } from '../systems/olcum';
+import { starsFor } from '../systems/SaveSystem';
 import type { SoundSystem } from '../fx/SoundSystem';
 import type { GameScene } from './GameScene';
 import type { Speed } from '../types/common';
@@ -346,6 +348,17 @@ export class HudScene extends Phaser.Scene {
     game.soundSystem?.playOutcome(kazandi);
     // `M9-T01` — seviye bitişi de bir "kesinti" (Poki/CrazyGames şartı).
     portal.gameplayStop();
+
+    /**
+     * `M9-T02` — teşhis matrisinin iki sinyali burada doğuyor:
+     * tamamlama oranının paydası (`start`) `GameScene`'de atıldı, payı
+     * (`complete`) burada; kaybedişte ayrıca **hangi dalgada** bırakıldığı.
+     */
+    if (kazandi) {
+      haritaKazanildi(portal, game.map.id, starsFor(game.lives));
+    } else {
+      haritaKaybedildi(portal, game.map.id, game.waveNumber);
+    }
     this.scene.stop('Game');
     this.scene.start('GameOver', {
       won: kazandi,

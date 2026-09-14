@@ -41,6 +41,16 @@ export interface PortalAdapter {
   gameplayStop(): void;
   /** Reklam gösterir. `sesiKis` reklam boyunca sesi kapatmak için. */
   commercialBreak(sesiKis: (kisik: boolean) => void): void;
+  /**
+   * Özel oyun olayı — **isteğe bağlı**.
+   *
+   * Poki `measure(category, what, action)` veriyor ve `start` /
+   * `complete` / `fail` eylemlerine özel raporlama anlamı yüklüyor.
+   * CrazyGames'in dokümanlarında karşılığı bulunamadı; o bağdaştırıcı
+   * bunu **uygulamıyor** ve çağrı sessizce düşüyor. Hangi olayların
+   * gönderildiği `systems/olcum.ts`'te.
+   */
+  measure?(kategori: string, ne: string, eylem: string): void;
 }
 
 /** SDK yokken kullanılan bağdaştırıcı — itch.io ve geliştirme. */
@@ -74,7 +84,7 @@ export class Portal {
   #oyundaMi = false;
 
   /** Ölçüm için: SDK'ya **gerçekten** giden çağrı sayıları. */
-  readonly sayac = { start: 0, stop: 0, reklam: 0 };
+  readonly sayac = { start: 0, stop: 0, reklam: 0, olcum: 0 };
 
   get adapterAdi(): string {
     return this.#adapter.ad;
@@ -122,11 +132,24 @@ export class Portal {
     this.#adapter.commercialBreak(sesiKis);
   }
 
+  /**
+   * Özel olay gönderir. Bağdaştırıcı desteklemiyorsa sessizce düşüyor.
+   *
+   * `gameplayStart`'ın aksine burada **çift tetikleme koruması yok**:
+   * aynı olayın iki kez gönderilmesi Poki için hata değil, ve "dalga 8'de
+   * iki kez kaybetti" gerçek bir sinyal.
+   */
+  olc(kategori: string, ne: string, eylem: string): void {
+    this.sayac.olcum++;
+    this.#adapter.measure?.(kategori, ne, eylem);
+  }
+
   /** Sahne yeniden başlatmalarında sayaçlar sıfırlanmıyor — test için. */
   sayaclariSifirla(): void {
     this.sayac.start = 0;
     this.sayac.stop = 0;
     this.sayac.reklam = 0;
+    this.sayac.olcum = 0;
     this.#oyundaMi = false;
   }
 }
