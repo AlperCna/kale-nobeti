@@ -69,6 +69,14 @@ export interface EnemyDef {
   /** Uçar mı — yolu takip etmez, engellenemez (§5). */
   readonly flying: boolean;
   readonly ability?: EnemyAbility;
+  /**
+   * Buz kalkanı — `M10-T03`, yalnız harita 4 (Kar Geçidi).
+   *
+   * Cana inmeden önce emilen **toplam** hasar. Verilmezse kalkan yok.
+   * Değeri `getEnemyForMap` haritaya göre iliştiriyor; temel düşman
+   * tanımları (§5 tablosu) değişmiyor.
+   */
+  readonly shield?: number;
 }
 
 /**
@@ -108,6 +116,21 @@ export interface EnemyState {
    */
   blockedBy: object | null;
   alive: boolean;
+  /**
+   * Kalan kalkan — `M10-T03`, harita 4 (Kar Geçidi).
+   *
+   * Cana **inmeden önce** emilen düz hasar. `def.shield` doğuşta buraya
+   * kopyalanıyor ve `kalkandanGecir()` tüketiyor. Zırhtan farkı:
+   * zırh her vuruştan sabit miktar düşürüyor (yani çok sayıda küçük
+   * vuruşu cezalandırıyor), kalkan **toplam** bir havuz (yani tek büyük
+   * vuruşla da çok sayıda küçükle de aynı hızda eriyor, ama erimeden
+   * cana hiç hasar geçmiyor).
+   *
+   * TIER 1 kural 3: havuza dönen düşmanda sıfırlanıyor
+   * (`resetEnemyState`) — sıfırlanmazsa bir sonraki düşman ölü bir
+   * kalkanla doğar ve bu **çökme değil yanlış denge** olarak görünür.
+   */
+  shieldLeft: number;
 }
 
 /**

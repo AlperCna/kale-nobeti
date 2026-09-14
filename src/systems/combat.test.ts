@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { applyDamage, DAMAGE_FLOOR_RATIO } from './combat';
+import { applyDamage, kalkandanGecir, DAMAGE_FLOOR_RATIO } from './combat';
 import { OKCU, TOP } from '../data/towers';
-import { GOBLIN, ORK_SAVASCI } from '../data/enemies';
+import { GOBLIN, ORK_SAVASCI, getEnemy, getEnemyForMap } from '../data/enemies';
 
 /** Zırhsız, dirençsiz. */
 const CIPLAK = { armor: 0, magicResist: 0 };
@@ -137,5 +137,87 @@ describe('applyDamage — sınır durumları', () => {
     const b = applyDamage(6, 'physical', e);
     expect(a).toEqual(b);
     expect(e).toEqual({ armor: 2, magicResist: 0 });
+  });
+});
+
+/**
+ * `M10-T03` — buz kalkanı. Harita 4'ün yeni mekaniği.
+ *
+ * Kalkan **candan önce** eriyor ve `applyDamage`'dan AYRI bir adım:
+ * zırh/direnç vuruşun gerçek gücünü belirliyor, kalkan onu emiyor. Ters
+ * sıra olsaydı kalkan zırhın işini de görürdü ve iki savunma çarpışırdı.
+ */
+describe('kalkandanGecir — buz kalkanı', () => {
+  it('kalkan hasarı tamamen emiyorsa cana hiçbir şey geçmiyor', () => {
+    const e = { shieldLeft: 25 };
+    expect(kalkandanGecir(10, e)).toBe(0);
+    expect(e.shieldLeft).toBe(15);
+  });
+
+  it('kalkan bitince ARTAN hasar cana geçiyor — aynı vuruşta', () => {
+    const e = { shieldLeft: 25 };
+    expect(kalkandanGecir(40, e)).toBe(15);
+    expect(e.shieldLeft).toBe(0);
+  });
+
+  it('kalkan yoksa hasar olduğu gibi geçiyor', () => {
+    const e = { shieldLeft: 0 };
+    expect(kalkandanGecir(12, e)).toBe(12);
+    expect(e.shieldLeft).toBe(0);
+  });
+
+  it('tam kalkan kadar vuruş kalkanı bitiriyor, can sağlam', () => {
+    const e = { shieldLeft: 25 };
+    expect(kalkandanGecir(25, e)).toBe(0);
+    expect(e.shieldLeft).toBe(0);
+  });
+
+  /**
+   * Toplam bir havuz: çok sayıda küçük vuruş da tek büyük vuruş da
+   * kalkanı aynı hızda eritiyor. Zırhtan farkı bu — zırh her vuruştan
+   * ayrı ayrı düşüyor, yani küçük vuruşları cezalandırıyor.
+   */
+  it('çok sayıda küçük vuruş tek büyük vuruşla AYNI toplamı emiyor', () => {
+    const a = { shieldLeft: 25 };
+    let canaGecen = 0;
+    for (let i = 0; i < 8; i++) canaGecen += kalkandanGecir(5, a);
+    const b = { shieldLeft: 25 };
+    expect(canaGecen).toBe(kalkandanGecir(40, b));
+  });
+
+  it('sıfır ya da negatif hasar kalkanı yemiyor', () => {
+    const e = { shieldLeft: 25 };
+    expect(kalkandanGecir(0, e)).toBe(0);
+    expect(kalkandanGecir(-5, e)).toBe(-5);
+    expect(e.shieldLeft).toBe(25);
+  });
+});
+
+/**
+ * Kalkan **yalnız harita 4'te** ve **yalnız Ork Savaşçı'da**. Sızması
+ * diğer haritaların ölçülmüş dengesini sessizce bozardı.
+ */
+describe('getEnemyForMap — kalkan kapsamı', () => {
+  const harita = (id: string) => ({ id, hpMultiplier: 1 });
+
+  it('harita 4’ün Ork Savaşçı’sında kalkan var', () => {
+    expect(getEnemyForMap('orkSavasci', harita('kar-gecidi'))?.shield).toBeGreaterThan(0);
+  });
+
+  it('diğer haritaların Ork Savaşçı’sında kalkan YOK', () => {
+    for (const id of ['degirmen-gecidi', 'tas-kopru', 'kul-ovasi', 'kadim-harabe']) {
+      expect(getEnemyForMap('orkSavasci', harita(id))?.shield, id).toBeUndefined();
+    }
+  });
+
+  it('harita 4’ün diğer düşmanlarında kalkan yok', () => {
+    for (const id of ['goblin', 'zirhliOrk', 'trol', 'harpi'] as const) {
+      expect(getEnemyForMap(id, harita('kar-gecidi'))?.shield, id).toBeUndefined();
+    }
+  });
+
+  it('temel tanım DEĞİŞMİYOR — varyant kopya üzerinden', () => {
+    getEnemyForMap('orkSavasci', harita('kar-gecidi'));
+    expect(getEnemy('orkSavasci')?.shield).toBeUndefined();
   });
 });

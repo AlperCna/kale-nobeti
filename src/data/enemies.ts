@@ -208,10 +208,74 @@ export function getEnemy(id: EnemyDef['id']): EnemyDef | undefined {
  * düşmanlar §5 tablosunda yazdığı gibi kalıyor. Doğum yolu bu fonksiyondan
  * geçtiği sürece hem oyun hem `simulateWave` **aynı** boss'u görüyor.
  */
+/**
+ * **Buz kalkanı** — `M10-T03`, yalnız harita 4 (Kar Geçidi).
+ *
+ * ## Neden var
+ *
+ * M8'in eklediği harita 4 ve 5 **sıfır** yeni düşman/mekanik tanıtıyordu
+ * (kadro ölçüldü: 5 → 7 → 10 → 10 → 10). Kingdom Rush'ı taklitlerinden
+ * ayıran madde tam bunun tersi: *"her seviye tam olarak bir yeni mekanik
+ * ya da düşman tipi tanıtıyor."* Bu, içerik **miktarı** değil var olan
+ * içeriğin derinlik kusuru.
+ *
+ * ## Neden yeni bir düşman değil, var olanın varyantı
+ *
+ * Yeni düşman yeni atlas karesi ister; sanat üretimi bu oturumun işi
+ * değil. Kalkan bunun yerine **var olan bir düşmana** iliştiriliyor ve
+ * görsel ayrım çizimle yapılıyor (halka) — TIER 1 kural 6: ayrım yalnız
+ * renge dayanmıyor, halkanın **varlığı/yokluğu** taşıyor.
+ *
+ * ## Neden Ork Savaşçı — **taşıyıcı ölçülerek seçildi**
+ *
+ * İlk deneme Kurt Binicisi'ydi ve ölçüm kalkanın **hiçbir şeyi
+ * değiştirmediğini** gösterdi: harita 4'ün 80 düşmanının yalnız 5'i
+ * Kurt Binicisi (%6). Mekanik oradaydı ama oyuncu neredeyse hiç
+ * görmüyordu.
+ *
+ * Harita 4 doğum sayıları: goblin×25, orkSavasci×18, zirhliOrk×13,
+ * trol×6, harpi×5, kurtBinicisi×5, orumcekAna×4, saman×3, ogreSef×1.
+ *
+ * Ork Savaşçı haritanın **omurgası** (%22) ve on dalgaya yayılıyor,
+ * yani mekanik bir kez değil sürekli hissediliyor.
+ *
+ * Elenenler: Zırhlı Ork (zırh + kalkan üst üste binerdi), Trol
+ * (yenilenme + kalkan aynı fikrin tekrarı), Şaman ("önce iyileştiriciyi
+ * öldür" cevabını tümden kapatırdı), Goblin (çöp birim; kalkanlı çöp
+ * "kalabalık" hissini bozar, tehdit hissini değil).
+ *
+ * ## Sayı nereden geldi
+ *
+ * **Ölçüldü, uydurulmadı** (`CLAUDE.md` TIER 2). Harita 4, referans
+ * tahtaya karşı, kalkan taraması:
+ *
+ * | Kalkan | Sızan (gerçekçi) | Sızan (muhafazakâr) | Sızan Ork |
+ * |---|---|---|---|
+ * | 0 | 10 | 10 | 1 |
+ * | 15 | 10 | 10 | 1 |
+ * | **25** | **11** | **12** | **2** |
+ * | 40 | 11 | 12 | 2 |
+ * | 60 | 13 | 13 | 3 |
+ *
+ * 15 ve altı **hiçbir şeyi değiştirmiyor** — mekanik görünür ama
+ * sonuçsuz. 60 sızıntıyı %30 artırıyor; harita 4 zaten zor
+ * (kalkansız 10 sızıntı). **25 = eşiğin kendisi:** mekaniğin sonucu
+ * değiştirdiği en küçük değer. 40 aynı sızıntı sayısını veriyor,
+ * yalnız daha çok sızan HP — yani daha sert ama daha öğretici değil.
+ *
+ * Tam kayıt: `docs/plan/OPEN-QUESTIONS.md` S79.
+ */
+const KAR_GECIDI_KALKANI = 25;
+
 export function getEnemyForMap(
   id: EnemyDef['id'],
   map: { id: string; hpMultiplier: number },
 ): EnemyDef | undefined {
   if (id === 'ogreSef') return bossFor(map);
-  return getEnemy(id);
+  const temel = getEnemy(id);
+  if (temel === undefined) return undefined;
+  if (map.id === 'kar-gecidi' && id === 'orkSavasci') {
+    return { ...temel, shield: KAR_GECIDI_KALKANI };
+  }
+  return temel;
 }

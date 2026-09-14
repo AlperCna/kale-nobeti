@@ -46,6 +46,7 @@ function trolYap(mover: PathMover): SimTrol {
     hp: TROL.hp * MAP_1.hpMultiplier,
     maxHp: TROL.hp * MAP_1.hpMultiplier,
     speed: TROL.speed,
+    shieldLeft: 0,
     speedFactor: 1,
     progress: mover.spawnProgress(),
     blockedBy: null,

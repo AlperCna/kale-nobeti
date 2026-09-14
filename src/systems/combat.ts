@@ -60,3 +60,24 @@ export function applyDamage(dmg: number, type: DamageType, e: Defenses): DamageR
   if (out < taban) return { dealt: taban, floored: true };
   return { dealt: out, floored: false };
 }
+
+/**
+ * Kalkan emilimi — `M10-T03`.
+ *
+ * `applyDamage`'dan **ayrı** bir adım, çünkü sırası önemli: zırh/direnç
+ * önce uygulanıyor (vuruşun gerçek gücü), kalkan sonra emiyor. Ters sıra
+ * olsaydı kalkan zırhın da işini görür ve iki savunma çarpışırdı.
+ *
+ * Fonksiyon **paylaşılıyor**: hem oyun (`GameScene`'in mermi geri
+ * çağrısı) hem `waveSim` bunu çağırıyor. İkisinde ayrı ayrı yazılsaydı
+ * denge testi oyunun ölçtüğünden başka bir şey ölçerdi — bu projenin
+ * en pahalı hata sınıfı.
+ *
+ * @returns **Candan** düşecek miktar. Hedefin `shieldLeft`'i tüketiliyor.
+ */
+export function kalkandanGecir(dealt: number, hedef: { shieldLeft: number }): number {
+  if (!(hedef.shieldLeft > 0) || !(dealt > 0)) return dealt;
+  const emilen = Math.min(hedef.shieldLeft, dealt);
+  hedef.shieldLeft -= emilen;
+  return dealt - emilen;
+}

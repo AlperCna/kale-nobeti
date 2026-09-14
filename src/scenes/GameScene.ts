@@ -5,6 +5,7 @@ import { PathSystem } from '../systems/PathSystem';
 import { LineMover, PathMover } from '../systems/movers';
 import { EnemyAbilitySystem } from '../systems/EnemyAbilitySystem';
 import { applyEffect, speedMultiplier, stepEffects } from '../systems/effects';
+import { kalkandanGecir } from '../systems/combat';
 import { WaveManager } from '../systems/WaveManager';
 import { endlessHpScale, generateEndlessWave } from '../systems/endlessWaves';
 import { AchievementSystem } from '../systems/AchievementSystem';
@@ -52,7 +53,7 @@ import type { MapDef } from '../types/map';
 import { TOWERS, TARGET_MODES, getTower, tierAt } from '../data/towers';
 import { towerFrameKey } from '../data/spriteFrames';
 import { projectileLook } from '../data/projectileVisuals';
-import { getEnemy, ENEMIES } from '../data/enemies';
+import { getEnemy, getEnemyForMap, ENEMIES } from '../data/enemies';
 import { BALANCE, POOL_PREALLOC, GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI } from '../data/balance';
 import { MUSIC_BASE_VOLUME } from '../data/audio';
 import { portal } from '../systems/Portal';
@@ -68,7 +69,7 @@ import type { HintId } from '../systems/TutorialSystem';
 import { TutorialHints } from '../fx/TutorialHints';
 import type { StringKey } from '../data/strings';
 import type { TargetMode, TierIndex, TowerDef } from '../types/tower';
-import type { DamageType, Mover } from '../types/enemy';
+import type { DamageType, EnemyDef, EnemyId, Mover } from '../types/enemy';
 import type { Vec2 } from '../types/common';
 import type { Wave } from '../types/wave';
 
@@ -116,6 +117,14 @@ const TOWER_DISPLAY_SIZE = 64;
 /** Asker (M5). Düşmandan küçük; TIER 1 kural 6: ayrım renge dayanmıyor. */
 const SOLDIER_SIZE = 20;
 const RALLY_COLOR = 0x3e6ca8;
+/**
+ * `M10-T03` — buz kalkanı halkası. Açık lapis: §2'nin mürekkep mavisi
+ * paletinden, ama düşman siluetinden ve yol renginden ayrışacak kadar
+ * açık. Renk **tek başına** bilgi taşımıyor (bkz. `#kalkanlariCiz`).
+ */
+const KALKAN_RENGI = 0x9fd8ef;
+/** Düşman gösterim boyutunun (30 px) biraz dışı. */
+const KALKAN_YARICAP = 22;
 
 /**
  * `M10-T02` — tahtayı geri kurarken kullanılan **geçici** bakiye.
@@ -207,6 +216,8 @@ export class GameScene extends Phaser.Scene {
 
   #soldierPool?: Pool<Soldier>;
   #rallyGfx?: Phaser.GameObjects.Graphics;
+  /** `M10-T03` — kalkan halkaları. Tek `Graphics`, her karede yeniden çiziliyor. */
+  #kalkanGfx?: Phaser.GameObjects.Graphics;
   /** Sürüklenen toplanma noktasının kışlası; `-1` = sürükleme yok. */
   #draggingRally = -1;
   /**
@@ -561,6 +572,12 @@ export class GameScene extends Phaser.Scene {
       (k) => this.#havuzDoldu('asker', k),
     );
     this.#rallyGfx = this.add.graphics();
+    // `M10-T03` — kalkan halkası. **Tek** `Graphics`, havuz değil:
+    // `#drawRally`'nin deseni. Düşman sprite'ı `Sprite` (Container
+    // değil), yani çocuk ekleyemiyor; havuzlu ikinci bir nesne
+    // (`EnemyHealthBar` gibi) bu kadar seyrek bir süs için fazla
+    // makine olurdu.
+    this.#kalkanGfx = this.add.graphics();
     // `Y01` adım 1 — juice katmanı `fx/Particles.ts`'e taşındı.
     this.#efektler = new Particles(this, this.settings, this.clock, enemyPool, enemyHealthBars);
 
@@ -674,10 +691,34 @@ export class GameScene extends Phaser.Scene {
     this.#eco = new EconomySystem(this.#map, this.bus, this.settings.difficulty.startLives);
     // Bölünmeden doğan yavru da zorluk çarpanını almalı — yoksa Zor'da
     // ana ölçekleniyor, yavrusu ölçeklenmiyordu.
+    /**
+     * **`getEnemyForMap`, `getEnemy` DEĞİL.**
+     *
+     * `M10-T03`'te canlı testte yakalandı ve kendi başına bir hata:
+     * `waveSim` düşmanı `getEnemyForMap` ile çözüyordu, canlı oyun ham
+     * `getEnemy` ile. Yani **denge testi oyuncunun dövüşmediği bir
+     * boss'u ölçüyordu**:
+     *
+     * | Harita | Canlı (hatalı) | Ölçülen (doğru) |
+     * |---|---|---|
+     * | tas-kopru | 1120 HP · zırh 10 | 712 HP · zırh 5 |
+     * | kul-ovasi | 1820 HP · zırh 10 | 1023 HP · zırh 2 |
+     * | kar-gecidi | 3080 HP · zırh 10 | 1933 HP · zırh 2 |
+     * | kadim-harabe | **4760 HP · zırh 10** | 2675 HP · zırh 2 |
+     *
+     * `bossScaling.ts`'in kendi yorumu bu sözleşmeyi zaten yazıyordu:
+     * *"Doğum yolu bu fonksiyondan geçtiği sürece hem oyun hem
+     * `simulateWave` aynı boss'u görüyor."* Canlı yol o fonksiyondan
+     * geçmiyordu. `referenceBoards.ts` `BOSS_HP_BEFORE_NERF = 2200`'ü
+     * "projenin en pahalı hatası" diye kaydetmiş; bu onun sessiz
+     * nüksü ve daha büyüğü.
+     */
+    const dusmanCoz = (id: EnemyId): EnemyDef | undefined => getEnemyForMap(id, this.#map);
+
     this.#abilities = new EnemyAbilitySystem(
       enemyPool,
       this.#map.hpMultiplier * this.settings.difficulty.hpScale,
-      getEnemy,
+      dusmanCoz,
     );
     this.#waves = new WaveManager(
       enemyPool,
@@ -686,7 +727,7 @@ export class GameScene extends Phaser.Scene {
       this.#eco,
       this.#waveList,
       this.#map.hpMultiplier * this.settings.difficulty.hpScale,
-      getEnemy,
+      dusmanCoz,
       // `G05` — sızan düşmanın can çubuğu da havuza dönmeden önce
       // serbest kalmalı, ölüm yoluyla aynı sözleşme (`Particles.olumEfekti`).
       (e) => this.#enemyHealthBars?.releaseFor(e),
@@ -1000,6 +1041,7 @@ export class GameScene extends Phaser.Scene {
     this.#damageTexts?.update(sd);
     this.#altinUcusu?.update(sd);
     this.#enemyHealthBars?.update(dusmanlar);
+    this.#kalkanlariCiz(dusmanlar);
     // `true` yalnız hattın GÖRÜNDÜĞÜ karede — öğretici bir kez tetiklensin.
     if (this.#mapRenderer?.updateFlyerHint(this.#waves?.upcomingWave) === true) {
       this.bus.emit('wave:flyers', {});
@@ -1109,7 +1151,10 @@ export class GameScene extends Phaser.Scene {
 
   #hasarUygula(e: Enemy, miktar: number): void {
     if (!e.alive) return;
-    e.hp -= miktar;
+    // `M10-T03` — kalkan **candan önce**. Mermi de yanma da bu huniden
+    // geçiyor, yani kalkan "hiçbir şey cana dokunmadan önce erir"
+    // sözleşmesini oyunun tamamında koruyor.
+    e.hp -= kalkandanGecir(miktar, e);
     if (e.hp > 0) return;
 
     // Ölüm **burada** işaretleniyor, havuza dönüşten önce: aynı karede
@@ -1136,6 +1181,41 @@ export class GameScene extends Phaser.Scene {
     // devralıyor ve `release` onu sıfırlıyor.
     this.#abilities?.splitOnDeath(e);
     this.#efektler?.olumEfekti(e);
+  }
+
+  /**
+   * `M10-T03` — kalkanlı düşmanın halkası.
+   *
+   * ## k.6: renk tek başına taşımıyor
+   *
+   * Halkanın **varlığı** bir sinyal (şekil), uzunluğu ikincisi: kalan
+   * kalkanla orantılı bir **yay** çiziliyor, yani erirken gözle
+   * izleniyor. Renk körü bir oyuncu için de "yayı olan düşman" ve
+   * "yayı bitmiş düşman" ayrı görünüyor.
+   *
+   * ## Neden her karede yeniden çiziliyor
+   *
+   * `#drawRally` her karede çağrılmıyor çünkü kesikli çember + çizgi
+   * üretmek pahalı (canlı ölçüm: 0,95 ms → 3,5 ms). Bu çizim ondan
+   * **çok** daha ucuz: kalkanlı düşman sayısı bir elin parmağı kadar
+   * ve her biri tek bir yay. Yine de kalkanlı hiç düşman yoksa
+   * `clear()` dışında hiçbir iş yapılmıyor.
+   */
+  #kalkanlariCiz(dusmanlar: readonly Enemy[]): void {
+    const g = this.#kalkanGfx;
+    if (g === undefined) return;
+    g.clear();
+    for (const e of dusmanlar) {
+      if (!e.alive || e.shieldLeft <= 0) continue;
+      const tam = e.def?.shield ?? 0;
+      if (tam <= 0) continue;
+      const oran = Math.min(1, e.shieldLeft / tam);
+      g.lineStyle(3, KALKAN_RENGI, 0.95);
+      g.beginPath();
+      // Tepe noktasından başlayıp saat yönünde: dolu yay = tam kalkan.
+      g.arc(e.x, e.y, KALKAN_YARICAP, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * oran, false);
+      g.strokePath();
+    }
   }
 
   /** Yanma hasarı ve yavaşlatma çarpanı — `effects.ts` saf tarafı. */

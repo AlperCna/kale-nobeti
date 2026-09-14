@@ -257,6 +257,15 @@ soru cevaplanır
 **Cevap bu dosyada bırakılmaz.** Tek doğru kaynak `CLAUDE.md` ve
 `GAME-DESIGN.md` (`plan/README.md` Açık soru döngüsü).
 
+## M10'un ürettiği bulgular
+
+| # | Durum | Bulgu |
+|---|---|---|
+| **S79** | ⚠️ **yeni, kapandı** | **Harita 4'ün buz kalkanı = 25.** `M10-T03` haritaya bir yeni mekanik ekledi (kadro ölçümü: harita 4 ve 5 **sıfır** yeni düşman/mekanik tanıtıyordu). Sayı uydurulmadı, taranarak bulundu — referans tahtaya karşı: kalkan 0 → 10 sızıntı, 15 → 10, **25 → 11**, 40 → 11, 60 → 13. 15 ve altı hiçbir şeyi değiştirmiyor (mekanik görünür ama sonuçsuz), 60 sızıntıyı %30 artırıyor. **25 = mekaniğin sonucu değiştirdiği en küçük değer.** Taşıyıcı da ölçülerek seçildi: ilk deneme Kurt Binicisi'ydi ve harita 4'ün 80 düşmanının yalnız 5'i o (%6) — mekanik neredeyse hiç görünmüyordu; Ork Savaşçı %22 ile haritanın omurgası |
+| **S80** | 🔴 **yeni, kapandı — CİDDİ** | **Canlı oyun ile denge simülasyonu FARKLI boss dövüşüyordu.** `waveSim` düşmanı `getEnemyForMap` (haritaya duyarlı, `bossScaling` türetmesini uygulayan) ile çözüyordu; `GameScene` ham `getEnemy` ile. Ölçülen fark: `tas-kopru` 1120 HP/zırh 10 yerine 712/5 · `kul-ovasi` 1820/10 yerine 1023/2 · `kar-gecidi` 3080/10 yerine 1933/2 · **`kadim-harabe` 4760/10 yerine 2675/2**. Yani her boss ölçümü oyuncunun hiç dövüşmediği bir boss'u ölçüyordu ve oyuncu **1,6–1,8 kat** daha canlı, **5 kat** daha zırhlı bir boss'la karşılaşıyordu. `bossScaling.ts`'in kendi yorumu sözleşmeyi yazmıştı (*"doğum yolu bu fonksiyondan geçtiği sürece hem oyun hem `simulateWave` aynı boss'u görüyor"*) — canlı yol o fonksiyondan geçmiyordu. `referenceBoards.ts`'in `BOSS_HP_BEFORE_NERF = 2200` kaydı bu hata sınıfını "projenin en pahalı hatası" diye anıyor; bu onun sessiz ve daha büyük nüksü. **`M10-T03` sırasında, kalkanın canlı oyunda görünmemesi üzerinden bulundu** |
+
+---
+
 ## Öncelik
 
 Hangi soruların **ne zaman** cevaplanması gerektiği:

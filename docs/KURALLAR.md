@@ -351,7 +351,7 @@ tahta 3820'de takılıyor ve oyuncu 34 can kaybediyordu (20 canla kayıp).
 | 1 · Değirmen Geçidi | ×1 | ×1 | 1350 | 0 / 20 ✓ |
 | 2 · Taş Köprü | ×1,6 | ×1,6 | 2210 | 6 / 20 ✓ |
 | 3 · Kül Ovası | ×2,6 | ×3,8 **←ayrıştı** | 4870 | 10 / 20 ✓ |
-| 4 · Kar Geçidi | ×4,4 | ×4,4 | 5100 | 13 / 20 ✓ |
+| 4 · Kar Geçidi | ×4,4 | ×4,4 | 5100 | 14 / 20 ✓ |
 | 5 · Kadim Harabe | ×6,8 | ×6,8 | 6440 | 16 / 20 ✓ |
 
 Türetilebilir kural: **altın, haritanın noktalarını tam yükseltmeye
@@ -491,8 +491,8 @@ referans tahtaya, tavana ve boss türetmesine hiç girmiyor — hiçbir düşman
 | Seviye | HP çarpanı | Başlangıç canı | Yıldız | 1 | 2 | 3 | 4 | 5 |
 |---|---|---|---|---|---|---|---|---|
 | kolay | ×0,85 | 20 | **kaydedilmiyor** | 0 / 20 ✓ | 2 / 20 ✓ | 3 / 20 ✓ | 4 / 20 ✓ | 7 / 20 ✓ |
-| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 6 / 20 ✓ | 10 / 20 ✓ | 13 / 20 ✓ | 16 / 20 ✓ |
-| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 6 / 12 ✓ | 10 / 12 ✓ | 13 / 12 ✗ | 16 / 12 ✗ |
+| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 6 / 20 ✓ | 10 / 20 ✓ | 14 / 20 ✓ | 16 / 20 ✓ |
+| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 6 / 12 ✓ | 10 / 12 ✓ | 14 / 12 ✗ | 16 / 12 ✗ |
 
 Hücreler: referans tahtanın kaybettiği can / o seviyenin canı.
 
@@ -654,7 +654,7 @@ Simülasyon **canlı oyunla aynı kodu** kullanıyor: aynı
 | 1 · Değirmen Geçidi | **0** | 0 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:0 |
 | 2 · Taş Köprü | **6** | 361 | d1:0 d2:1 d3:1 d4:1 d5:1 d6:1 d7:0 d8:0 d9:1 d10:0 |
 | 3 · Kül Ovası | **8** | 645 | d1:0 d2:1 d3:0 d4:1 d5:0 d6:1 d7:0 d8:0 d9:4 d10:1 |
-| 4 · Kar Geçidi | **10** | 2907 | d1:0 d2:1 d3:1 d4:0 d5:0 d6:1 d7:0 d8:2 d9:2 d10:3 |
+| 4 · Kar Geçidi | **11** | 3174 | d1:0 d2:1 d3:1 d4:1 d5:0 d6:1 d7:0 d8:2 d9:2 d10:3 |
 | 5 · Kadim Harabe | **13** | 4963 | d1:0 d2:2 d3:1 d4:1 d5:0 d6:1 d7:0 d8:2 d9:4 d10:2 |
 
 
@@ -666,7 +666,7 @@ bu ikisi farklı düzeltmeler gerektiriyor:
 | 1 · Değirmen Geçidi | **hiç yok** |
 | 2 · Taş Köprü | Zırhlı Ork ×3 · Ork Savaşçı ×2 · Harpi ×1 |
 | 3 · Kül Ovası | Harpi ×3 · Ork Savaşçı ×2 · Trol ×2 · Zırhlı Ork ×1 |
-| 4 · Kar Geçidi | Zırhlı Ork ×5 · Trol ×3 · Ork Savaşçı ×1 · Şaman ×1 |
+| 4 · Kar Geçidi | Zırhlı Ork ×5 · Trol ×3 · Ork Savaşçı ×2 · Şaman ×1 |
 | 5 · Kadim Harabe | Zırhlı Ork ×5 · Ork Savaşçı ×3 · Trol ×3 · Şaman ×2 |
 
 **Kısıt A ile Kısıt B aynı şeyi ölçmüyor.** Kısıt A *tek* düşman için

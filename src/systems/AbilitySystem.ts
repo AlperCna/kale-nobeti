@@ -13,7 +13,7 @@ import type { AbilityDef, AbilityId, AbilityState } from '../types/ability';
 import type { BlockableEnemy, SoldierState } from '../types/barracks';
 import type { Vec2 } from '../types/common';
 import { ABILITIES, getAbility } from '../data/abilities';
-import { applyDamage } from './combat';
+import { applyDamage, kalkandanGecir } from './combat';
 import { spawnSoldier } from './BarracksSystem';
 import { SOLDIER_SPEED } from '../data/barracks';
 import { distSq } from '../util/math';
@@ -135,7 +135,7 @@ export class AbilitySystem {
       if (distSq(target, e) > yaricapKare) continue;
 
       const r = applyDamage(def.damage, def.damageType, e.def);
-      e.hp -= r.dealt;
+      e.hp -= kalkandanGecir(r.dealt, e); // M10-T03
       if (e.hp < 0) e.hp = 0;
       hit++;
       totalDamage += r.dealt;

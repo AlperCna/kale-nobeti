@@ -29,6 +29,7 @@ import type { Poolable } from '../util/pool';
 import { Pool } from '../util/pool';
 import { GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI, POOL_PREALLOC } from '../data/balance';
 import { getTower } from '../data/towers';
+import { kalkandanGecir } from './combat';
 import { getEnemyForMap } from '../data/enemies';
 import { KISLA, barracksTierAt, SOLDIER_SPEED } from '../data/barracks';
 import { defaultRally, spawnSoldier, stepSoldiers } from './BarracksSystem';
@@ -73,6 +74,8 @@ class SimEnemy implements SpawnableEnemy, Poolable, Targetable {
   progress = { segmentIndex: 0, tInSegment: 0, remainingDistance: 0 };
   blockedBy: object | null = null;
   alive = false;
+  /** `M10-T03` — oyunla aynı kalkan alanı; denge ölçümü onu da görsün. */
+  shieldLeft = 0;
   mover: Mover | null = null;
 
   get remainingDistance(): number {
@@ -88,6 +91,7 @@ class SimEnemy implements SpawnableEnemy, Poolable, Targetable {
     this.speed = def.speed;
     this.blockedBy = null;
     this.alive = true;
+    this.shieldLeft = def.shield ?? 0;
     this.progress = mover.spawnProgress();
     this.#konumla();
   }
@@ -189,7 +193,7 @@ export function simulateWave(
 
   const projectiles = new ProjectileSystem<SimEnemy, SimProjectile>(projPool, (e, sonuc) => {
     if (!e.alive) return;
-    e.hp -= sonuc.dealt;
+    e.hp -= kalkandanGecir(sonuc.dealt, e); // M10-T03 — oyunla aynı sıra
     if (e.hp > 0) return;
     e.alive = false;
     killedCount++;

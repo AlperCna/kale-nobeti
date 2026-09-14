@@ -102,15 +102,34 @@ describe('Boss ölçeklemesi — zırh düşer, HP türetilir', () => {
     }
   });
 
-  it('boss dışındaki düşmanlar DEĞİŞMEDİ', () => {
+  /**
+   * Bu testin işi boss ölçeklemesinin **diğer düşmanlara sızmadığını**
+   * doğrulamak. `M10-T03` haritaya göre tek bir bilinçli varyant ekledi
+   * (harita 4'ün kalkanlı Ork Savaşçı'sı), o yüzden iddia gevşetilmedi
+   * **daraltıldı**: bilinen varyant adıyla ayrı tutuluyor, geri kalan
+   * her düşman hâlâ birebir aynı olmak zorunda.
+   */
+  const BILINEN_VARYANTLAR = new Set(['kar-gecidi/orkSavasci']);
+
+  it('boss dışındaki düşmanlar DEĞİŞMEDİ (bilinen varyantlar hariç)', () => {
     for (const m of H) {
       for (const id of m.map.enemyRoster) {
         if (id === 'ogreSef') continue;
-        expect(getEnemyForMap(id, m.map)).toEqual(
-          MAPS.length > 0 ? getEnemyForMap(id, MAP_1) : undefined,
-        );
+        if (BILINEN_VARYANTLAR.has(`${m.map.id}/${id}`)) continue;
+        expect(getEnemyForMap(id, m.map), `${m.map.id}/${id}`).toEqual(getEnemyForMap(id, MAP_1));
       }
     }
+  });
+
+  it('bilinen varyant YALNIZ kalkan alanında ayrışıyor', () => {
+    const harita4 = H.find((m) => m.map.id === 'kar-gecidi');
+    expect(harita4, 'harita 4 bulunamadı').toBeDefined();
+    const varyant = getEnemyForMap('orkSavasci', harita4!.map)!;
+    const temel = getEnemyForMap('orkSavasci', MAP_1)!;
+    expect(varyant.shield).toBeGreaterThan(0);
+    // Kalkan dışında TEK bir alan bile farklı olmamalı.
+    const { shield: _atilan, ...kalkansiz } = varyant;
+    expect(kalkansiz).toEqual(temel);
   });
 
   it('700 × çarpan olsaydı GEÇİLEMEZDİ — düzeltmenin kanıtı', () => {

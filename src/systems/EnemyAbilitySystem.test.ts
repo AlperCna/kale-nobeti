@@ -25,6 +25,7 @@ class SahteDusman implements AbilityEnemy, Poolable {
   progress = { segmentIndex: 0, tInSegment: 0, remainingDistance: 0 };
   blockedBy: object | null = null;
   alive = false;
+  shieldLeft = 0;
   mover: Mover | null = null;
 
   spawn(mover: Mover, def: EnemyDef, hpMultiplier: number): void {
