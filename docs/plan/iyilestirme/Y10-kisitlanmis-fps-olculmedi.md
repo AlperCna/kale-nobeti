@@ -1,5 +1,42 @@
 # Y10 · S15'in "yayın öncesi zorunlu" ölçümü hiç yapılmadı
 
+> **◧ KISMEN YAPILDI.** Kısıtlamasız taraf ölçüldü ve
+> `docs/results/OLCUMLER.md` "Kare maliyeti ve render modu" bölümüne
+> işlendi. **Geriye tek adım kaldı: 4× CPU kısıtlaması altındaki okuma**
+> — Chrome DevTools gerektiriyor, tarayıcı panelinde CPU kısıtlama
+> yok.
+>
+> Yapılanlar:
+>
+> | Ne | Sonuç |
+> |---|---|
+> | Tepe senaryo kuruldu | Harita 3, 10 kuleli karışık tahta, efekt Tam |
+> | **Gerçek kare CPU maliyeti** | WebGL sıcak: ort **2,53 ms**, p95 3,30, p99 3,70 |
+> | **AUTO ↔ CANVAS karşılaştırması** | Sıcak WebGL, Canvas'tan **hızlı** (2,53 vs 3,04 ms) |
+> | Bellek | WebGL 42-44 MB · Canvas 32 MB |
+> | Kare maliyeti ↔ düşman sayısı | **bağımsız** — maliyet sabit işte, varlıklarda değil |
+>
+> **Duvar saati FPS'i yanıltıcıydı:** 62 FPS okunuyor ama bu vsync'e
+> takılı aralık, CPU maliyeti değil. Ölçüm `raf.callback` sarmalanarak
+> kare başına gerçek süreyle yapıldı.
+>
+> **İki koşu şarttı.** İlk WebGL örneği p99 26,9 ms / maks 150,8 ms
+> verdi; ikincisi aynı sahnede p99 3,7 / maks 7,2. Fark ısınma (shader
+> derleme, doku yükleme). Tek koşuya bakılsaydı "Canvas kazanıyor"
+> sonucu çıkar ve render modu **yanlış** değişirdi. Soğuk başlangıcın
+> kendisi ayrı bir bulgu — `Y12` (açılışta boş ekran) ile doğrudan
+> ilgili.
+>
+> **Karar:** `Phaser.AUTO` kalıyor. `research/02` §4'ün "eski cihazlarda
+> Canvas %30 kazandırıyor" bulgusu bu makinede doğrulanmadı — ama bu
+> makine hedef cihaz değil, o yüzden bulgu çürütülmüş de sayılmıyor.
+> Karşılaştırma `?render=canvas` ile (yalnız `import.meta.env.DEV`)
+> tekrarlanabilir hâle geldi.
+>
+> **Aritmetik eşiği geçtiğini söylüyor** (sıcak p99 3,7 × 4 = 14,8 ms →
+> 68 FPS) **ama bu ölçüm değil.** Bu dosyanın kendi kuralı: "tahmin,
+> ölçümün yerini tutmuyor". S15 ve R13 bu yüzden **açık kalıyor.**
+
 | | |
 |---|---|
 | **Tür** | Yapısal — doğrulama boşluğu |

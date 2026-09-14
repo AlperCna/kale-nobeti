@@ -16,9 +16,22 @@ import { OverlayScene } from './scenes/OverlayScene';
  * Zincir: Boot → Preload → Menu → Game (+ Hud paralel).
  */
 const config: Phaser.Types.Core.GameConfig = {
-  // research/02 §4: AUTO (WebGL öncelikli). Canvas'a düşme kararı
-  // ölçmeden verilmiyor — M6'da hedef cihazda FPS ölçülünce bakılacak.
-  type: Phaser.AUTO,
+  /**
+   * `research/02` §4: AUTO (WebGL öncelikli).
+   *
+   * `Y10` iki sayı istiyor, bir tane değil: aynı senaryo AUTO ve CANVAS
+   * ile ölçülmeden render modu kararı verilmemeli (`research/02`'nin
+   * "eski cihazlarda Canvas %30 kazandırıyor" bulgusu bu projede
+   * doğrulanmadı).
+   *
+   * Karşılaştırmanın **tekrarlanabilir** olması için `?render=canvas`
+   * sorgu parametresi var. **Yalnız `import.meta.env.DEV`'de**: CLAUDE.md
+   * Platform "yayın yapısında hata ayıklama tuşları bulunmaz" diyor ve
+   * üretim paketinde bu dal hiç çalışmıyor.
+   */
+  type: import.meta.env.DEV && new URLSearchParams(location.search).get('render') === 'canvas'
+    ? Phaser.CANVAS
+    : Phaser.AUTO,
 
   // CLAUDE.md Teknoloji: mantıksal çözünürlük 1280×720 (16:9).
   // Poki 16:9 zorunlu kılıyor ve 640×360'a orantılı küçültüyor

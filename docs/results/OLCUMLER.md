@@ -643,3 +643,54 @@ tablo. Liste tahminle değil **tarayarak** çıkarıldı (`.add.*` çağrıları
 geçer ve yalnız o kod yolu oynanınca çöker; `node` ortamı Phaser
 çalıştırmadığı için testler de göremez (S08). Yapılan turun kapsamı
 `M8-SONUC.md` "`Y11`" bölümünde.
+
+---
+
+## Kare maliyeti ve render modu (`Y10`, kısmi)
+
+**Senaryo (tekrarlanabilir):** harita 3 (`kul-ovasi`, en ağır: hp ×2,6,
+12 nokta, iki giriş) · 10 kuleli karışık tahta (okçu/büyü/top/kışla) ·
+efekt yoğunluğu **Tam** · sarsıntı açık · 1× hız · 1280×720 tuval, DPR 1.
+
+**Okuma:** `raf.callback` sarmalanıp **her karenin CPU süresi** ölçülüyor.
+Göz kararı değil; ve duvar saati FPS'i de değil — o vsync'e takılı
+(62 FPS okunuyor) ve gerçek maliyeti gizliyor.
+
+| # | Büyüklük | Değer | Nasıl | Neye asılı |
+|---|---|---|---|---|
+| F1 | Kare CPU süresi, **WebGL sıcak** | ort **2,53 ms** · p95 3,30 · p99 3,70 · maks 7,20 | 1575 kare | S15 ikincil geçit |
+| F2 | Kare CPU süresi, **WebGL soğuk** (ilk ~25 sn) | ort 4,56 ms · p95 5,70 · **p99 26,90** · **maks 150,80** | 1486 kare | `Y12` açılış |
+| F3 | Kare CPU süresi, **Canvas** | ort 3,04-3,21 ms · p95 4,3-4,4 · p99 5,1-5,2 · maks 7,9-8,3 | iki koşu | render modu kararı |
+| F4 | Bellek (JS heap) | WebGL 42-44 MB · Canvas 32 MB | `performance.memory` | havuz sızıntısı |
+| F5 | Kare maliyeti ↔ düşman sayısı | **bağımsız** (0→5 düşmanda 4,27 · 3,32 · 4,06 · 3,95 · 2,69 · 2,61 ms) | 7871 kare, düşman sayısına göre gruplandı | ölçekleme varsayımı |
+
+### F5 en şaşırtıcı bulgu
+
+Kare maliyeti **düşman sayısıyla artmıyor**. Yani maliyet varlıklarda
+değil **sabit işte**: arka plan, HUD, çerçeveler, yol. Havuz tavanına
+(60) kadar çıkmanın maliyeti doğrusal çarpmayacak demek — ve `Y02`'nin
+"tahsis oranı" şüphesi bu ölçümle zayıflıyor.
+
+### F2 — WebGL'in soğuk başlangıcı gerçek
+
+İlk ölçüm koşusunda WebGL p99 **26,9 ms** ve maks **150,8 ms** verdi;
+ikinci koşuda aynı sahnede p99 **3,7 ms**, maks **7,2 ms**. Aradaki tek
+fark ısınma (shader derleme, doku yükleme). **Tek koşuya bakılsaydı
+"Canvas kazanıyor" sonucu çıkardı ve yanlış olurdu** — `Y10`'un "ölçüm
+iki sayı üretmeli" şartının nedeni tam olarak bu, ve iki sayı da iki kez
+alınmalıymış.
+
+### Render modu kararı
+
+Sıcak durumda **WebGL, Canvas'tan hızlı** (2,53 vs 3,04 ms ort; p99 3,7
+vs 5,1). `research/02` §4'ün "eski cihazlarda Canvas %30 kazandırıyor"
+bulgusu **bu makinede doğrulanmadı** — ama bu makine hedef cihaz değil.
+`Phaser.AUTO` kalıyor; karşılaştırma `?render=canvas` ile (yalnız dev)
+tekrarlanabilir.
+
+### Hâlâ eksik olan
+
+**4× CPU kısıtlaması altındaki gerçek okuma.** Yukarıdaki sayılar
+kısıtlamasız. Aritmetik (sıcak p99 3,7 × 4 = 14,8 ms → 68 FPS) eşiği
+rahat geçtiğini söylüyor ama `S15` "ölçüm" diyor, "çarpma" değil ve
+`Y10` bunu açıkça reddediyor. Chrome DevTools gerekiyor.
