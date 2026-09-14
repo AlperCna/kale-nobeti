@@ -32,9 +32,37 @@ export const EFFECT_SCALE: Readonly<Record<EffectLevel, number>> = {
   full: 1,
 };
 
+/**
+ * Ses kademeleri — `M8-T10`. Efekt kademesiyle **aynı tip**: üç kademe,
+ * aynı etiketler, aynı döngü düğmesi. Yeni bir kavram öğretmemek için.
+ */
+export type AudioLevel = EffectLevel;
+
+/**
+ * Ses seviyesi çarpanı. `low` = 0,35 — parçacığın 0,4'ünden biraz altta,
+ * çünkü ses **logaritmik** algılanıyor: 0,4 kısılmış değil "biraz kısık"
+ * gibi duyuluyordu.
+ */
+export const AUDIO_SCALE: Readonly<Record<AudioLevel, number>> = {
+  off: 0,
+  low: 0.35,
+  full: 1,
+};
+
 export interface SettingsState {
-  /** §12: varsayılan ses açık, tek tuşla kapatılabilir, tercih kaydedilir. */
+  /**
+   * §12: varsayılan ses açık, tek tuşla kapatılabilir, tercih kaydedilir.
+   *
+   * `M8-T10`'dan sonra bu bayrak **türetilmiş**: `musicLevel` ve
+   * `sfxLevel`'den en az biri `off` değilse `true`. Kaldırılmadı çünkü
+   * `BootScene` ve `MenuScene` açılışta tek bir "ses var mı" sorusu
+   * soruyor ve `sound.mute` da ikili; ayrıca eski kayıtlar bu alanı
+   * taşıyor ve göç onun üzerinden yapılıyor.
+   */
   sound: boolean;
+  /** `M8-T10` — müzik ve ses efekti **ayrı** kısılabiliyor. */
+  musicLevel: AudioLevel;
+  sfxLevel: AudioLevel;
   /** §10 + TIER 1 k.6: ekran sarsıntısı kapatılabilir olmalı. */
   screenShake: boolean;
   effects: EffectLevel;
@@ -57,6 +85,8 @@ export interface SettingsState {
 
 export const DEFAULT_SETTINGS: SettingsState = {
   sound: true,
+  musicLevel: 'full',
+  sfxLevel: 'full',
   screenShake: true,
   effects: 'full',
   hints: true,
@@ -72,7 +102,15 @@ export const DEFAULT_SETTINGS: SettingsState = {
  * Ekran sarsıntısı **kapatılıyor** — sarsıntının "azaltılmış" bir hâli yok.
  */
 export function reducedMotionDefaults(): SettingsState {
-  return { sound: true, screenShake: false, effects: 'low', hints: true, locale: DEFAULT_LOCALE };
+  return {
+    sound: true,
+    musicLevel: 'full',
+    sfxLevel: 'full',
+    screenShake: false,
+    effects: 'low',
+    hints: true,
+    locale: DEFAULT_LOCALE,
+  };
 }
 
 /**
@@ -138,6 +176,47 @@ interface KayitBicimi {
   readonly settings?: Partial<SettingsState>;
 }
 
+/** İki kademeden en az biri açıksa ses var. */
+function sesVarMi(s: SettingsState): boolean {
+  return s.musicLevel !== 'off' || s.sfxLevel !== 'off';
+}
+
+function gecerliKademe(deger: unknown): deger is AudioLevel {
+  return deger === 'off' || deger === 'low' || deger === 'full';
+}
+
+/**
+ * `M8-T10` göçü — **sürüm numarası yükseltmeden**.
+ *
+ * Eski kayıtlarda yalnız `sound: boolean` var. Yeni alanlar yoksa o
+ * bayraktan türetiliyor: ses kapalıysa ikisi de `off`, açıksa ikisi de
+ * `full`. Yani oyuncunun eski tercihi **korunuyor** ve hiçbir göç kodu
+ * ayrı bir dosyada yaşamıyor.
+ *
+ * Ters yön de kapalı: kayıtta kademe varsa `sound` ondan yeniden
+ * türetiliyor — elle kurcalanmış bir kayıtta ikisinin çelişmesi mümkün
+ * ve o durumda **kademeler** doğru kabul ediliyor (daha ayrıntılı bilgi).
+ */
+function gocSesKademeleri(
+  durum: SettingsState,
+  kayitli: Partial<SettingsState>,
+): SettingsState {
+  const muzik = kayitli.musicLevel;
+  const efekt = kayitli.sfxLevel;
+  const muzikVar = gecerliKademe(muzik);
+  const efektVar = gecerliKademe(efekt);
+  if (!muzikVar && !efektVar) {
+    const kademe: AudioLevel = durum.sound ? 'full' : 'off';
+    return { ...durum, musicLevel: kademe, sfxLevel: kademe };
+  }
+  const yeni: SettingsState = {
+    ...durum,
+    musicLevel: muzikVar ? muzik : durum.musicLevel,
+    sfxLevel: efektVar ? efekt : durum.sfxLevel,
+  };
+  return { ...yeni, sound: sesVarMi(yeni) };
+}
+
 /**
  * Ayar durumu + kalıcılık.
  *
@@ -160,6 +239,7 @@ export class Settings {
     this.#durum = { ...taban, ...kayitli };
     // Bozuk/eski kayıt tipsiz geliyor — `t()` çökmeden önce burada elenir.
     if (!gecerliLocale(this.#durum.locale)) this.#durum.locale = taban.locale;
+    this.#durum = gocSesKademeleri(this.#durum, kayitli);
     setLocale(this.#durum.locale);
   }
 
@@ -171,8 +251,42 @@ export class Settings {
     return EFFECT_SCALE[this.#durum.effects];
   }
 
+  /** `M8-T10` — ses efekti ses seviyesi çarpanı (0-1). */
+  get sfxScale(): number {
+    return AUDIO_SCALE[this.#durum.sfxLevel];
+  }
+
+  /** `M8-T10` — müzik ses seviyesi çarpanı (0-1). */
+  get musicScale(): number {
+    return AUDIO_SCALE[this.#durum.musicLevel];
+  }
+
+  /**
+   * `M8-T10` — bir ses kademesini sırayla ilerletir (full → low → off).
+   *
+   * `sound` bayrağı **türetiliyor**: ikisi de `off` ise kapalı. Böylece
+   * `BootScene`'in `sound.mute` kurulumu ve `MenuScene`'in "müziği hiç
+   * indirme" iyileştirmesi (`Y05`) tek bir soruyla çalışmaya devam ediyor.
+   */
+  cycleAudio(key: 'musicLevel' | 'sfxLevel'): AudioLevel {
+    const sira: AudioLevel[] = ['full', 'low', 'off'];
+    const i = sira.indexOf(this.#durum[key]);
+    const yeni = sira[(i + 1) % sira.length]!;
+    this.#durum = { ...this.#durum, [key]: yeni };
+    this.#durum = { ...this.#durum, sound: sesVarMi(this.#durum) };
+    this.#yaz();
+    return yeni;
+  }
+
   set<K extends keyof SettingsState>(key: K, value: SettingsState[K]): void {
     this.#durum = { ...this.#durum, [key]: value };
+    // `M8-T10` — `sound` artık türetilmiş bir bayrak; doğrudan yazılırsa
+    // iki kademeyi de sürüklüyor. Yoksa "ses kapalı ama müzik full"
+    // gibi kendiyle çelişen bir durum kaydedilebilirdi.
+    if (key === 'sound') {
+      const kademe: AudioLevel = value === true ? 'full' : 'off';
+      this.#durum = { ...this.#durum, musicLevel: kademe, sfxLevel: kademe };
+    }
     // Dil, saklandığı yerde uygulanıyor — bkz. `SettingsState.locale`.
     if (key === 'locale') setLocale(this.#durum.locale);
     this.#yaz();

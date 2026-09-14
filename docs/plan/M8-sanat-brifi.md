@@ -154,6 +154,56 @@ konduğunda farklı iklimler olmalı.
 
 ---
 
+## M8-P03 — Üç ses dosyası
+
+**Kod tarafı bitmiş.** Üçü de çağrılıyor ve **eksik oldukları için sessizce
+atlanıyor** (`SoundSystem.#cal` / `cache.audio.exists` kontrolleri, `Y14`
+deseni). Dosyalar gelince kod değişmeden çalışmaya başlarlar.
+
+Biçim `CLAUDE.md` "Varlık formatları": ses efektleri **yalnız `.m4a`**
+(AAC), müzik 96 kbps mono.
+
+| Anahtar | Dosya | Süre | Ne zaman çalıyor |
+|---|---|---|---|
+| `countdown_tick` | `public/assets/audio/sfx/countdown_tick.m4a` | ≤ 150 ms | Hazırlık sayacının son 3 saniyesi, saniyede bir |
+| `boss_music` | `public/assets/audio/music/boss_music.m4a` | 40-70 sn, **döngülü** | Boss sahaya çıkınca oyun müziğinin yerine |
+| `ui_click` | `public/assets/audio/sfx/ui_click.m4a` | ≤ 120 ms | *(bekliyor — aşağıdaki nota bakın)* |
+
+### `countdown_tick`
+
+Kuru, kısa, **alçak** bir tahta/deri vuruşu — nöbetçi davulu. Melodik
+olmamalı: saniyede bir çalıyor ve bir nota olursa üç tekrarda tekdüze bir
+ezgi duygusu doğuruyor. Son tik (1) diğerlerinden **bir yarım ton pes**
+olabilir; ama tek bir dosya yeterli, kod hepsini aynı anahtarla çalıyor.
+
+Ses düzeyi diğer efektlerden **belirgin biçimde düşük** olmalı: bir uyarı
+değil, bir nabız.
+
+### `boss_music`
+
+Oyun müziğinin (`music_game`) **aynı tonalitesinde**, ama:
+- tempo biraz daha yavaş ve ağır,
+- alt register baskın (davul, bas),
+- ana tema tanınabilir kalmalı — yeni bir parça değil, aynı parçanın
+  "kuşatma" hâli.
+
+Döngü noktası **duyulmamalı** (başı ve sonu aynı ölçüde kesilmiş olmalı).
+
+### `ui_click` — kod tarafı da BEKLİYOR
+
+Diğer ikisinden farkı: yalnız ses dosyası değil, **çağrı yeri de yok**.
+`SoundSystem` yalnız `GameScene` içinde yaşıyor; menü, seviye seçim ve
+ayarlar paneli hiçbir ses sistemine erişemiyor. Buton tıklaması için ya
+bu sahnelere hafif bir ses yolu açmak ya da `SoundSystem`'i oyun geneline
+çıkarmak gerekiyor.
+
+**Bilinçli olarak ertelendi**: yarım bir bağlantı (yalnız oyun içi
+butonlarda ses, menüde sessizlik) tutarsız olur ve tutarsızlık bir eksikten
+daha çok dikkat çeker. `M8` içinde menü/HUD turu (Faz 13) bu yolu zaten
+açacak; ses o zaman bağlanır.
+
+---
+
 ## Not: bu listede olmayan işler
 
 Kule, düşman ve HUD sanatı `M6`'da üretildi ve **tamam** — bu brif

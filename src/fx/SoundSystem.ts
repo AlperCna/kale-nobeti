@@ -41,8 +41,21 @@ export class SoundSystem {
    */
   readonly #havuz = new Map<string, { sesler: Phaser.Sound.BaseSound[]; sira: number }>();
 
-  constructor(scene: Phaser.Scene, bus: EventBus, waveList: readonly Wave[]) {
+  /**
+   * `M8-T10` — ses efekti seviyesi. Çağrı anında okunuyor (kurucuda
+   * kopyalanmıyor): oyuncu ayarı **oyun içinde** değiştirdiğinde bir
+   * sonraki efekt doğru seviyede çalsın diye.
+   */
+  readonly #sfxScale: () => number;
+
+  constructor(
+    scene: Phaser.Scene,
+    bus: EventBus,
+    waveList: readonly Wave[],
+    sfxScale: () => number = () => 1,
+  ) {
     this.#scene = scene;
+    this.#sfxScale = sfxScale;
 
     bus.on('enemy:killed', () => this.#olumSesiCal());
     bus.on('tower:placed', () => this.#cal('tower_place'));
@@ -91,6 +104,17 @@ export class SoundSystem {
   }
 
   /**
+   * Hazırlık sayacının son saniyeleri — `M8-T10`, `M8-P03`.
+   *
+   * Ses dosyası **henüz üretilmedi**; `#cal` eksik anahtarı sessizce
+   * atlıyor (`Y14` deseni), yani bu çağrı bugün hiçbir şey yapmıyor ve
+   * dosya geldiğinde koda dokunmadan çalışmaya başlıyor.
+   */
+  playCountdownTick(): void {
+    this.#cal('countdown_tick');
+  }
+
+  /**
    * `Y14` — anahtar önbellekte yoksa (yükleme başarısız olduysa) sessizce
    * çıkıyor. **Kontrolsüz çağırmak `throw` eder:** Phaser'ın
    * `WebAudioSound` kurucusu `cache`'te olmayan bir anahtarla
@@ -109,11 +133,17 @@ export class SoundSystem {
       for (let i = 0; i < SFX_POOL_PER_KEY; i++) kayit.sesler.push(this.#scene.sound.add(anahtar));
       this.#havuz.set(anahtar, kayit);
     }
+    // `M8-T10` — seviye 0 ise hiç çalmıyoruz. `volume: 0` ile çalmak da
+    // sessiz olurdu ama boşuna bir WebAudio düğümü kurardı; kapalı ses
+    // hiç iş yapmamalı.
+    const seviye = this.#sfxScale();
+    if (seviye <= 0) return;
+
     const ses = kayit.sesler[kayit.sira];
     kayit.sira = (kayit.sira + 1) % kayit.sesler.length;
     // Çalmakta olan örnek yeniden başlıyor (Phaser `play` durdurup başlatır)
     // — kısa efektlerde duyulmuyor, tahsis hiç yok.
-    ses?.play({ rate: rastgeleHiz() });
+    ses?.play({ rate: rastgeleHiz(), volume: seviye });
   }
 
   /** `GameScene` kapanışında — bkz. `#havuz`. */

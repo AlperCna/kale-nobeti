@@ -31,7 +31,7 @@ describe('Settings — §10 + TIER 1 kural 6', () => {
     expect(s.effectScale).toBe(1);
   });
 
-  it('beş ayar da değiştirilebiliyor (TIER 1 k.6)', () => {
+  it('yedi ayar da değiştirilebiliyor (TIER 1 k.6)', () => {
     const s = new Settings(new MemoryStore(), azaltma);
     s.set('sound', false);
     s.set('screenShake', false);
@@ -40,6 +40,9 @@ describe('Settings — §10 + TIER 1 kural 6', () => {
     s.set('locale', 'en');
     expect(s.state).toEqual({
       sound: false,
+      // `M8-T10` — `sound: false` iki kademeyi de sürüklüyor.
+      musicLevel: 'off',
+      sfxLevel: 'off',
       screenShake: false,
       effects: 'off',
       hints: false,
@@ -268,5 +271,82 @@ describe('getSettings — Y04 sahneler arası paylaşım', () => {
   it('registry’de Settings olmayan bir değer varsa da fırlatıyor', () => {
     const host = { registry: { get: () => ({ sound: true }) } };
     expect(() => getSettings(host)).toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------
+// M8-T10 — müzik ve ses efekti ayrı kademeler
+// ---------------------------------------------------------------------
+
+describe('Settings — ses kademeleri (M8-T10)', () => {
+  it('varsayılan ikisi de tam', () => {
+    const s = new Settings(new MemoryStore(), azaltma);
+    expect(s.state.musicLevel).toBe('full');
+    expect(s.state.sfxLevel).toBe('full');
+    expect(s.musicScale).toBe(1);
+    expect(s.sfxScale).toBe(1);
+  });
+
+  it('kademe döngüsü full → low → off → full', () => {
+    const s = new Settings(new MemoryStore(), azaltma);
+    expect(s.cycleAudio('musicLevel')).toBe('low');
+    expect(s.cycleAudio('musicLevel')).toBe('off');
+    expect(s.cycleAudio('musicLevel')).toBe('full');
+  });
+
+  it('biri kısılınca DİĞERİ etkilenmiyor', () => {
+    const s = new Settings(new MemoryStore(), azaltma);
+    s.cycleAudio('musicLevel'); // low
+    expect(s.state.sfxLevel).toBe('full');
+    expect(s.musicScale).toBeLessThan(s.sfxScale);
+  });
+
+  it('`sound` bayrağı TÜRETİLİYOR — ikisi de kapanınca kapanıyor', () => {
+    const s = new Settings(new MemoryStore(), azaltma);
+    s.cycleAudio('musicLevel');
+    s.cycleAudio('musicLevel'); // müzik off
+    expect(s.state.sound).toBe(true); // efekt hâlâ açık
+    s.cycleAudio('sfxLevel');
+    s.cycleAudio('sfxLevel'); // efekt off
+    expect(s.state.sound).toBe(false);
+    s.cycleAudio('sfxLevel'); // full
+    expect(s.state.sound).toBe(true);
+  });
+
+  it('**ESKİ KAYIT göç ediyor** — sürüm yükseltmeden', () => {
+    // M8 öncesi kayıtta yalnız `sound` var.
+    const store = new MemoryStore();
+    store.set(SAVE_KEY, JSON.stringify({ settings: { sound: false, effects: 'low' } }));
+    const s = new Settings(store, azaltma);
+    expect(s.state.musicLevel).toBe('off');
+    expect(s.state.sfxLevel).toBe('off');
+    expect(s.state.effects).toBe('low'); // diğer alanlar bozulmadı
+
+    const store2 = new MemoryStore();
+    store2.set(SAVE_KEY, JSON.stringify({ settings: { sound: true } }));
+    expect(new Settings(store2, azaltma).state.musicLevel).toBe('full');
+  });
+
+  it('kayıtta kademe VARSA `sound` ondan türetiliyor — çelişki kademeden yana çözülüyor', () => {
+    const store = new MemoryStore();
+    store.set(
+      SAVE_KEY,
+      JSON.stringify({ settings: { sound: true, musicLevel: 'off', sfxLevel: 'off' } }),
+    );
+    expect(new Settings(store, azaltma).state.sound).toBe(false);
+  });
+
+  it('bozuk kademe değeri yok sayılıyor', () => {
+    const store = new MemoryStore();
+    store.set(SAVE_KEY, JSON.stringify({ settings: { sound: true, musicLevel: 'yüksek' } }));
+    const s = new Settings(store, azaltma);
+    expect(s.state.musicLevel).toBe('full');
+  });
+
+  it('kademe kalıcı — yeniden açılışta okunuyor', () => {
+    const store = new MemoryStore();
+    const s = new Settings(store, azaltma);
+    s.cycleAudio('sfxLevel'); // low
+    expect(new Settings(store, azaltma).state.sfxLevel).toBe('low');
   });
 });

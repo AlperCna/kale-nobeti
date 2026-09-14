@@ -38,3 +38,11 @@ export const ENEMY_DEATH_THROTTLE_MS = 80;
  * kuyruğu kesilmeden çalabilsin.
  */
 export const SFX_POOL_PER_KEY = 3;
+
+/**
+ * Müziğin taban ses seviyesi — `M8-T10`.
+ *
+ * Eskiden iki sahnede ayrı ayrı `volume: 0.5` yazıyordu. Ayar kademesi
+ * bununla **çarpılıyor**, yani "Müzik: Düşük" = 0,5 × 0,35.
+ */
+export const MUSIC_BASE_VOLUME = 0.5;

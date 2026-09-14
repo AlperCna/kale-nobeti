@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import type { Settings, EffectLevel } from '../systems/Settings';
+import type { Settings, EffectLevel, AudioLevel } from '../systems/Settings';
 import { createParchmentButton } from './ParchmentFrame';
 import { t } from '../util/i18n';
 
@@ -17,12 +17,25 @@ const GENISLIK = 420;
  * `148 + 22 = 170`, panelin yarı yüksekliği `190` — 20 px pay. Başlığın
  * üst kenarı `-154 - 16 = -170`, aynı pay.
  */
-const YUKSEKLIK = 380;
-const BASLIK_Y = -154;
-const ILK_SATIR_Y = -84;
+/**
+ * `M8-T10` — altıncı satır (ses ikiye bölündü) eklenince yeniden ölçüldü.
+ *
+ * Altı satır `ILK_SATIR_Y + SATIR_Y * i` ile diziliyor. Son satırın buton
+ * alt kenarı `-114 + 5*58 + 22 = 198`, panelin yarı yüksekliği `220` —
+ * 22 px pay. Başlığın üst kenarı `-184 - 16 = -200`, aynı pay.
+ */
+const YUKSEKLIK = 440;
+const BASLIK_Y = -184;
+const ILK_SATIR_Y = -114;
 
-/** `Y03` — panel etiketleri `strings.ts`'e taşındı. */
-function efektEtiket(k: EffectLevel): string {
+/**
+ * `Y03` — panel etiketleri `strings.ts`'e taşındı.
+ *
+ * `M8-T10` — ses kademeleri **aynı etiketleri** kullanıyor (`AudioLevel`
+ * zaten `EffectLevel`'ın takma adı): oyuncuya "Tam / Düşük / Kapalı"
+ * dışında ikinci bir kademe sözlüğü öğretmemek için.
+ */
+function kademeEtiket(k: EffectLevel): string {
   return k === 'off' ? t('off') : k === 'low' ? t('effectLow') : t('effectFull');
 }
 
@@ -45,7 +58,8 @@ function efektEtiket(k: EffectLevel): string {
 export class SettingsPanel {
   readonly #kok: Phaser.GameObjects.Container;
   readonly #dilEtiketleri: Phaser.GameObjects.Text[] = [];
-  readonly #sesEtiketleri: Phaser.GameObjects.Text[] = [];
+  readonly #muzikEtiketleri = new Map<AudioLevel, Phaser.GameObjects.Text>();
+  readonly #sfxEtiketleri = new Map<AudioLevel, Phaser.GameObjects.Text>();
   readonly #sarsintiEtiketleri: Phaser.GameObjects.Text[] = [];
   readonly #ipucuEtiketleri: Phaser.GameObjects.Text[] = [];
   readonly #efektEtiketleri = new Map<EffectLevel, Phaser.GameObjects.Text>();
@@ -93,22 +107,28 @@ export class SettingsPanel {
       },
     );
 
-    this.#satir(
+    // `M8-T10` — tek "Ses: Açık/Kapalı" anahtarı ikiye bölündü.
+    // Gerekçe: oyuncunun en sık istediği şey "müziği kapat ama vuruş
+    // seslerini duy" ve eski tek anahtar bunu imkânsız kılıyordu; ses
+    // tamamen kapatılıyor ve oyun geri bildirimsiz kalıyordu.
+    this.#kademeSatiri(
       scene,
       ILK_SATIR_Y + SATIR_Y,
-      t('sound'),
-      this.#sesEtiketleri,
-      [t('on'), t('off')],
-      () => {
-        this.settings.set('sound', !this.settings.state.sound);
-        this.refresh();
-        this.onChange();
-      },
+      t('music'),
+      this.#muzikEtiketleri,
+      () => this.settings.cycleAudio('musicLevel'),
+    );
+    this.#kademeSatiri(
+      scene,
+      ILK_SATIR_Y + SATIR_Y * 2,
+      t('sfx'),
+      this.#sfxEtiketleri,
+      () => this.settings.cycleAudio('sfxLevel'),
     );
 
     this.#satir(
       scene,
-      ILK_SATIR_Y + SATIR_Y * 2,
+      ILK_SATIR_Y + SATIR_Y * 3,
       t('screenShake'),
       this.#sarsintiEtiketleri,
       [t('on'), t('off')],
@@ -122,7 +142,7 @@ export class SettingsPanel {
     // `Y09` — öğretici ipuçları açık/kapalı. Aynı satır deseni.
     this.#satir(
       scene,
-      ILK_SATIR_Y + SATIR_Y * 3,
+      ILK_SATIR_Y + SATIR_Y * 4,
       t('hints'),
       this.#ipucuEtiketleri,
       [t('on'), t('off')],
@@ -134,7 +154,7 @@ export class SettingsPanel {
     );
 
     // Efekt yoğunluğu üç kademeli (S53) — ayrı etiket haritası.
-    const y = ILK_SATIR_Y + SATIR_Y * 4;
+    const y = ILK_SATIR_Y + SATIR_Y * 5;
     this.#kok.add(
       scene.add
         .text(-GENISLIK / 2 + 24, y, t('effects'), {
@@ -153,7 +173,7 @@ export class SettingsPanel {
     this.#kok.add(buton);
     for (const k of ['off', 'low', 'full'] as EffectLevel[]) {
       const metin = scene.add
-        .text(GENISLIK / 2 - 74, y, efektEtiket(k), {
+        .text(GENISLIK / 2 - 74, y, kademeEtiket(k), {
           fontFamily: 'Spectral, serif',
           fontSize: '18px',
           color: '#14203A',
@@ -165,6 +185,50 @@ export class SettingsPanel {
     }
 
     this.refresh();
+  }
+
+  /**
+   * Üç kademeli satır (ses, efekt) — iki durumlu `#satir`'ın kardeşi.
+   *
+   * TIER 1 kural 7: her kademe için ayrı statik `Text`, yalnız görünürlük
+   * değişiyor; `setText` hiç çağrılmıyor.
+   */
+  #kademeSatiri(
+    scene: Phaser.Scene,
+    y: number,
+    ad: string,
+    etiketler: Map<AudioLevel, Phaser.GameObjects.Text>,
+    onTap: () => void,
+  ): void {
+    this.#kok.add(
+      scene.add
+        .text(-GENISLIK / 2 + 24, y, ad, {
+          fontFamily: 'Spectral, serif',
+          fontSize: '18px',
+          color: '#E4D3A8',
+        })
+        .setOrigin(0, 0.5),
+    );
+    const buton = createParchmentButton(scene, GENISLIK / 2 - 74, y, 116, 44, 10);
+    buton.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => {
+      onTap();
+      this.refresh();
+      this.onChange();
+    });
+    this.#kok.add(buton);
+
+    for (const k of ['off', 'low', 'full'] as AudioLevel[]) {
+      const metin = scene.add
+        .text(GENISLIK / 2 - 74, y, kademeEtiket(k), {
+          fontFamily: 'Spectral, serif',
+          fontSize: '18px',
+          color: '#14203A',
+        })
+        .setOrigin(0.5)
+        .setVisible(false);
+      etiketler.set(k, metin);
+      this.#kok.add(metin);
+    }
   }
 
   #satir(
@@ -209,8 +273,8 @@ export class SettingsPanel {
     const s = this.settings.state;
     this.#dilEtiketleri[0]?.setVisible(s.locale === 'tr');
     this.#dilEtiketleri[1]?.setVisible(s.locale === 'en');
-    this.#sesEtiketleri[0]?.setVisible(s.sound);
-    this.#sesEtiketleri[1]?.setVisible(!s.sound);
+    for (const [k, metin] of this.#muzikEtiketleri) metin.setVisible(k === s.musicLevel);
+    for (const [k, metin] of this.#sfxEtiketleri) metin.setVisible(k === s.sfxLevel);
     this.#sarsintiEtiketleri[0]?.setVisible(s.screenShake);
     this.#sarsintiEtiketleri[1]?.setVisible(!s.screenShake);
     this.#ipucuEtiketleri[0]?.setVisible(s.hints);

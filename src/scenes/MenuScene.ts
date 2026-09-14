@@ -4,6 +4,7 @@ import { getSettings } from '../systems/Settings';
 import { PreloadScene } from './PreloadScene';
 import { createParchmentButton, addPressFeedback } from '../fx/ParchmentFrame';
 import { SettingsPanel } from '../fx/SettingsPanel';
+import { MUSIC_BASE_VOLUME } from '../data/audio';
 
 /**
  * Dokunmatik hedef en az 44×44 px (CLAUDE.md Platform, 1280×720 ölçeğinde).
@@ -68,9 +69,10 @@ export class MenuScene extends Phaser.Scene {
     // eseri) dosya **hiç indirilmiyor**; `BootScene` zaten
     // `sound.mute`'u doğru kurdu, burada yalnız bant genişliği israfını
     // önlüyoruz.
-    if (getSettings(this).state.sound && this.sound.get('music_menu')?.isPlaying !== true) {
+    const ayarlar = getSettings(this);
+    if (ayarlar.musicScale > 0 && this.sound.get('music_menu')?.isPlaying !== true) {
       const calmayaBasla = (): void => {
-        this.sound.play('music_menu', { loop: true, volume: 0.5 });
+        this.sound.play('music_menu', { loop: true, volume: MUSIC_BASE_VOLUME * ayarlar.musicScale });
       };
       if (this.cache.audio.exists('music_menu')) {
         calmayaBasla();
@@ -136,7 +138,16 @@ export class MenuScene extends Phaser.Scene {
       this,
       settings,
       () => {
+        // `M8-T10` — `mute` hâlâ toplu anahtar (ikisi de kapalıysa),
+        // ama müziğin **seviyesi** ayrıca uygulanıyor: oyuncu paneli
+        // açıkken "Müzik: Düşük" derse menü müziği anında kısılmalı.
         this.sound.mute = !settings.state.sound;
+        const muzik = this.sound.get('music_menu');
+        if (muzik !== null && 'setVolume' in muzik) {
+          (muzik as Phaser.Sound.BaseSound & { setVolume: (v: number) => void }).setVolume(
+            MUSIC_BASE_VOLUME * settings.musicScale,
+          );
+        }
       },
       () => {
         this.scene.restart({ settingsOpen: true });
