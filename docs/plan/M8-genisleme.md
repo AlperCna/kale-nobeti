@@ -405,12 +405,12 @@ yıldızla ayrıştı.
 `GameOverScene` okuyup `RunEndContext` olarak veriyor. Sistem böylece
 Phaser'sız kalıyor ve `MAPS`/`SaveSystem`'e hiç bağlanmıyor.
 
-### Faz 8 — Görsel cila 1: kule ve mermi — `M8-T08`
+### Faz 8 — Görsel cila 1: kule ve mermi — `M8-T08`  ☑
 
 | | |
 |---|---|
 | **Kimlik** | `M8-T08` |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ **bitti** (2026-09-14) |
 | **Süre** | ~45 dk |
 | **Önkoşul** | `M8-T01` |
 | **TIER 1** | k.3, k.6, k.8 |
@@ -424,6 +424,58 @@ Phaser'sız kalıyor ve `MAPS`/`SaveSystem`'e hiç bağlanmıyor.
 - İsabet parıltısı hasar tipine göre renk (fiziksel altın, büyü lapis).
 
 **Kabul kriteri** — `dev.particleCount()` tepe dalgada ≤ 300; havuz k.3 bekçisi yeşil; canlı ekran görüntüsünde üç aile ayırt ediliyor; `effects: off` ile hiçbiri yok.
+
+**Durum:** ☑ **bitti** (2026-09-14)
+
+#### Sonuç — `M8-T08`
+
+**En büyük bulgu, yazılan koddan önce duruyordu: `patlat` yön parametresini
+ALIYOR ama KULLANMIYORDU.** `Particles.patlat` `aci`yi hesaplayıp
+`void aci` ile atıyordu; bütün patlamalar her yöne eşit saçılıyor, bir okun
+nereden geldiği parçacıklardan hiç okunmuyordu. Çağıranlar yönü zaten doğru
+veriyordu. Tek satırlık bir "kullan" değişikliği, yeni efektten daha çok
+şey kazandırdı.
+
+Ama **hemen bir yan etki doğurdu**: dar koni (55°) isabet sıçraması için
+doğru, top patlaması için değil — patlama bir anda yukarı fışkıran çeşmeye
+dönüştü. Ölüm, patlama ve iz için `TAM_DAIRE` (180° yarı açı) eklendi.
+
+**Yapılanlar:**
+- **Geri tepme**: kule ateşlerken hedefin tersine 4 px, 90 ms. Ölçek nabzı
+  (1 → 0,92 → 1) da denenebilirdi ama kulenin ayak izini bir an küçültüyor
+  ve yan yana kulelerde "titreme" gibi okunuyor; kayma **yön taşıdığı**
+  için hangi kuleye bakılacağını da söylüyor. Tween **görsele** uygulanıyor,
+  `Container`'a değil (menzil çemberi ve kışla bayrağı kulenin konumundan
+  okunuyor). Yeni tween eskisini öldürüyor — Okçu T3 saniyede ~2,5 atış.
+- **Namlu parıltısı**: 3 parçacık, **merminin rengiyle**, dar koni (22°),
+  kule-hedef mesafesinin %18'inde. Sabit piksel verilseydi yakın hedefte
+  parçacık düşmanın üstünde patlardı.
+- **İsabet parıltısı** hasar tipine göre (fiziksel altın, büyü lapis).
+  `DamageResult`'a eklenmedi — o `combat.ts`'in saf çıktısı ve hasar tipi
+  zaten girdisi; `DamageHandler`'a beşinci parametre olarak geçti.
+- **Gülle yay nabzı**: uçuşta ölçek 1,70 ↔ 2,12 (`yoyo`, sonsuz döngü).
+  Tepeden bakışta yükseklik gösterilemiyor; ölçek nabzı en ucuz ipucu.
+  Sonsuz döngü güvenli çünkü `resetForPool` `killTweensOf` + `setScale(1)`
+  yapıyor — kural 3'ün tuzağına düşmemenin tek yolu buydu.
+- **Büyü izi**: mermiyi izleyen parçacık kuyruğu. `Projectile`'ın `update`'i
+  yok (ince sınıf), o yüzden iz sahnenin karesinde üretiliyor; süre
+  `scaledDelta` üzerinden, böylece 2×'te iz seyrelmiyor.
+
+**`TowerSystem` genel hâle geldi** (`TowerSystem<T extends TowerRuntime>`).
+`GameScene` ateş anında `Tower.recoil()` çağırmak istedi; seçenekler ya
+`TowerRuntime`'a görsel bir metot eklemek (k.11'i bulanıklaştırırdı) ya da
+tip parametresiydi. `ProjectileSystem<E, T>` ve `WaveManager<T>` zaten aynı
+deseni kullanıyor.
+
+**Bekçi bir hata yakaladı:** `#izBirikim` alanı `create()` içinde
+sıfırlanmıyordu — "yeniden başlatmada önceki oyunun durumu taşınır".
+Tam olarak bunun için var olan kontrol, ilk denemede iş gördü.
+
+**Ölçümler (canlı):** parçacık tepesi **39** (§10 tavanı 300);
+`effects: off` → **0**; gülle ölçeği 1,70 → 1,92 → 1,70 salınıyor; büyü
+mermisi `trail: true` ve o anda 24 parçacık havada; okçu mermisi
+`1,8 × 0,55` altın, gülle `1,7 × 1,7` mürekkep — üç aile ekran
+görüntüsünde ayırt ediliyor.
 
 ### Faz 9 — Görsel cila 2: düşman — `M8-T09`
 

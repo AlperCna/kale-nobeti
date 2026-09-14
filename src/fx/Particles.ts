@@ -97,7 +97,17 @@ export class Particles {
    * havuzlu (`research/02` §7: "ömrü biten parçacık yok edilmez, havuza
    * döner"). Sınır `maxParticles` ile veriliyor.
    */
-  patlat(x: number, y: number, dirX: number, dirY: number, adet: number): void {
+  patlat(
+    x: number,
+    y: number,
+    dirX: number,
+    dirY: number,
+    adet: number,
+    /** `M8-T08` — aile/hasar tipi rengi. Verilmezse §10'un altın varağı. */
+    renk = 0xd4a032,
+    /** Saçılma yarı açısı (derece). Dar koni = yönlü sıçrama. */
+    yayilimDerece = 55,
+  ): void {
     const olcek = this.#settings.effectScale;
     if (olcek <= 0) return; // TIER 1 k.6 — efekt kapalı
 
@@ -105,10 +115,14 @@ export class Particles {
     const hizBolen = this.#clock.scale === 2 ? 2 : 1;
     const n = Math.max(1, Math.round((adet * olcek) / hizBolen));
 
-    const aci = Math.atan2(dirY, dirX);
-    this.#particles.setParticleTint(0xd4a032);
+    // `M8-T08` — **yön artık kullanılıyor.** Eskiden `aci` hesaplanıp
+    // `void aci` ile atılıyordu: bütün patlamalar her yöne eşit saçılıyor
+    // ve bir okun nereden geldiği parçacıklardan okunmuyordu. Çağıranlar
+    // yönü zaten hep doğru veriyordu, yalnız kullanılmıyordu.
+    const aci = (Math.atan2(dirY, dirX) * 180) / Math.PI;
+    this.#particles.setParticleTint(renk);
+    this.#particles.setEmitterAngle({ min: aci - yayilimDerece, max: aci + yayilimDerece });
     this.#particles.emitParticle(n, x, y);
-    void aci;
   }
 
   meteorEfekti(at: Vec2): void {

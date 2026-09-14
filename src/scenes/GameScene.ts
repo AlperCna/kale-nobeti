@@ -50,6 +50,7 @@ import { towerFrameKey } from '../data/spriteFrames';
 import { projectileLook } from '../data/projectileVisuals';
 import { getEnemy, ENEMIES } from '../data/enemies';
 import { BALANCE, POOL_PREALLOC, GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI } from '../data/balance';
+
 import { MAP1_WAVES, wavesFor } from '../data/waves';
 import { devHooks } from '../util/devHooks';
 import { t } from '../util/i18n';
@@ -60,9 +61,37 @@ import type { HintId } from '../systems/TutorialSystem';
 import { TutorialHints } from '../fx/TutorialHints';
 import type { StringKey } from '../data/strings';
 import type { TargetMode, TierIndex, TowerDef } from '../types/tower';
-import type { Mover } from '../types/enemy';
+import type { DamageType, Mover } from '../types/enemy';
 import type { Vec2 } from '../types/common';
 import type { Wave } from '../types/wave';
+
+/**
+ * Namlu parıltısının kule merkezine uzaklığı — hedefe olan mesafenin
+ * oranı olarak. Sabit piksel verilseydi yakın hedefte parçacık düşmanın
+ * üstünde patlardı.
+ */
+const NAMLU_ORANI = 0.18;
+const NAMLU_PARCACIK = 3;
+/** Namlu parıltısı dar koni: "buradan çıktı" demeli, patlama gibi değil. */
+const NAMLU_YAYILIM = 22;
+/** Mermi izi parçacıkları arası süre (ms, ölçekli zaman). */
+const IZ_ARALIK_MS = 70;
+/** Yönsüz saçılım — ölüm, patlama ve iz için (yarı açı 180° = her yön). */
+const TAM_DAIRE = 180;
+
+/**
+ * İsabet parıltısı rengi — `M8-T08`. Fiziksel altın varak, büyü lapis;
+ * §2 paletinin dışına çıkmıyor. Renk **bilgi taşımıyor** (hasar sayısı
+ * zaten taşıyor), yalnız hangi kulenin vurduğunu okunur kılıyor —
+ * TIER 1 kural 6 "yalnız renge dayanmaz" bu yüzden ihlal edilmiyor.
+ */
+const ISABET_RENGI: Readonly<Record<DamageType, number>> = {
+  physical: 0xd4a032,
+  magic: 0x3e5ca8,
+  /** Saf hasar kule tarafından verilmiyor (yalnız yanma tiki); tamlık için. */
+  true: 0xb03a2e,
+};
+
 
 /**
  * Greybox palet — `GAME-DESIGN.md` §2. Arka plan görseli ve sprite'lar M6'da;
@@ -116,7 +145,10 @@ export class GameScene extends Phaser.Scene {
 
   #waves?: WaveManager<Enemy>;
   #eco?: EconomySystem;
-  #towers?: TowerSystem;
+  #towers?: TowerSystem<Tower>;
+  /** `M8-T08` — mermi izi zamanlayıcısı (ms, `scaledDelta` birikimi). */
+  #izBirikim = 0;
+  #mermiHavuzu?: Pool<Projectile>;
   #projectiles?: ProjectileSystem<Enemy, Projectile>;
   #damageTexts?: DamageTextSystem;
   #altinUcusu?: GoldFlightSystem;
@@ -336,6 +368,7 @@ export class GameScene extends Phaser.Scene {
     this.#towerBySpot.clear();
     this.#hoveredSpot = -1;
     this.#mermiTepe = 0;
+    this.#izBirikim = 0;
     this.#soundSystem = undefined;
     // M5: kışla ve yetenek durumu da yeniden başlatmada sıfırlanıyor —
     // aynı tuzak (alan başlatıcısı bir kez, `create` her seferinde).
@@ -484,9 +517,10 @@ export class GameScene extends Phaser.Scene {
     );
     this.#tutorial.start();
 
+    this.#mermiHavuzu = mermiHavuzu;
     this.#projectiles = new ProjectileSystem<Enemy, Projectile>(
       mermiHavuzu,
-      (e, sonuc, x, y) => {
+      (e, sonuc, x, y, hasarTipi) => {
         this.#damageTexts?.spawn(x, y - ENEMY_SIZE, sonuc.dealt, sonuc.floored);
         // §10: sarsıntı YALNIZ top patlaması, boss vuruşu ve can kaybında.
         // Okçu atışı sarsmıyor — kural metninde adı geçen karşı örnek.
@@ -494,7 +528,10 @@ export class GameScene extends Phaser.Scene {
           this.hitStop.trigger(80, this.clock.scale);
           this.shake.trigger(x - e.x || 1, y - e.y, 0.5);
         }
-        this.#efektler?.patlat(x, y, x - e.x, y - e.y, 4);
+        // `M8-T08` — isabet parıltısı hasar tipine göre renkleniyor:
+        // fiziksel altın, büyü lapis. Yön zaten doğruydu ama `patlat`
+        // onu kullanmıyordu (bkz. `Particles.patlat` notu).
+        this.#efektler?.patlat(x, y, x - e.x, y - e.y, 4, ISABET_RENGI[hasarTipi]);
         // `G08` — vuruş flaşı. Yalnız GERÇEK mermi isabetinde (bu callback
         // yalnız buradan çağrılıyor — yanma tikleri ve sıfır-hasarlı ölüm
         // kontrolleri `#hasarUygula`'yı DOĞRUDAN çağırıyor, buraya hiç
@@ -509,7 +546,11 @@ export class GameScene extends Phaser.Scene {
       // can kaybı). Yön yukarı — patlama zeminden geliyor.
       (x, y, r) => {
         this.shake.trigger(0, 1, Math.min(1, r / 90));
-        this.#efektler?.patlat(x, y, 0, -1, 16);
+        // Patlama **her yöne**: `patlat`'ın varsayılan dar konisi (55°)
+        // isabet sıçraması için doğru, patlama için değil — `M8-T08`
+        // yönü kullanmaya başlayınca top patlaması bir anda yukarı
+        // fışkıran bir çeşmeye dönmüştü.
+        this.#efektler?.patlat(x, y, 0, -1, 16, undefined, TAM_DAIRE);
       },
     );
 
@@ -518,7 +559,7 @@ export class GameScene extends Phaser.Scene {
     // `RunStats` saf mantık, zamanı kendi okumaz (bekçi k.8).
     this.#runStats = new RunStats(this.bus, () => performance.now(), this.#map.startGold);
 
-    this.#towers = new TowerSystem((kule, tier, hedef) => {
+    this.#towers = new TowerSystem<Tower>((kule, tier, hedef) => {
       // Uçan çarpanı **mermiye girmeden önce** uygulanıyor: o kulenin
       // özelliği, düşmanın savunması değil (`combat.ts` notu).
       const ucanCarpani = hedef.def?.flying === true ? tier.airMultiplier : 1;
@@ -534,8 +575,27 @@ export class GameScene extends Phaser.Scene {
         effect: tier.effect,
       });
       // Görünüm `fire`'dan sonra (konum/hedef dolu), `activate`'ten önce.
-      m?.setLook(projectileLook(kule.def.id, tier.effect?.kind));
+      const gorunum = projectileLook(kule.def.id, tier.effect?.kind);
+      m?.setLook(gorunum);
       m?.activate();
+
+      // `M8-T08` — geri tepme + namlu parıltısı. İkisi de **aynı yönü**
+      // kullanıyor: kule hedefin tersine kayıyor, parçacık hedefe doğru
+      // saçılıyor. Renk merminin rengi — üç aile ekranda ayrışsın diye
+      // (oyuncu geri bildirimi: "kule tipini değiştirince atış şekli
+      // hiç değişmiyor").
+      const yonX = hedef.x - kule.x;
+      const yonY = hedef.y - kule.y;
+      kule.recoil(yonX, yonY, this.settings.effectScale);
+      this.#efektler?.patlat(
+        kule.x + yonX * NAMLU_ORANI,
+        kule.y + yonY * NAMLU_ORANI,
+        yonX,
+        yonY,
+        NAMLU_PARCACIK,
+        gorunum.color,
+        NAMLU_YAYILIM,
+      );
       this.#soundSystem?.playTowerShot(kule.def.id);
     }, this.bus);
 
@@ -700,6 +760,8 @@ export class GameScene extends Phaser.Scene {
     const aktifMermi = this.#projectiles?.activeCount ?? 0;
     if (aktifMermi > this.#mermiTepe) this.#mermiTepe = aktifMermi;
 
+    this.#mermiIzi(sd);
+
     // §10 ekran sarsıntısı — kamerayı sahne kaydırıyor.
     this.shake.update(sd);
     const kayma = this.shake.offset;
@@ -707,6 +769,36 @@ export class GameScene extends Phaser.Scene {
 
     const dev = devHooks();
     if (dev !== undefined) dev.gameFrames = (dev.gameFrames ?? 0) + 1;
+  }
+
+  /**
+   * Büyü mermisinin parçacık izi — `M8-T08`.
+   *
+   * `Projectile` kendi `update`'ini taşımıyor (ince sınıf: hareketi
+   * `ProjectileSystem` yapıyor ve o Phaser'sız), o yüzden iz **burada**,
+   * sahnenin karesinde üretiliyor.
+   *
+   * Süre `scaledDelta` üzerinden (TIER 1 kural 8): 2× hızda mermi iki kat
+   * hızlı gidiyor ve iz de iki kat sık bırakılıyor, yani izin uzunluğu
+   * hızdan bağımsız kalıyor. Ham `delta` kullanılsaydı 2×'te iz seyrekleşip
+   * kesik kesik görünürdü.
+   *
+   * Bütçe: aynı anda havada tipik olarak 1-3 büyü mermisi var ve her biri
+   * saniyede ~14 parçacık bırakıyor; §10'un 300 tavanına uzak.
+   */
+  #mermiIzi(scaledDelta: number): void {
+    if (this.settings.effectScale <= 0) return; // k.6 — efekt kapalı
+    const havuz = this.#mermiHavuzu;
+    if (havuz === undefined) return;
+
+    this.#izBirikim += scaledDelta;
+    if (this.#izBirikim < IZ_ARALIK_MS) return;
+    this.#izBirikim = 0;
+
+    for (const m of havuz.activeItems()) {
+      if (!m.trail || !m.alive) continue;
+      this.#efektler?.patlat(m.x, m.y, 0, 0, 1, m.trailColor, TAM_DAIRE);
+    }
   }
 
   // ------------------------------------------------------------------ hasar
@@ -727,7 +819,7 @@ export class GameScene extends Phaser.Scene {
     // §10 juice — hit-stop yalnız ölümde ve boss hasarında; sarsıntı
     // **her ölümde değil** (§10: "her okçu atışında sarsıntı olmaz").
     this.hitStop.trigger(e.def?.id === 'ogreSef' ? 80 : 60, this.clock.scale);
-    this.#efektler?.patlat(e.x, e.y, 0, -1, 10);
+    this.#efektler?.patlat(e.x, e.y, 0, -1, 10, undefined, TAM_DAIRE);
     if (e.def?.id === 'ogreSef') this.shake.trigger(0, 1, 1);
     // Altın uçuşu — ödül kazandıran her ölümde (§10). Salt görsel; gerçek
     // altın zaten yukarıda anında kazanıldı, o yüzden TIER 1 k.6 efekt
@@ -1123,7 +1215,7 @@ export class GameScene extends Phaser.Scene {
 
     // §10 kule yerleşimi: toz halkası. (40 ms zoom M6-T10'un görsel
     // yarısı; kamera kaydırması sarsıntıyla çakışmasın diye eklenmedi.)
-    this.#efektler?.patlat(spot.x, spot.y, 0, -1, 14);
+    this.#efektler?.patlat(spot.x, spot.y, 0, -1, 14, undefined, TAM_DAIRE);
 
     const kule = new Tower(this, spotIndex, spot.x, spot.y, def);
     this.#towerBySpot.set(spotIndex, kule);

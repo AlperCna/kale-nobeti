@@ -23,6 +23,17 @@ export interface ProjectileLook {
   readonly scaleY: number;
   /** Uzun mermiler (ok) hedefe dönük çizilir; yuvarlaklar için anlamsız. */
   readonly rotateToTarget: boolean;
+  /**
+   * `M8-T08` — uçuşta nabız gibi kabarma (gülle). Tepeden bakışta yükseklik
+   * gösterilemiyor; ölçek nabzı "havada bir yay çiziyor" hissini veren en
+   * ucuz ipucu. Ok ve büyü düz gidiyor, onlarda kapalı.
+   */
+  readonly arc?: boolean;
+  /**
+   * `M8-T08` — arkasında parçacık izi (büyü). Okun izi olsaydı ekran
+   * kalabalıklaşırdı: okçu en hızlı ateş eden aile.
+   */
+  readonly trail?: boolean;
 }
 
 const GOLD = 0xd4a032;
@@ -34,8 +45,8 @@ const YILDIRIM = 0xf6e27a;
 
 const AILE: Readonly<Record<TowerId, ProjectileLook>> = {
   okcu: { color: GOLD, scaleX: 1.8, scaleY: 0.55, rotateToTarget: true },
-  top: { color: INK, scaleX: 1.7, scaleY: 1.7, rotateToTarget: false },
-  buyu: { color: LAPIS, scaleX: 1.15, scaleY: 1.15, rotateToTarget: false },
+  top: { color: INK, scaleX: 1.7, scaleY: 1.7, rotateToTarget: false, arc: true },
+  buyu: { color: LAPIS, scaleX: 1.15, scaleY: 1.15, rotateToTarget: false, trail: true },
   /** Kışla mermi atmıyor; tip tamlığı için — hiç okunmaz. */
   kisla: { color: GOLD, scaleX: 1, scaleY: 1, rotateToTarget: false },
 };
