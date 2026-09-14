@@ -231,13 +231,36 @@ sinerji "toplam DPS" varsayımını kırıyor. Üç sağlama testi de yeniden
 
 ## 5. Toplam
 
-| Faz | Emek | Veri gerekiyor mu | Etki |
-|---|---|---|---|
-| 1 · Menüyü atla | 0,5 gün | hayır | ilk oturum terk edilmesi |
-| 2 · Tur ortası devamlılık | 1,5-2 gün | hayır | **geri dönüş** |
-| 3 · Harita 4-5 derinliği | 1-1,5 gün | tercihen | geç oyun |
-| 4 · Portre karesi | 0,5 gün | hayır | mobil ilk izlenim |
-| 5 · Kule sinerjisi | 1-2 gün | tercihen | derinlik |
+| Faz | Durum |
+|---|---|
+| 1 · Menüyü atla | ✅ `55a8b1e` |
+| 2 · Tur ortası devamlılık | ✅ `cfe907d` |
+| 3a · Harita 4'e buz kalkanı | ✅ `827651e` |
+| 3b · Harita 5'in yeni mekaniği | ⬜ **açık** |
+| 4 · Portre karesi | ✅ `d85cee5` |
+| 5 · Kule sinerjisi | ⬜ **açık** |
 
-**Faz 1 + 2 = ~2,5 gün** ve ikisi de verisiz savunulabiliyor. Öneri
-buradan başlamak.
+## Faz 3 yol boyunca İKİ ciddi hata buldu
+
+Planın hiçbir yerinde yazmıyordu; ikisi de harita 4'ün kalkanının
+canlı oyunda görünmemesi üzerinden çıktı.
+
+**S80 — oyun ile denge simülasyonu farklı boss dövüşüyordu.** `waveSim`
+`getEnemyForMap` (haritaya duyarlı) kullanıyordu, `GameScene` ham
+`getEnemy`. Harita 5'te oyuncu **4760 HP / zırh 10** bir boss'la
+karşılaşıyordu, oysa her ölçüm **2675 / 2** varsayıyordu. Düzeltildi
+(`827651e`).
+
+**S81 — `waveSim` düşman yeteneklerini hiç simüle etmiyordu.** Şaman
+iyileştirmiyor, Trol yenilenmiyor, Örümcek Ana bölünmüyordu. Yani M3'ten
+beri her denge ölçümü iyimserdi. Düzeltilince üç kabul testi birden
+düştü ve iki denge sayısı ölçülerek yeniden türetildi (S82, S84). Ayrıca
+§5'in Şaman tavsiyesinin yarısının **tersine döndüğü** ortaya çıktı
+(S83). Düzeltildi (`1f82f54`).
+
+İkisi de `docs/plan/OPEN-QUESTIONS.md`'de kayıtlı.
+
+**Kalan iki faz için not:** Faz 5 (kule sinerjisi) "toplam DPS"
+varsayımını kırıyor ve Kısıt A/B'nin yeniden ölçülmesini gerektiriyor —
+denge katmanı S81'den sonra zaten bir kez yeniden türetildi, bu yüzden
+sıradaki turda aynı ölçümler tekrar koşturulmalı.
