@@ -167,7 +167,7 @@ Biçim `CLAUDE.md` "Varlık formatları": ses efektleri **yalnız `.m4a`**
 |---|---|---|---|
 | `countdown_tick` | `public/assets/audio/sfx/countdown_tick.m4a` | ≤ 150 ms | Hazırlık sayacının son 3 saniyesi, saniyede bir |
 | `boss_music` | `public/assets/audio/music/boss_music.m4a` | 40-70 sn, **döngülü** | Boss sahaya çıkınca oyun müziğinin yerine |
-| `ui_click` | `public/assets/audio/sfx/ui_click.m4a` | ≤ 120 ms | *(bekliyor — aşağıdaki nota bakın)* |
+| `ui_click` | `public/assets/audio/sfx/ui_click.m4a` | ≤ 120 ms | Menü, ayarlar, duraklatma menüsü ve tam ekran düğmelerine basınca |
 
 ### `countdown_tick`
 
@@ -189,18 +189,25 @@ Oyun müziğinin (`music_game`) **aynı tonalitesinde**, ama:
 
 Döngü noktası **duyulmamalı** (başı ve sonu aynı ölçüde kesilmiş olmalı).
 
-### `ui_click` — kod tarafı da BEKLİYOR
+### `ui_click`
 
-Diğer ikisinden farkı: yalnız ses dosyası değil, **çağrı yeri de yok**.
-`SoundSystem` yalnız `GameScene` içinde yaşıyor; menü, seviye seçim ve
-ayarlar paneli hiçbir ses sistemine erişemiyor. Buton tıklaması için ya
-bu sahnelere hafif bir ses yolu açmak ya da `SoundSystem`'i oyun geneline
-çıkarmak gerekiyor.
+Kısa, kuru, **tok** bir parşömen/tahta dokunuşu. Melodik değil, tınlamıyor:
+saniyede birkaç kez basılabilen bir düğme sesi; rezonansı olan bir ses
+üst üste binince çamurlaşıyor. Diğer efektlerden **bir tık alçak**.
 
-**Bilinçli olarak ertelendi**: yarım bir bağlantı (yalnız oyun içi
-butonlarda ses, menüde sessizlik) tutarsız olur ve tutarsızlık bir eksikten
-daha çok dikkat çeker. `M8` içinde menü/HUD turu (Faz 13) bu yolu zaten
-açacak; ses o zaman bağlanır.
+**Kod tarafı hazır** (`fx/ParchmentFrame.addPressFeedback`). Nerede
+çaldığı bilinçli olarak sınırlı: `addPressFeedback` yalnız **arayüz kromu**
+düğmelerine takılıyor (menü, tam ekran, duraklatma menüsü). Yapı menüsü ve
+yetenek düğmeleri onu kullanmıyor — onların kendi sesleri var
+(`tower_place`, `error`) ve üstüne tıklama sesi bindirmek ikisini birden
+anlamsızlaştırırdı.
+
+Doğrulandı (ses geçici olarak başka bir dosyayla besleyerek): düğmeye
+basınca `ui_click` çalıyor, ses seviyesi ayarı izliyor (Tam → 1,0 ·
+Düşük → 0,35 · Kapalı → **hiç çalmıyor**, sessiz çalmıyor).
+
+Dosya gelince tek yapılacak: `PreloadScene`'in `SFX_ERKEN` listesine
+eklemek (ilk duyulduğu yer ana menü, o yüzden erken grupta).
 
 ---
 

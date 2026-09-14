@@ -92,7 +92,7 @@ Kapsama, bütçe, Kısıt A/B testlerinin hiçbiri **HUD'u** bilmiyor:
 | Konu | Durum |
 |---|---|
 | `M8-P01`/`P02` harita 4-5 arka planı | **Geçici görsel** oyunda; brif `docs/plan/M8-sanat-brifi.md` |
-| `M8-P03` üç ses | `countdown_tick`/`boss_music` **kod tarafında bağlı**, dosya bekliyor; `ui_click` kod tarafı da bekliyor |
+| `M8-P03` üç ses | **Üçünün de kod tarafı bağlı**, yalnız dosyalar bekliyor |
 | `M8-B01` yolların HUD altından geçmesi | Harita 1, 3, 4'ün girişleri; geometri ya da HUD yerleşimi değişmeli |
 | `Y11` Phaser özel yapımı | Ölçülmüş ara kazanç alındı (−%9,2); webpack yapımı hâlâ açık |
 | `Y10` / `Y02` adım 3 | Kullanıcının DevTools CPU kısıtlama ölçümünü bekliyor |
