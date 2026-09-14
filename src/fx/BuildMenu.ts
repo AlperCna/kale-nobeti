@@ -624,6 +624,8 @@ export class BuildMenu {
       coveredPx: kapsama,
       refund: this.#economy.sellRefund(this.#economy.spentAt(spotIndex)),
       nextTier: kule.tierIndex === 0 ? kule.def.tiers[1] : undefined,
+      // Panel bu konuma göre karşı köşeye geçiyor (`TowerInfoPanel.show`).
+      spot: this.#map.buildSpots[spotIndex] ?? { x: 0, y: 0 },
     });
   }
 

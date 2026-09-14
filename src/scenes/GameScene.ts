@@ -701,8 +701,38 @@ export class GameScene extends Phaser.Scene {
     // M6-T11 — dalga 1 boyunca sessiz (brif: "oyun içinde, dalga 1
     // bittikten sonra devreye giriyor"), menü müziği burada susuyor.
     this.sound.stopByKey('music_menu');
+
+    /**
+     * Oyun müziği dalga 1 boyunca **indiriliyor**, dalga 1 bitince
+     * **çalıyor** — ikisi ayrı an.
+     *
+     * Oyuncu geri bildirimi: savaş kısmında müzikle "böyle bir olay"
+     * vardı. Zaman çizgisi ölçüldü:
+     *
+     *   menü            music_menu (otomatik oynatma izin verirse)
+     *   haritaya giriş  menü müziği susuyor -> SESSİZLİK
+     *   dalga 1         sessiz (tasarım)
+     *   dalga 1 bitti   music_game O AN indirilmeye başlıyor — 2,8 MB
+     *
+     * Yani tasarımın istediği sessizliğin **üstüne** bir de indirme
+     * gecikmesi biniyordu. İndirme öne alındı: dalga 1 oynanırken
+     * arka planda geliyor, bittiğinde çalmaya hazır.
+     *
+     * `Y05` ile çelişmiyor: `Y05` müziği **ilk indirmeden** çıkarmıştı
+     * ve o hâlâ öyle — burası oyun çoktan başladıktan sonrası, ilk
+     * indirme ölçümüne girmiyor.
+     *
+     * `musicScale <= 0` ise hiç indirilmiyor (`Y04`'ün bedava kazancı,
+     * `MenuScene`'deki aynı desen).
+     */
+    if (this.settings.musicScale > 0 && !this.cache.audio.exists('music_game')) {
+      PreloadScene.queueBackground(this);
+      this.load.start();
+    }
+
     this.bus.on('wave:ended', ({ index }) => {
       if (index !== 1) return;
+      if (this.settings.musicScale <= 0) return;
       const basla = (): void => {
         this.sound.play('music_game', {
           loop: true,
@@ -712,9 +742,9 @@ export class GameScene extends Phaser.Scene {
       if (this.cache.audio.exists('music_game')) {
         basla();
       } else {
+        // İndirme henüz bitmediyse bittiğinde başlasın. Kuyruğa yukarıda
+        // girdi; burada yalnız beklemek kaldı.
         this.load.once('filecomplete-audio-music_game', basla);
-        PreloadScene.queueBackground(this);
-        this.load.start();
       }
     });
 
