@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import { queueNumberFont, NUMBER_FONT_KEY } from '../fx/numberFont';
+import { ilkOturumMu, ILK_HARITA_ID } from '../systems/ilkOturum';
+import { LocalStore } from '../util/storage';
 
 /**
  * Aşamalı yükleme.
@@ -62,15 +64,38 @@ const SFX_GEC = ['tower_upgrade', 'boss_intro', 'victory', 'defeat'];
 
 export class PreloadScene extends Phaser.Scene {
   #bar?: Phaser.GameObjects.Rectangle;
+  /**
+   * `preload()`'ta ölçülüyor, `create()`'te kullanılıyor. Alan
+   * başlatıcısı değil çünkü `Preload` yeniden çalışmıyor; yine de
+   * `preload()` her koşuda yazıyor (mimari kural: sahne alanları
+   * `create()`/`preload()` içinde kuruluyor).
+   */
+  #dogrudanOyun = false;
 
   constructor() {
     super('Preload');
   }
 
   /**
-   * **Yalnız `queueBoot` çağrılır.** `queueGame` buraya eklenirse oyun
-   * varlıkları menüden önce iner ve ilk indirmeyi şişirir — bu görevin
-   * "bitmedi sayılır eğer" maddesi.
+   * `M10-T01` — **ilk oturumda oyuncu menüyü hiç görmüyor.**
+   *
+   * Karar `preload()`'ta veriliyor, `create()`'te değil: doğrudan oyuna
+   * gidilecekse oyun varlıkları da **bu çubuğun altında** insin. Aksi
+   * hâlde `GameScene.preload()` atlas + arka plan + ses efektlerini
+   * çubuksuz yükler ve oyuncu boş ekrana bakar — hem de akışın tam
+   * "ilk birkaç dakika kaderi belirliyor" denen yerinde.
+   *
+   * ## "Yalnız `queueBoot` çağrılır" kuralına ne oldu
+   *
+   * O kuralın gerekçesi yazılıydı: *oyun varlıkları **menüden önce**
+   * inerse ilk indirmeyi şişirir.* Bu dalda menü **yok** — oyun
+   * varlıkları zaten oyuncunun bir saniye sonra ihtiyaç duyduğu ilk
+   * oynanabilir parça. Yani kuralın sebebi bu dalda geçerli değil,
+   * kuralın kendisi diğer dalda aynen duruyor.
+   *
+   * `menu-bg` yine de iniyor (104 KB, `queueBoot`): menüyü bu oturumda
+   * görmese de duraklatma → ana menü yolu açık ve orada eksik doku
+   * `__MISSING` yeşil kutusu demek — atlasta bir kez yaşanmış hata.
    */
   preload(): void {
     this.#drawBar();
@@ -80,10 +105,21 @@ export class PreloadScene extends Phaser.Scene {
     // çiziliyor (tarayıcı yalnız tikin sonunda boyuyor).
     document.getElementById('acilis')?.remove();
     this.queueBoot();
+
+    this.#dogrudanOyun = ilkOturumMu(new LocalStore());
+    if (this.#dogrudanOyun) PreloadScene.queueGame(this);
   }
 
   create(): void {
     this.#bar?.destroy();
+    if (this.#dogrudanOyun) {
+      // `LevelSelectScene`'in açılış sırasının birebir aynısı.
+      // Zorluk verilmiyor: `GameScene` onu ayarlardan okuyor ve ilk
+      // oturumda ayar varsayılanı (Normal) zaten doğru cevap.
+      this.scene.start('Game', { mapId: ILK_HARITA_ID });
+      this.scene.launch('Hud');
+      return;
+    }
     this.scene.start('Menu');
   }
 
