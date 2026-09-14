@@ -94,7 +94,7 @@ describe('paylaşılan kayıt anahtarı — beş sistem', () => {
     expect(Object.keys(ham).sort()).toEqual(['achievements', 'progress', 'settings']);
     expect(new Settings(store).state.musicLevel).toBe('low');
     expect(new Settings(store).state.sfxLevel).toBe('off');
-    expect(new AchievementSystem(store).unlocked.sort()).toEqual(['firstTower', 'firstWin']);
+    expect([...new AchievementSystem(store).unlocked].sort()).toEqual(['firstTower', 'firstWin']);
     expect(new SaveSystem(store).starsOf('degirmen-gecidi')).toBe(3);
   });
 
