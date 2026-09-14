@@ -1,5 +1,32 @@
 # Y02 · `Pool.activeItems()` her karede yedi dizi tahsis ediyor
 
+> **☑ KAPANDI — Adım 3 yapılmadı, ölçüm gerekçelendirmedi.**
+>
+> Adım 2'nin istediği iki sayı da alındı:
+>
+> | Ölçüm | Sonuç |
+> |---|---|
+> | 4× CPU kısıtlamasında FPS | **50** (eşik 30, `Y10`) |
+> | Tahsis oranı, dalga 1 | 16,08 MB/sn |
+> | Tahsis oranı, dalga 7 | **15,99 MB/sn** |
+> | Heap bandı | 40-43 MB, her ikisinde |
+>
+> **İki tahsis ölçümü birbirine eşit.** `Pool.activeItems()`'ın kare
+> başına ürettiği 6-7 dizi entity sayısıyla ölçeklenseydi bu satırlar
+> ayrışırdı. Ayrıca kare CPU maliyeti de düşman sayısından bağımsız
+> çıktı (`OLCUMLER.md` `F5`: 0→5 düşmanda 4,27 · 3,32 · 4,06 · 3,95 ·
+> 2,69 · 2,61 ms, 7871 kare).
+>
+> Heap 3 MB'lık bir bantta salınıyor, yani V8'in ucuz **minor GC**
+> bölgesi; duraklama üretmiyor (p99 kare 3,70 ms).
+>
+> Bu dosyanın kendi kuralı uygulandı: *"Mal olmuyorsa Adım 3 yapılmaz —
+> sıra kararlılığı, kazanılmayan bir başarım için feda edilmez."*
+> Adım 1'in bedava kazancı duruyor; (b) ve eşitlik bozucu **yapılmadı**.
+>
+> Sayılar: `docs/results/OLCUMLER.md` "Tahsis oranı".
+
+
 | | |
 |---|---|
 | **Tür** | Yapısal — başarım |
