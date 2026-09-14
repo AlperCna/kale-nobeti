@@ -800,12 +800,12 @@ oyuncu haritanın şeklini hiç görmüyordu. Aynı `MapDef.paths` verisi karta
 Rekor yoksa satır uzamıyor: hiç oynanmamış haritada "Sonsuz: 0" bilgi
 değil gürültü.
 
-### Faz 14 — Paket boyutu ve başarım — `M8-T14`
+### Faz 14 — Paket boyutu ve başarım — `M8-T14`  ☑
 
 | | |
 |---|---|
 | **Kimlik** | `M8-T14` |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ **bitti** (2026-09-14) |
 | **Süre** | ~45 dk |
 | **Önkoşul** | `M8-T13` |
 | **Doküman** | `iyilestirme/Y11-phaser-tam-yapim.md` · `Y02` · `report-size.mjs` |
@@ -816,6 +816,34 @@ değil gürültü.
 - Y02 adım 3 yalnız Y10 ölçümü gelirse.
 
 **Kabul kriteri** — `npm run build` boyut raporu önce/sonra dosyaya yazılmış.
+
+**Durum:** ☑ **bitti** (2026-09-14) — rapor `docs/results/M8-T14-boyut.md`.
+
+#### Sonuç — `M8-T14`
+
+**İlk indirme 1,10 MB → 0,93 MB (−%15,5).** İki adım, ikisi de ölçüldü:
+
+1. **Geç çalan dört ses tembel yüklemeye alındı** (`boss_intro`,
+   `victory`, `defeat`, `tower_upgrade` — 143,8 KB). Hiçbiri oyunun ilk
+   dakikasında çalmıyor; `assets/lazy/sfx/` altına taşındılar ve ilk dalga
+   bitince müzikle aynı aşamada geliyorlar. Yükleme gecikirse
+   `SoundSystem.#cal` eksik anahtarı sessizce atlıyor (`Y14` deseni).
+   → 1,10 → 0,97 MB.
+2. **Phaser'ın Matter'sız hazır yapımı** (`phaser-arcade-physics`), tek
+   satırlık `resolve.alias` ile. Tartıldı: 1.196.122 → 1.086.308 bayt
+   (**−%9,2**). Proje ne Matter ne Arcade kullanıyor, ve bu yapımda
+   Tilemaps ve bütün oyun nesneleri duruyor. → 0,97 → **0,93 MB**.
+
+**`Y11`'in asıl önerisi (webpack ile özel yapım) YAPILMADI** ve gerekçesi
+yazıldı: Phaser deposunun yapılandırmasını taşımayı ve altı modülü elle
+geri eklemeyi gerektiriyor, yanlış kesilen modül **çalışma zamanında**
+patlıyor, ve kazanç hâlâ tahmin. `Y11` açık kalıyor — ama artık ölçülmüş
+bir tabanla (0,93 MB) ve ölçülmüş bir ara kazançla.
+
+**Canlı doğrulandı:** aliaslı Phaser ile menü → seviye seçim → harita →
+kule + kışla + asker + dalga akışı sorunsuz; ses önbelleği beklendiği gibi
+bölünüyor (harita açılışında `shot_okcu` var, `victory`/`boss_intro` yok;
+dalga 1 bitince üçü de geliyor).
 
 ### Faz 15 — Yayın hazırlığı — `M8-T15`
 

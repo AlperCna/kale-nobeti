@@ -348,10 +348,21 @@ async function sesDosyasiCevir(ad, cikisYolu, bitrate, sure) {
   return true;
 }
 
+/**
+ * `M8-T14` — **geç** çalan sesler `lazy/sfx/` altına yazılıyor.
+ *
+ * `report-size.mjs`'in "ilk indirme" hesabı `assets/lazy/` klasörünü
+ * hariç tutuyor. Bu dördü oyunun ilk dakikasında hiç çalmıyor:
+ * `boss_intro` dalga 10'da, `victory`/`defeat` harita bitince,
+ * `tower_upgrade` ilk yükseltmede. İlk indirmeden 143 KB düşüyor.
+ */
+const GEC_SESLER = new Set(['boss_intro', 'victory', 'defeat', 'tower_upgrade']);
+
 async function sesleriUret() {
   let uretilen = 0;
   for (const ad of SES_EFEKTLERI) {
-    if (await sesDosyasiCevir(ad, `audio/sfx/${ad}.m4a`, '128k')) uretilen++;
+    const yol = GEC_SESLER.has(ad) ? `lazy/sfx/${ad}.m4a` : `audio/sfx/${ad}.m4a`;
+    if (await sesDosyasiCevir(ad, yol, '128k')) uretilen++;
   }
   for (const m of MUZIK) {
     if (await sesDosyasiCevir(m.ad, m.cikisYolu, '96k', m.sure)) uretilen++;
