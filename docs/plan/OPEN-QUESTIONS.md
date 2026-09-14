@@ -98,6 +98,27 @@ ucuz/anında hâli.
 Gerekçe: CrazyGames 4 GB Chromebook şartı koyuyor ama elde o cihaz yok.
 Uydurma bir sayı yerine **tekrarlanabilir bir vekil** seçildi; vekil
 olduğu açıkça yazılıyor. Gerçek cihaza erişilirse vekil düşer.
+
+**☑ İKİNCİL GEÇİT DE KOŞULDU (`Y10`).** Uzun süre yalnız birincil geçit
+ölçülmüştü; "yayın öncesi zorunlu" olan ikincisi M6'da ve M7'de atlandı.
+
+Ölçüm: harita 3 (en ağır), 10 kuleli karışık tahta, efekt Tam, 4× CPU
+kısıtlaması, her renderer iki koşu.
+
+| | FPS | kare ort | p95 | p99 |
+|---|---|---|---|---|
+| WebGL sıcak | **50,2** | 13,63 ms | 19,5 | 27,3 |
+| Canvas sıcak | 50,1 | **9,29 ms** | 13,3 | 16,9 |
+
+**Eşik 30, ölçülen 50 — %65 pay.** Geçit geçildi.
+
+Yöntem notu, bir dahakine için: **duvar saati FPS'i tek başına
+yetmiyor.** Kısıtlamasız ölçümde 62 FPS okunuyor ama bu vsync'e takılı
+aralık; gerçek maliyeti görmek için `raf.callback` sarmalanıp kare
+başına CPU süresi ölçüldü. Ve **her renderer iki kez** koşuldu: ilk koşu
+soğuk (shader derleme, doku yükleme) ve kısıtlamasız ölçümde p99'u
+26,9 ms gösterip 3,7 yerine — tek koşuya bakılsaydı render modu yanlış
+değişirdi.
 **Nerede:** M6 (efektler FPS riskinin zirvesi) ve M7 (yayın öncesi tekrar).
 
 **S11, S12, S16, S17 `M1-T03`'te kapandı** — koordinatlar uydurulmadı,

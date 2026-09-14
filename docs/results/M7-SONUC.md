@@ -305,3 +305,19 @@ da bunu ölçmek için var.
 
 `docs/KURALLAR.md` üçünü de tablolarıyla taşıyor ve **veriden üretiliyor** —
 bir sayı değişirse doküman kendiliğinden güncelleniyor.
+
+---
+
+## `S15` ikincil geçidi — M7'de atlanmıştı, `Y10`'da koşuldu
+
+M7 "yayın öncesi" taşıydı ve `S15`'in **yayın öncesi zorunlu** dediği
+4× CPU kısıtlamalı ölçüm burada yapılmadı. `Y10` bunu yakaladı ve ölçüm
+sonradan koşuldu:
+
+| | FPS (4× kısıtlama) | kare ort |
+|---|---|---|
+| WebGL (AUTO) | **50,2** | 13,63 ms |
+| Canvas | 50,1 | 9,29 ms |
+
+Eşik ≥ 30 → **geçildi, %65 payla**. Ayrıntı `docs/results/OLCUMLER.md`
+`F6`-`F10`; karar ve gerekçe `src/main.ts` render modu yorumunda.

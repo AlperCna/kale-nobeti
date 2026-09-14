@@ -688,9 +688,48 @@ bulgusu **bu makinede doğrulanmadı** — ama bu makine hedef cihaz değil.
 `Phaser.AUTO` kalıyor; karşılaştırma `?render=canvas` ile (yalnız dev)
 tekrarlanabilir.
 
-### Hâlâ eksik olan
+### 4× CPU kısıtlaması altında — **S15'in ikincil geçidi**
 
-**4× CPU kısıtlaması altındaki gerçek okuma.** Yukarıdaki sayılar
-kısıtlamasız. Aritmetik (sıcak p99 3,7 × 4 = 14,8 ms → 68 FPS) eşiği
-rahat geçtiğini söylüyor ama `S15` "ölçüm" diyor, "çarpma" değil ve
-`Y10` bunu açıkça reddediyor. Chrome DevTools gerekiyor.
+Chrome DevTools → Performance → CPU **4× slowdown**, aynı senaryo,
+her renderer iki koşu (ilki soğuk):
+
+| # | Renderer | Koşu | FPS | kare ort | p95 | p99 |
+|---|---|---|---|---|---|---|
+| F6 | WebGL (AUTO) | 1 (soğuk) | **49,6** | 14,08 ms | 19,4 | 30,7 |
+| F7 | WebGL (AUTO) | 2 (sıcak) | **50,2** | 13,63 ms | 19,5 | 27,3 |
+| F8 | Canvas | 1 (soğuk) | **49,0** | 11,27 ms | 18,2 | 27,8 |
+| F9 | Canvas | 2 (sıcak) | **50,1** | **9,29 ms** | **13,3** | **16,9** |
+
+**Geçit geçildi.** Eşik ≥ 30 FPS; ölçülen **49-50 FPS**, yani %65 pay.
+`S15`'in "yayın öncesi zorunlu" dediği ölçüm artık var.
+
+### F10 — `research/02`'nin Canvas bulgusu **kısıtlama altında doğrulandı**
+
+Kısıtlamasız ölçümde (F1/F3) WebGL kazanıyordu: 2,53 vs 3,04 ms. Kısıtlama
+altında **sıralama tersine dönüyor**:
+
+| | kısıtlamasız | 4× kısıtlamalı |
+|---|---|---|
+| WebGL sıcak, kare ort | **2,53 ms** | 13,63 ms |
+| Canvas sıcak, kare ort | 3,04 ms | **9,29 ms** |
+| Canvas'ın farkı | %20 **pahalı** | %32 **ucuz** |
+
+p99'da fark daha da büyük: 27,3 → 16,9 ms, yani **%38**. `research/02`
+§4'ün "eski cihazlarda WebGL→Canvas %30 kazanç" bulgusu, vekil ölçümde
+**%32/%38 olarak çıktı** — sayı tutuyor.
+
+Beklenen 4× çarpımıyla karşılaştırma öğretici:
+
+| | 4× tahmini | ölçülen | fark |
+|---|---|---|---|
+| WebGL | 10,1 ms | 13,63 | **%35 daha kötü** |
+| Canvas | 12,2 ms | 9,29 | **%24 daha iyi** |
+
+Yani WebGL'in CPU'ya bağlı payı (batch kurulumu, durum değişimi, çok
+sayıda `Graphics`/`TileSprite` çizimi) yavaş makinede orantısız büyüyor;
+Canvas'ın rasterleştirmesi ise CPU'ya daha az bağlı.
+
+**Karar: `Phaser.AUTO` kalıyor** — eşik %65 payla geçiliyor ve hızlı
+makinede WebGL daha iyi. Ama artık **ölçülmüş bir kol** var: hedef
+cihazda FPS 45'in altına düşerse (`RISKS.md` R13 erken uyarısı) Canvas'a
+geçmek ~%32 kare maliyeti kazandırıyor ve bu tahmin değil.
