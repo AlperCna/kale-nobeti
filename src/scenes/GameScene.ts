@@ -6,6 +6,7 @@ import { LineMover, PathMover } from '../systems/movers';
 import { EnemyAbilitySystem } from '../systems/EnemyAbilitySystem';
 import { applyEffect, speedMultiplier, stepEffects } from '../systems/effects';
 import { WaveManager } from '../systems/WaveManager';
+import { endlessHpScale, generateEndlessWave } from '../systems/endlessWaves';
 import type { WavePhase } from '../systems/WaveManager';
 import { EconomySystem } from '../systems/EconomySystem';
 import { TowerSystem } from '../systems/TowerSystem';
@@ -187,15 +188,26 @@ export class GameScene extends Phaser.Scene {
    */
   #map: MapDef = MAP_1;
   #waveList: readonly Wave[] = MAP1_WAVES;
+  /** `M8-T06` — sonsuz mod bu koşuda açık mı (oyun sonu ekranından gelir). */
+  #endless = false;
 
   constructor() {
     super('Game');
   }
 
-  /** Seviye seçim ekranı `{ mapId }` gönderiyor; yoksa harita 1. */
-  init(data?: { mapId?: string }): void {
+  /**
+   * Seviye seçim ekranı `{ mapId }` gönderiyor; yoksa harita 1.
+   * `M8-T06`: oyun sonu ekranı `{ endless: true }` ile yeniden başlatıyor.
+   */
+  init(data?: { mapId?: string; endless?: boolean }): void {
     this.#map = (data?.mapId !== undefined ? getMap(data.mapId) : undefined) ?? MAP_1;
     this.#waveList = wavesFor(this.#map.id);
+    this.#endless = data?.endless === true;
+  }
+
+  /** `HudScene` ve `GameOverScene` bunu okuyor. */
+  get isEndlessRun(): boolean {
+    return this.#endless;
   }
 
   get map(): MapDef {
@@ -260,6 +272,11 @@ export class GameScene extends Phaser.Scene {
 
   get totalWaves(): number {
     return this.#waveList.length;
+  }
+
+  /** `M8-T06` — elle yazılmış dalgalar bitti, üretilene geçildi. */
+  get isEndlessWave(): boolean {
+    return this.#waves?.isEndless ?? false;
   }
 
   get prepRemainingSec(): number | null {
@@ -540,6 +557,15 @@ export class GameScene extends Phaser.Scene {
       // `G05` — sızan düşmanın can çubuğu da havuza dönmeden önce
       // serbest kalmalı, ölüm yoluyla aynı sözleşme (`Particles.olumEfekti`).
       (e) => this.#enemyHealthBars?.releaseFor(e),
+      // `M8-T06` — sonsuz modda dalga listesi bitince oyun durmuyor.
+      // `WaveManager` üretimin kurallarını bilmiyor, yalnız bu sözleşmeyi.
+      this.#endless
+        ? {
+            waveAt: (n) =>
+              generateEndlessWave(n, this.#map.enemyRoster, this.#map.paths.length),
+            hpScaleAt: (n) => endlessHpScale(n),
+          }
+        : undefined,
     );
 
     this.#occupancy = new SpotOccupancy(this.#map.buildSpots.length);
@@ -1123,6 +1149,15 @@ export class GameScene extends Phaser.Scene {
       this.scene.start('Game');
     };
     dev.enemyActive = () => enemyPool.activeCount;
+    // `M8-T06` — dalga 11'e elle oynayarak varmak pratik değil.
+    // Normal hasar yolundan geçiyor: altın, efekt, olaylar aynı.
+    dev.killAllEnemies = () => {
+      const hedefler = enemyPool.activeItems();
+      for (const e of hedefler) this.#hasarUygula(e, e.hp + 1);
+      return hedefler.length;
+    };
+    dev.isEndlessWave = () => this.isEndlessWave;
+    dev.isEndlessRun = () => this.isEndlessRun;
     dev.enemyCapacity = () => enemyPool.capacity;
     dev.lives = () => this.#eco?.lives ?? -1;
     dev.pathLength = () => path.totalLength;

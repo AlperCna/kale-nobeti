@@ -30,6 +30,12 @@ export interface HudState {
   readonly prepRemainingSec: number | null;
   readonly waveNumber: number;
   readonly totalWaves: number;
+  /**
+   * `M8-T06` — sonsuz modda toplam dalga diye bir şey yok; sayaç yalnız
+   * `N` gösteriyor. Bayrak açık: `totalWaves: 0` gibi bir nöbetçi değer
+   * okuyanı "0 dalga mı var?" diye düşündürürdü.
+   */
+  readonly endless: boolean;
 }
 
 export class HudReadout {
@@ -87,7 +93,7 @@ export class HudReadout {
       this.#sonLives = s.lives;
     }
     if (s.waveNumber !== this.#sonWave) {
-      this.#wave.setText(`${s.waveNumber}.${s.totalWaves}`);
+      this.#wave.setText(s.endless ? String(s.waveNumber) : `${s.waveNumber}.${s.totalWaves}`);
       this.#sonWave = s.waveNumber;
     }
 

@@ -7,6 +7,7 @@ import { devHooks } from '../util/devHooks';
 import { createParchmentButton } from '../fx/ParchmentFrame';
 import { MAPS } from '../data/maps';
 import { FRAME_STAR, FRAME_STAR_EMPTY } from '../data/spriteFrames';
+import { EndlessRecords } from '../systems/EndlessRecords';
 import type { RunStatsData } from '../systems/RunStats';
 
 const INK = 0x14203a;
@@ -16,6 +17,8 @@ export interface GameOverData {
   readonly lives: number;
   /** `M8-T03` — `HudScene` `Game` durmadan önce veriyi kopyalayıp yolluyor. */
   readonly stats?: RunStatsData;
+  /** `M8-T06` — bu el sonsuz modda mı oynandı. */
+  readonly endless?: boolean;
 }
 
 /**
@@ -34,6 +37,9 @@ export interface GameOverData {
  */
 export class GameOverScene extends Phaser.Scene {
   #data: GameOverData & { mapId?: string } = { won: false, lives: 0 };
+  /** `M8-T06` — bu el rekoru kırdı mı (`init`'te hesaplanıyor). */
+  #yeniRekor = false;
+  #rekor = 0;
 
   constructor() {
     super('GameOver');
@@ -45,7 +51,21 @@ export class GameOverScene extends Phaser.Scene {
       lives: data.lives ?? 0,
       mapId: data.mapId,
       stats: data.stats,
+      endless: data.endless === true,
     };
+
+    // `M8-T06` — sonsuz rekoru da burada kaydediliyor, yıldızla aynı
+    // gerekçeyle: `init` her elde koşuyor ve rekor **düşmüyor**.
+    // Ölçüt `peakWave`: oyuncunun **başladığı** en yüksek dalga; bitirdiği
+    // değil. Kaybettiren dalgayı saymamak "dalga 30'a kadar geldim"
+    // cümlesini yalanlardı.
+    this.#yeniRekor = false;
+    this.#rekor = 0;
+    if (this.#data.endless === true && this.#data.mapId !== undefined) {
+      const kayit = new EndlessRecords(new LocalStore());
+      this.#yeniRekor = kayit.record(this.#data.mapId, this.#data.stats?.peakWave ?? 0);
+      this.#rekor = kayit.bestOf(this.#data.mapId);
+    }
 
     // **Sonuç burada kaydediliyor** — `init` her sahne başlatmasında
     // koşuyor, yani tekrar oynanan her el kaydediliyor. `recordResult`
@@ -87,7 +107,9 @@ export class GameOverScene extends Phaser.Scene {
     // `G07` — atlas karesi (`FRAME_STAR`/`FRAME_STAR_EMPTY`), sistem yazı
     // tipi `★`'ın yerine. Üç yuva hep çiziliyor (dolu+boş) — kazanılmamış
     // yıldızlar da görünür, "bir tanesi daha var" hissi bedava.
-    if (won) {
+    // Sonsuz elde yıldız yok: yıldız eşiği "20 canla bitir" demek ve
+    // sonsuz mod tanımı gereği hep kaybetmeyle bitiyor.
+    if (won && this.#data.endless !== true) {
       const yildizSayisi = this.#yildiz(lives);
       const ADIM = 44;
       for (let i = 0; i < 3; i++) {
@@ -109,6 +131,39 @@ export class GameOverScene extends Phaser.Scene {
     // Sayılar `Text` (BitmapText değil): bu sahne her açılışta baştan
     // kuruluyor ve hiç `setText` çağırmıyor — TIER 1 kural 7'nin
     // "bir kez yazılan metin" istisnası, dosyanın başlık notu.
+    /**
+     * "Yeni rekor!" satırı `UST + 132`'ye düşüyor ve istatistik bloğu
+     * `UST + 150`'de başlıyordu — canlı ekran görüntüsünde ikisi
+     * **üst üste bindi**. Blok ve butonlar o satır varsa aşağı kayıyor.
+     */
+    const rekorPayi = this.#yeniRekor ? 34 : 0;
+
+    // `M8-T06` — sonsuz elin başlığı: ulaşılan dalga ve rekor.
+    if (this.#data.endless === true) {
+      const ulasilan = this.#data.stats?.peakWave ?? 0;
+      this.add
+        .text(
+          width / 2,
+          UST + 104,
+          `${t('endlessReached')}: ${ulasilan}   ·   ${t('endlessBest')}: ${this.#rekor}`,
+          {
+            fontFamily: 'Spectral, serif',
+            fontSize: '22px',
+            color: this.#yeniRekor ? '#D4A032' : '#E4D3A8',
+          },
+        )
+        .setOrigin(0.5);
+      if (this.#yeniRekor) {
+        this.add
+          .text(width / 2, UST + 132, t('endlessNewRecord'), {
+            fontFamily: '"Grenze Gotisch", serif',
+            fontSize: '26px',
+            color: '#D4A032',
+          })
+          .setOrigin(0.5);
+      }
+    }
+
     const s = this.#data.stats;
     if (s !== undefined) {
       const satirlar: ReadonlyArray<readonly [string, string]> = [
@@ -120,7 +175,7 @@ export class GameOverScene extends Phaser.Scene {
         [t('statDuration'), `${Math.floor(s.durationSec / 60)}:${String(s.durationSec % 60).padStart(2, '0')}`],
       ];
       const stil = { fontFamily: 'Spectral, serif', fontSize: '18px', color: '#8A7250' } as const;
-      const ust = UST + 150;
+      const ust = UST + 150 + rekorPayi;
       satirlar.forEach(([ad, deger], i) => {
         const y = ust + i * 26;
         this.add.text(width / 2 - 150, y, ad, stil).setOrigin(0, 0.5);
@@ -140,11 +195,16 @@ export class GameOverScene extends Phaser.Scene {
     // Yerleşim ölçülerek kuruldu: 6 istatistik satırı (26 px) + 3 buton
     // (64 px) 720 px'e ancak sığıyor — canlı testte son buton ekranın
     // altından taşmıştı.
-    const butonUst = this.#data.stats === undefined ? height / 2 + 96 : UST + 330;
+    const butonUst = this.#data.stats === undefined ? height / 2 + 96 : UST + 330 + rekorPayi;
     const birincilEylem = this.#butonlariKur(width / 2, butonUst, {
       kaybetti: !won,
       sonrakiVar,
-      haritayaGec: (hedefMapId: string) => this.#haritayaGec(hedefMapId),
+      // `M8-T06` — sonsuz el **sonsuz olarak** tekrar başlıyor; normal
+      // elde "Sonsuz moda devam" ayrı bir buton.
+      sonsuzEl: this.#data.endless === true,
+      haritayaGec: (hedefMapId: string) =>
+        this.#haritayaGec(hedefMapId, this.#data.endless === true),
+      sonsuzaGec: (hedefMapId: string) => this.#haritayaGec(hedefMapId, true),
       anaMenuyeDon: () => this.#anaMenuyeDon(),
       mapId,
       sonrakiId,
@@ -184,7 +244,9 @@ export class GameOverScene extends Phaser.Scene {
     d: {
       readonly kaybetti: boolean;
       readonly sonrakiVar: boolean;
+      readonly sonsuzEl: boolean;
       readonly haritayaGec: (mapId: string) => void;
+      readonly sonsuzaGec: (mapId: string) => void;
       readonly anaMenuyeDon: () => void;
       readonly mapId: string | undefined;
       readonly sonrakiId: string | undefined;
@@ -194,11 +256,21 @@ export class GameOverScene extends Phaser.Scene {
     let satir = 0;
     const sonraki = () => y + satir++ * ARA;
 
+    // `M8-T06` — kazanılan normal elden sonra sonsuz mod teklifi.
+    // **Birincil değil:** ilk kez kazanan oyuncunun doğal yolu sıradaki
+    // harita; sonsuz mod bir sapma, bir dayatma değil.
+    const sonsuzTeklifi = (): void => {
+      if (!d.sonsuzEl && !d.kaybetti && d.mapId !== undefined) {
+        this.#buton(x, sonraki(), 240, 56, t('endlessMode'), false, () => d.sonsuzaGec(d.mapId!));
+      }
+    };
+
     if (d.sonrakiVar && d.sonrakiId !== undefined) {
       // Kazanıldı, sonraki harita açık: Sonraki harita (birincil) ·
       // Tekrar dene · Ana menü.
       const birincil = (): void => d.haritayaGec(d.sonrakiId!);
       this.#buton(x, sonraki(), 260, 64, t('nextMap'), true, birincil);
+      sonsuzTeklifi();
       if (d.mapId !== undefined) {
         this.#buton(x, sonraki(), 220, 56, t('retry'), false, () => d.haritayaGec(d.mapId!));
       }
@@ -212,6 +284,7 @@ export class GameOverScene extends Phaser.Scene {
       const birincil = (): void => d.haritayaGec(d.mapId!);
       const buyukMu = d.kaybetti;
       this.#buton(x, sonraki(), buyukMu ? 260 : 220, buyukMu ? 64 : 56, t('retry'), buyukMu, birincil);
+      sonsuzTeklifi();
       this.#buton(x, sonraki(), 220, 56, t('backToMenu'), false, d.anaMenuyeDon);
       return birincil;
     }
@@ -249,10 +322,10 @@ export class GameOverScene extends Phaser.Scene {
    * ...)` + `launch('Hud')`). `sleep`/`wake` kullanılsaydı önceki oyunun
    * altını ve kuleleri kalırdı — görevin "bitmedi sayılır eğer" maddesi.
    */
-  #haritayaGec(mapId: string): void {
+  #haritayaGec(mapId: string, endless = false): void {
     this.scene.stop('Hud');
     this.scene.stop('Game');
-    this.scene.start('Game', { mapId });
+    this.scene.start('Game', { mapId, endless });
     this.scene.launch('Hud');
   }
 

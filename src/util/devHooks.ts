@@ -129,6 +129,22 @@ export interface DevHooks {
     key: string,
     value: unknown,
   ) => { sound: boolean; screenShake: boolean; effects: string; hints: boolean };
+
+  // --- M8 ---
+  /**
+   * Sahadaki **bütün** düşmanları öldürür (normal hasar yolundan: altın,
+   * ölüm efekti, olaylar hepsi işliyor). @returns Öldürülen sayısı.
+   *
+   * Var olma sebebi `M8-T06`: sonsuz mod dalga **11**'de başlıyor ve
+   * tarayıcıda oraya elle oynayarak varmak pratik değil. Bu kanca olmadan
+   * "dalga 11 geldi mi, sayaç `11.10` yerine `11` mi yazıyor" sorusu canlı
+   * olarak hiç doğrulanamaz; yalnız testte kalırdı.
+   */
+  killAllEnemies: () => number;
+  /** Elle yazılmış dalgalar bitti mi (sonsuz moda geçildi mi). */
+  isEndlessWave: () => boolean;
+  /** Bu el sonsuz modda mı başlatıldı. */
+  isEndlessRun: () => boolean;
 }
 
 type Global = { __kn?: Partial<DevHooks> };

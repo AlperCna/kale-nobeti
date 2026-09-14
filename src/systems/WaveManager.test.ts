@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { WaveManager, earlyStartBonus } from './WaveManager';
+import type { EndlessSource } from './WaveManager';
+import { endlessHpScale, generateEndlessWave } from './endlessWaves';
 import { EconomySystem } from './EconomySystem';
 import { EventBus } from './EventBus';
 import { PathSystem } from './PathSystem';
@@ -60,12 +62,23 @@ function kur(
   waves: readonly Wave[] = MAP1_WAVES,
   prealloc: number = POOL_PREALLOC.enemy,
   yol: readonly Vec2[] = KISA_YOL,
+  endless?: EndlessSource,
 ) {
   const pool = new Pool<SahteDusman>(() => new SahteDusman(), prealloc);
   const bus = new EventBus();
   const eco = new EconomySystem(MAP_1, bus);
   const mover = new PathMover(new PathSystem(yol));
-  const wm = new WaveManager(pool, () => mover, bus, eco, waves, MAP_1.hpMultiplier);
+  const wm = new WaveManager(
+    pool,
+    () => mover,
+    bus,
+    eco,
+    waves,
+    MAP_1.hpMultiplier,
+    undefined,
+    undefined,
+    endless,
+  );
   return { pool, bus, eco, mover, wm };
 }
 
@@ -308,5 +321,103 @@ describe('MAP1_WAVES — havuz uyumu', () => {
   it('en kalabalık dalga bile havuza sığıyor', () => {
     const enKalabalik = Math.max(...MAP1_WAVES.map(waveEnemyCount));
     expect(enKalabalik).toBeLessThanOrEqual(POOL_PREALLOC.enemy);
+  });
+});
+
+// ---------------------------------------------------------------------
+// M8-T06 — sonsuz mod
+// ---------------------------------------------------------------------
+
+describe('sonsuz mod — WaveManager listeyi bitirince durmuyor', () => {
+  /**
+   * `WaveManager` sonsuz modun **kurallarını** bilmiyor, yalnız sözleşmeyi.
+   * Bu yüzden burada küçük bir sahte kaynak yeter; gerçek üreticinin kendi
+   * kuralları `endlessWaves.test.ts`'te sınanıyor. Sahte kaynak ayrıca
+   * gerçek üreticinin "dalga ≥ 11" kısıtından da bağımsız — test 10 dalga
+   * koşturmak zorunda kalmıyor.
+   */
+  const kaynak: EndlessSource = {
+    waveAt: (n) => ({
+      index: n,
+      groups: [{ enemy: 'goblin', count: 2, spawnDelay: 0.1, startAt: 0, spawnPoint: 0 }],
+    }),
+    hpScaleAt: (n) => endlessHpScale(n + 9),
+  };
+
+  /** Tek dalgalık kısa liste — testi 10 dalga koşturmadan sonsuza taşıyor. */
+  const TEK: readonly Wave[] = [
+    { index: 1, groups: [{ enemy: 'goblin', count: 2, spawnDelay: 0.1, startAt: 0, spawnPoint: 0 }] },
+  ];
+
+  /**
+   * Bir dalgayı baştan sona koştur: önce hazırlık sayacını bitir (dalga
+   * başlasın), sonra dalga bitip hazırlığa dönene kadar ilerlet.
+   *
+   * `phase === 'prep'` ile başlandığı için "prep görünce dur" demek
+   * hiçbir şey koşturmadan dönmek olurdu — ilk yazımda tam bu oldu.
+   */
+  function dalgayiBitir(wm: WaveManager<SahteDusman>): void {
+    for (let i = 0; i < 4000 && wm.phase === 'prep'; i++) wm.update(50);
+    expect(wm.phase, 'dalga başlamadı').toBe('running');
+    for (let i = 0; i < 8000 && wm.phase === 'running'; i++) wm.update(50);
+    expect(wm.phase, 'dalga bitmedi').not.toBe('running');
+  }
+
+  it('gerçek üretici de takılıyor — sözleşme uyuşuyor', () => {
+    const gercek: EndlessSource = {
+      waveAt: (n) => generateEndlessWave(Math.max(11, n + 10), MAP_1.enemyRoster, 1),
+      hpScaleAt: (n) => endlessHpScale(n + 10),
+    };
+    const { wm } = kur(TEK, 40, KISA_YOL, gercek);
+    dalgayiBitir(wm);
+    expect(wm.phase).toBe('prep');
+    expect(wm.upcomingWave?.groups.length).toBeGreaterThan(0);
+  });
+
+  it('kaynak YOKSA eski davranış — son dalgadan sonra done', () => {
+    const { wm } = kur(TEK, 8);
+    for (let i = 0; i < 4000 && wm.phase !== 'done'; i++) wm.update(50);
+    expect(wm.phase).toBe('done');
+  });
+
+  it('kaynak VARSA dalga 2 üretiliyor, oyun bitmiyor', () => {
+    const { wm } = kur(TEK, 20, KISA_YOL, kaynak);
+    expect(wm.isEndless).toBe(false);
+    dalgayiBitir(wm);
+    expect(wm.phase).toBe('prep');
+    expect(wm.waveNumber).toBe(2);
+    expect(wm.isEndless).toBe(true);
+    expect(wm.upcomingWave?.index).toBe(2);
+    expect(wm.upcomingWave?.groups.length).toBeGreaterThan(0);
+  });
+
+  it('`upcomingWave` ÖNBELLEKLİ — telgraf ile doğan dalga aynı nesne', () => {
+    const { wm } = kur(TEK, 20, KISA_YOL, kaynak);
+    dalgayiBitir(wm);
+    expect(wm.upcomingWave).toBe(wm.upcomingWave);
+  });
+
+  it('sonsuz dalgada HP çarpanı haritanınkinin ÜSTÜNE biniyor', () => {
+    const { wm, pool } = kur(TEK, 30, KISA_YOL, {
+      waveAt: () => ({
+        index: 2,
+        groups: [{ enemy: 'goblin', count: 1, spawnDelay: 1, startAt: 0, spawnPoint: 0 }],
+      }),
+      // Ölçülebilir olsun diye sabit bir çarpan.
+      hpScaleAt: () => 3,
+    });
+    dalgayiBitir(wm);
+    // Hazırlık sayacı (`BALANCE.prepSeconds`) 50 ms'lik adımlarla dönüyor.
+    for (let i = 0; i < 2000 && pool.activeCount === 0; i++) wm.update(50);
+    const dusman = pool.activeItems()[0];
+    expect(dusman?.maxHp).toBe(GOBLIN.hp * MAP_1.hpMultiplier * 3);
+  });
+
+  it('dalga numarası KIRPILMIYOR — 11, 12, 13…', () => {
+    const { wm } = kur(TEK, 20, KISA_YOL, kaynak);
+    for (const beklenen of [2, 3, 4]) {
+      dalgayiBitir(wm);
+      expect(wm.waveNumber).toBe(beklenen);
+    }
   });
 });
