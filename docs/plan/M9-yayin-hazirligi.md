@@ -167,12 +167,34 @@ Dürüstlük için: aşağıdakiler bilerek dışarıda.
 
 ## Toplam
 
-| Faz | Emek | Engel mi |
-|---|---|---|
-| 1 · Portal SDK | 1-1,5 gün | **evet** |
-| 2 · Olay sayacı | 0,5 gün | kör yayına girmemek için |
-| 3 · Küratörlük cilası | 1 gün | hayır |
-| 4 · Doküman | 0,5 gün | hayır |
-| **Yayına kadar** | **~3,5 gün** | |
-| 5 · Bir hafta veri | — | |
-| 6 · İçerik | veriye göre | |
+| Faz | Emek | Engel mi | Durum |
+|---|---|---|---|
+| 1 · Portal SDK | 1-1,5 gün | **evet** | ✅ `dd7bd13` |
+| 2 · Olay sayacı | 0,5 gün | kör yayına girmemek için | ✅ `b0325ea` |
+| 3 · Küratörlük cilası | 1 gün | hayır | ✅ `51e14a2` |
+| 4 · Doküman | 0,5 gün | hayır | ✅ |
+| **Yayına kadar** | **~3,5 gün** | | **kod tarafı bitti** |
+| 5 · Bir hafta veri | — | | **sahibin işi** |
+| 6 · İçerik | veriye göre | | 5 bitmeden başlamaz |
+
+## Uygulamada ne değişti
+
+Planın öngörmediği ama uygulanırken çıkan üç şey — plan yanlış değildi,
+eksikti:
+
+1. **Faz 3'ün 3× maddesi iki gizli kusuru açığa çıkardı.** `HitStop` ve
+   `Particles` ikisi de `speed === 2` yazıyordu; 3× eklenince kural
+   **tersine dönüyordu** (en okunmaz hızda hit-stop geri geliyor,
+   parçacık tam yoğunluğa çıkıyordu). Sabit karşılaştırma yerine
+   `speed > 1` / hızın kendisi.
+2. **Faz 3'ün kayıt uyarısı maddesi yalnız "doğrulanacak" diyordu;
+   doğrulama uyarının hiç gösterilmediğini buldu.** `save:failed`
+   olayının dinleyicisi yoktu ve bildirim ilk başarısız *yazmaya*
+   bağlıydı — oysa `LocalStore` kurucuda zaten biliyor. İki düzeltme
+   birden gerekti (`fx/SaveWarning.ts` + `LocalStore` kurucusu).
+3. **Satış onayını yazarken bilgi panelinde bir yalan bulundu:** T2 kule
+   seçilince "Son kademe" yazıyordu, oysa menü tam o sırada iki T3 dalı
+   gösteriyor. Yeni "Dal seçimi" etiketi.
+
+Üçü de aynı desenin örneği: **kodu doğrulamak, kodu okumaktan farklı
+şey buluyor.**

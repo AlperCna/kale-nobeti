@@ -320,7 +320,8 @@ Kaynak: `src/data/abilities.ts` · `GAME-DESIGN.md` §8
 | `soldierDps` | 7 |
 | `lifetimeSeconds` | 20 |
 
-Beklemeler `scaledDelta` ile azalıyor — **2× hızda yarı sürede** doluyor.
+Beklemeler `scaledDelta` ile azalıyor — **hızlandırma açıkken o oranda**
+kısa sürede doluyor (2×'te yarısı, 3×'te üçte biri).
 HUD'da dairesel dolumla gösteriliyor; hazır olunca altın kenar bir kez parlıyor.
 Haritalar arası **sıfırlanıyor** (S49).
 
@@ -698,13 +699,13 @@ kapsamalı** noktaya kuruluyor.
 
 Kaynak: `src/fx/ScreenShake.ts`, `HitStop.ts`, `src/systems/Settings.ts`
 
-| Efekt | Değer | Ne zaman | 2× hızda |
+| Efekt | Değer | Ne zaman | hızlandırmada (2×/3×) |
 |---|---|---|---|
 | Ekran sarsıntısı | 0,12–0,25 sn, **yönlü**, üstel sönüm | Top patlaması, boss vuruşu, can kaybı | **açık** (S55) |
 | Hit-stop | 60–80 ms | Boss hasarı ve düşman ölümü | **kapalı** — akışı bozardı |
-| Squash & stretch | 1,3× yatay ezilme, 120 ms | Düşman ölürken | süre yarıya iner |
+| Squash & stretch | 1,3× yatay ezilme, 120 ms | Düşman ölürken | süre hız oranında kısalır |
 | Vinyet nabzı | 400 ms vermilyon | Can kaybı | **efekt ayarından bağımsız** — uyarı, süs değil |
-| Parçacık | en fazla 300 | Vuruş, ölüm, kule yerleşimi | yoğunluk **yarıya** iner |
+| Parçacık | en fazla 300 | Vuruş, ölüm, kule yerleşimi | yoğunluk **hız oranında** iner |
 | Altın sayacı | kalan farkın %18'i + en az 1, kare başına | Dalga sonu | aynı |
 
 Sarsıntı **rastgele yönlü değil** — darbe vektörü boyunca. Rastgele yön

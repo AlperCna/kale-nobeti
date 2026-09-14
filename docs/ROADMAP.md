@@ -233,16 +233,26 @@ Karşılaştırma için Kingdom Rush kampanyası 12 seviye + kahraman + meta ağ
 Kaynak: portal geliştirici panelleri (`docs/research/05-yayin-platformlari.md`).
 CrazyGames'in Full Launch geçişi zaten bunlara bakıyor.
 
-| Metrik | Nereden |
-|---|---|
-| Ortalama oturum süresi | Portal paneli |
-| Harita başına tamamlama oranı | Kendi olayımız (`wave:started` / kazanma) |
-| Nerede bırakıyorlar (harita ve dalga) | Kendi olayımız |
-| Dönüş oranı (retention) | Portal paneli |
-| Yıldız dağılımı | Kayıttan |
+| Metrik | Nereden | Durum |
+|---|---|---|
+| Ortalama oturum süresi | Portal paneli | bedava |
+| Harita başına tamamlama oranı | Kendi olayımız | ✅ `level/<harita>/{start,complete}` |
+| Nerede bırakıyorlar (harita ve dalga) | Kendi olayımız | ✅ `wave/<harita>/<dalga>` |
+| Dönüş oranı (retention) | Portal paneli | bedava |
+| Yıldız dağılımı | Kendi olayımız | ✅ `stars/<n>/complete` |
 
-İlk üçü için M7'de küçük bir olay sayacı gerekiyor — portal SDK'sına
-gömülü, kendi sunucumuz yok. `M7-SONUC.md` bunları taşır.
+**Olay sayacı `M9-T02`'de yazıldı** (plan M7 diyordu, yayın ertelenince
+M9'a kaydı): `systems/olcum.ts`. Kendi sunucumuz yok, olaylar Poki'nin
+`measure(category, what, action)` API'sine gidiyor ve onun `start` /
+`complete` / `fail` sözlüğünü kullanıyor — panelde hazır huni grafiği
+demek. CrazyGames v3'te karşılığı bulunamadı, o yapımda olaylar sessizce
+düşüyor (`Portal.olc` isteğe bağlı çağırıyor).
+
+Yıldız dağılımı da kayıttan değil olaydan geliyor: kayıt yalnız **bu**
+tarayıcıda duruyor, panel ise bütün oyuncuları topluyor.
+
+Koşu başına en çok **dört** olay gönderiliyor — her dalga için olay
+göndermek matrisin sormadığı bir şey ve ayrık değer sayısını şişirir.
 
 ### Teşhis matrisi — hangi sinyal hangi yöne
 
@@ -306,6 +316,27 @@ kararından** geldi; yukarıdaki teşhis matrisi hâlâ geçerli ama girdisi
 M8 bitti: 5 harita, 50 dalga, sonsuz mod, üç zorluk, 12 başarım, ilk
 indirme 0,93 MB. Sonuç defteri: [`results/M8-SONUC.md`](results/M8-SONUC.md).
 Yayın paketi hazır (`npm run package:itch`), yükleme sahibin işi.
+
+---
+
+## M9 — Yayın hazırlığı (plan: [`plan/M9-yayin-hazirligi.md`](plan/M9-yayin-hazirligi.md))
+
+M8 içeriği büyüttü ama **yayın hâlâ yapılmadı**, yani yukarıdaki teşhis
+matrisinin girdisi hâlâ yok. M9 tam olarak o boşluğu kapatıyor: portalın
+istediği şeyleri yapıp matrisin okuyacağı sinyalleri göndermek.
+
+| Faz | Ne | Durum |
+|---|---|---|
+| 1 | Portal SDK katmanı — `gameplayStart`/`gameplayStop`/`commercialBreak` | ✅ `systems/Portal.ts` |
+| 2 | Olay sayacı — matrisin üç sinyali | ✅ `systems/olcum.ts` |
+| 3 | Küratörlük cilası — 3× hız, satış onayı, kayıt uyarısı | ✅ |
+| 4 | Doküman tazeleme | ✅ bu satır |
+| 5 | **Yayınla, sonra en az bir hafta bekle** | sahibin işi |
+| 6 | İçeriği teşhis matrisi seçsin | 5 bitmeden başlamaz |
+
+Faz 5–6'nın sırası **bu kez izlenecek**: M8'de atlandığı yazılı, sebebi
+de yazılı (sahibin kararı). Faz 6 için plan yazmak, Faz 5'in verisi
+gelmeden `docs/plan/` kuralının ihlali olur.
 
 ---
 
