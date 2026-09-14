@@ -2,7 +2,6 @@ import Phaser from 'phaser';
 import { t } from '../util/i18n';
 import { OrientationGate } from '../fx/OrientationGate';
 import { createParchmentButton, addPressFeedback } from '../fx/ParchmentFrame';
-import { PreloadScene } from './PreloadScene';
 
 const MARGIN = 20;
 const BTN = 56;
@@ -18,22 +17,38 @@ const BTN = 56;
  * - Tam ekran düğmesi her ekranda aynı yerde durmalı; beş sahneye ayrı
  *   ayrı eklemek beş kopya ve beş kez unutma riski demekti.
  *
- * `BootScene` bunu `launch` ile başlatıyor ve **hiç durdurulmuyor**.
- * Sahne listesinde en sonda kayıtlı, yani her zaman en üstte çiziliyor.
+ * `MenuScene.create()` bunu `launch` ile başlatıyor ve **hiç
+ * durdurulmuyor**. Sahne listesinde en sonda kayıtlı, yani her zaman en
+ * üstte çiziliyor.
+ *
+ * **Kendi `preload`'u yok — bilerek.** `Menu.create()` çalıştığında atlas
+ * zaten yüklü (o sahnenin kendi `preload`'u), yani bu sahnenin aynı
+ * varlığı ikinci kez istemesine gerek yok. İlk yazımda `Boot`'tan
+ * başlatılıyordu ve bu yüzden kendi `preload`'u vardı.
  *
  * TIER 1 kural 7: metin yok denecek kadar az ve bir kez yazılıyor.
  */
+/**
+ * Dil değişince katmanı yeniden kurar — `M8-T15` canlı kontrolü.
+ *
+ * `Overlay` bir kez başlatılıp hiç durdurulmuyor, yani dil değiştiğinde
+ * **kendiliğinden yeniden kurulmuyordu**: üretim yapısında arayüz
+ * İngilizceye geçerken tam ekran düğmesinin etiketi "Tam ekran" olarak
+ * kalıyordu (ekran görüntüsüyle görüldü). Dil değişimini uygulayan iki
+ * yer (`Menu` ve `Hud` ayar panelleri) bunu da çağırıyor.
+ *
+ * Sahnenin **dışında** duran bir fonksiyon: çağıranlar `Overlay`
+ * sınıfını tanımak zorunda kalmasın, yalnız bu yardımcıyı.
+ */
+export function yenidenKurOverlay(scene: Phaser.Scene): void {
+  if (scene.scene.isActive('Overlay')) scene.scene.get('Overlay').scene.restart();
+}
+
 export class OverlayScene extends Phaser.Scene {
   #gate?: OrientationGate;
 
   constructor() {
     super('Overlay');
-  }
-
-  preload(): void {
-    // Parşömen düğmesi atlas karesi istiyor. `MenuScene` ile aynı gerekçe
-    // (`PreloadScene.queueAtlas` yorumu): olmadan `__MISSING` dokusu çıkar.
-    PreloadScene.queueAtlas(this);
   }
 
   create(): void {

@@ -845,12 +845,12 @@ kule + kışla + asker + dalga akışı sorunsuz; ses önbelleği beklendiği gi
 bölünüyor (harita açılışında `shot_okcu` var, `victory`/`boss_intro` yok;
 dalga 1 bitince üçü de geliyor).
 
-### Faz 15 — Yayın hazırlığı — `M8-T15`
+### Faz 15 — Yayın hazırlığı — `M8-T15`  ☑
 
 | | |
 |---|---|
 | **Kimlik** | `M8-T15` |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ **bitti** (2026-09-14) |
 | **Süre** | ~45 dk |
 | **Önkoşul** | tüm fazlar |
 | **Doküman** | `M7-itchio-yayin-brifi.md` · `results/README.md` |
@@ -862,6 +862,53 @@ dalga 1 bitince üçü de geliyor).
 - `docs/results/M8-SONUC.md`, `ROADMAP.md`/`plan/README.md` güncel.
 
 **Kabul kriteri** — `unzip -l kale-nobeti-itch.zip | head` ilk satırda `index.html`; `npx serve dist` 4 seviye derin yoldan açılıyor.
+
+**Durum:** ☑ **bitti** (2026-09-14)
+
+#### Sonuç — `M8-T15`
+
+**`scripts/package-itch.mjs`** — `dist/` içeriğini **kökte `index.html`**
+olacak şekilde zip'liyor. itch.io HTML yüklemesi zip'in kökünde
+`index.html` arıyor; bir klasör içinde yüklenirse oyun sayfası **boş
+çıkıyor ve hata vermiyor**. Zip, Node'un kendi `zlib`'iyle elle yazıldı —
+`archiver` gibi bir paket `CLAUDE.md`'nin "harici bağımlılık eklemeden
+önce sor" kuralına takılırdı. Çıktı: **5,15 MB, 36 dosya**, ilk giriş
+`index.html`, `zipfile.testzip()` ile geçerliliği doğrulandı.
+
+**Dört seviye derin yol sağlaması geçti:** `dist/` bir `a/b/c/d/` ağacına
+kopyalanıp servis edildi; **bütün** istekler (`assets/index-*.js`, dört
+font, atlas, arka plan, müzik) `200` döndü ve oyun açıldı. `base: './'`
+çalışıyor.
+
+**Konsol tamamen sessiz.** Bu yolda bir yanlış alarm yaşandı ve kaydı
+burada: eski sekmede `Texture key already in use: atlas` görünüyordu ve
+yeni `OverlayScene`'in atlası ikinci kez yüklemesine yordum. **Temiz bir
+sekmede üretim yapısı tek bir mesaj bile basmıyor** — o hatalar
+tarayıcı panelinin *önceki dev oturumundan* kalan tampon kayıtlarıydı
+(elle onlarca kez sahne yeniden başlatmıştım). Tanı için eklenen geçici
+log kaldırıldı ve yanlış sebebi anlatan yorumlar **düzeltildi**.
+`Overlay`'in `Menu`'den başlatılması yine de korundu, ama artık kendi
+gerekçesiyle: böylece hiçbir şey yüklemesi gerekmiyor.
+
+**Canlı kontrolün bulduğu gerçek hata:** `Overlay` bir kez başlatılıp hiç
+durdurulmadığı için **dil değişiminde yeniden kurulmuyordu** — arayüz
+İngilizceye geçerken tam ekran düğmesinin etiketi "Tam ekran" olarak
+kalıyordu (ekran görüntüsüyle görüldü). Dili uygulayan iki yer (`Menu` ve
+`Hud` ayar panelleri) artık katmanı da yeniden kuruyor; doğrulandı
+("Fullscreen").
+
+**İki dilde QA turu** üretim yapısında yapıldı: menü, ayarlar (altı
+satır), seviye seçim (zorluk satırı, beş kart, kilit metni), harita, yapı
+menüsü, rol şeridi, öğretici ipucu. Çeviri boşluğu görülmedi.
+
+**Yazılanlar:** `docs/results/M8-SONUC.md` (taş sonuç defteri —
+*ölçümün planı değiştirdiği beş yer*), `docs/results/M8-itchio-sayfa.md`
+(sayfa metni tr/en + yükleme ayarları), `docs/results/M8-T14-boyut.md`.
+`ROADMAP.md` ve `plan/README.md` güncellendi.
+
+**Yapılmayan:** ekran görüntüleri ve yüklemenin kendisi. İkisi de sahibin
+işi — hesap girişi yapılmıyor ve ikili dosya üretilmiyor; brif
+`M8-itchio-sayfa.md` içinde hangi altı kareye ihtiyaç olduğu yazılı.
 
 ---
 

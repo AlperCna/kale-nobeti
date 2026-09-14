@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "vite build && node scripts/report-size.mjs && node scripts/kurallar.mjs",
     "preview": "vite preview",
+    "package:itch": "node scripts/package-itch.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "guard": "node scripts/guard-rules.mjs",

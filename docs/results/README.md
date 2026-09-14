@@ -83,3 +83,11 @@ Sonuç yazıldıktan sonra **üç yerde güncelleme** yapılır:
 
 Üçüncüsü en çok atlanan. Sonuç dosyası bir çöp kutusu değil; içindeki her
 kalıcı bilgi bir kaynak dokümana taşınmalı.
+
+## M8 — Genişleme (2026-09-14)
+
+| Dosya | İçerik |
+|---|---|
+| [M8-SONUC.md](M8-SONUC.md) | Taşın sonuç defteri — **ölçümün planı değiştirdiği beş yer** |
+| [M8-T14-boyut.md](M8-T14-boyut.md) | Paket boyutu önce/sonra (1,10 → 0,93 MB) |
+| [M8-itchio-sayfa.md](M8-itchio-sayfa.md) | itch.io sayfa metni (tr/en) ve yükleme ayarları |
