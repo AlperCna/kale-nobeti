@@ -197,3 +197,30 @@ sürmez.
 **Tek atışlık efektler ≤ 0,5 sn.** Yalnız `wave_start`, `victory`,
 `defeat`, `boss_intro` gibi **olay** sesleri daha uzun olabilir.
 Biçim değişmedi: `.m4a` (AAC).
+
+---
+
+## Değişen tasarım kararı: oyun müziği **harita açılır açılmaz** başlıyor
+
+Bu brif "oyun içinde, dalga 1 bittikten sonra devreye giriyor" diyordu.
+**Kullanıcının kararıyla değişti**: müzik artık harita açılır açılmaz
+çalıyor.
+
+Gerekçe, ölçülen zaman çizgisi:
+
+```
+menü            music_menu (tarayıcı otomatik oynatmaya izin verirse)
+haritaya giriş  menü müziği susuyor -> SESSİZLİK
+dalga 1         sessiz (eski tasarım)
+dalga 1 bitti   music_game O AN indirilmeye başlıyor — 2,8 MB
+```
+
+Menü müziğinin otomatik oynatma kilidine takılmasıyla birleşince oyunun
+**ilk dakikası büsbütün sessiz** kalıyordu ve oyuncu bunu "müzik
+gelmiyor" diye bildirdi.
+
+İki değişiklik: indirme haritaya girişte başlıyor (eskiden dalga 1
+bitince) ve çalma dalga 1'i beklemiyor.
+
+`Y05` etkilenmedi — müzik hâlâ **ilk indirmenin dışında**, ilk indirme
+0,86 MB'da sabit.
