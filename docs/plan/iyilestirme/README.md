@@ -74,7 +74,7 @@ Emek/etki oranına göre. **Üstteki üçü açık ara en yüksek getirili.**
 | 19 | [Y02 · `Pool.activeItems()` kare başına 7 dizi](Y02-pool-activeitems-tahsis.md) | başarım | ☑ **Adım 1 yapıldı** | orta |
 | 20 | [Y09 · Öğretici / yönlendirme yok](Y09-ogretici-yok.md) | UX | ☑ **düzeltildi** | **yüksek** |
 | 21 | [Y01 · `GameScene.ts` 1749 satır](Y01-gamescene-bolme.md) | mimari | ☑ **tamamlandı (3/3)** | orta-yüksek |
-| 22 | [Y11 · Phaser tam yapımı paketleniyor](Y11-phaser-tam-yapim.md) | boyut | orta-büyük | **belirsiz — önce ölç** |
+| 22 | [Y11 · Phaser tam yapımı paketleniyor](Y11-phaser-tam-yapim.md) | boyut | orta-büyük | **☑ yapıldı — ham JS −%26,5** |
 
 ---
 

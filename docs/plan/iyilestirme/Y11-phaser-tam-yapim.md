@@ -1,5 +1,29 @@
 # Y11 · Phaser tam yapımı — kullanılmayan fizik ve tilemap pakete giriyor
 
+> **☑ YAPILDI.** Özel yapım üretildi ve ölçüldü: uygulama paketi
+> **1.177,7 → 864,8 KB** ham JS, gzip 324,8 → 242,0, ilk indirme
+> 0,93 → 0,86 MB. Tam yapımdan bu yana kümülatif **−%26,5**.
+> Sonuç ve elle turun kapsamı: `docs/results/M8-SONUC.md` "`Y11`"
+> bölümü · sayılar `docs/results/OLCUMLER.md` "Paket boyutu".
+>
+> **Aşağıdaki analiz olduğu gibi bırakıldı** — hangi kararın hangi
+> gerekçeyle alındığı ancak öncesiyle birlikte okunuyor. İki yerde
+> yanıldığı ortaya çıktı:
+>
+> 1. **Webpack gerekmedi.** Dosya "Phaser deposunun kendi webpack
+>    yapılandırmasıyla özel yapım üretmek" diyordu. Onun yerine
+>    `src/vendor/phaser-custom.js` — çekirdekten başlayıp kullanılan
+>    modülleri geri ekleyen bir **giriş modülü**; Vite derliyor.
+> 2. **"Elle üretilip depoya atılan bir `phaser-custom.js` kabul
+>    edilmez"** maddesi karşılandı ama beklenenden farklı biçimde:
+>    depoya giren şey derlenmiş paket değil, kaynak ağacından `import`
+>    eden bir giriş modülü. Paket `node_modules/.phaser-custom/` altında
+>    üretiliyor ve `.gitignore`'da.
+>
+> Dosyanın **asıl sorusu hâlâ açık:** ayrıştırma süresi kazancı.
+> `Y10`'un CPU kısıtlı ölçümü yapılmadı; boyut kazancı ondan bağımsız
+> olarak alındı çünkü "kazanç tahmin" itirazı ölçümle kapanabiliyordu.
+
 | | |
 |---|---|
 | **Tür** | Yapısal — paket boyutu / ayrıştırma süresi |
