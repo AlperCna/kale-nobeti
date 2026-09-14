@@ -733,3 +733,52 @@ Canvas'ın rasterleştirmesi ise CPU'ya daha az bağlı.
 makinede WebGL daha iyi. Ama artık **ölçülmüş bir kol** var: hedef
 cihazda FPS 45'in altına düşerse (`RISKS.md` R13 erken uyarısı) Canvas'a
 geçmek ~%32 kare maliyeti kazandırıyor ve bu tahmin değil.
+
+---
+
+## Ses: ölüm kısıtı ve efekt kesilmesi (`M8-B03`)
+
+**Senaryo:** harita 3, 10 kuleli karışık tahta T3'e kadar yükseltilmiş,
+efekt Tam, dalga 1→10'un tamamı, Meteor eşzamanlı ölüm zorlamak için
+kalabalığa atıldı. Sonda: `enemy:killed` olayları ile `enemy_death`
+`play()` çağrıları **aynı zaman çizgisine** kaydedildi.
+
+| # | Büyüklük | Değer |
+|---|---|---|
+| S1 | Ölüm olayı | **77** |
+| S2 | Çalan ölüm sesi | **75** |
+| S3 | Kısıtın yuttuğu | **2** (%3) |
+| S4 | 80 ms'den yakın ölüm çifti | **2** |
+| S5 | Ölümler arası aralık | min **0 ms** · p5 147 · medyan 1837 |
+| S6 | `enemy_death` kesilmesi | **%0** |
+
+**S3 = S4.** Kısıt tam olarak tasarlandığı şeyi yutuyor: yalnız 80 ms
+içinde ölen ikinci düşmanın sesini. Meteor'un eşzamanlı öldürdüğü
+gruplarda bile (aralık 0 ms) kayıp %3'te kaldı.
+
+→ **Ölüm sesinde kusur yok.** `ENEMY_DEATH_THROTTLE_MS = 80` değişmedi.
+
+### Atış sesi — havuz 3→6 değişiminin ölçülen etkisi
+
+| ses | kesilme (havuz 3) | kesilme (havuz 6) |
+|---|---|---|
+| `shot_okcu` | **%100** | **%62** |
+| `shot_buyu` | — | %16 |
+| `shot_top` | — | %0 |
+
+Havuz artışı ölçülebilir kazanç verdi ama `shot_okcu` hâlâ %62 kesiliyor:
+dosya **2,25 sn** ve kesilmemesi için ~10 eşzamanlı kopya gerekirdi.
+Kalan kök neden dosya uzunluğu (`M6-ses-uretim-brifi.md`).
+
+### Sondanın kendi hatası — kayda geçsin
+
+İlk okumalar "12 ölüm → 0 ses" ve "3 ölüm → 0 ses" dedi ve **yanlıştı.**
+Sonda `g.sound.sounds` içindeki örnekleri tek tek sarmalıyordu;
+`restartGame` ses havuzunu yok edip yeniden yarattığında yeni örnekler
+sarmalanmamış kalıyor ve çalan sesler sayılmıyordu. Düzeltme:
+`SoundManager.add` sarmalandı, yani o andan sonra yaratılan her ses
+otomatik izleniyor. Aynı senaryo düzeltilmiş sondayla 14 ölüm → 14 ses
+verdi.
+
+Ders: **havuzlanan nesneleri ölçerken sondayı örneğe değil, örneği
+üreten çağrıya bağla.**
