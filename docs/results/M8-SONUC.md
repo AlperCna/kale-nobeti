@@ -97,6 +97,58 @@ Kapsama, bütçe, Kısıt A/B testlerinin hiçbiri **HUD'u** bilmiyor:
 | `Y10` / `Y02` adım 3 | Kullanıcının DevTools CPU kısıtlama ölçümünü bekliyor |
 | Toplanma noktası **sürükleme** jesti | Tarayıcı panelinde sınanamadı; dokunmayla taşıma eklendi ve sınandı |
 
+## M8 sonrası doğrulama turu (aynı gece)
+
+Plan bitince uçtan uca bir hata avı yapıldı. Bulunanlar:
+
+### Gerçek hatalar (düzeltildi)
+
+1. **Dinleyici sızıntısı.** `OrientationGate` `scale.on(RESIZE)` ve
+   `OverlayScene` `scale.on(FULLSCREEN_UNSUPPORTED)` kaydediyor, hiçbiri
+   kaldırılmıyordu. `scale` **oyun geneli** bir yayıcı — sahne kapanışı
+   onu temizlemiyor. `Overlay` dil değişiminde yeniden kurulduğu için her
+   dil değişimi bir dinleyici daha bırakıyordu (ölçüldü: dört yeniden
+   kurulumda 13 → 17). Düzeltildikten sonra beş yeniden kurulumda 13 → 13.
+2. **Yıldız okunmuyor — üçüncü kez.** Kazanılmış yıldızın atlas karesi
+   altın konturlu ama içi mürekkep dolgu; mürekkep zeminde boş görünüyor.
+   `M8-T04` (seviye seçim) ve `M8-T07` (başarım listesi) turlarında
+   çözülmüştü; **oyun sonu ekranı** atlanmıştı ve gerçek bir zaferde
+   ★★☆ yerine üç boş yıldız göründü.
+3. **Dil değişimi `Overlay`'i güncellemiyordu** — arayüz İngilizceye
+   geçerken tam ekran düğmesi "Tam ekran" kalıyordu.
+
+### Ölçülen ama hata olmayanlar
+
+- **Sekiz noktaya da okçu koyan otomatik oyuncu dalga 10'da kaybetti**
+  (boss zırh 10, okçu fiziksel). Aynı otomat karışık tahtayla (büyü/top/
+  okçu) **19/20 canla kazandı**. Tek aileye yığmak cezalandırılıyor —
+  tasarımın çalıştığının kanıtı.
+- **Sonsuz modun eğrisi ~40. dalgada düzleşiyor** (pencere ortalamaları
+  7,2 → 32,7 → 40,1 → ~42 ve sabit). Doyum değeri başlangıç canının iki
+  katı olduğu için oyuncunun hiç göremeyeceği bir bölgede; ölçüm
+  `data/endless.ts` başlığına ve `endlessSim.test.ts`'e yazıldı.
+- **Sahne yeniden başlatma temiz**: altı `Game` yeniden başlatmasında
+  shutdown dinleyicisi 13'te, havuz kapasitesi 60'ta sabit, `bus.clear()`
+  başlatma başına tam bir kez.
+
+### Araç kaynaklı, oyun hatası olmayan üç şey
+
+Browser pane'in `left_click_drag`'i Phaser'ın girdi sistemine hiç
+ulaşmıyor; `computer.key` olayları `keyCode` taşımadığı için ESC
+duraklatmayı tetiklemiyor (elle `keyCode` verilen olayla **çalışıyor**);
+konsol tamponu sekme başına olduğu için eski dev oturumunun hataları yeni
+sanılabiliyor. Üçü de doğrulandı ve ayrı tutuldu — hiçbiri için kod
+değiştirilmedi.
+
+### Yeni testler
+
+| Dosya | Ne sınıyor |
+|---|---|
+| `kayitPaylasimi.test.ts` | **Beş sistemin** aynı `localStorage` anahtarını bozmadan paylaşması |
+| `endlessSim.test.ts` | Üretilen sonsuz dalgaların **oynandığında** ne yaptığı |
+
+Test sayısı 855 → **864**.
+
 ## Yayın paketi
 
 `npm run package:itch` → `kale-nobeti-itch.zip` (5,15 MB, 36 dosya,
