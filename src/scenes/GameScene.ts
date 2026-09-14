@@ -698,55 +698,60 @@ export class GameScene extends Phaser.Scene {
       if (import.meta.env.DEV) console.info(`[can] kalan ${remaining}`);
     });
 
-    // M6-T11 — dalga 1 boyunca sessiz (brif: "oyun içinde, dalga 1
-    // bittikten sonra devreye giriyor"), menü müziği burada susuyor.
-    this.sound.stopByKey('music_menu');
-
     /**
-     * Oyun müziği dalga 1 boyunca **indiriliyor**, dalga 1 bitince
-     * **çalıyor** — ikisi ayrı an.
+     * Oyun müziği **harita açılır açılmaz** başlıyor.
      *
-     * Oyuncu geri bildirimi: savaş kısmında müzikle "böyle bir olay"
-     * vardı. Zaman çizgisi ölçüldü:
+     * Eskiden dalga 1 bitene kadar sessizdi (`M6-T11` brifi: "oyun
+     * içinde, dalga 1 bittikten sonra devreye giriyor"). Ölçülen zaman
+     * çizgisi şuydu:
      *
-     *   menü            music_menu (otomatik oynatma izin verirse)
+     *   menü            music_menu
      *   haritaya giriş  menü müziği susuyor -> SESSİZLİK
      *   dalga 1         sessiz (tasarım)
      *   dalga 1 bitti   music_game O AN indirilmeye başlıyor — 2,8 MB
      *
-     * Yani tasarımın istediği sessizliğin **üstüne** bir de indirme
-     * gecikmesi biniyordu. İndirme öne alındı: dalga 1 oynanırken
-     * arka planda geliyor, bittiğinde çalmaya hazır.
+     * Menü müziğinin tarayıcı otomatik oynatma kilidine takılmasıyla
+     * birleşince oyunun **ilk dakikası büsbütün sessiz** kalıyordu ve
+     * oyuncu bunu "müzik gelmiyor" diye bildirdi. İki düzeltme yapıldı:
+     * indirme öne alındı (aşağıda) ve **kullanıcının kararıyla** dalga 1
+     * beklemesi kaldırıldı.
      *
      * `Y05` ile çelişmiyor: `Y05` müziği **ilk indirmeden** çıkarmıştı
-     * ve o hâlâ öyle — burası oyun çoktan başladıktan sonrası, ilk
-     * indirme ölçümüne girmiyor.
+     * ve o hâlâ öyle — burası oyun başladıktan sonrası, ilk indirme
+     * ölçümüne (0,86 MB) girmiyor.
      *
-     * `musicScale <= 0` ise hiç indirilmiyor (`Y04`'ün bedava kazancı,
-     * `MenuScene`'deki aynı desen).
+     * `musicScale <= 0` ise dosya **hiç indirilmiyor** (`Y04`'ün bedava
+     * kazancı, `MenuScene`'deki aynı desen).
      */
-    if (this.settings.musicScale > 0 && !this.cache.audio.exists('music_game')) {
-      PreloadScene.queueBackground(this);
-      this.load.start();
-    }
+    this.sound.stopByKey('music_menu');
 
-    this.bus.on('wave:ended', ({ index }) => {
-      if (index !== 1) return;
-      if (this.settings.musicScale <= 0) return;
-      const basla = (): void => {
+    if (this.settings.musicScale > 0) {
+      const cal = (): void => {
         this.sound.play('music_game', {
           loop: true,
           volume: MUSIC_BASE_VOLUME * this.settings.musicScale,
         });
       };
       if (this.cache.audio.exists('music_game')) {
-        basla();
+        cal();
       } else {
-        // İndirme henüz bitmediyse bittiğinde başlasın. Kuyruğa yukarıda
-        // girdi; burada yalnız beklemek kaldı.
-        this.load.once('filecomplete-audio-music_game', basla);
+        /**
+         * Gecikmeli yolda **sahne hâlâ açık mı** diye bakılıyor: dosya
+         * 2,8 MB ve gelene kadar oyuncu haritadan çıkmış olabilir;
+         * çıkmışsa oyun müziği menüde çalmaya başlamamalı.
+         *
+         * Koruma yalnız BURADA. Anlık yola da konduğunda yeniden
+         * başlatmada müzik hiç çalmadı (ölçüldü: üç `restartGame`'de
+         * çalan kopya 1 → 0, 0, 0) — `create()` çalışırken sahne henüz
+         * `isActive` değil.
+         */
+        this.load.once('filecomplete-audio-music_game', () => {
+          if (this.scene.isActive()) cal();
+        });
+        PreloadScene.queueBackground(this);
+        this.load.start();
       }
-    });
+    }
 
     // `once`, `on` DEĞİL. Phaser kaynağı (Systems.js):
     //   - `shutdown()` yalnız SHUTDOWN yayar, dinleyicileri KALDIRMAZ
