@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import { FRAME_CORNER, FRAME_EDGE, FRAME_MIDDLE } from '../data/spriteFrames';
+import { getSettings } from '../systems/Settings';
+import { UI_CLICK } from '../data/audio';
 
 /**
  * P02 tezhipli parşömen çerçevesi — 9-slice.
@@ -111,6 +113,43 @@ const PRESS_SCALE = 0.98;
 export function addPressFeedback(container: Phaser.GameObjects.Container): void {
   container.on('pointerover', () => container.setScale(HOVER_SCALE));
   container.on('pointerout', () => container.setScale(1));
-  container.on('pointerdown', () => container.setScale(PRESS_SCALE));
+  container.on('pointerdown', () => {
+    container.setScale(PRESS_SCALE);
+    uiTiklamaSesi(container.scene);
+  });
   container.on('pointerup', () => container.setScale(HOVER_SCALE));
+}
+
+/**
+ * `M8-P03` — arayüz tıklama sesi.
+ *
+ * ## Neden `SoundSystem` değil
+ *
+ * `SoundSystem` yalnız `GameScene` içinde yaşıyor ve havuzlu: o havuz
+ * saniyede ~20 atışın tahsisini önlemek için var (`M8-T01`'de ölçülen 2×
+ * kasmasının kök nedeni). Arayüz tıklaması **saniyede yirmi kez olmuyor**;
+ * tek atışlık `sound.play` yeterli ve karşılığında menü, seviye seçim,
+ * başarımlar, nasıl oynanır ve duraklatma menüsü ses sistemine hiç
+ * bağlanmak zorunda kalmıyor.
+ *
+ * ## Neden `addPressFeedback` içinde
+ *
+ * Bu yardımcı zaten tam olarak **arayüz kromu** düğmelerine takılıyor
+ * (menü, tam ekran, duraklatma menüsü). Yapı menüsü ve yetenek düğmeleri
+ * onu kullanmıyor — onların kendi sesleri var (`tower_place`, `error`) ve
+ * üstüne bir tıklama sesi bindirmek iki sesi birden anlamsızlaştırırdı.
+ *
+ * ## Dosya henüz yok
+ *
+ * `cache.audio.has` koruması `Y14` deseninin aynısı: ses üretilene kadar
+ * bu çağrı **hiçbir şey yapmıyor**, dosya gelince koda dokunmadan
+ * çalışmaya başlıyor. Yükleme kuyruğuna eklenmesi de o zaman —
+ * var olmayan bir dosyayı kuyruğa koymak 404 ve konsol çıktısı demek
+ * (`CLAUDE.md` Platform: yayın yapısında konsol çıktısı bulunmaz).
+ */
+function uiTiklamaSesi(scene: Phaser.Scene): void {
+  if (!scene.cache.audio.has(UI_CLICK)) return;
+  const olcek = getSettings(scene).sfxScale;
+  if (olcek <= 0) return;
+  scene.sound.play(UI_CLICK, { volume: olcek });
 }

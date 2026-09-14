@@ -46,3 +46,13 @@ export const SFX_POOL_PER_KEY = 3;
  * bununla **çarpılıyor**, yani "Müzik: Düşük" = 0,5 × 0,35.
  */
 export const MUSIC_BASE_VOLUME = 0.5;
+
+/**
+ * Arayüz tıklama sesinin anahtarı — `M8-P03`.
+ *
+ * Dosya (`audio/sfx/ui_click.m4a`) **henüz üretilmedi**; çalan taraf
+ * (`fx/ParchmentFrame.addPressFeedback`) anahtarı önbellekte bulamazsa
+ * sessizce geçiyor. Üretilince yükleme kuyruğuna da eklenecek —
+ * `PreloadScene.SFX_ERKEN`, çünkü ilk duyulduğu yer ana menü.
+ */
+export const UI_CLICK = 'ui_click';
