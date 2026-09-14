@@ -16,6 +16,8 @@ import type { RunStatsData } from '../systems/RunStats';
 import type { RunEndContext } from '../systems/AchievementSystem';
 
 const INK = 0x14203a;
+/** Yıldız bandının zemini — bkz. yıldız bloğundaki gerekçe. */
+const PARSOMEN = 0xe4d3a8;
 
 export interface GameOverData {
   readonly won: boolean;
@@ -134,6 +136,13 @@ export class GameOverScene extends Phaser.Scene {
     if (won && this.#data.endless !== true) {
       const yildizSayisi = this.#yildiz(lives);
       const ADIM = 44;
+      // Parşömen altlık — **üçüncü kez** aynı sorun (`M8-T04` seviye seçim
+      // kartları, `M8-T07` başarım listesi, şimdi burası): kazanılmış
+      // yıldızın atlas karesi altın konturlu ama **içi mürekkep dolgu**
+      // (ölçüldü `#14213B`), ve bu ekranın zemini de mürekkep. Canlı
+      // ekran görüntüsünde üç yıldız da boş görünüyordu — 2 yıldızlık bir
+      // zafer 0 yıldız gibi okunuyordu.
+      this.add.rectangle(width / 2, UST + 104, 3 * ADIM + 20, 48, PARSOMEN, 0.85);
       for (let i = 0; i < 3; i++) {
         this.add
           .image(
