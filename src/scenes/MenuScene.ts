@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { yenidenKurOverlay } from './OverlayScene';
 import { t } from '../util/i18n';
 import { getSettings } from '../systems/Settings';
 import { PreloadScene } from './PreloadScene';
@@ -51,6 +52,19 @@ export class MenuScene extends Phaser.Scene {
    */
   create(data?: { readonly settingsOpen?: boolean }): void {
     const { width, height } = this.scale;
+
+    // `M8-T12` — oyunun üstünde sürekli duran katman (tam ekran düğmesi,
+    // yatay çevirme perdesi). Bir kez başlatılıp hiç durdurulmuyor.
+    //
+    // **`BootScene`'den değil buradan.** İlk yazımda `Boot`, `Preload`'un
+    // yanına başlatıyordu ve `Overlay`'in kendi `preload`'unda atlası
+    // kuyruğa alması gerekiyordu — iki sahnenin aynı varlığı istemesi.
+    // Buradan başlatılınca atlas `Menu.preload` sayesinde **zaten**
+    // yüklü ve `Overlay`'in hiçbir şey yüklemesi gerekmiyor.
+    //
+    // Kaybedilen: hazırlık ekranının o 1-2 saniyesinde yatay çevirme
+    // perdesi yok. Kazanılan: tek yükleme sahibi. Takas bilinçli.
+    if (!this.scene.isActive('Overlay')) this.scene.launch('Overlay');
 
     // M6-T05 — ilk izlenim ekranı. Kompozisyon üst-orta boşluk bırakacak
     // şekilde üretildi (bkz. görsel brifi): gökyüzü üstte açık, kale
@@ -189,6 +203,7 @@ export class MenuScene extends Phaser.Scene {
       },
       () => {
         this.scene.restart({ settingsOpen: true });
+        yenidenKurOverlay(this);
       },
     );
 

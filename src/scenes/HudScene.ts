@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { yenidenKurOverlay } from './OverlayScene';
 import type { SoundSystem } from '../fx/SoundSystem';
 import type { GameScene } from './GameScene';
 import type { Speed } from '../types/common';
@@ -182,6 +183,7 @@ export class HudScene extends Phaser.Scene {
         // Dil değişti: çevrili her etiket yeniden üretilmeli. Panel de
         // çevrili, o yüzden açık kalsın diye veriyle birlikte gidiyor.
         this.scene.restart({ speed: this.#speed, settingsOpen: true });
+        yenidenKurOverlay(this);
       },
     );
     // Başlangıçta da uygula: kayıtlı tercih ve prefers-reduced-motion.

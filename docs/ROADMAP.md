@@ -294,6 +294,19 @@ dördüncü harita hiç görülmez.
 5. **O zaman** M8'in planını yaz — `docs/plan/` kuralı gereği, önceki taş
    bitmeden sonraki planlanmaz
 
+### Ne oldu (2026-09-14)
+
+**Bu sıra izlenmedi ve sebebi yazılı.** Sahip yayını erteledi
+(`M7-T11` → M8 sonu) ve önce içeriği büyütmeyi seçti: *"oyunu daha çok
+geliştirmek gerekir, seviye sayısını artırmak, güzelleştirme yapmak,
+hataları gidermek"*. Yani M8'in yönü portal metriğinden değil, **sahibin
+kararından** geldi; yukarıdaki teşhis matrisi hâlâ geçerli ama girdisi
+(bir haftalık veri) hiç toplanmadı.
+
+M8 bitti: 5 harita, 50 dalga, sonsuz mod, üç zorluk, 12 başarım, ilk
+indirme 0,93 MB. Sonuç defteri: [`results/M8-SONUC.md`](results/M8-SONUC.md).
+Yayın paketi hazır (`npm run package:itch`), yükleme sahibin işi.
+
 ---
 
 ## Claude Code komut şablonu
