@@ -20,7 +20,7 @@ import ffmpegYolu from 'ffmpeg-static';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { mkdir, writeFile, stat } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 const execFileAsync = promisify(execFile);
@@ -318,14 +318,88 @@ function sesKaynagiBul(ad) {
  */
 const KIRPMA_KISILMA_SN = 1.2;
 
+/**
+ * Sesin **başındaki sessizliği** bulur — `M8-B03`.
+ *
+ * Oyuncu geri bildirimi: *"okçunun ok atma sesi 2×'te gelmiyor, sonradan
+ * geliyor"*. Sebep havuzda değil **dosyada**: `shot_okcu.wav`'ın ilk
+ * **1,59 saniyesi tamamen boş**, ses 1,60'ta başlıyor. Yani ok atışı
+ * gerçekten bir buçuk saniye sonra duyuluyordu — ve havuz o sese
+ * ulaşmadan örneği yeniden başlattığı için çoğu zaman **hiç**
+ * duyulmuyordu.
+ *
+ * Ölçülen baş sessizlikleri:
+ *
+ *     shot_okcu    1,59 sn   (gercek ses 0,58)
+ *     error        0,76 sn   (0,41)
+ *     tower_place  0,64 sn   (0,74)
+ *     wave_start   0,46 sn   (1,01)
+ *     digerleri    0,00 sn
+ *
+ * Değer **ölçülüyor, tabloya yazılmıyor**: yeni bir kaynak dosya
+ * geldiğinde kimse burayı güncellemek zorunda kalmasın. Bu, `kurallar.mjs`'in
+ * elle tutulan harita tablosunun sessizce boş veri basmasıyla aynı
+ * hatadan kaçınmak için.
+ *
+ * Yalnız `.wav` taranıyor (PCM, bağımlılıksız okunabiliyor); müzik
+ * kaynakları `.mp3` ve zaten baş sessizliği yok.
+ *
+ * @returns {number} Atılacak saniye. Ses hemen başlıyorsa 0.
+ */
+function wavBasSessizligi(srcPath) {
+  if (!srcPath.endsWith('.wav')) return 0;
+  const b = readFileSync(srcPath);
+  let off = 12;
+  let fmt = null;
+  let data = null;
+  while (off + 8 <= b.length) {
+    const id = b.toString('ascii', off, off + 4);
+    const sz = b.readUInt32LE(off + 4);
+    if (id === 'fmt ') fmt = { ch: b.readUInt16LE(off + 10), rate: b.readUInt32LE(off + 12), bits: b.readUInt16LE(off + 22) };
+    if (id === 'data') data = { off: off + 8, sz };
+    off += 8 + sz + (sz % 2);
+  }
+  if (fmt === null || data === null || fmt.bits !== 16) return 0;
+
+  const ornek = data.sz / 2 / fmt.ch;
+  const pencere = Math.floor(fmt.rate * 0.01); // 10 ms
+  const zarf = [];
+  for (let i = 0; i < ornek; i += pencere) {
+    let toplam = 0;
+    let n = 0;
+    for (let j = i; j < Math.min(i + pencere, ornek); j++) {
+      const v = b.readInt16LE(data.off + j * fmt.ch * 2);
+      toplam += v * v;
+      n++;
+    }
+    zarf.push(Math.sqrt(toplam / n));
+  }
+  const tepe = Math.max(...zarf);
+  if (tepe === 0) return 0;
+
+  // Tepe değerin %2'si: gürültü tabanının üstünde, atağın altında.
+  const esik = tepe * 0.02;
+  let ilk = 0;
+  while (ilk < zarf.length && zarf[ilk] < esik) ilk++;
+  if (ilk === 0) return 0;
+
+  // 20 ms geri: atağın ilk anı kırpılmasın, yoksa vuruş yumuşar.
+  return Math.max(0, ilk * 0.01 - 0.02);
+}
+
 async function sesDosyasiCevir(ad, cikisYolu, bitrate, sure) {
   const srcPath = sesKaynagiBul(ad);
   if (srcPath === null) return false;
   const outPath = path.join(OUT, cikisYolu);
   await ensureDir(path.dirname(outPath));
 
+  // Baş sessizliği **kaynaktan ölçülüp** atlanıyor (`-ss`, girdiden önce
+  // verilince ffmpeg o kadarını hiç okumuyor).
+  const bastanAt = sure === undefined ? wavBasSessizligi(srcPath) : 0;
+
   const args = [
     '-y',
+    ...(bastanAt > 0 ? ['-ss', bastanAt.toFixed(3)] : []),
     '-i', srcPath,
     '-vn', // mp3 kaynaklarda gömülü kapak resmi olabiliyor — o bir "video"
            // akışı sayılıyor ve .m4a'ya (ses-only mp4 profili) yazılamıyor.
@@ -343,7 +417,12 @@ async function sesDosyasiCevir(ad, cikisYolu, bitrate, sure) {
 
   await execFileAsync(ffmpegYolu, args);
   const { size } = await stat(outPath);
-  const etiket = sure !== undefined ? ` (${sure} sn'ye kırpıldı)` : '';
+  const etiket =
+    sure !== undefined
+      ? ` (${sure} sn'ye kırpıldı)`
+      : bastanAt > 0
+        ? ` (baştan ${bastanAt.toFixed(2)} sn sessizlik atıldı)`
+        : '';
   console.log(`  ${cikisYolu}  ${Math.round(size / 1024)} KB${etiket}`);
   return true;
 }

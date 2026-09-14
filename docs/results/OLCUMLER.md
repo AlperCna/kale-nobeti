@@ -782,3 +782,18 @@ verdi.
 
 Ders: **havuzlanan nesneleri ölçerken sondayı örneğe değil, örneği
 üreten çağrıya bağla.**
+
+### S7 — baş sessizliği atılınca kesilme bitti
+
+`shot_okcu.wav`'ın ilk **1,59 sn**'si boştu (zarf analizi). Ses 1,60'ta
+başlıyordu ve havuz oraya ulaşmadan örneği yeniden başlatıyordu — yani
+ok sesi çoğu zaman **hiç** duyulmuyordu.
+
+`prep-assets.mjs` boşluğu kaynaktan ölçüp atıyor. Ölçülen etki:
+
+| | önce | sonra |
+|---|---|---|
+| `shot_okcu` süresi | 2,25 sn | **0,68 sn** |
+| kesilme 1× | %100 | **%0** (59 çağrı) |
+| kesilme 2× | %95 | **%1** (90 çağrı) |
+| ilk indirme | 0,86 MB | **0,80 MB** |
