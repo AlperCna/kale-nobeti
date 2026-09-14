@@ -37,7 +37,38 @@ export const ENEMY_DEATH_THROTTLE_MS = 80;
  * Üç: gülle (en uzun, ~0,5 sn) 0,5/sn ateşleyen üç kuleyle bile
  * kuyruğu kesilmeden çalabilsin.
  */
-export const SFX_POOL_PER_KEY = 3;
+/**
+ * Anahtar başına ses örneği sayısı.
+ *
+ * **3'ten 6'ya çıkarıldı** — ama bu kusurun asıl çaresi değil, payı.
+ *
+ * Ölçüm (harita 1, dört okçu, bir dalga): `shot_okcu` çağrılarının
+ * **%100'ü** (1× hız) ve **%95'i** (2×) hâlâ çalmakta olan bir örneği
+ * kesiyordu. Aritmetiği:
+ *
+ *     shot_okcu suresi          2,25 sn
+ *     4 okcu x ~1,1 atis/sn  =  ~4,4 atis/sn
+ *     3 ornek                =>  ayni ornek her 0,68 sn'de yeniden
+ *
+ * 2,25 saniyelik bir ses 0,68 saniyede bir baştan başlarsa hiç bitmiyor;
+ * oyuncunun duyduğu "ses gelmedi" oluyor (geri bildirim: *"okçunun ok
+ * atma sesi 2×'te gelmiyor, sonradan geliyor"*).
+ *
+ * `SoundSystem.#cal` artık önce **boş** örnek arıyor, yoksa **en eski
+ * başlayanı** kesiyor (voice stealing). Doğru politika — ama havuz
+ * doymuşken kurtaracak bir şey yok: ölçümde dört okçuyla üç örneğin üçü
+ * de sürekli doluydu, politika değişikliği sonucu değiştirmedi.
+ *
+ * **Asıl kök neden ses dosyasının uzunluğu.** 2,25 saniyelik bir ok
+ * atışı temsil ettiği olaya göre çok uzun. Havuzu dosyaya göre
+ * büyütmek yanlış olurdu: 4,4 atış/sn'de kesilmemesi için 10 örnek
+ * gerekirdi ve aynı sesin 10 kopyası üst üste çalması bu sefer çamur
+ * olurdu. 6, efektler kısaldığında (~0,3-0,5 sn) fazlasıyla yeter ve
+ * bugünkü dosyalarla da orta yoğunlukta kesmeyi durdurur.
+ *
+ * Gereksinim `docs/plan/M6-ses-uretim-brifi.md`'ye yazıldı.
+ */
+export const SFX_POOL_PER_KEY = 6;
 
 /**
  * Müziğin taban ses seviyesi — `M8-T10`.

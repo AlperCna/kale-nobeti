@@ -152,3 +152,48 @@ verin. Kısmi teslim kabul — yalnız kule sesleri (3) veya yalnız müzik
 (2) ayrı ayrı gönderilebilir, ben gelen parçayı o an bağlarım.
 
 Bu brifte olmayan: sanat (`M6-sanat-uretim-brifi.md`, ayrı dosya).
+
+---
+
+## ⚠ ÖLÇÜLDÜ: mevcut efektler **çok uzun** — yeniden kesilmeli
+
+Oyuncu geri bildirimi: *"ses efektleri biraz tutarsız, okçunun ok atma
+sesi 2×'te gelmiyor, sonradan geliyor"*. Ölçüm doğruladı ve sebebi
+kodda değil **dosya uzunluğunda**.
+
+### Bugünkü süreler
+
+| dosya | süre | olması gereken |
+|---|---|---|
+| `shot_okcu` | **2,25 sn** | **~0,25-0,35 sn** |
+| `shot_top` | ~1,5 sn | ~0,4-0,6 sn (patlama kuyruğu olabilir) |
+| `shot_buyu` | ~1,5 sn | ~0,3-0,5 sn |
+| `enemy_death` | 1,5 sn | ~0,3-0,4 sn |
+| `gold` | 1,5 sn | ~0,2-0,3 sn |
+| `tower_place` | 1,5 sn | ~0,4 sn |
+| `wave_start` | 1,5 sn | 1-1,5 sn **(bu doğru — olay sesi)** |
+
+### Neden önemli — aritmetik
+
+```
+shot_okcu 2,25 sn · 4 okcu x ~1,1 atis/sn = 4,4 atis/sn
+=> ayni ses saniyede 4,4 kez basliyor, her biri 2,25 sn surecek
+=> ayni anda ~10 kopya gerekiyor
+```
+
+Ölçülen sonuç: `shot_okcu` çağrılarının **%100'ü** (1× hız) ve **%95'i**
+(2×) hâlâ çalan bir örneği kesiyordu. Kesilen ses, oyuncunun kulağında
+"çalmayan" ses oluyor.
+
+Havuz 3 → 6'ya çıkarıldı ve seçim politikası düzeltildi (önce boş örnek,
+yoksa en eski başlayanı kes). **Ama bu payı artırır, kusuru kaldırmaz:**
+2,25 sn'lik bir sesin 4,4/sn çalınması için 10 kopya gerekir ve aynı
+sesin 10 kopyası üst üste bindiğinde bu sefer çamur olur. Efekt sesi
+temsil ettiği olay kadar kısa olmalı — bir ok bırakma sesi 2 saniye
+sürmez.
+
+### Kabul ölçütü (yeni)
+
+**Tek atışlık efektler ≤ 0,5 sn.** Yalnız `wave_start`, `victory`,
+`defeat`, `boss_intro` gibi **olay** sesleri daha uzun olabilir.
+Biçim değişmedi: `.m4a` (AAC).
