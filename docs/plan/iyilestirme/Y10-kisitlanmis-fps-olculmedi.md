@@ -202,3 +202,83 @@ bir tane değil.
 - Ölçüm göz kararı yapıldıysa (sayaç kullanılmadıysa).
 - Harita 1 ölçülüp harita 3 atlandıysa (en ağır senaryo o).
 - Sonuç ≥30 çıktı diye S15/R13 kapatılmayıp açık bırakıldıysa.
+
+---
+
+## Kalan tek adım: 4× kısıtlamalı okuma (insan işi)
+
+Tarayıcı panelinde CPU kısıtlama yok; Chrome DevTools gerekiyor.
+Aşağıdaki tarif **tekrarlanabilir** — aynı senaryo, aynı okuma yöntemi.
+
+### 1. Sunucuyu başlat
+
+```bash
+npm run dev
+```
+
+### 2. Chrome'da aç ve DevTools'u kur
+
+`http://localhost:5174/` → **F12** → **Performance** sekmesi →
+dişli/ayarlar → **CPU: 4× slowdown**.
+
+> Kısıtlama sekmeye bağlı ve sayfa yenilense de kalıyor. Kaydı
+> başlatmaya gerek yok, yalnız kısıtlama açık olsun.
+
+### 3. Senaryoyu kur (Console'a yapıştır)
+
+```js
+const g = window.__game, raf = g.loop.raf;
+g.registry.get('settings').set('effectScale', 'full');
+g.registry.get('settings').set('difficulty', 'kolay');
+g.scene.getScene('Menu').scene.start('Game', { mapId: 'kul-ovasi' });
+g.scene.getScene('Menu').scene.launch('Hud');
+await new Promise(r => setTimeout(r, 3000));
+const k = window.__kn;
+const PLAN = ['okcu','buyu','top','okcu','buyu','kisla','okcu','buyu','top','okcu','buyu','kisla'];
+for (let s = 0; s < 12; s++) { try { PLAN[s] === 'kisla' ? k.placeBarracks(s) : k.placeTower(s, PLAN[s]); } catch {} }
+k.startWaveEarly?.();
+'tahta hazir: ' + k.towerCount() + ' kule';
+```
+
+### 4. Ölç (Console'a yapıştır)
+
+```js
+window.__olc = async (sn = 25) => {
+  const g = window.__game, raf = g.loop.raf, asil = raf.callback, d = [];
+  raf.stop();
+  raf.start((t) => { const a = performance.now(); asil(t); d.push(performance.now() - a); }, true, 16);
+  const t0 = performance.now();
+  await new Promise(r => setTimeout(r, sn * 1000));
+  const duvar = performance.now() - t0;
+  raf.stop(); raf.start(asil, true, 16);
+  d.sort((a, b) => a - b);
+  const p = (q) => +d[Math.floor(d.length * q)].toFixed(2);
+  return {
+    kare: d.length,
+    FPS: +(d.length / (duvar / 1000)).toFixed(1),
+    kareMsOrt: +(d.reduce((t, v) => t + v, 0) / d.length).toFixed(2),
+    p95: p(0.95), p99: p(0.99), maks: +d[d.length - 1].toFixed(2),
+  };
+};
+await window.__olc(25);
+```
+
+**İki kez çalıştır.** Birincisi soğuk (shader derleme, doku yükleme) ve
+yanıltıcı; karar ikincisine göre verilir. Kısıtlamasız ölçümde ilk koşu
+p99 **26,9 ms**, ikincisi **3,7 ms** verdi — aradaki fark tamamen ısınma.
+
+### 5. Aynısını Canvas ile
+
+`http://localhost:5174/?render=canvas` ile aç, 3-4. adımları tekrarla.
+
+### Eşik ve karar
+
+| `FPS` (ikinci koşu) | Karar |
+|---|---|
+| **≥ 30** | `Phaser.AUTO` kalır · S15 kapanır · R13 azaltılır |
+| **30 civarı** | Efekt yoğunluğunun cihaza göre düşürülmesi (altyapı hazır, `Settings` üç kademe taşıyor) |
+| **< 30** | Canvas sayısıyla karşılaştır; Canvas kazanıyorsa render modu değişir, kazanmıyorsa darboğaz profillenir |
+
+Sonuç `docs/results/OLCUMLER.md`'deki `F1`-`F5` tablosunun altına
+işlenmeli — dosyanın kendi kuralı: işlenmeyen ölçüm yeniden yapılmak
+zorunda kalıyor.
