@@ -25,6 +25,8 @@ const INK = 0x14203a;
 export class OrientationGate {
   readonly #scene: Phaser.Scene;
   readonly #kok: Phaser.GameObjects.Container;
+  /** Kaldırılabilmesi için saklanıyor — bkz. `destroy`. */
+  readonly #resizeDinleyici: () => void;
 
   constructor(scene: Phaser.Scene) {
     this.#scene = scene;
@@ -52,8 +54,23 @@ export class OrientationGate {
       scene.add.rectangle(width / 2 + 70, height / 2 + 50, 76, 44, 0xd4a032, 1).setOrigin(0.5),
     );
 
-    scene.scale.on(Phaser.Scale.Events.RESIZE, () => this.guncelle());
+    this.#resizeDinleyici = () => this.guncelle();
+    scene.scale.on(Phaser.Scale.Events.RESIZE, this.#resizeDinleyici);
     this.guncelle();
+  }
+
+  /**
+   * Sahne kapanırken çağrılmalı — `M8 doğrulama turu`.
+   *
+   * `scale` **oyun geneli** bir yayıcı: Phaser'ın sahne kapanışında
+   * temizlediği şey sahnenin kendi olayları, bunlar değil. Ölçüldü: dil
+   * her değiştiğinde (`Overlay` yeniden kuruluyor) `resize` dinleyici
+   * sayısı **birer birer artıyordu** — 13 → 17 dört yeniden kurulumda.
+   * `CLAUDE.md` Mimari kuralının adını koyduğu tuzak.
+   */
+  destroy(): void {
+    this.#scene.scale.off(Phaser.Scale.Events.RESIZE, this.#resizeDinleyici);
+    this.#kok.destroy();
   }
 
   /**

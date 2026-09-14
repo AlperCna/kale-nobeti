@@ -57,7 +57,17 @@ export class OverlayScene extends Phaser.Scene {
 
     // Tarayıcı tam ekrandan çıkarsa (Esc) düğme etiketi zaten sabit;
     // yalnız perde yeniden ölçülmeli.
-    this.scale.on(Phaser.Scale.Events.FULLSCREEN_UNSUPPORTED, () => this.#gate?.guncelle());
+    const fsDinleyici = (): void => this.#gate?.guncelle();
+    this.scale.on(Phaser.Scale.Events.FULLSCREEN_UNSUPPORTED, fsDinleyici);
+
+    // `scale` oyun geneli bir yayıcı — sahne kapanışı onu temizlemiyor.
+    // Bu sahne dil değişiminde yeniden kuruluyor, yani temizlenmeyen her
+    // dinleyici her dil değişiminde bir tane daha birikirdi (ölçüldü).
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.scale.off(Phaser.Scale.Events.FULLSCREEN_UNSUPPORTED, fsDinleyici);
+      this.#gate?.destroy();
+      this.#gate = undefined;
+    });
   }
 
   /**
