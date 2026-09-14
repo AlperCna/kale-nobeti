@@ -215,6 +215,9 @@ export class HudScene extends Phaser.Scene {
       () => {
         // Dil değişti: çevrili her etiket yeniden üretilmeli. Panel de
         // çevrili, o yüzden açık kalsın diye veriyle birlikte gidiyor.
+        // `Game` sahnesi yeniden BAŞLATILAMAZ (kuleler, altın, dalga
+        // kaybolurdu) — bir-kez-kurulan çevrili arayüzü elden geçiriyor.
+        this.#game().dilYenile();
         this.scene.restart({ speed: this.#speed, settingsOpen: true });
         yenidenKurOverlay(this);
       },

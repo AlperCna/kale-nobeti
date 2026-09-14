@@ -79,7 +79,7 @@ export class TowerInfoPanel {
   readonly #kap: Phaser.GameObjects.Container;
   readonly #scene: Phaser.Scene;
   readonly #roster: readonly EnemyDef[];
-  readonly #etiketler: TowerInfoLabels;
+  #etiketler: TowerInfoLabels;
 
   /** Değişen sayılar — hepsi `BitmapText`. */
   readonly #hasar: Phaser.GameObjects.BitmapText;
@@ -195,6 +195,36 @@ export class TowerInfoPanel {
    * Sol yerleşim yetenek düğmelerinin (`28,622 – 170,707`) **üstünde**
    * duruyor; sağ yerleşim eskisiyle aynı.
    */
+  /**
+   * Dil değişince etiketleri yeniden kurar — `M8-B04`.
+   *
+   * `TowerInfoLabels` on iki `t()` çağrısını **kurucusunda** yapıyor ve
+   * kurucu `GameScene.create()`'te bir kez koşuyor. Oyun içinde dil
+   * değiştirildiğinde `HudScene` kendini yeniden başlatıyor
+   * (`scene.restart`) ve `Overlay`'i de yeniden kuruyor, ama **`Game`
+   * sahnesi yeniden başlamıyor** — başlasaydı kuleler, altın ve dalga
+   * kaybolurdu. Sonuç: arayüzün geri kalanı İngilizceye geçerken bu
+   * panel Türkçe kalıyordu (üretim yapısında görüldü).
+   *
+   * Aynı sınıfın öbür bir-kez-kurulanları etkilenmiyor, kontrol edildi:
+   * `AchievementToast` ve `BossBanner` metni **gösterim anında**
+   * üretiyor, `BuildMenu.openSellMenu` menüyü yıkıp yeniden kuruyor,
+   * `TutorialHints` metni dışarıdan alıyor. Bayat olan yalnız buydu.
+   */
+  dilYenile(): void {
+    for (const n of this.#etiketler.nesneler) n.destroy();
+    this.#etiketler = new TowerInfoLabels(this.#scene, SOL_PAY, W / 2 + 8);
+    this.#kap.add(this.#etiketler.nesneler);
+
+    // Görünürlük durumları etikete ait, duruma değil — yeniden uygulanmalı.
+    const s = this.#state;
+    if (s !== null) {
+      this.#etiketler.setType(s.def.damageType === 'magic');
+      this.#etiketler.setAir(s.tier.airMultiplier > 0);
+      this.#etiketler.setMaxTier(s.nextTier === undefined);
+    }
+  }
+
   show(s: TowerInfoState): void {
     this.#state = s;
     // Konum ve eşik `data/panelLayout.ts`'te (TIER 1 kural 1); orası
