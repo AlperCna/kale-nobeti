@@ -396,3 +396,47 @@ animasyonu kullanmıyor — ölü bir kol. Sözleşme `GameClock.setScale`
 başlığına yazıldı ki sprite animasyonu eklendiği gün gözden kaçmasın.
 
 Oyuncunun 2×'te ne gördüğü hâlâ açık; tarif gelirse oraya bakılacak.
+
+---
+
+# Yayın öncesi tam tarama
+
+Bütün dokümanlar tarandı ve üretim yapısı uçtan uca denendi.
+
+## Bulunan ve düzeltilen hata
+
+**Oyun içinde dil değişince kule bilgi paneli eski dilde kalıyordu.**
+`TowerInfoLabels` on iki `t()` çağrısını kurucusunda yapıyor, kurucu
+`GameScene.create()`'te bir kez koşuyor ve `Game` sahnesi dil
+değişiminde yeniden başlatılamıyor (kuleler/altın/dalga kaybolurdu).
+Önce çeviri eksikliği sanıldı; **ölçüm yalanladı** — iki sözlükte de
+163'er anahtar var. `dilYenile()` eklendi.
+
+## Doğrulanan maddeler
+
+| Kontrol | Sonuç |
+|---|---|
+| `npm run typecheck` | temiz |
+| `npm run test` | **875 / 875** |
+| `npm run guard` | **17 / 17** |
+| İlk indirme | **0,81 MB** (Poki sınırı 8) |
+| Toplam | 5,73 MB (CrazyGames) |
+| itch.io paketi | 5,68 MB · 39 dosya · kökte `index.html` ✓ |
+| `base: './'` | `dist/index.html`'de **mutlak yol yok** |
+| Üretimde konsol | **tamamen sessiz** (temiz sekme, iki kez) |
+| Üretimde `console.*` | yalnız **Phaser'ın kendi** hata yolları (8 yer), bizim kodumuzda yok |
+| Üretimde dev kancası | yok — `__kn` izi `__kn_probe__`, `localStorage` sondası |
+| `-webkit-user-select` | `index.html`'de ✓ |
+| ESC / boşluk duraklatma | `keydown-ESC` ve `keydown-SPACE` pakette ✓ |
+| Doku sayısı | 6 (sınır 16) |
+| `localStorage` gizli sekme | fırlatırken çökmüyor: `destekleniyorMu` false, okuma `null`, yazma sessiz (R16) |
+| Dinleyici sızıntısı | 4 yeniden başlatmada `shutdown` **12'de sabit**, havuz 60, `bus.clear()` birer kez |
+| Panel ↔ menü çakışması | **beş haritada da yok**; panel kulenin karşı köşesine geçiyor |
+| İki dil | menü, seviye seçim, harita, yapı menüsü, panel, HUD, `Overlay` — hepsi çevrili |
+| Açılış perdesi (`Y12`) | `PreloadScene` çalışınca kalkıyor, tıklamayı yutmuyor |
+
+## Kapanmayan tek madde
+
+**`R13` — düşük uçlu cihaz.** 4× CPU kısıtlamasında 50 FPS ölçüldü ama
+bu bir **vekil**; gerçek 4 GB Chromebook elde yok. `S15` bunu zaten
+vekil olarak tanımlamıştı.
