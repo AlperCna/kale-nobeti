@@ -20,9 +20,34 @@
  * taraması bunu zaten göstermişti). Çözüm sabit yer değil **kaçınma**.
  */
 
-/** Panelin dış ölçüsü. */
-export const PANEL_W = 270;
+/**
+ * Panelin dış ölçüsü.
+ *
+ * Genişlik **270'ten 300'e** çıktı — oyuncu geri bildirimi: *"şuradaki
+ * yazılar da tam gözükmüyor gibi"*. Ölçüldü: parşömen çerçevenin kenar
+ * bandı **16 px**, ama etiketler `x = 12`'den başlıyor ve değerler
+ * `x = 258`'de bitiyordu (sağ kenara 12 kalıyor). Yani **iki sütun da
+ * çerçevenin altına giriyordu.**
+ *
+ * Yalnız iç payı 22'ye çıkarmak yetmedi: en geniş satırda
+ * ("Seçili düşmana DPS" 142 px + "13.00" 98 px) etiket ve değer
+ * çakışıyordu. 270 - 44 pay = 226 < 240 gereken. 300'de 256 kalıyor ve
+ * araya 11 px giriyor.
+ *
+ * Genişleme iki yerleşimi de bozmuyor: sağ köşe `968`'de başlıyor (tam
+ * ekran düğmesinin sağ kenarı 928), sol köşe `12-312` ve orta eksenin
+ * (640) solunda kalıyor — `panelLayout.test.ts` ikisini de bekçiliyor.
+ */
+export const PANEL_W = 300;
 export const PANEL_H = 268;
+
+/**
+ * İçerik ile panel kenarı arasındaki pay.
+ *
+ * **Çerçeve bandından (16) büyük olmak zorunda** — eskiden 12'ydi ve
+ * metin süslemenin altında kalıyordu. 22 = 16 kenar + 6 nefes.
+ */
+export const PANEL_IC_PAY = 22;
 
 /** Mantıksal ekran (CLAUDE.md Teknoloji). */
 const EKRAN_W = 1280;

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import type { EnemyDef } from '../types/enemy';
-import { PANEL_W, PANEL_H, panelKonumu } from '../data/panelLayout';
+import { PANEL_W, PANEL_H, PANEL_IC_PAY, panelKonumu } from '../data/panelLayout';
 import type { TargetMode, TowerDef, TowerTier } from '../types/tower';
 import { NUMBER_FONT_KEY } from './numberFont';
 import { effectiveDps } from '../systems/balanceChecks';
@@ -49,7 +49,7 @@ const PARCHMENT = 0xe4d3a8;
 const INK = 0x14203a;
 const VERMILION = 0xb03a2e;
 
-const SOL_PAY = 12;
+const SOL_PAY = PANEL_IC_PAY;
 const ICON = 20;
 /** Değer kolonunun sağ kenarı — sayılar sağa dayalı. */
 const W = PANEL_W;
