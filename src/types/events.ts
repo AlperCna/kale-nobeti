@@ -50,13 +50,28 @@ export interface GameEvents {
    */
   'save:failed': { readonly once: boolean };
 
-  /** M6-T11 — `SoundSystem` `tower_upgrade.m4a` çalıyor. */
-  'tower:upgraded': { readonly spotIndex: number };
+  /**
+   * M6-T11 — `SoundSystem` `tower_upgrade.m4a` çalıyor.
+   *
+   * `tier`: **0 tabanlı** yeni kademe indeksi (`M8-T07`). Başarım sistemi
+   * "ilk T3" için buna bakıyor; olayda olmasaydı dinleyicinin kule
+   * nesnesine ulaşması gerekirdi ve `systems/` Phaser'a bakamaz (k.11).
+   */
+  'tower:upgraded': { readonly spotIndex: number; readonly tier: number };
   /**
    * Yetersiz altınla satın alma/yükseltme denendi (`#menuButonu`
    * devre dışıyken tıklandı). M6-T11 — `error.m4a`.
    */
   'purchase:denied': Record<string, never>;
+
+  /**
+   * Aktif yetenek kullanıldı — `M8-T07`.
+   *
+   * `hits`: Meteor'un aynı atışta vurduğu düşman sayısı (Takviye'de 0).
+   * Başarım "tek Meteor'la 5 düşman" için bunu sayıyor; sonuç `GameScene`
+   * içinde zaten hesaplanıyordu, yalnız hiçbir yere duyurulmuyordu.
+   */
+  'ability:cast': { readonly id: string; readonly hits: number };
 }
 
 export type GameEventName = keyof GameEvents;

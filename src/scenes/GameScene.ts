@@ -7,6 +7,8 @@ import { EnemyAbilitySystem } from '../systems/EnemyAbilitySystem';
 import { applyEffect, speedMultiplier, stepEffects } from '../systems/effects';
 import { WaveManager } from '../systems/WaveManager';
 import { endlessHpScale, generateEndlessWave } from '../systems/endlessWaves';
+import { AchievementSystem } from '../systems/AchievementSystem';
+import { AchievementToast } from '../fx/AchievementToast';
 import type { WavePhase } from '../systems/WaveManager';
 import { EconomySystem } from '../systems/EconomySystem';
 import { TowerSystem } from '../systems/TowerSystem';
@@ -190,6 +192,8 @@ export class GameScene extends Phaser.Scene {
   #waveList: readonly Wave[] = MAP1_WAVES;
   /** `M8-T06` — sonsuz mod bu koşuda açık mı (oyun sonu ekranından gelir). */
   #endless = false;
+  #achievements?: AchievementSystem;
+  #achievementToast?: AchievementToast;
 
   constructor() {
     super('Game');
@@ -567,6 +571,14 @@ export class GameScene extends Phaser.Scene {
           }
         : undefined,
     );
+
+    // `M8-T07` — el içi başarımlar. Bant `Game` sahnesinde duruyor
+    // (HUD'da değil): duraklatmada `Game` donuyor, yani bant da donuyor
+    // ve oyuncu duraklattığı anda kayan bir bildirimle karşılaşmıyor.
+    this.#achievementToast = new AchievementToast(this);
+    this.#achievements = new AchievementSystem(new LocalStore(), this.bus, (id) => {
+      this.#achievementToast?.show(id);
+    });
 
     this.#occupancy = new SpotOccupancy(this.#map.buildSpots.length);
 
@@ -976,10 +988,11 @@ export class GameScene extends Phaser.Scene {
         if (e.alive && e.hp <= 0) this.#hasarUygula(e, 0);
       }
       this.#efektler?.meteorEfekti(at);
+      this.bus.emit('ability:cast', { id: 'meteor', hits: r.hit });
       return true;
     }
 
-    this.abilities.castReinforcements(at, () => {
+    const asker = this.abilities.castReinforcements(at, () => {
       const s = this.#soldierPool?.acquire() ?? null;
       if (s !== null) {
         s.spotIndex = -1;
@@ -988,6 +1001,7 @@ export class GameScene extends Phaser.Scene {
       }
       return s;
     });
+    this.bus.emit('ability:cast', { id: 'takviye', hits: asker?.length ?? 0 });
     return true;
   }
 
@@ -1089,7 +1103,7 @@ export class GameScene extends Phaser.Scene {
 
     kule.setTier(hedefKademe);
     kule.target = null;
-    this.bus.emit('tower:upgraded', { spotIndex });
+    this.bus.emit('tower:upgraded', { spotIndex, tier: hedefKademe });
     this.#buildMenu?.closeMenu();
     return true;
   }

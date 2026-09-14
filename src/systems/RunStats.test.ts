@@ -57,6 +57,17 @@ describe('RunStats — M8-T03', () => {
     expect(stats.data.durationSec).toBe(95);
   });
 
+  it('satış BAYRAĞI — `sell` sebebi görülünce açılıyor, kapanmıyor', () => {
+    const { bus, stats } = kur();
+    expect(stats.data.soldAny).toBe(false);
+    bus.emit('gold:changed', { total: 300, reason: 'kill' });
+    expect(stats.data.soldAny).toBe(false);
+    bus.emit('gold:changed', { total: 335, reason: 'sell' });
+    expect(stats.data.soldAny).toBe(true);
+    bus.emit('gold:changed', { total: 200, reason: 'spend' });
+    expect(stats.data.soldAny).toBe(true);
+  });
+
   it('boş el hepsi sıfır', () => {
     const { stats } = kur();
     const d = stats.data;

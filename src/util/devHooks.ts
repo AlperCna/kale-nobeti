@@ -145,6 +145,8 @@ export interface DevHooks {
   isEndlessWave: () => boolean;
   /** Bu el sonsuz modda mı başlatıldı. */
   isEndlessRun: () => boolean;
+  /** Açılmış başarım kimlikleri — `M8-T07` canlı sağlaması. */
+  achievements: () => readonly string[];
 }
 
 type Global = { __kn?: Partial<DevHooks> };

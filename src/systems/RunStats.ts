@@ -28,6 +28,13 @@ export interface RunStatsData {
   /** Ulaşılan en yüksek dalga numarası. */
   readonly peakWave: number;
   readonly durationSec: number;
+  /**
+   * Bu elde **hiç** kule/kışla satıldı mı — `M8-T07` "satmadan bitir".
+   *
+   * `gold:changed`'in `sell` sebebinden okunuyor; ayrı bir olay
+   * eklemeye gerek yok, sebep zaten tam bu bilgiyi taşıyordu.
+   */
+  readonly soldAny: boolean;
 }
 
 export class RunStats {
@@ -37,6 +44,7 @@ export class RunStats {
   #towersBuilt = 0;
   #livesLost = 0;
   #peakWave = 0;
+  #soldAny = false;
   #sonToplam: number;
   readonly #baslangic: number;
   readonly #now: () => number;
@@ -75,7 +83,8 @@ export class RunStats {
     // Altın: olay **toplamı** taşıyor, miktarı değil — fark alınıyor.
     // `reason` yönü zaten söylüyor (`spend` her zaman azaltıyor), ama
     // farkı almak hem kazancı hem harcamayı tek yerden veriyor.
-    bus.on('gold:changed', ({ total }) => {
+    bus.on('gold:changed', ({ total, reason }) => {
+      if (reason === 'sell') this.#soldAny = true;
       const fark = total - this.#sonToplam;
       if (fark > 0) this.#goldEarned += fark;
       else this.#goldSpent += -fark;
@@ -92,6 +101,7 @@ export class RunStats {
       livesLost: this.#livesLost,
       peakWave: this.#peakWave,
       durationSec: Math.max(0, Math.round((this.#now() - this.#baslangic) / 1000)),
+      soldAny: this.#soldAny,
     };
   }
 }
