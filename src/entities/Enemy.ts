@@ -5,7 +5,15 @@ import type { Poolable } from '../util/pool';
 import { resetEnemyState } from '../systems/movers';
 import { emptyEffects, resetEffects } from '../systems/effects';
 import { enemyFrameKey } from '../data/spriteFrames';
-import { HIT_FLASH_COLOR, HIT_FLASH_MS } from '../data/enemyVisuals';
+import {
+  HIT_FLASH_COLOR,
+  HIT_FLASH_MS,
+  DOGUS_SONUM_MS,
+  SALLANTI_ACI_UCAN,
+  SALLANTI_ACI_YER,
+  SALLANTI_PERIYOT_UCAN,
+  SALLANTI_PERIYOT_YER,
+} from '../data/enemyVisuals';
 
 /**
  * **Bu sınıf ince.** Hareket mantığı `Mover`'da, sıfırlamanın mantıksal
@@ -82,12 +90,37 @@ export class Enemy extends Phaser.GameObjects.Sprite implements Poolable, EnemyS
    */
   #flashLeft = 0;
 
-  constructor(scene: Phaser.Scene, size: number) {
+  /**
+   * `M8-T09` — yürüme sallantısının fazı (ms, ölçekli zaman birikimi) ve
+   * doğuş sönümünün kalan süresi.
+   *
+   * `G08`'in gerekçesiyle aynı: **tween değil sayaç**. `resetForPool()`
+   * tek satırda sıfırlayabiliyor ve havuzdan çıkan düşman önceki
+   * düşmanın animasyonunu devralmıyor (kural 3).
+   */
+  #sallantiFaz = 0;
+  #dogusKalan = 0;
+
+  /**
+   * Hareket süsü açık mı.
+   *
+   * **`screenShake` ayarına bağlanıyor**, `effects`'e değil. Gerekçe:
+   * ikisi de "bilgi taşımayan görüntü hareketi" sınıfında ve
+   * `reducedMotionDefaults()` zaten `screenShake: false` veriyor — yani
+   * `prefers-reduced-motion` sallantıyı kendiliğinden kapatıyor. `effects`
+   * parçacık **yoğunluğunu** yönetiyor; `effects: off` oynayan biri
+   * parçacık istemiyor demek, "düşmanlar donuk dursun" demek değil.
+   * (`M8-T09` kabul kriteri bu ayrımı açıkça istiyor.)
+   */
+  readonly #hareketAcik: () => boolean;
+
+  constructor(scene: Phaser.Scene, size: number, hareketAcik: () => boolean = () => true) {
     // Kurucudaki kare geçici — havuz nesnesi henüz hiçbir düşmana ait değil.
     // `spawn()` gerçek kareyi yazana kadar görünmez (`setVisible(false)`).
     super(scene, 0, 0, 'atlas', enemyFrameKey('goblin'));
     this.id = Enemy.#sonrakiId++;
     this.#size = size;
+    this.#hareketAcik = hareketAcik;
     this.setDisplaySize(size, size);
     scene.add.existing(this);
   }
@@ -111,6 +144,14 @@ export class Enemy extends Phaser.GameObjects.Sprite implements Poolable, EnemyS
     this.setFrame(enemyFrameKey(def.id));
     this.setDisplaySize(this.#size, this.#size);
     this.setActive(true).setVisible(true);
+    // `M8-T09` — doğuş sönümü. Düşman ekran kenarında bir anda
+    // "belirmiyor"; 200 ms içinde beliriyor. Faz her doğumda sıfırdan
+    // başlıyor ki aynı anda doğan iki düşman senkron sallanmasın diye
+    // kimliğe göre kaydırılıyor.
+    this.#dogusKalan = DOGUS_SONUM_MS;
+    this.#sallantiFaz = (this.id % 7) * 60;
+    this.setAlpha(0);
+    this.setAngle(0);
     this.syncPosition();
   }
 
@@ -120,9 +161,46 @@ export class Enemy extends Phaser.GameObjects.Sprite implements Poolable, EnemyS
       this.#flashLeft -= scaledDelta;
       if (this.#flashLeft <= 0) this.clearTint();
     }
+    if (this.#dogusKalan > 0) {
+      this.#dogusKalan -= scaledDelta;
+      this.setAlpha(this.#dogusKalan <= 0 ? 1 : 1 - this.#dogusKalan / DOGUS_SONUM_MS);
+    }
     if (this.mover === null || !this.alive) return;
     this.mover.step(this, scaledDelta);
     this.syncPosition();
+    this.#salla(scaledDelta);
+  }
+
+  /**
+   * `M8-T09` — yürüme sallantısı.
+   *
+   * Faz **ölçekli zamanla** ilerliyor (kural 8): 2× hızda düşman iki kat
+   * hızlı yürüyor ve iki kat hızlı sallanıyor, yani adım sıklığı hızla
+   * tutarlı kalıyor. Ham `delta` kullanılsaydı 2×'te düşmanlar süzülerek
+   * kayardı.
+   *
+   * **Engellenmiş düşman sallanmıyor**: `blockedBy` doluyken yerinde
+   * duruyor, sallanmak "yürüyor" yalanı söylerdi.
+   */
+  #salla(scaledDelta: number): void {
+    if (!this.#hareketAcik()) {
+      // Ayar **oyun içinde** kapatılabiliyor. Yalnız `return` etmek
+      // düşmanı son açısında **eğik dondurup** bırakıyordu (canlı ölçümle
+      // görüldü: 10 düşmanın hiçbiri oynamıyor ama hepsi çarpık duruyor).
+      // Hareket hassasiyeti yüzünden kapatan biri için bu, kapattığı
+      // şeyin kalıntısını ekranda bırakmak demek.
+      if (this.angle !== 0) this.setAngle(0);
+      return;
+    }
+    if (this.blockedBy !== null) {
+      this.setAngle(0);
+      return;
+    }
+    const ucan = this.def?.flying === true;
+    const periyot = ucan ? SALLANTI_PERIYOT_UCAN : SALLANTI_PERIYOT_YER;
+    const genlik = ucan ? SALLANTI_ACI_UCAN : SALLANTI_ACI_YER;
+    this.#sallantiFaz = (this.#sallantiFaz + scaledDelta) % periyot;
+    this.setAngle(Math.sin((this.#sallantiFaz / periyot) * Math.PI * 2) * genlik);
   }
 
   /**
@@ -172,6 +250,8 @@ export class Enemy extends Phaser.GameObjects.Sprite implements Poolable, EnemyS
    * nesne eski ölüm animasyonunu yeni düşman üzerinde oynatır.
    */
   resetForPool(): void {
+    this.#sallantiFaz = 0;
+    this.#dogusKalan = 0;
     resetEnemyState(this);
     resetEffects(this.effects);
     this.mover = null;

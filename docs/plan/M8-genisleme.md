@@ -477,12 +477,12 @@ mermisi `trail: true` ve o anda 24 parçacık havada; okçu mermisi
 `1,8 × 0,55` altın, gülle `1,7 × 1,7` mürekkep — üç aile ekran
 görüntüsünde ayırt ediliyor.
 
-### Faz 9 — Görsel cila 2: düşman — `M8-T09`
+### Faz 9 — Görsel cila 2: düşman — `M8-T09`  ☑
 
 | | |
 |---|---|
 | **Kimlik** | `M8-T09` |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ **bitti** (2026-09-14) |
 | **Süre** | ~45 dk |
 | **Önkoşul** | `M8-T08` |
 | **TIER 1** | k.3 (Angle/Alpha manifestte), k.8 |
@@ -495,6 +495,45 @@ görüntüsünde ayırt ediliyor.
 - Boss girişi: "BOSS" parşömen bandı (statik `Text`, `t()`), 300 ms sarsıntı, boss çubuğu zaten var.
 
 **Kabul kriteri** — `resetForPool` bekçisi yeşil; canlı: 2×'te sallantı okunabilir; `effects: off`'ta sallantı kalıyor (bilgi değil ama hareket — `reducedMotion`'da kapanıyor, karar yazılı).
+
+**Durum:** ☑ **bitti** (2026-09-14)
+
+#### Sonuç — `M8-T09`
+
+**Kabul kriterindeki "karar yazılı" maddesinin cevabı: sallantı
+`screenShake` ayarına bağlandı.** Kalıcı bir `reducedMotion` bayrağı yok —
+`reducedMotionDefaults()` tercihi *varsayılanlara* çeviriyor ve orada
+`screenShake: false` var. İkisi de "bilgi taşımayan görüntü hareketi"
+sınıfında, yani aynı anahtarın altında olmaları tutarlı. `effects`
+parçacık **yoğunluğunu** yönetiyor; `effects: off` oynayan biri parçacık
+istemiyor demek, "düşmanlar donuk dursun" demek değil.
+
+**Tween değil sayaç.** Sallantı fazı ve doğuş sönümü `#flashLeft` (`G08`)
+ile aynı deseni izliyor: `resetForPool()` tek satırda sıfırlıyor ve
+havuzdan çıkan düşman öncekinin animasyonunu devralmıyor (kural 3).
+Faz düşman kimliğine göre kaydırılıyor — yoksa aynı anda doğan iki goblin
+senkron sallanır ve tek bir nesne gibi okunurdu.
+
+**Canlı kontrol bir kusur gösterdi ve düzeltildi:** ayar oyun **içinde**
+kapatılınca `#salla` yalnız `return` ediyordu ve düşmanlar son açılarında
+**eğik donuyordu** (ölçüldü: 10 düşmanın hiçbiri oynamıyor ama hepsi
+çarpık). Hareket hassasiyeti yüzünden kapatan biri için bu, kapattığı
+şeyin kalıntısını ekranda bırakmak demek. Artık ilk karede düzeliyor.
+
+**Ölüm artık yöne göre iki biçimde:** yerdekiler yana devrilip (±70°)
+eziliyor, uçanlar devrilmiyor, **yukarı süzülüp sönüyor** — bir harpi'nin
+yere yapışması yanlış hikâye anlatırdı.
+
+**Boss bandı `wave:started`'a bağlanmadı.** Boss refakatinden **8 sn
+sonra** doğuyor (`BOSS_REFAKAT_GECIKMESI_SN`, §7); dalga başında bant
+göstermek oyuncuya boss yokken "geliyor" derdi. Bant `bossInfo`'nun
+yok→var geçişini izliyor — can çubuğunun zaten kullandığı sinyal.
+
+**Canlı ölçümler:** sallantı açıları ±4° bandında ve düşmanlar arasında
+faz farklı (1,3° / 3,4°); doğuş sönümü yakalandı (alfa 0,09);
+`screenShake: false` ile 700 ms boyunca **hiçbir** açı değişmiyor ve
+hepsi 0; dalga 10'da boss sahaya çıkarken "Ogre Şef geliyor" bandı
+ekran görüntüsünde.
 
 ### Faz 10 — Ses cilası — `M8-T10`, `M8-P03`
 

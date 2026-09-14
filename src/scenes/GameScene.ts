@@ -9,6 +9,7 @@ import { WaveManager } from '../systems/WaveManager';
 import { endlessHpScale, generateEndlessWave } from '../systems/endlessWaves';
 import { AchievementSystem } from '../systems/AchievementSystem';
 import { AchievementToast } from '../fx/AchievementToast';
+import { BossBanner } from '../fx/BossBanner';
 import type { WavePhase } from '../systems/WaveManager';
 import { EconomySystem } from '../systems/EconomySystem';
 import { TowerSystem } from '../systems/TowerSystem';
@@ -226,6 +227,9 @@ export class GameScene extends Phaser.Scene {
   #endless = false;
   #achievements?: AchievementSystem;
   #achievementToast?: AchievementToast;
+  #bossBanner?: BossBanner;
+  /** `M8-T09` — boss geçen karede sahadaydı mı (yok→var geçişi). */
+  #bossSahada = false;
 
   constructor() {
     super('Game');
@@ -369,6 +373,7 @@ export class GameScene extends Phaser.Scene {
     this.#hoveredSpot = -1;
     this.#mermiTepe = 0;
     this.#izBirikim = 0;
+    this.#bossSahada = false;
     this.#soundSystem = undefined;
     // M5: kışla ve yetenek durumu da yeniden başlatmada sıfırlanıyor —
     // aynı tuzak (alan başlatıcısı bir kez, `create` her seferinde).
@@ -434,7 +439,8 @@ export class GameScene extends Phaser.Scene {
 
     const enemyPool = new Pool<Enemy>(
       () => {
-        const e = new Enemy(this, ENEMY_SIZE);
+        // `M8-T09` — sallantı `screenShake` ayarına bağlı (bkz. `Enemy`).
+        const e = new Enemy(this, ENEMY_SIZE, () => this.settings.state.screenShake);
         dusmanGrup.add(e);
         return e;
       },
@@ -640,6 +646,11 @@ export class GameScene extends Phaser.Scene {
       this.#achievementToast?.show(id);
     });
 
+    // `M8-T09` — boss giriş bandı. Dalga **başlarken** değil, boss
+    // gerçekten sahaya çıkınca: telgrafta zaten yazıyor, bant "işte
+    // şimdi" demeli. Doğum anını yakalamanın tek yeri `wave:started`
+    // değil — boss refakatinden 8 sn sonra geliyor (BOSS_REFAKAT_GECIKMESI).
+    this.#bossBanner = new BossBanner(this);
     this.#occupancy = new SpotOccupancy(this.#map.buildSpots.length);
 
     // `Y01` adım 3 — yapı/yükseltme/satış/kışla menüsü. Geri çağrım
@@ -761,6 +772,7 @@ export class GameScene extends Phaser.Scene {
     if (aktifMermi > this.#mermiTepe) this.#mermiTepe = aktifMermi;
 
     this.#mermiIzi(sd);
+    this.#bossGirisi();
 
     // §10 ekran sarsıntısı — kamerayı sahne kaydırıyor.
     this.shake.update(sd);
@@ -769,6 +781,23 @@ export class GameScene extends Phaser.Scene {
 
     const dev = devHooks();
     if (dev !== undefined) dev.gameFrames = (dev.gameFrames ?? 0) + 1;
+  }
+
+  /**
+   * Boss sahaya çıktı mı — `M8-T09`.
+   *
+   * `wave:started` olayına bağlanmadı: boss refakatinden **8 sn sonra**
+   * doğuyor (`BOSS_REFAKAT_GECIKMESI_SN`, §7), yani dalga başında bant
+   * göstermek erken olurdu ve oyuncu bandı boss yokken görürdü.
+   * `bossInfo` zaten sahadaki boss'u arıyor (can çubuğu onu kullanıyor);
+   * yok→var geçişi tam aradığımız an.
+   */
+  #bossGirisi(): void {
+    const vardi = this.#bossSahada;
+    this.#bossSahada = this.bossInfo !== null;
+    if (this.#bossSahada && !vardi) {
+      this.#bossBanner?.goster(() => this.shake.trigger(1, 0, 0.8));
+    }
   }
 
   /**

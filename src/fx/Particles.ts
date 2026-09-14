@@ -168,15 +168,30 @@ export class Particles {
       return;
     }
 
+    /**
+     * `M8-T09` — ölüm artık **yöne göre** iki biçimde:
+     *
+     * - Yerdekiler yana devriliyor (±70°) ve eziliyor: silüet yere
+     *   düşüyor gibi okunuyor.
+     * - Uçanlar devrilmiyor, **yukarı süzülüp sönüyor** — bir harpi'nin
+     *   yere yapışması yanlış hikâye anlatırdı.
+     *
+     * Süre **oyun zamanına** bağlı: `tweens.timeScale` `GameClock`
+     * tarafından yazılıyor (TIER 1 kural 8), yani 2× hızda yarısı.
+     *
+     * Havuz sözleşmesi değişmedi: iki dal da `onComplete`'te `release`
+     * ediyor ve `Angle`/`Position` zaten `HAVUZ_ALANLARI`'nda.
+     */
+    const ucan = e.def?.flying === true;
     this.#scene.tweens.add({
       targets: e,
-      scaleX: 1.3,
-      scaleY: 0.6,
+      scaleX: ucan ? 0.85 : 1.3,
+      scaleY: ucan ? 0.85 : 0.6,
+      angle: ucan ? e.angle : (e.id % 2 === 0 ? 70 : -70),
+      y: ucan ? e.y - 26 : e.y,
       alpha: 0,
-      duration: 120,
+      duration: ucan ? 200 : 180,
       ease: 'Quad.easeOut',
-      // Süre **oyun zamanına** bağlı: `tweens.timeScale` `GameClock`
-      // tarafından yazılıyor (TIER 1 kural 8), yani 2× hızda 60 ms.
       onComplete: () => havuz.release(e),
     });
   }
