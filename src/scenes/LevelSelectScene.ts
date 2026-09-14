@@ -6,6 +6,9 @@ import { LocalStore } from '../util/storage';
 import { t } from '../util/i18n';
 import { PreloadScene } from './PreloadScene';
 import { createParchmentButton } from '../fx/ParchmentFrame';
+import { getSettings } from '../systems/Settings';
+import { DIFFICULTY } from '../data/difficulty';
+import type { Difficulty } from '../data/difficulty';
 import { FRAME_STAR, FRAME_STAR_EMPTY } from '../data/spriteFrames';
 import type { StringKey } from '../data/strings';
 
@@ -45,8 +48,11 @@ const KART_ARA_Y = 30;
  */
 const SATIR_BASINA = 3;
 
+/** Zorluk seçici satırı — kartların üstünde, yıldız toplamının altında. */
+const ZORLUK_Y = 148;
+
 /** Kartların dikey olarak ortalanacağı bant (başlık altı, "Geri" üstü). */
-const IZGARA_UST = 150;
+const IZGARA_UST = 186;
 const IZGARA_ALT = 660;
 
 /** Izgara yerleşimi — saf aritmetik, sahneye dokunmuyor. */
@@ -168,6 +174,8 @@ export class LevelSelectScene extends Phaser.Scene {
       .setDisplaySize(IKON_BOYUT, IKON_BOYUT);
     toplamMetin.setX(solKenar + IKON_BOYUT + IKON_METIN_BOSLUK);
 
+    this.#zorlukSecici(width);
+
     const ids = MAPS.map((m) => m.id);
     MAPS.forEach((m, i) => {
       const { x, y } = izgaraKonumu(i, MAPS.length, width);
@@ -261,6 +269,76 @@ export class LevelSelectScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true })
       .on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => this.scene.start('Menu'));
+  }
+
+  /**
+   * Zorluk seçici — `M8-T11`.
+   *
+   * **Ayarlar panelinde değil, burada.** Zorluk bir elin ortasında
+   * değiştirilmemeli (dalga 7'de "Kolay"a geçmek kaydı anlamsızlaştırır);
+   * seviye seçim ekranı onu değiştirmenin doğal ve tek anı.
+   *
+   * TIER 1 kural 7: üç ayrı statik `Text`, `setText` yok — seçim
+   * değişince sahne yeniden kuruluyor (`SettingsPanel`'in dil satırıyla
+   * aynı desen).
+   */
+  #zorlukSecici(width: number): void {
+    const settings = getSettings(this);
+    const secili = settings.state.difficulty;
+    const secenekler: readonly { id: Difficulty; etiket: StringKey }[] = [
+      { id: 'kolay', etiket: 'diffKolay' },
+      { id: 'normal', etiket: 'diffNormal' },
+      { id: 'zor', etiket: 'diffZor' },
+    ];
+
+    const BTN_W = 120;
+    /** Platform: dokunmatik hedef en az 44×44 px (bekçi bunu ölçüyor). */
+    const BTN_H = 44;
+    const ARA = 8;
+    const toplam = secenekler.length * BTN_W + (secenekler.length - 1) * ARA;
+    const y = ZORLUK_Y;
+
+    this.add
+      .text(width / 2 - toplam / 2 - 16, y, t('difficulty'), {
+        fontFamily: 'Spectral, serif',
+        fontSize: '18px',
+        color: '#8A7250',
+      })
+      .setOrigin(1, 0.5);
+
+    secenekler.forEach((o, i) => {
+      const x = width / 2 - toplam / 2 + BTN_W / 2 + i * (BTN_W + ARA);
+      const aktif = o.id === secili;
+      if (aktif) {
+        createParchmentButton(this, x, y, BTN_W, BTN_H, 10);
+      } else {
+        this.add
+          .rectangle(x, y, BTN_W, BTN_H, INK)
+          .setStrokeStyle(2, GOLD, KILITLI_KONTUR_ALFA)
+          .setInteractive({ useHandCursor: true })
+          .on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => {
+            settings.set('difficulty', o.id);
+            this.scene.restart();
+          });
+      }
+      this.add
+        .text(x, y, t(o.etiket), {
+          fontFamily: 'Spectral, serif',
+          fontSize: '18px',
+          color: aktif ? '#14203A' : 'rgba(228,211,168,0.55)',
+        })
+        .setOrigin(0.5);
+    });
+
+    if (!DIFFICULTY[secili].recordStars) {
+      this.add
+        .text(width / 2, y + 30, t('diffNoStars'), {
+          fontFamily: 'Spectral, serif',
+          fontSize: '16px', // Platform: minimum 16 px
+          color: '#8A7250',
+        })
+        .setOrigin(0.5);
+    }
   }
 
   /**
