@@ -92,7 +92,7 @@ Kapsama, bütçe, Kısıt A/B testlerinin hiçbiri **HUD'u** bilmiyor:
 | Konu | Durum |
 |---|---|
 | `M8-P01`/`P02` harita 4-5 arka planı | **Kapandı** — gerçek görseller oyunda (99 KB / 225 KB); prompt'lar `docs/plan/M8-sanat-promptlari.md` |
-| `M8-P03` üç ses | **Üçünün de kod tarafı bağlı**, yalnız dosyalar bekliyor |
+| `M8-P03` üç ses | **Kapandı** — `ui_click`/`countdown_tick` sentezlendi, `boss_music` oyun müziğinden türetildi (yer tutucu) |
 | `M8-B01` yolların HUD altından geçmesi | **Kapandı** — HUD yerleşimi taranarak çözüldü, harita geometrisine dokunulmadı (aşağıda) |
 | `Y11` Phaser özel yapımı | **Kapandı** — özel yapım üretildi ve ölçüldü, ham JS −%26,5 (aşağıda) |
 | `Y10` / `Y02` adım 3 | Kullanıcının DevTools CPU kısıtlama ölçümünü bekliyor |

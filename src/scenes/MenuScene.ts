@@ -83,6 +83,13 @@ export class MenuScene extends Phaser.Scene {
     // eseri) dosya **hiç indirilmiyor**; `BootScene` zaten
     // `sound.mute`'u doğru kurdu, burada yalnız bant genişliği israfını
     // önlüyoruz.
+    // `M8-P03` — düğme sesi müzikten bağımsız yükleniyor: müziği kapalı
+    // oyuncuda da menü düğmeleri sessiz kalmasın.
+    if (!this.cache.audio.exists('ui_click')) {
+      PreloadScene.queueMenuSfx(this);
+      this.load.start();
+    }
+
     const ayarlar = getSettings(this);
     if (ayarlar.musicScale > 0 && this.sound.get('music_menu')?.isPlaying !== true) {
       /**

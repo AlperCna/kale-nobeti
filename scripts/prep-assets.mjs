@@ -281,6 +281,9 @@ const SES_EFEKTLERI = [
   'shot_okcu', 'shot_top', 'shot_buyu', 'enemy_death', 'gold',
   'tower_place', 'tower_upgrade', 'error', 'wave_start', 'boss_intro',
   'victory', 'defeat',
+  // `M8-P03` — kaynakları `scripts/make-sfx.mjs` **sentezliyor**
+  // (brifin tarifi beste değil doku: "kuru, kısa, tok darbe").
+  'ui_click', 'countdown_tick',
 ];
 // `Y05` — ikisi de artık `lazy/` altında: `music_menu` menü göründükten
 // SONRA yükleniyor (`MenuScene.ts`, `filecomplete` deseni `music_game`
@@ -293,6 +296,37 @@ const SES_EFEKTLERI = [
 const MUZIK = [
   { ad: 'music_menu', cikisYolu: 'lazy/music_menu.m4a', sure: 60 },
   { ad: 'music_game', cikisYolu: 'lazy/music_game.m4a' },
+  /**
+   * `boss_music` — **oyun müziğinden türetiliyor**, ayrı bir beste yok.
+   *
+   * `M8-sanat-brifi.md` zaten bunu tarif ediyor: *"Oyun müziğinin **aynı
+   * tonalitesinde**, ama tempo biraz daha yavaş ve ağır, alt register
+   * baskın, ana tema tanınabilir kalmalı — yeni bir parça değil, aynı
+   * parçanın 'kuşatma' hâli."*
+   *
+   * Filtre zinciri tam olarak o üç maddeyi karşılıyor:
+   *
+   *   atempo=0.88   tempo %12 yavaş — perdeye DOKUNMUYOR, yani tonalite
+   *                 aynı kalıyor (perde kaydırsaydık brifin ilk şartını
+   *                 bozardık)
+   *   bass=g=5      alt register baskın
+   *   lowpass=6000  tizi geri çekiyor: "ağır"lık hissi
+   *
+   * Süre 55 sn: brif 40-70 istiyor. Döngü kenarlarındaki kısılma
+   * `sesDosyasiCevir`'in kendi `KIRPMA_KISILMA_SN` mekanizmasından
+   * geliyor — döngü noktası kulakla değil, kısılarak yumuşatılıyor.
+   *
+   * **Yer tutucu.** Gerçek bir boss besteсi gelirse `assets-src/audio/`
+   * altına `boss_music.wav`/`.mp3` konur ve `kaynakAd` satırı silinir;
+   * `sesKaynagiBul` onu kendiliğinden bulur.
+   */
+  {
+    ad: 'boss_music',
+    kaynakAd: 'music_game',
+    cikisYolu: 'lazy/boss_music.m4a',
+    sure: 55,
+    filtre: 'atempo=0.88,bass=g=5,lowpass=f=6000',
+  },
 ];
 
 /** Kaynak `.wav` ya da `.mp3` olabilir — sanatçı hangisini verdiyse. */
@@ -387,8 +421,8 @@ function wavBasSessizligi(srcPath) {
   return Math.max(0, ilk * 0.01 - 0.02);
 }
 
-async function sesDosyasiCevir(ad, cikisYolu, bitrate, sure) {
-  const srcPath = sesKaynagiBul(ad);
+async function sesDosyasiCevir(ad, cikisYolu, bitrate, sure, kaynakAd, ekFiltre) {
+  const srcPath = sesKaynagiBul(kaynakAd ?? ad);
   if (srcPath === null) return false;
   const outPath = path.join(OUT, cikisYolu);
   await ensureDir(path.dirname(outPath));
@@ -405,14 +439,19 @@ async function sesDosyasiCevir(ad, cikisYolu, bitrate, sure) {
            // akışı sayılıyor ve .m4a'ya (ses-only mp4 profili) yazılamıyor.
     '-map', '0:a',
   ];
+  // `ekFiltre` kırpmadan ÖNCE geliyor: `atempo` süreyi değiştiriyor ve
+  // `-t` ondan sonra uygulanmalı, yoksa 55 sn'lik kırpma yavaşlatmadan
+  // önceki zaman ekseninde ölçülürdü.
+  const filtreler = [];
+  if (ekFiltre !== undefined) filtreler.push(ekFiltre);
   if (sure !== undefined) {
     args.push('-t', String(sure));
-    args.push(
-      '-af',
-      `afade=t=in:st=0:d=${KIRPMA_KISILMA_SN},` +
-        `afade=t=out:st=${sure - KIRPMA_KISILMA_SN}:d=${KIRPMA_KISILMA_SN}`,
+    filtreler.push(
+      `afade=t=in:st=0:d=${KIRPMA_KISILMA_SN}`,
+      `afade=t=out:st=${sure - KIRPMA_KISILMA_SN}:d=${KIRPMA_KISILMA_SN}`,
     );
   }
+  if (filtreler.length > 0) args.push('-af', filtreler.join(','));
   args.push('-c:a', 'aac', '-b:a', bitrate, '-ac', '1', outPath);
 
   await execFileAsync(ffmpegYolu, args);
@@ -444,7 +483,7 @@ async function sesleriUret() {
     if (await sesDosyasiCevir(ad, yol, '128k')) uretilen++;
   }
   for (const m of MUZIK) {
-    if (await sesDosyasiCevir(m.ad, m.cikisYolu, '96k', m.sure)) uretilen++;
+    if (await sesDosyasiCevir(m.ad, m.cikisYolu, '96k', m.sure, m.kaynakAd, m.filtre)) uretilen++;
   }
   const toplam = SES_EFEKTLERI.length + MUZIK.length;
   console.log(`  (${uretilen}/${toplam} kaynak dosya bulundu — eksikler atlandı)`);
