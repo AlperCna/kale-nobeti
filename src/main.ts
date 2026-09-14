@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { portal } from './systems/Portal';
+import { portalSec } from './systems/portalAdapters';
 import { BootScene } from './scenes/BootScene';
 import { PreloadScene } from './scenes/PreloadScene';
 import { MenuScene } from './scenes/MenuScene';
@@ -85,6 +87,18 @@ const config: Phaser.Types.Core.GameConfig = {
     OverlayScene,
   ],
 };
+
+/**
+ * `M9-T01` — portal bağdaştırıcısı **oyundan önce** kuruluyor.
+ *
+ * `portalSec()` yapım hedefine bakıyor (`VITE_PORTAL`) ve SDK globali
+ * gerçekten geldiyse bağdaştırıcıyı döndürüyor. Gelmemişse (itch.io
+ * sürümü, geliştirme, ya da SDK betiği inememiş) `portal` `PORTAL_YOK`'ta
+ * kalıyor ve bütün çağrılar sessizce yutuluyor — hiçbir sahne "portal var
+ * mı" diye sormuyor.
+ */
+const portalAdapter = portalSec();
+if (portalAdapter !== null) portal.kur(portalAdapter);
 
 const game = new Phaser.Game(config);
 

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { yenidenKurOverlay } from './OverlayScene';
+import { portal } from '../systems/Portal';
 import type { SoundSystem } from '../fx/SoundSystem';
 import type { GameScene } from './GameScene';
 import type { Speed } from '../types/common';
@@ -343,6 +344,8 @@ export class HudScene extends Phaser.Scene {
 
     this.#bitti = true;
     game.soundSystem?.playOutcome(kazandi);
+    // `M9-T01` — seviye bitişi de bir "kesinti" (Poki/CrazyGames şartı).
+    portal.gameplayStop();
     this.scene.stop('Game');
     this.scene.start('GameOver', {
       won: kazandi,
@@ -517,6 +520,13 @@ export class HudScene extends Phaser.Scene {
     });
     buton(t('settingsButton'), () => this.#settingsPanel?.setVisible(true));
     buton(t('backToMenu'), () => {
+      // `M9-T01` — menüye dönüş de kesinti. Zaten duraklatmadayız ve
+      // `Portal` yinelenen `stop`'u yutuyor; yine de açıkça yazılıyor
+      // ki "menüye dönerken olay gitti mi" sorusu koda bakarak
+      // cevaplanabilsin. **Burada reklam YOK** — Poki'nin yanlış
+      // kullanım örneği tam olarak bu: "oyundan çıkıp seviye seçime
+      // gitmek".
+      portal.gameplayStop();
       this.scene.stop('Hud');
       this.scene.stop('Game');
       this.scene.start('LevelSelect');
@@ -553,8 +563,25 @@ export class HudScene extends Phaser.Scene {
     const game = this.scene.get('Game') as GameScene;
     if (this.#paused) {
       this.scene.pause('Game');
+      // `M9-T01` — Poki/CrazyGames: duraklatma bir "kesinti".
+      portal.gameplayStop();
     } else {
       this.scene.resume('Game');
+      /**
+       * Poki'nin tek meşru reklam anı: *"duraklamadan çıkıp oyuna
+       * dönerken"*. Oyuncu "Devam"a bastıysa devam etme niyetini
+       * göstermiş demektir — dokümanın kendi ölçütü bu.
+       *
+       * Reklam boyunca ses kısılıyor (`GAME-DESIGN.md` §12'nin son
+       * satırı, Poki şartı). `sound.mute` toplu anahtar olduğu için
+       * reklamdan önceki değer saklanıp geri konuyor — oyuncunun kendi
+       * "ses kapalı" tercihi reklam yüzünden açılmasın.
+       */
+      const oncekiMute = this.sound.mute;
+      portal.commercialBreak((kisik) => {
+        this.sound.mute = kisik ? true : oncekiMute;
+      });
+      portal.gameplayStart();
     }
     game.bus.emit('game:paused', { paused: this.#paused });
 

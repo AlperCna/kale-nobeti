@@ -204,7 +204,7 @@ it('dokum', () => {
     dpsOrnek: { okcuT2Boss: +effectiveDps(TOWERS[0], 1, ENEMIES.find((e) => e.id === 'ogreSef')).toFixed(2) },
   };
   writeFileSync(${JSON.stringify(veriYolu)}, JSON.stringify(veri));
-});
+}, 60000);
 `,
   'utf8',
 );

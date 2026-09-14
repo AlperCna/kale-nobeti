@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import type { Plugin } from 'vite';
 import { readFileSync } from 'node:fs';
 import { uretPhaser } from './scripts/build-phaser.mjs';
 
@@ -35,7 +36,43 @@ const surum = (JSON.parse(readFileSync('./package.json', 'utf8')) as { version: 
  */
 const OZEL_PHASER = await uretPhaser();
 
+/**
+ * `M9-T01` — portal SDK betigini YAPIM HEDEFINE gore ekler.
+ *
+ * Iki SDK ayni sayfaya konulamaz (ikisi de reklam cercevesi kuruyor) ve
+ * itch.io surumunde hicbiri olmamali: `research/05`'in yasak listesi hem
+ * "ucuncu taraf reklam (yalniz Poki SDK)" hem "disa giden baglantilar"
+ * diyor.
+ *
+ *   VITE_PORTAL=poki       npm run build
+ *   VITE_PORTAL=crazygames npm run build
+ *   (verilmezse)           SDK yok — itch.io / gelistirme
+ *
+ * Betik `<head>`'e konuyor ve SENKRON: SDK globali `main.ts` calismadan
+ * once hazir olmali, yoksa `portalSec()` null gorup `PORTAL_YOK`'ta
+ * kalir ve zorunlu olaylar hic gitmez.
+ */
+const PORTAL_BETIK: Record<string, string> = {
+  poki: 'https://game-cdn.poki.com/scripts/v2/poki-sdk.js',
+  crazygames: 'https://sdk.crazygames.com/crazygames-sdk-v3.js',
+};
+
+function portalSdkEklentisi(): Plugin {
+  const hedef = process.env.VITE_PORTAL ?? '';
+  const src = PORTAL_BETIK[hedef];
+  return {
+    name: 'portal-sdk',
+    transformIndexHtml(html) {
+      if (src === undefined) return html;
+      return html.replace('</head>', `  <script src="${src}"></script>
+  </head>`);
+    },
+  };
+}
+
 export default defineConfig({
+  plugins: [portalSdkEklentisi()],
+
   // CLAUDE.md Platform kisitlari: mutlak yol yasak (CrazyGames).
   // Unutulursa oyun portalda hic yuklenmez ve bu `npm run dev`'de
   // FARK EDILMEZ — yalniz dist/ alt klasorden servis edilince beyaz
