@@ -39,6 +39,7 @@ import { EventBus } from './EventBus';
 import { PathSystem } from './PathSystem';
 import { LineMover, PathMover, resetEnemyState } from './movers';
 import { ProjectileSystem } from './ProjectileSystem';
+import { EnemyAbilitySystem } from './EnemyAbilitySystem';
 import { TowerSystem } from './TowerSystem';
 import { WaveManager } from './WaveManager';
 import type { TowerEffect } from '../types/tower';
@@ -304,9 +305,27 @@ export function simulateWave(
   // Hazırlık aşamasını atla — ölçülen şey dalganın kendisi.
   wm.startWaveEarly();
 
+  /**
+   * **Düşman yetenekleri — `M10-T03`'te eklendi.**
+   *
+   * Buraya kadar `waveSim` yetenekleri **hiç** simüle etmiyordu: Şaman
+   * iyileştirmiyor, Trol yenilenmiyor, Örümcek Ana bölünmüyordu. Yani
+   * her denge ölçümü sistematik olarak **iyimser**di — ve en büyük
+   * sapma bölünmede: harita 3'te 6 Örümcek Ana var, her biri 3 yavru
+   * demek, yani sim 18 düşmanı hiç görmüyordu.
+   *
+   * `S80` ile aynı hata sınıfı (oyun ve sim farklı şeyi çalıştırıyor),
+   * bu sefer düşman tarafında. Gerçek oyunla aynı sıra: yetenekler
+   * kulelerden **önce** işleniyor (`GameScene.update`).
+   */
+  const yetenekler = new EnemyAbilitySystem<SimEnemy>(enemyPool, map.hpMultiplier, (id) =>
+    getEnemyForMap(id, map),
+  );
+
   let adim = 0;
   while (!wm.isComplete && adim < MAX_STEPS) {
     wm.update(stepMs);
+    yetenekler.update(stepMs);
     const dusmanlar = enemyPool.activeItems();
     if (dusmanlar.length > peakEnemies) peakEnemies = dusmanlar.length;
     // Kışla kulelerden **önce**: engellenen düşman aynı adımda duruyor,

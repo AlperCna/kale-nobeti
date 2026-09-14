@@ -73,7 +73,25 @@ export interface DifficultyDef {
 }
 
 export const DIFFICULTY: Readonly<Record<Difficulty, DifficultyDef>> = {
-  kolay: { hpScale: 0.85, startLives: BALANCE.startLives, recordStars: false },
+  /**
+   * `M10-T03` (S81): **0,85 → 0,75.** `waveSim` düşman yeteneklerini
+   * simüle etmeye başlayınca (Şaman iyileştirmesi, Trol yenilenmesi,
+   * Örümcek Ana bölünmesi) Kolay'ın kendi kabul ölçütü düştü:
+   * "beş harita da bol payla geçiliyor" (can kaybı ≤ 10).
+   *
+   * Ölçülen tarama — can kaybı, gerçekçi referans tahta:
+   *
+   * | hpScale | h1 | h2 | h3 | h4 | h5 |
+   * |---|---|---|---|---|---|
+   * | 0,85 (eski) | 0 | 4 | 5 | 10 | **13** |
+   * | **0,75** | 0 | 2 | 2 | 5 | **5** |
+   * | 0,65 | 0 | 0 | 1 | 0 | 2 |
+   *
+   * 0,75 ölçütü karşılayan **en büyük** adım; 0,65 Kolay'ı neredeyse
+   * sızıntısız yapıyor ve "kolay" ile "oynanmıyor" arasındaki farkı
+   * siliyor.
+   */
+  kolay: { hpScale: 0.75, startLives: BALANCE.startLives, recordStars: false },
   normal: { hpScale: 1, startLives: BALANCE.startLives, recordStars: true },
   zor: { hpScale: 1, startLives: 12, recordStars: true },
 };
