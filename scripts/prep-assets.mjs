@@ -63,6 +63,9 @@ const ARKA_PLANLAR = [
   // brifi `docs/plan/M8-sanat-brifi.md`; üretilince yalnız kaynak PNG
   // değişecek, bu satır aynı kalacak.
   { src: ['bg', 'kar-gecidi.png'], out: 'lazy/kar-gecidi.webp' },
+  // `M8-P02` — **GEÇİCİ**: harita 3'ün arka planından soğutup soluklaştırarak
+  // türetildi. Gerçek görsel brifi `docs/plan/M8-sanat-brifi.md`.
+  { src: ['bg', 'kadim-harabe.png'], out: 'lazy/kadim-harabe.webp' },
   // M6-T05 — menü arka planı, `queueBoot`'ta (ilk indirmenin parçası).
   { src: ['menu', 'menu-bg.png'], out: 'menu-bg.webp' },
 ];
@@ -95,6 +98,7 @@ const KART_KUCUK_RESIMLERI = [
   { src: ['bg', 'tas-kopru.png'], id: 'tas-kopru' },
   { src: ['bg', 'kul-ovasi.png'], id: 'kul-ovasi' },
   { src: ['bg', 'kar-gecidi.png'], id: 'kar-gecidi' },
+  { src: ['bg', 'kadim-harabe.png'], id: 'kadim-harabe' },
 ];
 
 async function kartKucukResimleriUret() {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { MAP_1, MAP_2, MAP_3, MAP_4, MAPS, COVERAGE_REFERENCE_RANGE } from './maps';
+import { MAP_1, MAP_2, MAP_3, MAP_4, MAP_5, MAPS, COVERAGE_REFERENCE_RANGE } from './maps';
 import { measureCoverage, pathLength, spotsCoveringFlyerPaths } from '../util/coverage';
 
 describe('MAP_1 — GAME-DESIGN §9 tablosuna uygunluk', () => {
@@ -116,15 +116,16 @@ describe('MAP_1 — denge hedefleri', () => {
 });
 
 describe('MAPS', () => {
-  it('M8 sonunda DÖRT harita var, zorluk sırasında', () => {
+  it('M8 sonunda BEŞ harita var, zorluk sırasında', () => {
     // M1'de bu test "tek harita" diyordu, M7'de "üç" — ikisi de taş
     // durumuydu, kalıcı bir kural değil. `M8-T04` dördüncüyü ekliyor.
     // Sıra kilit sırası: `SaveSystem.isUnlocked` bu diziyi okuyor.
-    expect(MAPS).toHaveLength(4);
+    expect(MAPS).toHaveLength(5);
     expect(MAPS[0]).toBe(MAP_1);
     expect(MAPS[1]).toBe(MAP_2);
     expect(MAPS[2]).toBe(MAP_3);
     expect(MAPS[3]).toBe(MAP_4);
+    expect(MAPS[4]).toBe(MAP_5);
   });
 
   it('kimlikler benzersiz — kayıt anahtarı bunlara dayanıyor', () => {
@@ -223,10 +224,9 @@ describe('Harita 4 — M8-T04', () => {
 
   it('kadro harita 3 + ogreSef — yeni düşman tipi YOK', () => {
     // `M8-T04` harita ekliyor, düşman değil (yeni düşman `M8-T09`'un işi).
-    for (const e of MAP_3.enemyRoster) {
-      if (e === 'orumcekYavrusu') continue; // yavru ayrı sağlanıyor
-      expect(MAP_4.enemyRoster, e).toContain(e);
-    }
+    // Yavru da dahil: Örümcek Ana bölününce sahada doğuyor, kadroda
+    // olmazsa bilgi paneli o düşmanı hiç listelemiyor.
+    for (const e of MAP_3.enemyRoster) expect(MAP_4.enemyRoster, e).toContain(e);
   });
 
   it('uçan hattını gören nokta oranı ≥ %40', () => {
@@ -297,6 +297,8 @@ describe('§9 kapsama bandı — KOL BAŞINA (ayrık yol uyarısı)', () => {
     expect(kolOrtalamasi(MAP_3.branchCoverage[0]!)).toBeCloseTo(291.3, 0);
     expect(kolOrtalamasi(MAP_3.branchCoverage[1]!)).toBeCloseTo(291.3, 0);
     expect(kolOrtalamasi(MAP_4.branchCoverage[0]!)).toBeCloseTo(290.1, 0);
+    expect(kolOrtalamasi(MAP_5.branchCoverage[0]!)).toBeCloseTo(298.0, 0);
+    expect(kolOrtalamasi(MAP_5.branchCoverage[1]!)).toBeCloseTo(298.0, 0);
   });
 
   it('Y ayrımında iki kol SİMETRİK — biri diğerinden kolay değil', () => {
@@ -343,5 +345,116 @@ describe('Uçan hattı — M4-T06 kriteri (≥ %40 nokta)', () => {
   it('her girişin bir uçan hattı var — harita 3’te iki giriş, iki hat', () => {
     expect(MAP_2.flyerPaths).toHaveLength(1);
     expect(MAP_3.flyerPaths).toHaveLength(2);
+  });
+});
+
+// ---------------------------------------------------------------------
+// M8-T05 — Harita 5 "Kadim Harabe"
+// ---------------------------------------------------------------------
+
+describe('Harita 5 - M8-T05', () => {
+  it('sayilar OLCULDU, uydurulmadi (M8-T05-SONUC)', () => {
+    expect(MAP_5.id).toBe('kadim-harabe');
+    expect(MAP_5.buildSpots).toHaveLength(15);
+    expect(MAP_5.paths).toHaveLength(2); // iki giris, erken birlesme
+    // Altın doyumu 4,8'de düzleşiyor (tahta 6440'ta sabit), yani altın
+    // artık bağlayıcı kısıt değil; çarpan **can kaybı taramasından** geldi:
+    // 6,0→12 · 6,4→11 · 6,6→11 · **6,8→16** · 7,0→18 · 7,2→20.
+    // 6,8 seçildi: harita 4'ün 13'ünün üstünde, 20 sınırının %20 altında ve
+    // dalga profili tek bir uçurum içermiyor ([0,2,1,1,0,1,0,2,4,2]).
+    expect(MAP_5.hpMultiplier).toBe(6.8);
+    expect(MAP_5.goldMultiplier).toBe(6.8);
+    expect(MAP_5.startGold).toBe(1904);
+  });
+
+  it('iki kol da BIRLESIYOR - ortak govde gercekten ortak', () => {
+    const a = MAP_5.paths[0]!;
+    const b = MAP_5.paths[1]!;
+    expect(a.slice(a.length - 6)).toEqual(b.slice(b.length - 6));
+    expect(a[0]).not.toEqual(b[0]);
+  });
+
+  it('ortak govde UZUN - harita 3ten farki bu', () => {
+    // Harita 3'te birlesme kalenin dibindeydi (ortak kuyruk tek segment).
+    // Burada govde yolun yarisindan fazlasi; tasarimin tamami buna dayaniyor.
+    const a = MAP_5.paths[0]!;
+    expect(pathLength(a.slice(a.length - 6))).toBeGreaterThan(pathLength(a) * 0.5);
+  });
+
+  it('ucan hattini goren nokta orani >= %40', () => {
+    const goren = spotsCoveringFlyerPaths(
+      MAP_5.flyerPaths,
+      MAP_5.buildSpots,
+      COVERAGE_REFERENCE_RANGE,
+    );
+    expect(goren / MAP_5.buildSpots.length).toBeGreaterThanOrEqual(0.4);
+  });
+
+  it('yapi noktasi HICBIR kolun ustunde degil', () => {
+    for (const yol of MAP_5.paths) {
+      for (const spot of MAP_5.buildSpots) {
+        let enYakinKare = Infinity;
+        for (let i = 0; i < yol.length - 1; i++) {
+          const a = yol[i]!;
+          const b = yol[i + 1]!;
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const uzKare = dx * dx + dy * dy;
+          const t =
+            uzKare === 0
+              ? 0
+              : Math.max(0, Math.min(1, ((spot.x - a.x) * dx + (spot.y - a.y) * dy) / uzKare));
+          const px = a.x + t * dx - spot.x;
+          const py = a.y + t * dy - spot.y;
+          enYakinKare = Math.min(enYakinKare, px * px + py * py);
+        }
+        expect(Math.sqrt(enYakinKare), `${spot.x},${spot.y}`).toBeGreaterThanOrEqual(40);
+      }
+    }
+  });
+});
+
+// ---------------------------------------------------------------------
+// HUD çakışması — M8-T05'te ortaya çıktı
+// ---------------------------------------------------------------------
+
+/**
+ * HUD'un **kalıcı** kutuları. Canlı ölçüldü (`Hud` sahnesindeki
+ * `Container.getBounds()`), tahmin değil.
+ *
+ * Geçici olanlar (erken-başlat rozeti, dalga telgrafı) bilerek dışarıda:
+ * onlar yalnız hazırlık sayacı boyunca duruyor ve bir yapı noktasını
+ * kalıcı olarak gizlemiyorlar.
+ */
+const KALICI_HUD = [
+  { ad: 'kartuş', x0: 8, y0: 16, x1: 224, y1: 156 },
+  { ad: 'hız+ayar', x0: 1204, y0: 20, x1: 1260, y1: 144 },
+  { ad: 'yetenek', x0: 28, y0: 622, x1: 170, y1: 707 },
+];
+
+/** Yapı noktası dairesinin yarıçapı (`MapRenderer` SPOT_RADIUS). */
+const NOKTA_YARICAPI = 28;
+
+describe('yapı noktası HUD’un altında kalmıyor', () => {
+  /**
+   * `M8-T04` harita 4'e `(190, 65)` noktasını koydu ve o nokta altın/can
+   * kartuşunun **tam altındaydı**: oyuncu ne görebiliyordu ne de rahat
+   * tıklayabiliyordu. Kapsama, bütçe, Kısıt A/B testlerinin hiçbiri HUD'u
+   * bilmiyor, o yüzden hepsi yeşil geçti — hata yalnız canlı ekran
+   * görüntüsünde göründü. Bu test o boşluğu kapatıyor.
+   */
+  it('hiçbir haritada kalıcı HUD kutusuyla çakışan nokta yok', () => {
+    for (const m of MAPS) {
+      for (const s of m.buildSpots) {
+        for (const b of KALICI_HUD) {
+          const carpisiyor =
+            s.x > b.x0 - NOKTA_YARICAPI &&
+            s.x < b.x1 + NOKTA_YARICAPI &&
+            s.y > b.y0 - NOKTA_YARICAPI &&
+            s.y < b.y1 + NOKTA_YARICAPI;
+          expect(carpisiyor, `${m.id} (${s.x},${s.y}) ${b.ad} altinda`).toBe(false);
+        }
+      }
+    }
   });
 });

@@ -15,8 +15,8 @@
  * biri diğerinin yerine geçmiyor.
  */
 import { describe, expect, it } from 'vitest';
-import { MAP_1, MAP_2, MAP_3, MAP_4, COVERAGE_REFERENCE_RANGE } from '../data/maps';
-import { MAP1_WAVES, MAP2_WAVES, MAP3_WAVES, MAP4_WAVES } from '../data/waves';
+import { MAP_1, MAP_2, MAP_3, MAP_4, MAP_5, COVERAGE_REFERENCE_RANGE } from '../data/maps';
+import { MAP1_WAVES, MAP2_WAVES, MAP3_WAVES, MAP4_WAVES, MAP5_WAVES } from '../data/waves';
 import { buildReferenceBoards } from './balanceChecks';
 import { simulateAllWaves } from './waveSim';
 import { measureCoverage } from '../util/coverage';
@@ -63,6 +63,7 @@ describe('Kısıt B — düşman kırılımı', () => {
       [MAP_2, MAP2_WAVES],
       [MAP_3, MAP3_WAVES],
       [MAP_4, MAP4_WAVES],
+      [MAP_5, MAP5_WAVES],
     ] as const) {
       expect(kosu(m, w).toplam.ogreSef ?? 0, m.id).toBe(0);
     }
@@ -76,6 +77,7 @@ describe('Kısıt B — düşman kırılımı', () => {
       [MAP_2, MAP2_WAVES],
       [MAP_3, MAP3_WAVES],
       [MAP_4, MAP4_WAVES],
+      [MAP_5, MAP5_WAVES],
     ] as const) {
       expect(canKaybi(m, w), m.id).toBeLessThan(20);
     }
@@ -92,6 +94,7 @@ describe('Kısıt B — düşman kırılımı', () => {
       canKaybi(MAP_2, MAP2_WAVES),
       canKaybi(MAP_3, MAP3_WAVES),
       canKaybi(MAP_4, MAP4_WAVES),
+      canKaybi(MAP_5, MAP5_WAVES),
     ];
     for (let i = 1; i < kayip.length; i++) {
       expect(kayip[i]!, `harita ${i + 1}: ${kayip.join(' → ')}`).toBeGreaterThan(kayip[i - 1]!);
@@ -112,6 +115,7 @@ describe('Kısıt B — düşman kırılımı', () => {
       [MAP_2, MAP2_WAVES],
       [MAP_3, MAP3_WAVES],
       [MAP_4, MAP4_WAVES],
+      [MAP_5, MAP5_WAVES],
     ] as const) {
       expect(kosu(m, w).sim[0]!.leakedCount, `${m.id} dalga 1`).toBe(0);
     }
@@ -122,6 +126,7 @@ describe('Kısıt B — düşman kırılımı', () => {
     expect(kosu(MAP_2, MAP2_WAVES).adet).toBeLessThanOrEqual(8);
     expect(kosu(MAP_3, MAP3_WAVES).adet).toBeLessThanOrEqual(25);
     expect(kosu(MAP_4, MAP4_WAVES).adet).toBeLessThanOrEqual(14);
+    expect(kosu(MAP_5, MAP5_WAVES).adet).toBeLessThanOrEqual(14);
   });
 
   it('kırılım toplamı sızıntı sayısıyla TUTARLI', () => {
@@ -130,6 +135,7 @@ describe('Kısıt B — düşman kırılımı', () => {
       [MAP_2, MAP2_WAVES],
       [MAP_3, MAP3_WAVES],
       [MAP_4, MAP4_WAVES],
+      [MAP_5, MAP5_WAVES],
     ] as const) {
       const r = kosu(m, w);
       const kirilimToplam = Object.values(r.toplam).reduce((a, b) => a + (b ?? 0), 0);

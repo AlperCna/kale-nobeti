@@ -189,11 +189,71 @@ Türetilen HP **1857** (0,80 × 2321,2). Tavan tahta DPS'ine bağlı olduğu iç
 üzerinden genel çalışıyordu. Nokta sayısı 10 değil **12** oldu (kapsama
 bandı 10 noktayla tutmuyordu).
 
-### Faz 5 — Harita 5 "Kadim Harabe" — `M8-T05`, `M8-P02`
+### Faz 5 — Harita 5 "Kadim Harabe" — `M8-T05`, `M8-P02`  ☑
 
 Aynı şablon; **iki giriş + Y birleşme** (harita 2 ve 3'ün mekaniklerinin bileşimi), 12 nokta, kadro tam, çarpanlar ölçülür (`hpMultiplier` > harita 4). Boss tek kapıdan, refakat diğerinden (harita 3 kararı). Geçici arka plan `kul-ovasi.png`'den ton kaydırma; brif `M8-P02`.
 
 **Kabul kriteri** — Faz 4 ile aynı + `MAPS` sırası ve `isUnlocked` zinciri beş harita.
+
+**Durum:** ☑ **bitti** (2026-09-14)
+
+#### Sonuç — `M8-T05`
+
+**Harita.** İki giriş, `x = 200` sütununda birleşiyor, sonra **1420 px'lik
+ortak gövde** üç virajla kaleye gidiyor. Kol başına `L` = 2050 px.
+Harita 3'ten farkı burada: orada birleşme kalenin dibindeydi (ortak kuyruk
+iki noktalık), burada gövde yolun yarısından fazlası. Karar tersine dönüyor —
+"iki kolu ayrı mı tutayım yoksa gövdeye mi yığayım".
+
+**15 yapı noktası ARANARAK bulundu, elle serpilmedi.** Elle serpilen ilk
+yerleşim kol ortalamalarını 272,2 / 278,4 veriyordu (bandın altında). Tepe
+tırmanma `|A−298| + |B−298| + 0,5·|A−B|` cezasını minimize etti ve **ikisini
+de 298,0**'a getirdi. Arama kısıtları: yoldan ≥50 px, noktalar arası ≥100 px,
+HUD dikdörtgenlerinden ≥36 px.
+
+**Çarpanlar.** Altın doyumu 4,8'de düzleşiyor (tahta 6440'ta sabit), yani
+altın bağlayıcı kısıt değil. Çarpan can kaybı taramasından: 6,0→12 · 6,4→11
+· 6,6→11 · **6,8→16** · 7,0→18 · 7,2→20. Seçilen **6,8/6,8**, `startGold`
+1904. Boss zırh 2, türetilen HP **2675** (0,80 × 3344, en zayıf kol).
+
+**Ölçülen zorluk zinciri artık beş halkalı:** 0 → 6 → 10 → **13** → **16**
+can kaybı (sınır 20). `kisitB.test.ts` bunu monoton olarak doğruluyor.
+
+**Bu fazın asıl dersi HUD'du — ve üç turda öğrenildi.**
+
+Kapsama, bütçe, Kısıt A/B testlerinin **hiçbiri HUD'u bilmiyor**. O yüzden
+aşağıdaki üç hatanın üçü de bütün testler yeşilken vardı ve yalnız canlı
+ekran görüntüsünde göründü:
+
+1. Kol A `y = 120`'de altın/can kartuşunun (8-224 × 16-156) **altından**
+   giriyordu — düşman ekrana görünmeden 260 px yürüyordu.
+2. Düzeltince `y = 200` oldu; bu kez erken-başlat rozetinin
+   (17-102 × 155-211) altında kaldı — yani oyuncunun yerleşim kararı
+   verdiği tam anda giriş kapalıydı. `y = 250` oldu.
+3. Kol B `y = 660`'ta yetenek butonlarının (28-170 × 622-707) altından
+   geçiyordu. `y = 570` oldu.
+
+Ve taramayı bütün haritalara uygulayınca **harita 4'te de bir hata çıktı**:
+`M8-T04`'te koyduğum `(190, 65)` yapı noktası kartuşun tam altındaydı —
+oyuncu onu ne görebiliyor ne tıklayabiliyordu. `(200, 215)`'e alındı;
+kapsama 290,1'de **aynı** kaldı, uçan hattı da 11/12. Tahtanın değişmesi
+boss tavanını 2321 → 2416 çıkardı, türetilen HP 1857 → **1933** oldu.
+
+HUD kutuları **canlı ölçüldü** (`Container.getBounds()`), tahmin edilmedi,
+ve `maps.test.ts` artık "hiçbir yapı noktası kalıcı bir HUD kutusuyla
+çakışmıyor" diye bir test taşıyor.
+
+**Kapanmamış bulgu — `M8-B01`:** **yolların** HUD altından geçmesi devam
+ediyor: harita 1 ve 4'ün girişi kartuşun (y≈140), harita 3'ün iki girişi
+hem kartuşun hem hız/ayar düğmelerinin altından başlıyor. Harita 5'te
+düzeltildi ama eskiler M1/M7'den beri böyle. Düzeltmek ya dört haritanın
+geometrisini (ve onlara bağlı bütün ölçülmüş sayıları) ya da HUD'un
+yerleşimini değiştirmek demek — bu fazın kapsamına sığmaz, **Faz 13
+(menü/HUD)** ile birlikte ele alınacak.
+
+**Plandan sapmalar:** nokta sayısı 12 değil **15** oldu (bandı tutturmak
+için); `PreloadScene` yine değişmedi.
+
 
 ### Faz 6 — Sonsuz mod — `M8-T06`
 

@@ -84,6 +84,76 @@ Altın varak (`#D4A032`) yalnız kalede ve birkaç vurguda.
 
 ---
 
+## M8-P02 — Harita 5 arka planı: "Kadim Harabe"
+
+**Dosya:** `assets-src/bg/kadim-harabe.png`
+**Hedef çıktı:** `public/assets/lazy/kadim-harabe.webp` (1280×720, q80, ≤400 KB)
+**Şu anki durum:** GEÇİCİ. Harita 3'ün (Kül Ovası, lav) arka planından
+türetildi (`sharp().modulate({ saturation: 0.28, brightness: 0.88 })
+.tint(150,168,150)`) — yani soğutulup soluklaştırılmış bir lav ovası.
+Harabe yok, yapı yok, yosun yok.
+
+### Ne çizilecek
+
+**Terk edilmiş, yosun tutmuş bir antik şehir kalıntısı.** İki ayrı kapıdan
+girilen, ortada birleşen taş döşeli bir ana cadde. Kamera diğer dört
+haritayla aynı bakış açısı.
+
+**Zemin:** çatlamış taş döşeme ve yosun. Yol, kalıntının hâlâ ayakta olan
+**ana caddesi** — düzgün kesme taş, kenarlarında kırık sütun kaideleri.
+Yolun dışı: devrilmiş sütunlar, kırık heykel parçaları, sarmaşık.
+
+**Yolun geometrisi** (kod bunu kullanıyor, arka plan buna uymalı;
+1280×720 mantıksal çözünürlük):
+
+```
+Kol A:  (-60,250) → (200,250) → (200,410) ─┐
+Kol B:  (-60,570) → (200,570) → (200,410) ─┤
+                                            ├─> ORTAK GÖVDE
+gövde:  (380,410) → (700,410) → (700,180) → (1000,180) → (1000,600) → (1180,600)
+```
+
+İki kapı **sol kenarda**, biri üstte biri altta; `x = 200` sütununda
+birleşiyorlar. Birleşme noktası görsel olarak da bir **kapı/kemer**
+olmalı — oyuncu iki akışın orada buluştuğunu bakar bakmaz görmeli.
+
+**Kale:** `(1180, 600)` — sağ altta. Kalıntının hâlâ savunulan son burcu:
+üstü örtülü, mazgallı, etrafı moloz.
+
+**Kritik: HUD alanları boş kalmalı.** Aşağıdaki dikdörtgenlerin üstüne
+**okunurluğu bozacak detay konmayacak** (arayüz orada duruyor):
+
+| Alan | Dikdörtgen |
+|---|---|
+| Altın/can/dalga kartuşu | `8,16 – 224,156` |
+| Erken başlat rozeti | `17,155 – 102,211` |
+| Hız + ayar | `1204,20 – 1260,144` |
+| Yetenek butonları | `28,622 – 170,707` |
+| Dalga sayacı/telgraf | `500,0 – 780,120` |
+
+### Yapı noktaları — ÜSTÜNE HİÇBİR ŞEY ÇİZİLMEYECEK
+
+15 nokta; her birinin çevresi **≥ 40 px yarıçapta boş ve sakin**:
+
+```
+(90,315)  (270,175) (150,405) (345,460) (275,535)
+(65,480)  (315,335) (480,360) (480,470) (610,500)
+(625,335) (910,255) (910,105) (925,400) (1075,520)
+```
+
+### Palet
+
+Tezhip paleti. Bu harita **yeşilimsi gri** tarafa kaçar (yosun, ıslak taş);
+mürekkep mavisi gölgelerde, altın varak yalnız kalede ve birkaç mozaik
+parçasında. Harita 3'ün turuncu/kırmızısından tamamen uzak — ikisi yan yana
+konduğunda farklı iklimler olmalı.
+
+### Kabul ölçütü
+
+`M8-P01` ile aynı dört madde + HUD dikdörtgenlerinin sakin kalması.
+
+---
+
 ## Not: bu listede olmayan işler
 
 Kule, düşman ve HUD sanatı `M6`'da üretildi ve **tamam** — bu brif

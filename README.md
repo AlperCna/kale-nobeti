@@ -3,7 +3,7 @@
 Fantastik ortaçağ temalı, tarayıcıda çalışan tower defense oyunu.
 Model: Kingdom Rush (sabit yol + belirli yapı noktaları).
 İlk hedef 3 haritaydı; **M8 genişlemesi** bunu artırıyor —
-şu an **4 harita × 10 dalga**, 4 kule ailesi, 2 aktif yetenek.
+şu an **5 harita × 10 dalga**, 4 kule ailesi, 2 aktif yetenek.
 
 **Durum: oynanabilir.** M0-M7 bitti (oyun uçtan uca oynanıyor: menü,
 seviye seçim, 4 harita, boss, yıldız, kayıt, ayarlar, ses). Şu an

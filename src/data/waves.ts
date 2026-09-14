@@ -401,10 +401,79 @@ export const MAP4_WAVES: readonly Wave[] = [
   ), // 54 ≈ bütçe 52
 ];
 
+/**
+ * ## Harita 5'in 10 dalgası — "Kadim Harabe"
+ *
+ * Kadro yine **tam**, yeni tanıtım yok. İki kapı, ama harita 3'ten farklı
+ * bir sebeple: orada kapılar sona kadar ayrıydı, burada erken birleşiyor.
+ * Bu yüzden `spawnPoint` dağılımı "hangi kapı yükleniyor" bilgisinden çok
+ * **ne kadar süre ayrı yürüyor** bilgisini taşıyor — uzun gövde ikisini de
+ * aynı kulelerin önüne getiriyor.
+ *
+ * Boss yine tek kapıdan, refakati diğerinden (harita 3 kararı).
+ */
+export const MAP5_WAVES: readonly Wave[] = [
+  dalgaKur(1, [
+    ['goblin', 5],
+    ['goblin', 5, 1],
+  ]), // 10 = bütçe 10. İki kapı ilk dalgada tanıtılıyor.
+  dalgaKur(2, [
+    ['goblin', 4],
+    ['orkSavasci', 4, 1],
+  ]), // 12 = bütçe 12
+  dalgaKur(3, [
+    ['orkSavasci', 3],
+    ['zirhliOrk', 2, 1],
+  ]), // 14 = bütçe 14
+  dalgaKur(4, [
+    ['goblin', 5],
+    ['orkSavasci', 5, 1],
+  ]), // NEFES, 15 = bütçe 15
+  dalgaKur(5, [
+    ['kurtBinicisi', 3],
+    ['orumcekAna', 2, 1],
+  ]), // 21 = bütçe 21
+  dalgaKur(6, [
+    ['zirhliOrk', 3],
+    ['harpi', 1, 1],
+    ['saman', 2, 1],
+  ]), // 25 = bütçe 25
+  dalgaKur(7, [
+    ['goblin', 6],
+    ['orkSavasci', 6, 1],
+    ['zirhliOrk', 1],
+    ['harpi', 1, 1],
+  ]), // NEFES, 25 = bütçe 25
+  dalgaKur(8, [
+    ['trol', 2],
+    ['orumcekAna', 2, 1],
+    ['zirhliOrk', 2, 1],
+  ]), // 36 = bütçe 36
+  dalgaKur(9, [
+    ['trol', 1],
+    ['zirhliOrk', 4, 1],
+    ['saman', 2],
+    ['harpi', 2, 1],
+    ['kurtBinicisi', 1],
+  ]), // 43 = bütçe 43
+  dalgaKur(
+    10,
+    [
+      ['ogreSef', 1], // 0. kapı
+      ['trol', 2, 1], // 1. kapı — refakat AYRI kapıdan
+      ['orumcekAna', 1, 1],
+      ['zirhliOrk', 1, 1],
+    ],
+    BOSS_REFAKAT_GECIKMESI_SN,
+  ), // 51 ≈ bütçe 52
+
+];
+
 /** Harita kimliğinden dalga listesine. */
 export function wavesFor(mapId: string): readonly Wave[] {
   if (mapId === 'tas-kopru') return MAP2_WAVES;
   if (mapId === 'kul-ovasi') return MAP3_WAVES;
   if (mapId === 'kar-gecidi') return MAP4_WAVES;
+  if (mapId === 'kadim-harabe') return MAP5_WAVES;
   return MAP1_WAVES;
 }
