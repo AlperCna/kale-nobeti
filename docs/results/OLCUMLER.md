@@ -607,3 +607,39 @@ sonucu 20/20'den 0/20'ye çevirdiğini ölçmüştü.
 Dokuz engelleme kuralı **canlı oyunla aynı koddan** geliyor
 (`BarracksSystem.stepSoldiers` zaten Phaser'sız) — simülasyona kopyalanan
 mantık yok, yalnız kablolama.
+
+---
+
+## Paket boyutu — Phaser yapımı (`Y11`)
+
+Bu tablonun tamamı **tartılmış**. `Y11`'in kendi kazanç tahmini
+("~360-460 KB ham") bu dosyaya bilerek girmemişti; artık ölçüm var.
+
+| # | Büyüklük | Değer | Nasıl | Neye asılı | Bekçi |
+|---|---|---|---|---|---|
+| P1 | Phaser tam yapım (min) | **1.196.122 B** | `dist/phaser.min.js` tartıldı | — | — |
+| P2 | Matter'sız yapım (min) | **1.086.308 B** (−%9,2) | `dist/phaser-arcade-physics.min.js` | `M8-T14` | — |
+| P3 | **Özel yapım — uygulama paketi** | **864,8 KB** (önce 1.177,7) | `npm run build` boyut raporu | Poki ilk indirme | `report-size.mjs` 5/8 MB eşiği |
+| P4 | Uygulama paketi gzip | **242,0 KB** (önce ~324,8) | aynı | Transfer | aynı |
+| P5 | İlk indirme toplam | **0,86 MB** (önce 0,93) | aynı | Poki 8 MB sınırı | aynı |
+
+**P3 kümülatif:** tam yapımdan bu yana ham JS **−%26,5**. `M8-T14`'ün
+−%9,2'si bunun içinde değil; o ayrı bir adımdı ve tabanı 1.285,3 KB'dan
+1.177,7'ye indirmişti.
+
+**Ne çıkarıldı:** `Phaser.Physics` (Arcade + Matter), `Tilemaps`,
+`Actions`, `Create`, `Curves`, fazla `Cameras`/`Display`. Canlı
+doğrulandı — üretim yapısında dördü de `undefined`:
+
+```js
+{fizik:false, tilemap:false, actions:false, curves:false}
+```
+
+**Ne geri eklendi ve neden:** `src/vendor/phaser-custom.js` başlığındaki
+tablo. Liste tahminle değil **tarayarak** çıkarıldı (`.add.*` çağrıları ve
+`Phaser.*` referansları sayıldı).
+
+**Bekçisi test değil, elle tur.** Eksik bir modül `typecheck`'ten yeşil
+geçer ve yalnız o kod yolu oynanınca çöker; `node` ortamı Phaser
+çalıştırmadığı için testler de göremez (S08). Yapılan turun kapsamı
+`M8-SONUC.md` "`Y11`" bölümünde.
