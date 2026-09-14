@@ -148,7 +148,7 @@ describe('ScreenShake — §10: yönlü, 0,12-0,25 sn, üstel sönüm', () => {
   });
 });
 
-describe('HitStop — §10: 60-80 ms, 2× hızda DEVRE DIŞI', () => {
+describe('HitStop — §10: 60-80 ms, HIZLANDIRMADA DEVRE DIŞI', () => {
   it('1× hızda duraklama var', () => {
     const h = new HitStop();
     h.trigger(HITSTOP_MIN_MS, 1);
@@ -158,6 +158,18 @@ describe('HitStop — §10: 60-80 ms, 2× hızda DEVRE DIŞI', () => {
   it('**2× hızda HİÇ tetiklenmiyor** — §10', () => {
     const h = new HitStop();
     h.trigger(HITSTOP_MAX_MS, 2);
+    expect(h.active).toBe(false);
+    expect(h.update(KARE_MS)).toBe(false);
+  });
+
+  /**
+   * `M9-T03`. Kapı `speed === 2` iken 3× eklenseydi hit-stop **yalnız
+   * 3×'te** geri gelirdi ve bu gözle yakalanmazdı: 50 ms'lik karede 60 ms'lik
+   * bir duraklama "takıldı" değil "biraz kekeledi" gibi görünür.
+   */
+  it('**3× hızda da HİÇ tetiklenmiyor** — kapı sayıya değil niyete bağlı', () => {
+    const h = new HitStop();
+    h.trigger(HITSTOP_MAX_MS, 3);
     expect(h.active).toBe(false);
     expect(h.update(KARE_MS)).toBe(false);
   });

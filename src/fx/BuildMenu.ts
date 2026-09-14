@@ -98,6 +98,21 @@ const IKILI_OFSET = BUTON_ARA / 2;
 const MOD_BUTON_W = 60;
 const MOD_BUTON_ARA = 64;
 const VERMILION = 0xb03a2e;
+/**
+ * Satış onayı arasındaki **en kısa** süre — `M9-T03`.
+ *
+ * Satış tek geri alınamaz eylem: %30 kayıpla ve doğru anda basılmışsa
+ * dalgayı kaybettirir. İki dokunuş istiyoruz, ama iki dokunuş tek başına
+ * yetmiyor — sinirli bir çift tıklama (~150 ms) ikisini de yutar. Bu pay
+ * o kazayı kapatıyor; kasıtlı ikinci dokunuş zaten bundan yavaş.
+ *
+ * **Duvar saati bilerek:** bu bir arayüz zıplama koruması, oyun mantığı
+ * değil. Oyun saatiyle ölçülseydi 3× hızda 300 ms gerçek hayatta 100 ms
+ * olurdu — yani korumanın kendisi en çok gerektiği yerde zayıflardı.
+ * (`fx/` bekçi k.8'in duvar saati kapsamında değil; `HitStop`'un
+ * `realMs`'i ile aynı gerekçe.)
+ */
+const SAT_ONAY_EN_AZ_MS = 300;
 /** P03 brifi — kule/kışla gövdesi oyun içi gösterim boyutu (`Tower.ts`/`GameScene.ts` ile aynı). */
 const TOWER_DISPLAY_SIZE = 64;
 /**
@@ -411,9 +426,7 @@ export class BuildMenu {
       this.#menuButonu(kap, -IKILI_OFSET, `↑ ${maliyet}`, this.#economy.canAfford(maliyet), () =>
         this.#actions.upgradeTower(spotIndex, 1),
       );
-      this.#menuButonu(kap, IKILI_OFSET, `${t('sell')} +${iade}`, true, () =>
-        this.#actions.sellTower(spotIndex),
-      );
+      this.#satButonu(kap, IKILI_OFSET, iade, () => this.#actions.sellTower(spotIndex));
     } else if (kule.tierIndex === 1) {
       // T2 → **iki dal**. `M4-T03`: dal seçimi zorunlu, kademe atlanamıyor.
       const [a, b] = kule.def.branches;
@@ -433,20 +446,17 @@ export class BuildMenu {
         () => this.#actions.upgradeTower(spotIndex, 3),
         DAL_BUTON_W,
       );
-      this.#menuButonu(
+      this.#satButonu(
         kap,
         DAL_BUTON_ARA,
-        `${t('sell')} +${iade}`,
-        true,
+        iade,
         () => this.#actions.sellTower(spotIndex),
         DAL_BUTON_W,
       );
     } else {
       // T3 — son kademe. **Dal geri alınamıyor (S41)**; değiştirmek için
       // satmak gerekiyor ve %30 kayıp bilinçli bir bedel.
-      this.#menuButonu(kap, 0, `${t('sell')} +${iade}`, true, () =>
-        this.#actions.sellTower(spotIndex),
-      );
+      this.#satButonu(kap, 0, iade, () => this.#actions.sellTower(spotIndex));
     }
 
     // Hedefleme modu seçici (`M4-T11`) — beş mod, kule başına. Diğer
@@ -536,9 +546,7 @@ export class BuildMenu {
       this.#menuButonu(kap, -IKILI_OFSET, `↑ ${m}`, this.#economy.canAfford(m), () =>
         this.#actions.upgradeBarracks(spotIndex, 1),
       );
-      this.#menuButonu(kap, IKILI_OFSET, `${t('sell')} +${iade}`, true, () =>
-        this.#actions.sellBarracks(spotIndex),
-      );
+      this.#satButonu(kap, IKILI_OFSET, iade, () => this.#actions.sellBarracks(spotIndex));
     } else if (k.tier === 1) {
       const [a, b] = KISLA.branches;
       this.#menuButonu(
@@ -557,18 +565,15 @@ export class BuildMenu {
         () => this.#actions.upgradeBarracks(spotIndex, 3),
         DAL_BUTON_W,
       );
-      this.#menuButonu(
+      this.#satButonu(
         kap,
         DAL_BUTON_ARA,
-        `${t('sell')} +${iade}`,
-        true,
+        iade,
         () => this.#actions.sellBarracks(spotIndex),
         DAL_BUTON_W,
       );
     } else {
-      this.#menuButonu(kap, 0, `${t('sell')} +${iade}`, true, () =>
-        this.#actions.sellBarracks(spotIndex),
-      );
+      this.#satButonu(kap, 0, iade, () => this.#actions.sellBarracks(spotIndex));
     }
 
     this.#menuArkalikEkleVeKonumla(kap, spot);
@@ -576,7 +581,19 @@ export class BuildMenu {
     this.#actions.redrawRally();
   }
 
+  /**
+   * Açık menüdeki sat butonlarının "onay bekliyor" durumunu geri alan
+   * geri çağrılar. Menü her açılışta baştan kuruluyor, yani bu dizi de
+   * her seferinde temizleniyor (`closeMenu`).
+   */
+  readonly #satSifirlayicilar: (() => void)[] = [];
+
+  #satOnaylariniSifirla(): void {
+    for (const f of this.#satSifirlayicilar) f();
+  }
+
   closeMenu(): void {
+    this.#satSifirlayicilar.length = 0;
     this.#menu?.destroy(true);
     this.#menu = undefined;
     this.#cartouche?.destroy();
@@ -624,6 +641,9 @@ export class BuildMenu {
       coveredPx: kapsama,
       refund: this.#economy.sellRefund(this.#economy.spentAt(spotIndex)),
       nextTier: kule.tierIndex === 0 ? kule.def.tiers[1] : undefined,
+      // T2'de sıradaki adım tek kademe değil **dal seçimi**; panel
+      // "Son kademe" yazmamalı (bkz. `TowerInfoLabels.#dalSecimi`).
+      branchChoice: kule.tierIndex === 1,
       // Panel bu konuma göre karşı köşeye geçiyor (`TowerInfoPanel.show`).
       spot: this.#map.buildSpots[spotIndex] ?? { x: 0, y: 0 },
     });
@@ -677,12 +697,109 @@ export class BuildMenu {
           this.#bus.emit('purchase:denied', {});
           return;
         }
+        // Menüdeki başka bir butona basmak bekleyen satış onayını
+        // düşürüyor: "sat"a dokunup fikrini değiştirip "yükselt"e
+        // basan oyuncu, menü yeniden kurulmasa bile hazır bir sat
+        // butonu bırakmamalı.
+        this.#satOnaylariniSifirla();
         onClick();
       },
     );
 
     kap.add([cerceve, etiket]);
     return cerceve;
+  }
+
+  /**
+   * Sat butonu — **iki dokunuş** (`M9-T03`).
+   *
+   * `research/05` küratör notu: *"cila ve his, içerik miktarından
+   * önemli."* Satış oyunun tek geri alınamaz eylemi; tek dokunuşta
+   * %30 kayıpla gidiyor ve yanlış anda dalgayı kaybettiriyor. Üstelik
+   * buton, yükseltme butonunun **104 px yanında** — aynı satırda, aynı
+   * boyda, aynı parşömende.
+   *
+   * ## Neden basılı tutma değil
+   *
+   * Dokunmatikte basılı tutma tarayıcının kendi bağlam menüsünü ve metin
+   * seçimini tetikliyor, ayrıca hiçbir yerde görünmüyor — oyuncu
+   * keşfetmiyor. İki dokunuş kendini **yazıyla** anlatıyor: "Sat +49"
+   * → "Onayla +49".
+   *
+   * ## k.6: renk tek başına taşımıyor
+   *
+   * Onay durumunda hem **yazı değişiyor** hem vermilyon kontur çıkıyor.
+   * Kontur tek başına bırakılsaydı renk körü bir oyuncu için buton
+   * değişmemiş görünürdü. Yazı mürekkep kalıyor: kırmızı yazı parşömende
+   * okunmuyor (hedefleme satırının aynı notu).
+   *
+   * ## k.4: `setText` yok
+   *
+   * Bu dosya `Text` üretiyor, yani bekçi k.4 burada `setText`'i
+   * yasaklıyor. İki etiket de baştan kuruluyor, geçiş `setVisible` ile.
+   */
+  #satButonu(
+    kap: Phaser.GameObjects.Container,
+    bx: number,
+    iade: number,
+    onSell: () => void,
+    genislik: number = BUTON_W,
+  ): void {
+    const cerceve = createParchmentButton(this.#scene, bx, 0, genislik, 44, 10);
+    const yaz = (metin: string): Phaser.GameObjects.Text =>
+      this.#scene.add
+        .text(bx, 0, metin, {
+          fontFamily: 'Spectral, serif',
+          fontSize: '16px', // bekçi k.13 — Platform alt sınırı
+          color: '#14203A',
+        })
+        .setOrigin(0.5);
+
+    const normal = yaz(`${t('sell')} +${iade}`);
+    const onay = yaz(`${t('sellConfirm')} +${iade}`).setVisible(false);
+    const kontur = this.#scene.add
+      .rectangle(bx, 0, genislik, 44, 0, 0)
+      .setStrokeStyle(3, VERMILION)
+      .setVisible(false);
+
+    /** `null` = onay beklemiyor. Sayı = ilk dokunuşun duvar saati anı. */
+    let bekleyenAn: number | null = null;
+
+    const sifirla = (): void => {
+      bekleyenAn = null;
+      normal.setVisible(true);
+      onay.setVisible(false);
+      kontur.setVisible(false);
+    };
+    this.#satSifirlayicilar.push(sifirla);
+
+    cerceve.on(
+      Phaser.Input.Events.POINTER_DOWN,
+      (
+        _p: Phaser.Input.Pointer,
+        _x: number,
+        _y: number,
+        olay: Phaser.Types.Input.EventData,
+      ) => {
+        olay.stopPropagation();
+        if (bekleyenAn === null) {
+          // Aynı menüde başka bir sat butonu hazırdaysa o düşüyor:
+          // iki buton aynı anda "onay bekliyor" görünemez.
+          this.#satOnaylariniSifirla();
+          bekleyenAn = performance.now();
+          normal.setVisible(false);
+          onay.setVisible(true);
+          kontur.setVisible(true);
+          return;
+        }
+        // Çift tıklama payı. Erken gelen ikinci dokunuş **yutuluyor**,
+        // onayı bozmuyor: oyuncu bir daha dokunabilsin.
+        if (performance.now() - bekleyenAn < SAT_ONAY_EN_AZ_MS) return;
+        onSell();
+      },
+    );
+
+    kap.add([cerceve, normal, onay, kontur]);
   }
 
   /**

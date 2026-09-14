@@ -29,6 +29,7 @@ import { AbilitySystem } from '../systems/AbilitySystem';
 import { ScreenShake } from '../fx/ScreenShake';
 import { HitStop } from '../fx/HitStop';
 import { Settings, getSettings, SAVE_FAILED_REGISTRY_KEY } from '../systems/Settings';
+import { gosterKayitUyarisi } from '../fx/SaveWarning';
 import { KISLA, barracksTierAt, BLOCK, SOLDIER_SPEED } from '../data/barracks';
 import type { AbilityId } from '../types/ability';
 import { DamageText, DamageTextSystem } from '../fx/DamageText';
@@ -1229,10 +1230,27 @@ export class GameScene extends Phaser.Scene {
    * bildirilir." Gizli sekmede ayarlar kalıcı olmuyor; oyun çalışmaya
    * devam ediyor ama oyuncu bunu bilmeli.
    */
+  /**
+   * Kayıt başarısız — oyuncuya **bir kez** söyleniyor (TIER 1 kural 10).
+   *
+   * `M9-T03`'e kadar burada yalnız `bus.emit` vardı ve o olayın
+   * **hiçbir dinleyicisi yoktu**: mekanizma tamdı, bildirim hiç
+   * görünmüyordu. Artık uyarı `Overlay` sahnesinde çiziliyor —
+   * gerekçesi `fx/SaveWarning.ts`'te (özet: oranın zamanı
+   * ölçeklenmiyor, sahne geçişlerinde ölmüyor, en üstte).
+   *
+   * Olay yine yayılıyor: sesi kısmak ya da ölçüm göndermek gibi başka
+   * bir tüketici eklenirse seam yerinde dursun.
+   */
   #kayitUyar(): void {
     if (this.#kayitUyarildi) return;
     this.#kayitUyarildi = true;
     this.bus.emit('save:failed', { once: true });
+    const overlay = this.scene.get('Overlay');
+    // `Overlay` `Menu.create()`'te başlatılıyor, yani `Game`'e gelindiğinde
+    // her zaman ayakta. Yine de savunmacı: doğrudan test için `Game`
+    // sahnesi tek başına başlatılabiliyor (`__game.scene.start('Game')`).
+    if (overlay.scene.isActive()) gosterKayitUyarisi(overlay);
   }
 
   #havuzDoldu(ad: string, kapasite: number): void {

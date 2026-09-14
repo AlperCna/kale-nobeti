@@ -67,6 +67,14 @@ const ZORLUK_ROZET_Y = 42;
 /** Geri sayım tikinin başladığı saniye — `M8-T10`. */
 const GERI_SAYIM_TIK_SN = 3;
 
+/**
+ * Hız düğmesinin yazısı. `×` işareti sayı fontunda var (`NUMBER_FONT_KEY`),
+ * dile bağlı değil — `strings.ts`'e girmiyor.
+ */
+function hizEtiketi(hiz: Speed): string {
+  return `${hiz}×`;
+}
+
 export class HudScene extends Phaser.Scene {
   /** `M8-T10` — son çalınan geri sayım tikinin saniyesi; -1 = yok. */
   #sonTik = -1;
@@ -450,17 +458,30 @@ export class HudScene extends Phaser.Scene {
     // Etiket `#speed`'ten türüyor, sabit `'1×'` değil: dil değişiminde
     // sahne yeniden kuruluyor ve hız korunuyor (`create`'in `data.speed`
     // notu). Normal başlangıçta `#speed` zaten 1, çıktı aynı.
-    const hizEtiketi = this.#speed === 1 ? '1×' : '2×';
-    this.#hizYazi = this.add.bitmapText(x, y, NUMBER_FONT_KEY, hizEtiketi).setOrigin(0.5).setTint(INK);
+    // **Zincir tek satırda kalmalı.** Bekçi k.7 `setText`in alıcısını
+    // atama satırında arıyor ve `.bitmapText(` aynı satırda değilse
+    // ayrıştıramayıp ihlal sayıyor (kuralın yazılı varsayımı).
+    const etiket = hizEtiketi(this.#speed);
+    this.#hizYazi = this.add.bitmapText(x, y, NUMBER_FONT_KEY, etiket).setOrigin(0.5).setTint(INK);
 
     cerceve.on('pointerup', () => {
       this.#toggleSpeed();
     });
   }
 
+  /**
+   * `M9-T03` — hız artık **üç durumlu döngü**: 1× → 2× → 3× → 1×.
+   *
+   * İki durumlu anahtar üçe çıkarken tek doğru desen bu: ayrı bir "3×
+   * düğmesi" HUD'a ikinci bir 44 px hedef ekler ve sağ kenar zaten dolu
+   * (`HIZ_BTN_Y`/`AYAR_BTN_Y`). Döngü geri gitmiyor — 3×'ten sonra 1×'e
+   * dönmek "yanlışlıkla hızlandırdım" durumunu tek dokunuşla düzeltiyor.
+   *
+   * Denge etkisi ölçüldü, `Speed` tipinin dokümanında.
+   */
   #toggleSpeed(): void {
-    this.#speed = this.#speed === 1 ? 2 : 1;
-    this.#hizYazi?.setText(this.#speed === 1 ? '1×' : '2×');
+    this.#speed = this.#speed === 1 ? 2 : this.#speed === 2 ? 3 : 1;
+    this.#hizYazi?.setText(hizEtiketi(this.#speed));
 
     const game = this.scene.get('Game') as GameScene;
     // `Phaser.Scene` yapısal olarak `ClockTarget`i karşılıyor:

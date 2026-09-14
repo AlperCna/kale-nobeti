@@ -12,12 +12,14 @@
  *
  * TIER 1 kural 11: bu dosya Phaser'a dokunmaz.
  */
+import type { Speed } from '../types/common';
+
 export interface DevHooks {
   /** `GameScene.update` çağrı sayısı. Duraklatmada **artmamalı**. */
   gameFrames: number;
   /** `HudScene.update` çağrı sayısı. Duraklatmada **artmaya devam etmeli**. */
   hudFrames: number;
-  scale: () => 1 | 2;
+  scale: () => Speed;
   paused: boolean;
   /** `bus.clear()` kaç kez çağrıldı. Sahne yeniden başlatma sızıntı testi. */
   clearCount: number;

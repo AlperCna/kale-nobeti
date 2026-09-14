@@ -7,6 +7,11 @@
  * > **2× hızda:** hit-stop devre dışı. Yoksa hızlandırılmış oyun okunmaz
  * > hale gelir.
  *
+ * `M9-T03`'te 3× eklendi ve kapı `speed === 2`'den `speed > 1`'e çevrildi.
+ * §10 sayıyı değil **niyeti** söylüyor: hızlandırma açıkken oyuncu
+ * "kısa duraklamalı ağır vuruş" değil "akış" istiyor. Sayıya bağlı
+ * kalsaydı 3× sessizce hit-stop'lu koşardı.
+ *
  * ## TIER 1 kural 8 ile ilişkisi
  *
  * Hit-stop **oyun zamanını durduran** şey; o yüzden kendi sayacı oyun
@@ -23,6 +28,8 @@
  * Phaser'a dokunmuyor — `node`'da test ediliyor.
  */
 
+import type { Speed } from '../types/common';
+
 /** §10: 60-80 ms. Alt sınır düşman ölümü, üst sınır boss hasarı. */
 export const HITSTOP_MIN_MS = 60;
 export const HITSTOP_MAX_MS = 80;
@@ -33,10 +40,10 @@ export class HitStop {
   /**
    * @param ms İstenen süre. `HITSTOP_MAX_MS`'i **aşamaz** — §10'un üst
    *   sınırı; aşması "oyun takıldı" hissi verir.
-   * @param speed Oyun hızı. **`2` ise hiç tetiklenmiyor** (§10).
+   * @param speed Oyun hızı. **1'den büyükse hiç tetiklenmiyor** (§10).
    */
-  trigger(ms: number, speed: 1 | 2): void {
-    if (speed === 2) return; // §10 — 2× hızda devre dışı
+  trigger(ms: number, speed: Speed): void {
+    if (speed > 1) return; // §10 — hızlandırma açıkken devre dışı
     if (!(ms > 0)) return;
     const kirpik = ms > HITSTOP_MAX_MS ? HITSTOP_MAX_MS : ms;
     // Üst üste gelen vuruşlar **uzatmıyor**, en uzunu kazanıyor: her ölümde

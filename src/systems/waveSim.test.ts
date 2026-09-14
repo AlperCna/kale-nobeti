@@ -5,6 +5,7 @@ import { MAP_1 } from '../data/maps';
 import { MAP1_WAVES } from '../data/waves';
 import { measureCoverage } from '../util/coverage';
 import { BALANCE } from '../data/balance';
+import { TOWERS } from '../data/towers';
 import type { ReferenceBoard } from '../types/board';
 
 const KAPSAMA = measureCoverage(MAP_1.paths, MAP_1.buildSpots, 150);
@@ -61,6 +62,52 @@ describe('simulateWave — temel davranış', () => {
     const fark = Math.abs(ince.durationSec - normal.durationSec) / normal.durationSec;
     expect(fark).toBeLessThan(0.04);
     expect(ince.killedCount).toBe(normal.killedCount);
+  });
+});
+
+/**
+ * **`M9-T03` — 3× hız dengeyi bozmuyor.**
+ *
+ * `GameClock.scaledDelta = delta * scale`, yani 60 kare/sn'de 3× hız
+ * simülasyonda **50 ms'lik adım** demek. Soru tek: adım üç katına
+ * çıkınca dalganın sonucu değişiyor mu?
+ *
+ * Bu test harita 1 ile sınırlı (koşu süresi). Beş haritanın tamamı
+ * ölçüldü ve sonuç `GameClock.setScale` dokümanında; oradaki asıl bulgu
+ * 3×'in 240 kare/sn'lik "gerçek" cevaba **1× kadar yakın** olması.
+ */
+describe('3× hız — adım büyümesi sonucu değiştirmiyor', () => {
+  const KARE = 1000 / 60;
+  const bir = simulateAllWaves(MAP1_WAVES, GERCEKCI, MAP_1, KARE);
+  const uc = simulateAllWaves(MAP1_WAVES, GERCEKCI, MAP_1, KARE * 3);
+
+  it('öldürülen düşman sayısı dalga dalga AYNI', () => {
+    bir.forEach((r, i) => {
+      expect(uc[i]!.killedCount, `dalga ${i + 1}`).toBe(r.killedCount);
+    });
+  });
+
+  it('3×’te de hiçbir dalga sızdırmıyor', () => {
+    for (const r of uc) expect(r.leakedCount).toBe(0);
+  });
+
+  it('toplam dalga süresi %2’den az sapıyor', () => {
+    const a = bir.reduce((t, r) => t + r.durationSec, 0);
+    const b = uc.reduce((t, r) => t + r.durationSec, 0);
+    expect(Math.abs(b - a) / a).toBeLessThan(0.02);
+  });
+
+  /**
+   * Asıl sessiz kırılma noktası: `TowerSystem` kare başına **bir** atış
+   * yapıyor. Kare süresi atış periyodunu aşarsa atış düşerdi. En hızlı
+   * kule `fireRate` 1.4/sn → 714 ms periyot; 3×'te kare 50 ms. Bu test
+   * ileride hızlı bir kule eklenirse patlar.
+   */
+  it('en hızlı kule periyodu 3× kare süresinden UZUN', () => {
+    const enHizli = Math.max(
+      ...TOWERS.flatMap((k) => k.tiers.map((t) => t.fireRate)),
+    );
+    expect(1000 / enHizli).toBeGreaterThan(KARE * 3);
   });
 });
 

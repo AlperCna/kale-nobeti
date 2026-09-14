@@ -80,6 +80,33 @@ export class GameClock {
    * ait olan animasyonlar (hasar sayısı, altın uçuşu, başarım bandı,
    * boss afişi) zaten `GameScene` içinde yaşıyor.
    *
+   * ## 3× (`M9-T03`) — aynı yöntemle ölçüldü
+   *
+   * Poki küratörleri cilaya bakıyor ve 3× tür standardı. Eklemeden önce
+   * denge etkisi 2× ile **aynı soruyla** sınandı, ama bu kez canlı oyunda
+   * değil `waveSim` üzerinde: 5 harita × 10 dalga, referans tahtaya karşı,
+   * adım boyutu `16.7 ms × hız`. (Oyun 60 karede koşuyor, yani 3× hız
+   * simülasyonda 50 ms'lik adım demek.)
+   *
+   * - **Sonuç değişmiyor.** Toplam dalga süresi sapması en fazla **%0,38**;
+   *   öldürülen düşman sayısı üç hızda da aynı kalıyor, yalnız harita 4 ve
+   *   5'te ±1 düşman oynuyor (kaleye tam varırken ölen düşman — var olan
+   *   eşik hassasiyeti).
+   * - **3× daha kaba DEĞİL.** 240 kare/sn'lik ince adım "gerçek" cevap
+   *   sayılıp üçü de ona karşı ölçüldü: 1× 2 düşman, 2× 3 düşman, **3× 2
+   *   düşman** uzakta. Yani 3×'in hatası 1×'inkinden büyük değil.
+   * - **Harita 5'te sızan HP %51 sapıyor — ama 1×'te de sapıyor** (%50,9).
+   *   Bu 60 kare/sn'nin kendi artefaktı, hızlandırmanın değil; oyun zaten
+   *   60 karede yayınlanıyor, yani oyuncunun gördüğü doğru sayı o.
+   * - **Atış kaybı yok.** `TowerSystem` kare başına bir atış yapıyor ve
+   *   kare süresi atış periyodunu aşarsa atış düşerdi. En hızlı kule
+   *   periyodu 714 ms (`fireRate` 1.4), 3×'te kare 50 ms — 14 kat pay.
+   * - **Mermi tünellemesi yok.** Gerekçe 2× ile aynı: `ProjectileSystem`
+   *   süpürülmüş kontrol yapıyor (`pointToSegmentDistSq`), nokta değil.
+   *
+   * Hit-stop 3×'te de kapalı: `HitStop.trigger` kapısı `speed === 2`'den
+   * `speed > 1`'e çevrildi (§10 sayıyı değil niyeti söylüyor).
+   *
    * **Bilinen gizli tutarsızlık:** `anims.globalTimeScale` sahne başına
    * değil **oyun geneli**. Bugün zararsız, çünkü proje hiç sprite
    * animasyonu kullanmıyor (`.anims.create`/`.play` araması boş dönüyor)
