@@ -352,3 +352,47 @@ hepsi başka yerde kanıtlandı, ama **oynanmadıkları kayda geçsin**.
 
 `Y11`'in asıl sorusu — ayrıştırma süresi kazancı — hâlâ `Y10`'un CPU
 kısıtlı ölçümüne bağlı ve açık.
+
+## Görsel geri bildirim turu — dört faz
+
+Oyuncu uzun bir liste verdi. Hepsi ekrandan ve koddan doğrulandı; sonuç
+üçe ayrıldı.
+
+### Kesin kusurlar (düzeltildi)
+
+| # | Kusur | Kök neden | Ölçüm |
+|---|---|---|---|
+| 1 | Menüde ve oyunda **çizgilenme** | `ParchmentFrame` süsü eziyordu | "Oyna" üst kenarı `209·164·211·166·203` → `24·60·209·210·165·161·202·214·176·157·193·214` |
+| 2 | Kırmızı DPS | Palet çelişkisi — vermilyon "tehlike" | vermilyon → altın |
+| 2 | "Kapsanan yol 294" anlamsız | Ham piksel | → "Yolun kapsanan payı 25%" |
+| 2 | Yükseltme satırında çıplak `-` | "veri yok" mu "yükseltme yok" mu belirsiz | → "Son kademe" etiketi |
+| 2 | Hedefleme modları açıklamasız | Beş düğme, sıfır ipucu | seçili modun tek satırlık açıklaması, metinler `TargetingSystem.skor`'dan okunarak |
+| 3 | Kademe merminin görünümünü değiştirmiyor | `projectileLook` kademeyi hiç almıyordu | T1 `1.800×0.550` → T2 `2.196×0.671` (canlı ölçüm) |
+
+`M8-B01`'deki gibi bu kusurların hiçbirini test göremezdi: hiçbiri sayı
+değil, hepsi **ekranda görünen şey**.
+
+### Hata değil (oyuncuya açıklandı)
+
+- **Yapı noktalarının üstündeki sayılar ve sol üstteki `px · menzil`
+  satırı** dev-only (`import.meta.env.DEV`), yayın yapısında yok.
+- **1000+ başlangıç altını** tasarım: `280 × altın çarpanı` (S72).
+- **Meteor/Takviye** zaten çevrili (`abilityTakviye` → `Reinforce`).
+
+### `2×` — aranan kusur yok
+
+Baştan sona ölçüldü, **düzeltilecek bir şey bulunamadı**:
+
+| Sınama | Sonuç |
+|---|---|
+| Aynı tahta, dalga 1, 1× ve 2× | **İkisi de sızıntısız** (can 12 → 12); 2× yalnız yarı gerçek zamanda vardı |
+| Kare hızı | 1× ve 2×'te **59 FPS** |
+| Mermi tünellemesi (2×'te adım iki katı) | Yok — `ProjectileSystem` süpürülmüş kontrol yapıyor |
+| `Hud`/`Overlay` 1×'te kalıyor | **Karar, kusur değil** — 2× oyunun temposunu hızlandırmalı, düğme geri bildirimini değil |
+
+Bulunan tek şey **gizli** bir tutarsızlık: `anims.globalTimeScale` sahne
+başına değil oyun geneli. Bugün zararsız çünkü proje hiç sprite
+animasyonu kullanmıyor — ölü bir kol. Sözleşme `GameClock.setScale`
+başlığına yazıldı ki sprite animasyonu eklendiği gün gözden kaçmasın.
+
+Oyuncunun 2×'te ne gördüğü hâlâ açık; tarif gelirse oraya bakılacak.

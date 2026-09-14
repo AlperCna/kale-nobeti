@@ -57,6 +57,37 @@ export class GameClock {
    * Hızı değiştirir ve **üç** Phaser zaman otoritesini de senkronlar.
    * Biri atlanırsa o sistem yanlış hızda çalışır ve bu sessizce olur.
    */
+  /**
+   * Hızı değiştirir — **yalnız oyun sahnesine** verilir.
+   *
+   * Oyuncu geri bildirimi "2x'e alınca biraz sıkıntı oldu oyun kısmında"
+   * üzerine baştan sona ölçüldü ve **düzeltilecek bir kusur bulunamadı.**
+   * Bulunanlar, bir daha aranmasın diye:
+   *
+   * - **Sonuç değişmiyor.** Aynı harita, aynı tahta (2 okçu + 1 top),
+   *   dalga 1: 1×'te ve 2×'te ikisi de sızıntısız bitti (can 12 → 12),
+   *   2× yalnız yarı gerçek zamanda vardı. `scaledDelta` her yerde
+   *   tutarlı kullanılıyor demek.
+   * - **Kare hızı düşmüyor:** 1× ve 2×'te 59 FPS.
+   * - **Mermi hedefi atlamıyor.** 2×'te kare başına adım iki katına
+   *   çıkıyor ama `ProjectileSystem` nokta-mesafe değil **süpürülmüş**
+   *   kontrol yapıyor (`pointToSegmentDistSq`), yani tünelleme yok.
+   *
+   * **Arayüz zamanı bilerek ölçeklenmiyor.** `tweens` ve `time`
+   * Phaser'da sahne başına; buraya `GameScene` veriliyor, `Hud` ve
+   * `Overlay` 1×'te kalıyor. Bu kusur değil karar: 2× oyunun temposunu
+   * hızlandırmalı, düğmeye basma geri bildirimini değil. Oyun olaylarına
+   * ait olan animasyonlar (hasar sayısı, altın uçuşu, başarım bandı,
+   * boss afişi) zaten `GameScene` içinde yaşıyor.
+   *
+   * **Bilinen gizli tutarsızlık:** `anims.globalTimeScale` sahne başına
+   * değil **oyun geneli**. Bugün zararsız, çünkü proje hiç sprite
+   * animasyonu kullanmıyor (`.anims.create`/`.play` araması boş dönüyor)
+   * — yani bu satır ölü bir kol. Sprite animasyonu eklendiği gün arayüzü
+   * de hızlandıracak; o zaman ölçek sahne başına ayrılmalı. Satır
+   * silinmedi çünkü o gün gelince oyun animasyonlarının ölçeklenmesi
+   * DOĞRU olacak; yanlış olan yalnız arayüze de bulaşması.
+   */
   setScale(s: Speed, target: ClockTarget): void {
     this.#scale = s;
     target.tweens.timeScale = s;
