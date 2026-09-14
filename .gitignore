@@ -29,3 +29,7 @@ node_modules/.phaser-custom/
 # commit'e sizabiliyor (bir kez oldu).
 __kural_dokum.test.ts
 __bg_dokum.test.ts
+
+# Erişimi kilitlenmiş artık klasör (yönetici kabuğu olmadan silinemiyor).
+# Listelenmesi her `git add`te uyarı basıyordu.
+.tmpscan/
