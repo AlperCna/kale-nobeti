@@ -70,6 +70,30 @@ const TR = {
   modeStrongest: 'Güçlü',
   modeWeakest: 'Zayıf',
   modeClosest: 'Yakın',
+
+  /**
+   * Seçili hedefleme modunun bir satırlık açıklaması — oyuncu geri
+   * bildirimi: "first last strong weak near ne anlama geliyor belli
+   * olmuyor". Beş düğme oyunun en derin mekaniği ve tek kelime
+   * söylenmiyordu.
+   *
+   * Metinler `TargetingSystem.skor`'dan **okunarak** yazıldı, tahminle
+   * değil; skor en KÜÇÜK olan seçiliyor:
+   *   first     → `remainingDistance`   en az kalan yol = kaleye en yakın
+   *   last      → `-remainingDistance`  en çok kalan yol = yola en son giren
+   *   strongest → `-maxHp`              en yüksek AZAMİ can
+   *   weakest   → `hp`                  en düşük ANLIK can
+   *   closest   → `distSq`              kuleye en yakın
+   *
+   * Güçlü/Zayıf arasındaki asimetri bilerek (§4.5: azami can kararlı
+   * hedef verir) ve oyuncunun tahmin edemeyeceği tek şey o — bu yüzden
+   * iki açıklamada da hangi canın kastedildiği yazılı.
+   */
+  modeFirstDesc: 'Kaleye en yakın düşmanı vurur',
+  modeLastDesc: 'Yola en son gireni vurur',
+  modeStrongestDesc: 'En dayanıklı türü vurur (azami cana göre)',
+  modeWeakestDesc: 'En çok yaralanmışı vurur (anlık cana göre)',
+  modeClosestDesc: 'Kuleye en yakın düşmanı vurur',
   barracks: 'Kışla',
   sell: 'Sat',
   pauseHint: 'ESC / boşluk',
@@ -186,9 +210,10 @@ const TR = {
    */
   infoDamage: 'Hasar',
   infoRate: 'Atış/sn',
-  infoRange: 'Menzil',
-  infoCoverage: 'Kapsanan yol',
+  infoRange: 'Menzil (px)',
+  infoCoverage: 'Yolun kapsanan payı',
   infoUpgrade: 'Yükseltme',
+  infoMaxTier: 'Son kademe',
   infoRefund: 'Satış iadesi',
   infoPhysical: 'Fiziksel',
   infoMagic: 'Büyü',
@@ -307,6 +332,11 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     modeStrongest: 'Strong',
     modeWeakest: 'Weak',
     modeClosest: 'Near',
+    modeFirstDesc: 'Targets the one nearest the keep',
+    modeLastDesc: 'Targets the one that entered last',
+    modeStrongestDesc: 'Targets the toughest type (by max health)',
+    modeWeakestDesc: 'Targets the most wounded (by current health)',
+    modeClosestDesc: 'Targets the one nearest this tower',
     barracks: 'Barracks',
     sell: 'Sell',
     pauseHint: 'ESC / space',
@@ -394,9 +424,10 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     branchOutlaws: 'Outlaws',
     infoDamage: 'Damage',
     infoRate: 'Shots/s',
-    infoRange: 'Range',
-    infoCoverage: 'Path covered',
+    infoRange: 'Range (px)',
+    infoCoverage: 'Share of path covered',
     infoUpgrade: 'Upgrade',
+    infoMaxTier: 'Max tier',
     infoRefund: 'Sell refund',
     infoPhysical: 'Physical',
     infoMagic: 'Magic',

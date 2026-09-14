@@ -427,6 +427,7 @@ export class GameScene extends Phaser.Scene {
       this.scale.width - 12 - TowerInfoPanel.W,
       this.scale.height - 12 - TowerInfoPanel.H,
       ENEMIES.filter((e) => this.#map.enemyRoster.includes(e.id)),
+      this.#map.paths.reduce((t, p) => t + (p.length > 1 ? new PathSystem(p).totalLength : 0), 0),
     );
 
     // TIER 1 kural 3: `Group` burada, sahne tarafında — görüntü listesi ve
