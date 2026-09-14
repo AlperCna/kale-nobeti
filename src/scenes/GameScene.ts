@@ -1226,6 +1226,30 @@ export class GameScene extends Phaser.Scene {
       }
 
       const i = findSpotAt(nokta, this.#map.buildSpots);
+
+      // 3) `M8-T12` — **dokunmatikte sürüklemeden** toplanma noktası.
+      //
+      // Sürükleme 44 px'lik bir işaretçiyi parmakla yakalamayı gerektiriyor
+      // ve parmak işaretçinin üstünü kapatıyor; masaüstünde doğal olan jest
+      // telefonda en kırılgan etkileşim. Seçili kışlanın menzili içinde
+      // **boş bir yere dokunmak** artık bayrağı oraya taşıyor. Sürükleme
+      // kalkmadı — ikisi bir arada, hangisi elverişliyse.
+      //
+      // Sıra önemli: bir yapı noktasına dokunmak hâlâ o noktanın menüsünü
+      // açıyor (`i >= 0`), yoksa kışlanın yanındaki noktalar erişilemez
+      // hâle gelirdi.
+      if (i < 0 && secili !== undefined) {
+        const spot = this.#map.buildSpots[this.#buildMenu?.selectedSpot ?? -1];
+        if (spot !== undefined) {
+          const mx = nokta.x - spot.x;
+          const my = nokta.y - spot.y;
+          if (mx * mx + my * my <= BLOCK.rallyRange * BLOCK.rallyRange) {
+            this.#setRally(this.#buildMenu?.selectedSpot ?? -1, nokta);
+            return;
+          }
+        }
+      }
+
       if (i < 0) {
         this.#buildMenu?.closeMenu();
         return;
