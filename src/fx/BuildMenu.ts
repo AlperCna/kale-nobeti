@@ -6,7 +6,7 @@ import type { Soldier } from '../entities/Soldier';
 import type { MapDef } from '../types/map';
 import type { Vec2 } from '../types/common';
 import type { TargetMode, TierIndex, TowerDef } from '../types/tower';
-import { TOWERS, tierAt } from '../data/towers';
+import { TOWERS, TARGET_MODES, tierAt } from '../data/towers';
 import { KISLA, barracksTierAt } from '../data/barracks';
 import { FRAME_CARTOUCHE } from '../data/spriteFrames';
 import { measureCoverage } from '../util/coverage';
@@ -123,7 +123,7 @@ const TOWER_DISPLAY_SIZE = 64;
  */
 const MENU_NOKTA_BOSLUK = (TOWER_DISPLAY_SIZE + 16) / 2 + 8;
 
-const TARGET_MODES: readonly TargetMode[] = ['first', 'last', 'strongest', 'weakest', 'closest'];
+
 
 const MODE_LABEL_KEY: Readonly<Record<TargetMode, StringKey>> = {
   first: 'modeFirst',

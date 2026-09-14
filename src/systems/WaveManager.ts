@@ -154,6 +154,31 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
     return this.#phase === 'done';
   }
 
+  /**
+   * Kaydedilmiş bir turdan dönüldü — sayacı o dalganın **hazırlığına**
+   * kur (`M10-T02`).
+   *
+   * Yalnız dalga sınırında çağrılıyor (tur kaydının tek yazma anı), o
+   * yüzden sahada düşman olmadığı varsayılıyor ve kuyruk temizleniyor.
+   * Dalga ortasında çağrılırsa kuyruktaki doğumlar kaybolur — çağıran
+   * taraf bunu bilmek zorunda, bu yüzden ad "atla" değil "geri yükle".
+   *
+   * Hazırlık süresi **tam** veriliyor: oyuncu geri döndüğünde tahtasını
+   * gözden geçirecek zamanı hak ediyor, ve ayrıca bu "çık-gir" ile
+   * hazırlık süresini uzatma gibi bir sömürü üretmiyor — hazırlık
+   * süresi zaten altın kazandırmıyor, erken başlatmak kazandırıyor.
+   */
+  turdanGeriYukle(waveIndex: number): void {
+    const enBuyuk = this.endless !== undefined ? Number.MAX_SAFE_INTEGER : this.waves.length - 1;
+    this.#index = Math.max(0, Math.min(waveIndex, enBuyuk));
+    this.#phase = 'prep';
+    this.#prepLeftSec = BALANCE.prepSeconds;
+    this.#waveTimeSec = 0;
+    this.#kuyruk = [];
+    this.#spawnedThisWave = 0;
+    this.#uretilen = undefined;
+  }
+
   /** Erken başlatma butonu bu dalgada açık mı (§6: dalga 4'ten itibaren). */
   get earlyStartAvailable(): boolean {
     return this.#phase === 'prep' && this.waveNumber >= BALANCE.earlyBonusFrom;

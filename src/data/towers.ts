@@ -8,7 +8,7 @@
  * asker çıkaran ayrı bir mekanik.
  */
 
-import type { TierIndex, TowerDef, TowerTier } from '../types/tower';
+import type { TargetMode, TierIndex, TowerDef, TowerTier } from '../types/tower';
 
 /**
  * Okçu Kulesi — tek hedef, hızlı, ucuz. Fiziksel hasar, uçana vurur,
@@ -128,6 +128,23 @@ export const BUYU: TowerDef = {
 
 /** M4 kadrosu: üç kule ailesi. Kışla M5'te. */
 export const TOWERS: readonly TowerDef[] = [OKCU, TOP, BUYU];
+
+/**
+ * Hedefleme modlarının **tek** listesi.
+ *
+ * `M10-T02`'ye kadar yalnız `fx/BuildMenu.ts` içinde, dışa açılmadan
+ * duruyordu; tur kaydı kayıttan okuduğu modu doğrulamak için de aynı
+ * listeye ihtiyaç duyunca ikinci bir kopya yazmak yerine buraya taşındı.
+ * İki kopya sessizce ayrışır ve ayrışma "bir mod menüde var ama kayıttan
+ * yüklenmiyor" gibi görünür.
+ */
+export const TARGET_MODES: readonly TargetMode[] = [
+  'first',
+  'last',
+  'strongest',
+  'weakest',
+  'closest',
+];
 
 export function getTower(id: TowerDef['id']): TowerDef | undefined {
   return TOWERS.find((t) => t.id === id);

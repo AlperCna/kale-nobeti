@@ -45,6 +45,33 @@ export class AbilitySystem {
     for (const a of ABILITIES) this.#durum.set(a.id, { id: a.id, cooldownLeft: 0 });
   }
 
+  /**
+   * Kaydedilmiş turdan dönüş — `M10-T02`.
+   *
+   * Bekleme **saklanıyor, sıfırlanmıyor**: sıfırlansaydı oyuncu Meteor'u
+   * kullanıp sayfayı yenileyerek beklemeyi atlayabilirdi. Ucuz bir
+   * sömürü ama kaydın tek işi turu **aynı** yerden sürdürmek; bekleme de
+   * turun durumu.
+   *
+   * Tanınmayan kimlik yok sayılıyor (yetenek listesi değişirse eski tur
+   * yine de yüklenebilsin).
+   */
+  turdanGeriYukle(beklemeler: Readonly<Record<string, number>>): void {
+    for (const [id, kalan] of Object.entries(beklemeler)) {
+      const s = this.#durum.get(id as AbilityId);
+      if (s === undefined) continue;
+      if (!Number.isFinite(kalan) || kalan < 0) continue;
+      s.cooldownLeft = kalan;
+    }
+  }
+
+  /** Bekleme durumunun kayda yazılabilir hâli. */
+  get beklemeler(): Record<string, number> {
+    const cikti: Record<string, number> = {};
+    for (const [id, s] of this.#durum) cikti[id] = s.cooldownLeft;
+    return cikti;
+  }
+
   /** @param scaledDelta `GameClock.scaledDelta`, birim **ms** (TIER 1 k.8). */
   tick(scaledDelta: number): void {
     const dt = scaledDelta / 1000;

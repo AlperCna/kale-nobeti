@@ -19,7 +19,19 @@ export type GoldChangeReason = 'kill' | 'waveBonus' | 'earlyBonus' | 'sell' | 's
 export interface GameEvents {
   'enemy:killed': { readonly id: number; readonly gold: number };
   'wave:started': { readonly index: number };
-  /** M6-T11 — dalga bitince yayılıyor. `music_game` dalga 1 bitince başlıyor. */
+  /**
+   * M6-T11 — dalga bitince yayılıyor. `music_game` dalga 1 bitince başlıyor.
+   *
+   * `index` **1 tabanlı biten dalga numarası** (`wave:started`'ın 0 tabanlı
+   * `index`'iyle aynı ad, farklı taban — `M10-T02`'de fark edildi, adlar
+   * korunuyor çünkü ikisi de yayınlanmış sözleşme).
+   *
+   * Olay `WaveManager`'ın sayacı **artmadan önce** yayılıyor: dinleyici
+   * "sıradaki dalga" isterse `index`'i 0 tabanlı sıradaki indeks olarak
+   * okuyabilir (biten 1. dalga → sıradaki 0 tabanlı indeks 1). Tur kaydı
+   * (`M10-T02`) tam olarak bunu yapıyor ve `WaveManager.test.ts` bu
+   * eşitliği bağlıyor.
+   */
   'wave:ended': { readonly index: number };
   'gold:changed': { readonly total: number; readonly reason: GoldChangeReason };
   'life:lost': { readonly remaining: number };

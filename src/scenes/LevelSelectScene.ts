@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { MAPS } from '../data/maps';
+import { haritaAdi } from '../data/mapNames';
 import { wavesFor } from '../data/waves';
 import { SaveSystem } from '../systems/SaveSystem';
 import { LocalStore } from '../util/storage';
@@ -76,20 +77,7 @@ function izgaraKonumu(
   return { x, y };
 }
 
-/** `Y03` — harita adları `strings.ts`'e taşındı (S75: çevrilecek). */
-const HARITA_ADI_ANAHTARI: Readonly<Record<string, StringKey>> = {
-  'degirmen-gecidi': 'mapDegirmenGecidi',
-  'tas-kopru': 'mapTasKopru',
-  'kul-ovasi': 'mapKulOvasi',
-  'kar-gecidi': 'mapKarGecidi',
-  'kadim-harabe': 'mapKadimHarabe',
-};
 
-/** Bilinmeyen bir harita id'si gelirse (olmaması gerekir) ham id'ye düşer. */
-function haritaAdi(id: string): string {
-  const anahtar = HARITA_ADI_ANAHTARI[id];
-  return anahtar !== undefined ? t(anahtar) : id;
-}
 
 /**
  * Seviye seçim — `M7-T06`.

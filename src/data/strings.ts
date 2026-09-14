@@ -111,6 +111,7 @@ const TR = {
   endlessNewRecord: 'Yeni rekor!',
 
   // --- M8-T07 başarımlar ---
+  continueRun: 'Devam et',
   achievements: 'Başarımlar',
   achUnlocked: 'Başarım açıldı',
   achFirstTower: 'İlk Nöbetçi',
@@ -364,6 +365,7 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     endlessBest: 'Best',
     endlessNewRecord: 'New record!',
 
+    continueRun: 'Continue',
     achievements: 'Achievements',
     achUnlocked: 'Achievement unlocked',
     achFirstTower: 'First Watch',
