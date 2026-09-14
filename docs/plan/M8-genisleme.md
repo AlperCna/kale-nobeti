@@ -109,7 +109,7 @@ sanattan türetilmiş); gerçek görsel için brif yazılır.
 | | |
 |---|---|
 | **Kimlik** | `M8-T04` |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ **bitti** (2026-09-14) |
 | **Süre** | ~45 dk kod + ölçüm turu |
 | **Önkoşul** | `M8-T01` |
 | **TIER 1** | k.1, k.4 |
@@ -132,6 +132,62 @@ sanattan türetilmiş); gerçek görsel için brif yazılır.
 **Kabul kriteri** — `npm run test` yeşil (kapsama bandı, Kısıt A kol başına, boss bandı ±%6, dalga bütçesi); `npm run build` → `KURALLAR.md` diff'i **harita 4 satırlarını içeriyor ve başka satır değişmiyor**; `waveSim` referans tahtayla 10 dalga ≤ 20 can kaybı; canlı: harita 3 bitince harita 4 açılıyor, oynanıyor.
 
 **Bitmedi sayılır eğer:** `hpMultiplier`/`goldMultiplier`/zırh **ölçülmeden** yazıldıysa.
+
+#### Sonuç — `M8-T04`
+
+**Harita.** Tek giriş, S kıvrımı, iki keskin viraj:
+`(-60,140) → (480,140) → (480,430) → (1000,430) → (1000,660)`, `L` = **1580 px**.
+12 yapı noktası. Uçan hat 11/12 noktayı kesiyor (%92 ≥ %40 şartı).
+
+**Kapsama 290,1 px** (bant 285-311). Üç turda ölçüldü: 291,4 (10 nokta) →
+286,1 (12 nokta) → 290,1, son adımda kale tarafındaki nokta `(1075,580)`'den
+`(1075,500)`'e taşındı (o konumda yalnız 210 px görüyordu).
+
+**Çarpanlar iki turda belirlendi — ve ilk tur YANLIŞTI.**
+
+1. Monotonluk `hpMultiplier` 3,4 · `goldMultiplier` 4,0 diyordu (doyum
+   taraması: tahta maliyeti 3,8'den itibaren 5100'de sabit; 4,0
+   `startGold`'u harita 3'ün 1064'ünün üstüne çıkaran en küçük adım).
+2. `simulateAllWaves` bu değerlerle **0 can kaybı** verdi — harita 2 (6) ve
+   harita 3'ten (10) **kolay**. Sebep geometri: tek yolda 12 noktanın
+   **hepsi** aynı yolu görüyor, harita 2-3'te savunma iki kola bölünüyordu.
+   **Monoton çarpan, monoton zorluk demek değil.**
+3. `hpMultiplier` taraması (3,4 → 5,6): can kaybı 0 · 6 · 11 · **13** · 17 · 21.
+   Seçilen **4,4/4,4** — harita 3'ün 10'unun üstünde, 20 sınırının %35 altında.
+   `startGold` 1232.
+
+Bu ders teste bağlandı: `kisitB.test.ts` artık **ölçülen can kaybının**
+haritalar boyunca monoton arttığını doğruluyor (girdi çarpanının değil).
+
+**Boss.** Zırh taraması (0-5) tavanı yalnız %12 oynattı (2441 → 2141) —
+zırh burada bağlayıcı kısıt değil, harita 3'le aynı **2** bırakıldı.
+Türetilen HP **1857** (0,80 × 2321,2). Tavan tahta DPS'ine bağlı olduğu için
+`hpMultiplier` değişikliğinden **etkilenmedi**.
+
+**Dalga bütçeleri** ±%4 içinde (dalga 7 ilk turda −%12'ydi, orkSavasci
+5→6 ile −%4'e çekildi). Sızıntı 10 / can 13 / boss 0.
+
+**Yan bulgular — ikisi de canlı ekran görüntüsünden çıktı, ölçümden değil:**
+
+- **Seviye seçim tek satırda taşıyordu.** 4 kart = 1272 px, 1280'lik
+  sahnede yanlarda 4'er piksel. Izgaraya geçildi (satır başına 3);
+  harita 5 eklenince bu dosyaya dokunulmayacak.
+- **Yıldızlar parlak küçük resimde okunmuyordu.** Önce mürekkep bant
+  denendi — o da **kazanılmış** yıldızı bozdu, çünkü atlas karesinin içi
+  mürekkep dolgu (ölçüldü: `#14213B`); dolu yıldız banda karışıp boşa
+  benzedi. Parşömen bant ikisini birden çözdü.
+- **`kurallar.mjs` harita 4'ü sessizce boş bastı** — elle tutulan
+  id→dalga tablosu güncellenmemişti, doküman "0 sızıntı" yazdı (ölçüm 10
+  diyordu). `wavesFor()`'a geçildi ve eksik harita adı artık build'i
+  durduruyor.
+
+**Sanat.** `M8-P01` brifi `docs/plan/M8-sanat-brifi.md`'de. Oyundaki görsel
+**geçici** (harita 1'in arka planından soğuk tonlama); gerçek görsel
+üretilince yalnız `assets-src/bg/kar-gecidi.png` değişecek.
+
+**Plandan sapmalar:** `PreloadScene.queueLazy` değişmedi — zaten `mapId`
+üzerinden genel çalışıyordu. Nokta sayısı 10 değil **12** oldu (kapsama
+bandı 10 noktayla tutmuyordu).
 
 ### Faz 5 — Harita 5 "Kadim Harabe" — `M8-T05`, `M8-P02`
 

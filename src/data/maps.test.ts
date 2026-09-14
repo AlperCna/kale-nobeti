@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { MAP_1, MAP_2, MAP_3, MAPS, COVERAGE_REFERENCE_RANGE } from './maps';
+import { MAP_1, MAP_2, MAP_3, MAP_4, MAPS, COVERAGE_REFERENCE_RANGE } from './maps';
 import { measureCoverage, pathLength, spotsCoveringFlyerPaths } from '../util/coverage';
 
 describe('MAP_1 — GAME-DESIGN §9 tablosuna uygunluk', () => {
@@ -116,13 +116,15 @@ describe('MAP_1 — denge hedefleri', () => {
 });
 
 describe('MAPS', () => {
-  it('M7 sonunda ÜÇ harita var, §9 sırasında', () => {
-    // M1'de bu test "tek harita" diyordu — o bir taş durumuydu, kalıcı
-    // bir kural değil. M7 üçünü de getiriyor (§9 tablosu).
-    expect(MAPS).toHaveLength(3);
+  it('M8 sonunda DÖRT harita var, zorluk sırasında', () => {
+    // M1'de bu test "tek harita" diyordu, M7'de "üç" — ikisi de taş
+    // durumuydu, kalıcı bir kural değil. `M8-T04` dördüncüyü ekliyor.
+    // Sıra kilit sırası: `SaveSystem.isUnlocked` bu diziyi okuyor.
+    expect(MAPS).toHaveLength(4);
     expect(MAPS[0]).toBe(MAP_1);
     expect(MAPS[1]).toBe(MAP_2);
     expect(MAPS[2]).toBe(MAP_3);
+    expect(MAPS[3]).toBe(MAP_4);
   });
 
   it('kimlikler benzersiz — kayıt anahtarı bunlara dayanıyor', () => {
@@ -185,12 +187,80 @@ describe('Harita 2 ve 3 — GAME-DESIGN.md §9 tablosu', () => {
   });
 
   it('zorluk MONOTON artıyor', () => {
-    expect(MAP_1.hpMultiplier).toBeLessThan(MAP_2.hpMultiplier);
-    expect(MAP_2.hpMultiplier).toBeLessThan(MAP_3.hpMultiplier);
-    expect(MAP_1.buildSpots.length).toBeLessThan(MAP_2.buildSpots.length);
-    expect(MAP_2.buildSpots.length).toBeLessThan(MAP_3.buildSpots.length);
-    expect(MAP_1.startGold).toBeLessThan(MAP_2.startGold);
-    expect(MAP_2.startGold).toBeLessThan(MAP_3.startGold);
+    // Dizi üstünde yürüyor: beşinci harita eklendiğinde bu test kendiliğinden
+    // onu da kapsıyor (eskiden elle yazılmış üç karşılaştırmaydı).
+    // **Yapı noktası sayısı hariç** — harita 3 ve 4 ikisi de 12 nokta;
+    // zorluk artışı orada geometriden (tek giriş, uzun S) geliyor.
+    for (let i = 1; i < MAPS.length; i++) {
+      const onceki = MAPS[i - 1]!;
+      const simdiki = MAPS[i]!;
+      expect(onceki.hpMultiplier, simdiki.id).toBeLessThan(simdiki.hpMultiplier);
+      expect(onceki.startGold, simdiki.id).toBeLessThan(simdiki.startGold);
+      expect(onceki.buildSpots.length, simdiki.id).toBeLessThanOrEqual(simdiki.buildSpots.length);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------
+// M8-T04 — Harita 4 "Kar Geçidi"
+// ---------------------------------------------------------------------
+
+describe('Harita 4 — M8-T04', () => {
+  it('sayılar ÖLÇÜLDÜ, uydurulmadı (M8-T04-SONUC)', () => {
+    expect(MAP_4.id).toBe('kar-gecidi');
+    expect(MAP_4.buildSpots).toHaveLength(12);
+    // Tek giriş — harita 2/3'ün ayrık yolundan sonra bilinçli bir geri dönüş:
+    // zorluk kolları bölmekten değil, uzun S kıvrımı + yüksek çarpandan geliyor.
+    expect(MAP_4.paths).toHaveLength(1);
+    // Çarpanlar İKİ turda belirlendi (gerekçe `maps.ts` yorumunda):
+    // monotonluk 3,4/4,0 diyordu ama simülasyon o değerlerle **sıfır**
+    // can kaybı verdi — harita 3'ten kolay. Tarama 4,4'ü verdi (can 13,
+    // harita 3'ün 10'unun üstünde, 20 sınırının altında).
+    expect(MAP_4.hpMultiplier).toBe(4.4);
+    expect(MAP_4.goldMultiplier).toBe(4.4);
+    expect(MAP_4.startGold).toBe(1232);
+  });
+
+  it('kadro harita 3 + ogreSef — yeni düşman tipi YOK', () => {
+    // `M8-T04` harita ekliyor, düşman değil (yeni düşman `M8-T09`'un işi).
+    for (const e of MAP_3.enemyRoster) {
+      if (e === 'orumcekYavrusu') continue; // yavru ayrı sağlanıyor
+      expect(MAP_4.enemyRoster, e).toContain(e);
+    }
+  });
+
+  it('uçan hattını gören nokta oranı ≥ %40', () => {
+    const goren = spotsCoveringFlyerPaths(
+      MAP_4.flyerPaths,
+      MAP_4.buildSpots,
+      COVERAGE_REFERENCE_RANGE,
+    );
+    expect(goren / MAP_4.buildSpots.length).toBeGreaterThanOrEqual(0.4);
+  });
+
+  it('yapı noktası yolun üstünde değil', () => {
+    const yol = MAP_4.paths[0] ?? [];
+    for (const spot of MAP_4.buildSpots) {
+      let enYakinKare = Infinity;
+      for (let i = 0; i < yol.length - 1; i++) {
+        const a = yol[i]!;
+        const b = yol[i + 1]!;
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const uzKare = dx * dx + dy * dy;
+        const t =
+          uzKare === 0 ? 0 : Math.max(0, Math.min(1, ((spot.x - a.x) * dx + (spot.y - a.y) * dy) / uzKare));
+        const px = a.x + t * dx - spot.x;
+        const py = a.y + t * dy - spot.y;
+        enYakinKare = Math.min(enYakinKare, px * px + py * py);
+      }
+      expect(Math.sqrt(enYakinKare), `${spot.x},${spot.y}`).toBeGreaterThanOrEqual(40);
+    }
+  });
+
+  it('yolun son waypointi kale', () => {
+    const yol = MAP_4.paths[0];
+    expect(yol?.[yol.length - 1]).toEqual(MAP_4.castle);
   });
 });
 
@@ -210,7 +280,7 @@ describe('§9 kapsama bandı — KOL BAŞINA (ayrık yol uyarısı)', () => {
     return goren.reduce((a, c) => a + c.coveredPx, 0) / goren.length;
   };
 
-  it('üç haritanın HER KOLU 285-311 px bandında', () => {
+  it('her haritanın HER KOLU 285-311 px bandında', () => {
     for (const m of MAPS) {
       m.branchCoverage.forEach((kol, i) => {
         const ort = kolOrtalamasi(kol);
@@ -226,6 +296,7 @@ describe('§9 kapsama bandı — KOL BAŞINA (ayrık yol uyarısı)', () => {
     expect(kolOrtalamasi(MAP_2.branchCoverage[1]!)).toBeCloseTo(299.8, 0);
     expect(kolOrtalamasi(MAP_3.branchCoverage[0]!)).toBeCloseTo(291.3, 0);
     expect(kolOrtalamasi(MAP_3.branchCoverage[1]!)).toBeCloseTo(291.3, 0);
+    expect(kolOrtalamasi(MAP_4.branchCoverage[0]!)).toBeCloseTo(290.1, 0);
   });
 
   it('Y ayrımında iki kol SİMETRİK — biri diğerinden kolay değil', () => {

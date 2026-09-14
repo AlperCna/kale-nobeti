@@ -58,6 +58,11 @@ const ARKA_PLANLAR = [
   { src: ['bg', 'degirmen-gecidi.png'], out: 'bg/degirmen-gecidi.webp' },
   { src: ['bg', 'tas-kopru.png'], out: 'lazy/tas-kopru.webp' },
   { src: ['bg', 'kul-ovasi.png'], out: 'lazy/kul-ovasi.webp' },
+  // `M8-P01` — **GEÇİCİ**: harita 1'in arka planından soğuk tonlamayla
+  // türetildi (`sharp modulate + tint`), yeni sanat değil. Gerçek görsel
+  // brifi `docs/plan/M8-sanat-brifi.md`; üretilince yalnız kaynak PNG
+  // değişecek, bu satır aynı kalacak.
+  { src: ['bg', 'kar-gecidi.png'], out: 'lazy/kar-gecidi.webp' },
   // M6-T05 — menü arka planı, `queueBoot`'ta (ilk indirmenin parçası).
   { src: ['menu', 'menu-bg.png'], out: 'menu-bg.webp' },
 ];
@@ -89,6 +94,7 @@ const KART_KUCUK_RESIMLERI = [
   { src: ['bg', 'degirmen-gecidi.png'], id: 'degirmen-gecidi' },
   { src: ['bg', 'tas-kopru.png'], id: 'tas-kopru' },
   { src: ['bg', 'kul-ovasi.png'], id: 'kul-ovasi' },
+  { src: ['bg', 'kar-gecidi.png'], id: 'kar-gecidi' },
 ];
 
 async function kartKucukResimleriUret() {

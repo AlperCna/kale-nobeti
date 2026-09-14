@@ -332,9 +332,79 @@ export const MAP3_WAVES: readonly Wave[] = [
   ), // 51 ≈ bütçe 52
 ];
 
+/**
+ * ## Harita 4'ün 10 dalgası — "Kar Geçidi"
+ *
+ * Kadro **tam** (boss dahil dokuz tip) ve **yeni tanıtım yok**: bütün
+ * mekanikler harita 1-3'te tanıtıldı (§5 "mekanik erken, uç örneği geç").
+ * Zorluk kaynağı bu yüzden yalnız çarpanlar ve geometri — oyuncu yeni bir
+ * kural değil, bildiği kuralların daha sıkı bir sınavını görüyor.
+ *
+ * **Tek giriş** (S kıvrımı): tüm gruplar `spawnPoint` 0. Harita 3'ün iki
+ * kapısından sonra bu bir sadeleşme gibi görünüyor ama kıvrım kapsamayı
+ * noktalara eşit dağıtıyor, yani "hangi kolu savunayım" kararı yerine
+ * "hangi noktayı önce doldurayım" kararı geliyor.
+ *
+ * Nefes dalgaları 4 ve 7 (§7), boss 10'da refakatiyle.
+ */
+export const MAP4_WAVES: readonly Wave[] = [
+  dalgaKur(1, [['goblin', 10]]), // 10 = bütçe 10
+  dalgaKur(2, [
+    ['goblin', 6],
+    ['orkSavasci', 3],
+  ]), // 12 = bütçe 12
+  dalgaKur(3, [
+    ['orkSavasci', 3],
+    ['zirhliOrk', 2],
+  ]), // 14 = bütçe 14
+  dalgaKur(4, [
+    ['goblin', 5],
+    ['orkSavasci', 5],
+  ]), // NEFES, 15 = bütçe 15
+  dalgaKur(5, [
+    ['kurtBinicisi', 3],
+    ['orumcekAna', 2],
+  ]), // 21 = bütçe 21
+  dalgaKur(6, [
+    ['zirhliOrk', 3],
+    ['harpi', 2],
+    ['saman', 1],
+    ['orkSavasci', 1],
+  ]), // 25 = bütçe 25
+  dalgaKur(7, [
+    ['goblin', 4],
+    ['orkSavasci', 6],
+    ['zirhliOrk', 2],
+  ]), // NEFES, 24 ≈ bütçe 25
+  dalgaKur(8, [
+    ['trol', 2],
+    ['zirhliOrk', 3],
+    ['kurtBinicisi', 2],
+    ['harpi', 1],
+  ]), // 38 ≈ bütçe 36
+  dalgaKur(9, [
+    ['trol', 2],
+    ['orumcekAna', 2],
+    ['saman', 1],
+    ['zirhliOrk', 1],
+    ['harpi', 2],
+  ]), // 43 = bütçe 43
+  dalgaKur(
+    10,
+    [
+      ['ogreSef', 1],
+      ['trol', 2],
+      ['zirhliOrk', 2],
+      ['saman', 1],
+    ],
+    BOSS_REFAKAT_GECIKMESI_SN,
+  ), // 54 ≈ bütçe 52
+];
+
 /** Harita kimliğinden dalga listesine. */
 export function wavesFor(mapId: string): readonly Wave[] {
   if (mapId === 'tas-kopru') return MAP2_WAVES;
   if (mapId === 'kul-ovasi') return MAP3_WAVES;
+  if (mapId === 'kar-gecidi') return MAP4_WAVES;
   return MAP1_WAVES;
 }

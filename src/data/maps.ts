@@ -335,7 +335,120 @@ export const MAP_3: MapDef = {
   ),
 };
 
-export const MAPS: readonly MapDef[] = [MAP_1, MAP_2, MAP_3];
+
+// =====================================================================
+// HARITA 4 — "Kar Geçidi" (`M8-T04`)
+// =====================================================================
+//
+// ## Koordinatlar nasıl türetildi
+//
+// Harita 1 ve 2'nin yöntemi aynen: **kapsama hedefinden geriye**. §9'un
+// bandı nokta başına 285-311 px (geometri ∩ boss bandı).
+//
+// **Tek giriş, S kıvrımı (üç keskin viraj).** Harita 3'ün iki kapısından
+// sonra bu bir sadeleşme gibi görünüyor ama kıvrım kapsamayı noktalara
+// eşit dağıtıyor: "hangi kolu savunayım" kararının yerini "hangi noktayı
+// önce doldurayım" alıyor. Yeni bir mekanik tanıtılmıyor (kadro tam,
+// hepsi harita 1-3'te tanıtıldı) — zorluk yalnız çarpanlardan ve
+// geometriden geliyor.
+//
+// Ölçülen ortalama kapsama: **290,1 px** ✓ (`maps.test.ts` kilitliyor).
+const MAP4_GIRIS: Vec2 = { x: -60, y: 140 }; // GEÇİCİ — S17 (ekran dışı)
+const MAP4_KALE: Vec2 = { x: 1000, y: 660 };
+
+const MAP4_PATH: readonly Vec2[] = [
+  MAP4_GIRIS,
+  { x: 480, y: 140 }, // viraj 1 — aşağı
+  { x: 480, y: 430 }, // viraj 2 — sağa
+  { x: 1000, y: 430 }, // viraj 3 — aşağı
+  MAP4_KALE,
+];
+
+/**
+ * 12 yapı noktası — harita 3'le aynı sayı (monotonluk: 8 → 10 → 12 → 12).
+ * Reçete harita 1'inkiyle aynı: çoğu düz kesimden **75 px** (≈260 px),
+ * virajların içinde olanlar iki kesimi birden görüyor (≈410 px).
+ *
+ * Kale tarafındaki nokta (1075, 500) önce (1075, 580)'deydi ve yalnız
+ * **210 px** görüyordu — dikey kesim 230 px, nokta fazla aşağıdaydı ve
+ * menzilin bir kısmı boşa gidiyordu. Yukarı çekmek ortalamayı 286,1'den
+ * 290,1'e taşıdı; bant tabanına (285) yapışmak istenmedi.
+ */
+const MAP4_BUILD_SPOTS: readonly Vec2[] = [
+  { x: 100, y: 215 }, // üst kesim, altta
+  { x: 280, y: 65 }, // üst kesim, üstte
+  { x: 405, y: 215 }, // viraj 1 içi — iki kesim
+  { x: 555, y: 290 }, // dikey kesim, sağda
+  { x: 405, y: 355 }, // dikey kesim, solda
+  { x: 555, y: 505 }, // viraj 2 dışı
+  { x: 700, y: 355 }, // orta kesim, üstte
+  { x: 860, y: 505 }, // orta kesim, altta
+  { x: 925, y: 355 }, // viraj 3 içi — iki kesim
+  { x: 1075, y: 500 }, // kale kesimi, sağda
+  { x: 190, y: 65 }, // üst kesim, üstte
+  { x: 780, y: 505 }, // orta kesim, altta
+];
+
+/** Uçan hattı: çapraz. 12 noktanın **11'ini** kesiyor (%92 ≥ %40 ✓). */
+const MAP4_FLYER: readonly Vec2[] = [
+  { x: -60, y: 200 },
+  { x: 1240, y: 600 },
+];
+
+export const MAP_4: MapDef = {
+  id: 'kar-gecidi',
+  // `M8-P01` — **GEÇİCİ görsel**: harita 1'in arka planından soğuk tonlama
+  // ile türetildi (`prep-assets.mjs`). Gerçek sanat brifi
+  // `docs/plan/M8-sanat-brifi.md`'de; üretilince yalnız bu dosya değişmez,
+  // yalnız PNG değişir.
+  background: 'lazy/kar-gecidi.webp',
+  paths: [MAP4_PATH],
+  buildSpots: MAP4_BUILD_SPOTS,
+  flyerPaths: [MAP4_FLYER],
+  castle: MAP4_KALE,
+  /**
+   * **Ölçülerek seçildi, uydurulmadı** (S77). İki turda belirlendi:
+   *
+   * 1. İlk tur yalnız *monotonluğa* baktı: `hpMultiplier` 3,4 (1,0 → 1,6 →
+   *    2,6 → 3,4), `goldMultiplier` 4,0 (tam yükseltme **doyum** taraması
+   *    3,8'de düzleşiyor — tahta maliyeti 5100'de sabit, üstü fazladan kule
+   *    almıyor; 4,0 `startGold`'u harita 3'ün 1064'ünün üstüne çıkaran en
+   *    küçük adım).
+   * 2. **Bu yetmedi.** Referans tahta simülasyonu 3,4/4,0 ile **sıfır**
+   *    sızıntı verdi — yani harita 4, harita 2 (6 sızıntı) ve harita 3'ten
+   *    (8 sızıntı, 10 can) **kolaydı**. Sebep geometri: tek yol + 12 nokta
+   *    demek 12 kulenin de **aynı** yolu görmesi; harita 2-3'te savunma iki
+   *    kola bölünüyordu. Monoton çarpan, monoton zorluk demek değil.
+   *
+   * `hpMultiplier` taraması (3,4 → 5,6, `goldMultiplier` ≥ `hpMultiplier`
+   * şartıyla) can kaybını şöyle verdi: 3,4→0 · 3,8→6 · 4,2→11 · **4,4→13**
+   * · 5,0→17 · 5,6→21. Seçilen **4,4/4,4**: harita 3'ün 10'unun üstünde
+   * (monoton zorluk) ve 20 can sınırının %35 altında (Kısıt B payı).
+   * Boss tavanı çarpandan bağımsız (tahta DPS'i ÷ boss zırhı), o yüzden
+   * türetilen boss HP 1857 bu değişiklikte **aynı kaldı**.
+   */
+  hpMultiplier: 4.4,
+  goldMultiplier: 4.4,
+  startGold: Math.round(280 * 4.4),
+  // §5: kadro **tam** — dokuz tip, yeni tanıtım yok.
+  enemyRoster: [
+    'goblin',
+    'orkSavasci',
+    'kurtBinicisi',
+    'harpi',
+    'zirhliOrk',
+    'saman',
+    'trol',
+    'orumcekAna',
+    'ogreSef',
+  ],
+  // ELLE YAZILMAZ — CLAUDE.md Mimari kuralı.
+  coverage: measureCoverage([MAP4_PATH], MAP4_BUILD_SPOTS, COVERAGE_REFERENCE_RANGE),
+  // Tek yol — kol başına kapsama toplamla aynı.
+  branchCoverage: [measureCoverage([MAP4_PATH], MAP4_BUILD_SPOTS, COVERAGE_REFERENCE_RANGE)],
+};
+
+export const MAPS: readonly MapDef[] = [MAP_1, MAP_2, MAP_3, MAP_4];
 
 export function getMap(id: string): MapDef | undefined {
   return MAPS.find((m) => m.id === id);

@@ -11,6 +11,8 @@ import type { StringKey } from '../data/strings';
 
 const INK = 0x14203a;
 const GOLD = 0xd4a032;
+/** Parşömen — yıldız bandının zemini (metin rengi olarak zaten kullanılıyor). */
+const PARSOMEN = 0xe4d3a8;
 /**
  * M6-T05 palet temizliği: `KILITLI`/kart-dışı metin renkleri önceden
  * palet dışıydı (`0x4a5570`, `0x2a3550`, `#8A93AA`, `#B9AF95`, `#5A6478`
@@ -24,12 +26,55 @@ const KILITLI_KONTUR_ALFA = 0.35;
 /** Dokunmatik hedef en az 44×44 px (`CLAUDE.md` Platform). */
 const KART_W = 300;
 const KART_H = 190;
+const KART_ARA_X = 24;
+/** Yıldız yuvaları arası adım — bant genişliği de buna bağlı. */
+const YILDIZ_ADIM = 36;
+const KART_ARA_Y = 30;
+
+/**
+ * Satır başına en fazla kaç kart — `M8-T04`.
+ *
+ * Eski düzen bütün haritaları **tek satıra** diziyordu: 3 haritayla
+ * sorunsuzdu, 4'te toplam genişlik 4×300 + 3×24 = **1272 px** oldu ve
+ * 1280'lik sahnede yanlarda 4'er piksel kaldı — kartlar ekranın kenarına
+ * yapıştı (canlı ekran görüntüsüyle görüldü). 5'te taşacaktı.
+ *
+ * Üç sütunla sınırlamak hem bugünkü 4'ü (3+1) hem yarınki 5'i (3+2)
+ * kenar boşluğunu koruyarak taşıyor; `M8-T05` harita 5'i eklerken bu
+ * dosyaya hiç dokunulmayacak.
+ */
+const SATIR_BASINA = 3;
+
+/** Kartların dikey olarak ortalanacağı bant (başlık altı, "Geri" üstü). */
+const IZGARA_UST = 150;
+const IZGARA_ALT = 660;
+
+/** Izgara yerleşimi — saf aritmetik, sahneye dokunmuyor. */
+function izgaraKonumu(
+  i: number,
+  toplam: number,
+  genislik: number,
+): { x: number; y: number } {
+  const satirSayisi = Math.ceil(toplam / SATIR_BASINA);
+  const satir = Math.floor(i / SATIR_BASINA);
+  // Son satır eksik kalabilir; o satırdaki kart sayısına göre ortalanıyor.
+  const buSatirdaki = Math.min(SATIR_BASINA, toplam - satir * SATIR_BASINA);
+  const sutun = i % SATIR_BASINA;
+
+  const x =
+    genislik / 2 + (sutun - (buSatirdaki - 1) / 2) * (KART_W + KART_ARA_X);
+  const bantMerkezi = (IZGARA_UST + IZGARA_ALT) / 2;
+  const y =
+    bantMerkezi + (satir - (satirSayisi - 1) / 2) * (KART_H + KART_ARA_Y);
+  return { x, y };
+}
 
 /** `Y03` — harita adları `strings.ts`'e taşındı (S75: çevrilecek). */
 const HARITA_ADI_ANAHTARI: Readonly<Record<string, StringKey>> = {
   'degirmen-gecidi': 'mapDegirmenGecidi',
   'tas-kopru': 'mapTasKopru',
   'kul-ovasi': 'mapKulOvasi',
+  'kar-gecidi': 'mapKarGecidi',
 };
 
 /** Bilinmeyen bir harita id'si gelirse (olmaması gerekir) ham id'ye düşer. */
@@ -124,8 +169,7 @@ export class LevelSelectScene extends Phaser.Scene {
 
     const ids = MAPS.map((m) => m.id);
     MAPS.forEach((m, i) => {
-      const x = width / 2 + (i - (MAPS.length - 1) / 2) * (KART_W + 24);
-      const y = height / 2 + 20;
+      const { x, y } = izgaraKonumu(i, MAPS.length, width);
       const acik = this.#save!.isUnlocked(ids, m.id);
       const yildiz = this.#save!.starsOf(m.id);
 
@@ -139,6 +183,21 @@ export class LevelSelectScene extends Phaser.Scene {
         // 12 nokta" neredeyse görünmez). Yazı rengi de parşömene döndü.
         this.add.rectangle(x, y - 54, KART_W - 40, 34, INK, 0.72);
         this.add.rectangle(x, y + 34, KART_W - 40, 26, INK, 0.72);
+        // `M8-T04` — yıldız sırası için de bant, ama **parşömen**, mürekkep
+        // değil. İki ayrı okunurluk sorunu var ve zıt yönleri istiyorlar:
+        //
+        // 1. Kazanılmamış yıldız (soluk altın **kontur**, içi boş) parlak bir
+        //    küçük resmin üstünde tamamen kayboluyordu — Kül Ovası'nın
+        //    çölünde üçüncü yuva, Kar Geçidi'nin karında üçü de.
+        // 2. Kazanılmış yıldızın atlas karesi altın konturlu ama **içi
+        //    mürekkep dolgu** (ölçüldü: merkez `#14213B`). Mürekkep bant
+        //    denendi ve dolgu banda karıştı: üç dolu yıldız, üç boş yıldıza
+        //    benzedi — yani bant birinci sorunu çözerken ikincisini yarattı.
+        //
+        // Parşömen zemin ikisini birden çözüyor: dolu yıldız koyu dolgusuyla
+        // basıyor, boş yıldız zemini gösteriyor. Ayrım **dolu/boş**, yani
+        // yalnız renge dayanmıyor (TIER 1 kural 6).
+        this.add.rectangle(x, y - 8, 3 * YILDIZ_ADIM + 16, 40, PARSOMEN, 0.85);
         kart = createParchmentButton(this, x, y, KART_W, KART_H, 20, true);
       } else {
         kart = this.add
@@ -159,7 +218,6 @@ export class LevelSelectScene extends Phaser.Scene {
       // arka plan ★★★ + üstüne dolu ★ bindirme" hilesi ve onun şüpheli
       // hizalama aritmetiği (`x - 30 + (yildiz*30)/2 - 15 + 15`) tamamen
       // kalktı; artık her yuva kendi sabit konumunda.
-      const YILDIZ_ADIM = 36;
       for (let i = 0; i < 3; i++) {
         this.add
           .image(
