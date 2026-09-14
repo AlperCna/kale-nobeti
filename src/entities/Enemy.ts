@@ -43,6 +43,8 @@ export class Enemy extends Phaser.GameObjects.Sprite implements Poolable, EnemyS
   progress: PathProgress = { segmentIndex: 0, tInSegment: 0, remainingDistance: 0 };
   blockedBy: object | null = null;
   alive = false;
+  /** `M10-T03` — kalan buz kalkanı. `resetEnemyState` sıfırlıyor. */
+  shieldLeft = 0;
 
   /** `null` yalnız havuzda beklerken. */
   mover: Mover | null = null;
@@ -140,6 +142,7 @@ export class Enemy extends Phaser.GameObjects.Sprite implements Poolable, EnemyS
     this.speed = def.speed;
     this.blockedBy = null;
     this.alive = true;
+    this.shieldLeft = def.shield ?? 0;
     this.progress = mover.spawnProgress();
     this.setFrame(enemyFrameKey(def.id));
     this.setDisplaySize(this.#size, this.#size);

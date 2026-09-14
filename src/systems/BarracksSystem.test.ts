@@ -52,6 +52,7 @@ function dusman(def: EnemyDef, x: number, y = 0, over: Partial<BlockableEnemy> =
     y,
     hp: def.hp,
     maxHp: def.hp,
+    shieldLeft: 0,
     alive: true,
     def,
     blockedBy: null,

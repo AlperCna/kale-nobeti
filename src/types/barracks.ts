@@ -78,6 +78,13 @@ export interface BlockableEnemy {
    * alan M1'de kondu, kullanımı burada (`types/enemy.ts` `EnemyState`).
    */
   blockedBy: object | null;
+  /**
+   * `M10-T03` — kalan kalkan. Asker hasarı da candan önce kalkanı
+   * eritiyor; aksi hâlde kışla kalkanı **görmezden gelen** tek kanal
+   * olurdu ve "hiçbir şey cana dokunmadan önce erir" sözleşmesi
+   * sessizce delinirdi.
+   */
+  shieldLeft: number;
 }
 
 /**

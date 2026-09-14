@@ -18,7 +18,7 @@
 import type { Vec2 } from '../types/common';
 import type { BarracksRuntime, BlockableEnemy, SoldierState } from '../types/barracks';
 import { BLOCK, meleeDps } from '../data/barracks';
-import { applyDamage } from './combat';
+import { applyDamage, kalkandanGecir } from './combat';
 import { closestPointOnPaths, distSq, moveToward } from '../util/math';
 
 const AGGRO_KARE = BLOCK.aggroRadius * BLOCK.aggroRadius;
@@ -250,7 +250,7 @@ function askereHasar(s: SoldierState, e: BlockableEnemy, dtSec: number): void {
 function dusmanaHasar(s: SoldierState, e: BlockableEnemy, dtSec: number): void {
   if (e.def === null) return;
   const saniyelik = applyDamage(s.dps, 'physical', e.def).dealt;
-  e.hp -= saniyelik * dtSec;
+  e.hp -= kalkandanGecir(saniyelik * dtSec, e); // M10-T03
   if (e.hp <= 0) e.hp = 0;
 }
 

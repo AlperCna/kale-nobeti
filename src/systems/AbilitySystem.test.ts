@@ -9,7 +9,7 @@ import type { EnemyDef } from '../types/enemy';
 const KARE_MS = 1000 / 60;
 
 function dusman(def: EnemyDef, x: number, y = 0): BlockableEnemy {
-  return { x, y, hp: def.hp, maxHp: def.hp, alive: true, def, blockedBy: null };
+  return { x, y, hp: def.hp, maxHp: def.hp, alive: true, def, blockedBy: null, shieldLeft: 0 };
 }
 
 function bosAsker(): SoldierState {
