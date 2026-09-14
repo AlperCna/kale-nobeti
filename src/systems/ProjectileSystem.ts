@@ -20,7 +20,7 @@
  * ıskalıyor" diye bulunamayan bir hata olarak dönerdi.
  */
 
-import type { Targetable } from '../types/enemy';
+import type { DamageType, Targetable } from '../types/enemy';
 import type { TowerEffect } from '../types/tower';
 import type { ProjectileState } from '../types/projectile';
 import type { Poolable } from '../util/pool';
@@ -46,6 +46,13 @@ export type DamageHandler<E extends Targetable> = (
   result: DamageResult,
   x: number,
   y: number,
+  /**
+   * `M8-T08` — isabet parıltısının rengi buna bağlı (fiziksel altın, büyü
+   * lapis). `DamageResult`'a eklenmedi: o `combat.ts`'in **saf** çıktısı
+   * ve hasar tipi zaten girdisi; sonuca kopyalamak aynı bilgiyi iki yerde
+   * tutmak olurdu. Merminin özelliği, çağırana mermiden geçiyor.
+   */
+  damageType: DamageType,
 ) => void;
 
 /** Süreli etkiyi düşmana uygular. `effects.ts` saf tarafı yapıyor. */
@@ -225,7 +232,7 @@ export class ProjectileSystem<E extends Targetable, T extends ProjectileState<E>
   #vur(e: E, m: T, hasar = m.damage): void {
     if (e.def === null) return;
     const sonuc = applyDamage(hasar, m.damageType, e.def);
-    this.onDamage(e, sonuc, e.x, e.y);
+    this.onDamage(e, sonuc, e.x, e.y, m.damageType);
     // Süreli etki isabet anında uygulanıyor; zincirleme anlık olduğu için
     // burada geçilmiyor.
     if (m.effect !== undefined && m.effect.kind !== 'chain') this.onEffect?.(e, m.effect);

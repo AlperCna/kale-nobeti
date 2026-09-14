@@ -6,6 +6,10 @@ import type { Poolable } from '../util/pool';
 import type { TowerEffect } from '../types/tower';
 import type { ProjectileLook } from '../data/projectileVisuals';
 
+/** Gülle yay nabzı — `M8-T08`. Tepe ölçek ve yarım periyot. */
+const ARC_TEPE = 1.25;
+const ARC_MS = 260;
+
 /**
  * Greybox mermi. **Havuzlu** — TIER 1 kural 3: oyun içinde asla `new` ile
  * mermi yaratılmaz.
@@ -38,6 +42,13 @@ export class Projectile extends Phaser.GameObjects.Arc implements ProjectileStat
   lastKnownY = 0;
 
   readonly #baseColor: number;
+  /**
+   * `M8-T08` — bu mermi arkasında iz bırakıyor mu ve rengi ne.
+   * `GameScene` uçuş sırasında okuyor; `Projectile`'ın kendi `update`'i
+   * yok (ince sınıf, hareketi `ProjectileSystem` yapıyor).
+   */
+  trail = false;
+  trailColor = 0xffffff;
 
   constructor(scene: Phaser.Scene, radius: number, color: number) {
     super(scene, 0, 0, radius, 0, 360, false, color);
@@ -63,6 +74,25 @@ export class Projectile extends Phaser.GameObjects.Arc implements ProjectileStat
     if (look.rotateToTarget && this.target !== null) {
       this.setRotation(Math.atan2(this.target.y - this.y, this.target.x - this.x));
     }
+
+    this.trail = look.trail === true;
+    this.trailColor = look.color;
+
+    // Gülle yay nabzı. `yoyo` + `repeat: -1`: mermi kısa yaşıyor, tween'i
+    // ömre göre ayarlamak yerine sonsuz döngü kuruluyor ve `resetForPool`
+    // (`killTweensOf` + `setScale(1)`) onu **kesin** olarak kapatıyor —
+    // kural 3'ün "sıfırlanmayan durum" tuzağına düşmemek için tek yol bu.
+    if (look.arc === true) {
+      this.scene.tweens.add({
+        targets: this,
+        scaleX: look.scaleX * ARC_TEPE,
+        scaleY: look.scaleY * ARC_TEPE,
+        duration: ARC_MS,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+    }
   }
 
   /**
@@ -82,6 +112,10 @@ export class Projectile extends Phaser.GameObjects.Arc implements ProjectileStat
     this.alive = false;
     this.lastKnownX = 0;
     this.lastKnownY = 0;
+    // `M8-T08` — iz bayrağı da sıfırlanıyor: havuzdan çıkan bir ok,
+    // önceki elde büyü mermisiyse iz bırakmaya devam ederdi (kural 3).
+    this.trail = false;
+    this.trailColor = this.#baseColor;
 
     this.scene?.tweens.killTweensOf(this);
     this.setActive(false).setVisible(false);

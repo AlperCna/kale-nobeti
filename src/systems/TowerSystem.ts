@@ -19,22 +19,35 @@ import { isTargetStillValid, selectTarget } from './TargetingSystem';
 
 const MS_TO_S = 1 / 1000;
 
-/** Ateş anında çağrılır. Mermi üretimi `ProjectileSystem`'in işi. */
-export type FireHandler = (tower: TowerRuntime, tier: TowerTier, target: Targetable) => void;
+/**
+ * Ateş anında çağrılır. Mermi üretimi `ProjectileSystem`'in işi.
+ *
+ * **Kule tipi genel** (`M8-T08`): sistem hâlâ yalnız `TowerRuntime`
+ * şeklini biliyor (k.11) ama çağıran kendi somut tipini geri alıyor.
+ * `GameScene` ateş anında `Tower.recoil()` çağırmak istedi ve tek
+ * seçenek ya `TowerRuntime`'a görsel bir metot eklemek (kural 11'i
+ * bulanıklaştırırdı) ya da tip parametresiydi. `ProjectileSystem<E, T>`
+ * ve `WaveManager<T>` zaten aynı deseni kullanıyor.
+ */
+export type FireHandler<T extends TowerRuntime = TowerRuntime> = (
+  tower: T,
+  tier: TowerTier,
+  target: Targetable,
+) => void;
 
 export function currentTier(t: TowerRuntime): TowerTier {
   return tierAt(t.def, t.tierIndex);
 }
 
-export class TowerSystem {
-  readonly #towers: TowerRuntime[] = [];
+export class TowerSystem<T extends TowerRuntime = TowerRuntime> {
+  readonly #towers: T[] = [];
 
   constructor(
-    private readonly onFire: FireHandler,
+    private readonly onFire: FireHandler<T>,
     private readonly bus?: EventBus,
   ) {}
 
-  get towers(): readonly TowerRuntime[] {
+  get towers(): readonly T[] {
     return this.#towers;
   }
 
@@ -45,7 +58,7 @@ export class TowerSystem {
    * o `SpotOccupancy`'nin işi ve çağıran taraf onu zaten sormak zorunda
    * (aynı defteri iki yerde tutmak sessizce ayrışır).
    */
-  add(tower: TowerRuntime): void {
+  add(tower: T): void {
     this.#towers.push(tower);
     this.bus?.emit('tower:placed', { spotIndex: tower.spotIndex });
   }
