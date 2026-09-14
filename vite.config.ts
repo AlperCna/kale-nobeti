@@ -21,6 +21,29 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(surum),
   },
 
+  resolve: {
+    alias: {
+      /**
+       * `M8-T14` — Phaser'in **Matter fiziksiz** yapimi.
+       *
+       * `Y11` "ozel yapim uret" diyordu (webpack, Phaser deposundan);
+       * bu, onun olculmus ve risksiz alt kumesi. Proje ne Matter ne
+       * Arcade fizik kullaniyor (`CLAUDE.md` Teknoloji: "Arcade fizik
+       * kullanilmiyor"), ama `phaser-arcade-physics` hazir bir giris
+       * noktasi ve ICINDE Matter yok:
+       *
+       *   dist/phaser.min.js                 1.196.122 bayt
+       *   dist/phaser-arcade-physics.min.js  1.086.308 bayt  (-%9,2)
+       *
+       * Olcum tahmin degil: iki dosya tartildi. Tilemaps ve butun oyun
+       * nesneleri (BitmapText, Container, TileSprite, Group, Particles)
+       * bu yapimda DURUYOR — `Y11`'in "phaser-core kullanilamaz" bulgusu
+       * hala gecerli, o yol icin gercek bir ozel yapim gerekiyor.
+       */
+      phaser: 'phaser/dist/phaser-arcade-physics.js',
+    },
+  },
+
   build: {
     target: 'es2022',
     // Varliklar data URI'ye gomulmesin: ilk indirme olcumu (M0-T10)

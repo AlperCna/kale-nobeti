@@ -20,12 +20,29 @@ const BAR_BG_COLOR = 0x2f4a3c; // "Yosun"
 const BAR_W = 400;
 const BAR_H = 12;
 
-/** M6-T11 — `docs/plan/M6-ses-uretim-brifi.md` §1'in 12 dosyası. */
-const SFX = [
+/**
+ * M6-T11 — `docs/plan/M6-ses-uretim-brifi.md` §1'in 12 dosyası, `M8-T14`'te
+ * **ikiye bölündü**.
+ *
+ * `SFX_ERKEN` haritanın ilk saniyelerinde çalabilecek olanlar: kule kurma,
+ * atışlar, ölüm, altın, hata, dalga başlangıcı.
+ *
+ * `SFX_GEC` oyunun ilk dakikasında **hiç** çalmıyor — `boss_intro` dalga
+ * 10'da, `victory`/`defeat` harita bitince, `tower_upgrade` ilk
+ * yükseltmede. Dosyaları `assets/lazy/sfx/` altında ve ilk dalga bitince
+ * yükleniyorlar (müzikle aynı aşama). `report-size.mjs`'in "ilk indirme"
+ * hesabı `assets/lazy/` klasörünü hariç tuttuğu için ölçüm kendiliğinden
+ * doğru çıkıyor.
+ *
+ * Yükleme gecikirse `SoundSystem.#cal` eksik anahtarı **sessizce atlıyor**
+ * (`Y14` deseni) — yani en kötü durum bir sesin kaçırılması, çökme değil.
+ */
+const SFX_ERKEN = [
   'shot_okcu', 'shot_top', 'shot_buyu', 'enemy_death', 'gold',
-  'tower_place', 'tower_upgrade', 'error', 'wave_start', 'boss_intro',
-  'victory', 'defeat',
+  'tower_place', 'error', 'wave_start',
 ];
+
+const SFX_GEC = ['tower_upgrade', 'boss_intro', 'victory', 'defeat'];
 
 export class PreloadScene extends Phaser.Scene {
   #bar?: Phaser.GameObjects.Rectangle;
@@ -147,7 +164,7 @@ export class PreloadScene extends Phaser.Scene {
       scene.load.image('bg-degirmen-gecidi', 'assets/bg/degirmen-gecidi.webp');
     }
     queueNumberFont(scene);
-    for (const ad of SFX) {
+    for (const ad of SFX_ERKEN) {
       if (!scene.cache.audio.exists(ad)) {
         scene.load.audio(ad, `assets/audio/sfx/${ad}.m4a`);
       }
@@ -180,6 +197,12 @@ export class PreloadScene extends Phaser.Scene {
     // yolu tam bu klasör adına bakıyor, harita 2-3 arka planlarıyla aynı.
     if (!scene.cache.audio.exists('music_game')) {
       scene.load.audio('music_game', 'assets/lazy/music_game.m4a');
+    }
+    // `M8-T14` — geç sesler de bu aşamada (ilk dalga bitince).
+    for (const ad of SFX_GEC) {
+      if (!scene.cache.audio.exists(ad)) {
+        scene.load.audio(ad, `assets/lazy/sfx/${ad}.m4a`);
+      }
     }
   }
 
