@@ -40,7 +40,23 @@ const BAR_H = 12;
 const SFX_ERKEN = [
   'shot_okcu', 'shot_top', 'shot_buyu', 'enemy_death', 'gold',
   'tower_place', 'error', 'wave_start',
+  // `M8-P03` — hazırlık sayacının son 3 saniyesinde çalıyor, yani
+  // haritanın ilk saniyelerinde. `SFX_ERKEN` tam olarak bu grup.
+  'countdown_tick',
 ];
+
+/**
+ * `ui_click` — **menüyle birlikte** yükleniyor, `SFX_ERKEN` ile değil.
+ *
+ * `SFX_ERKEN` `queueGame`'de, yani harita açılırken iniyor. `ui_click`
+ * ise ilk kez **ana menüde** duyuluyor (`ParchmentFrame.addPressFeedback`
+ * menü/ayar/duraklatma düğmelerine takılı) — o grupta kalsaydı menü
+ * düğmeleri sessiz olurdu ve `uiTiklamaSesi`'nin `cache.audio.has`
+ * koruması bunu **sessizce** yutardı, yani hata da görünmezdi.
+ *
+ * 2 KB: `Y05`'in ilk indirme bütçesinde ölçülemeyecek kadar küçük.
+ */
+const SFX_MENU = ['ui_click'];
 
 const SFX_GEC = ['tower_upgrade', 'boss_intro', 'victory', 'defeat'];
 
@@ -95,6 +111,26 @@ export class PreloadScene extends Phaser.Scene {
     // yolu tam bu klasör adına bakıyor, `music_game`'le aynı sebep.
     if (!scene.cache.audio.exists('music_menu')) {
       scene.load.audio('music_menu', 'assets/lazy/music_menu.m4a');
+    }
+  }
+
+  /**
+   * `M8-P03` — menü düğme sesi.
+   *
+   * `queueMenuMusic`'ten **ayrı** duruyor ve bu bilerek: o yalnız
+   * `musicScale > 0` iken çağrılıyor (`MenuScene`), yani müziği kapalı
+   * bir oyuncuda `ui_click` hiç inmezdi ve `uiTiklamaSesi`'nin
+   * `cache.audio.has` koruması bunu **sessizce** yutardı — hata bile
+   * görünmezdi.
+   *
+   * Ses efekti tercihine de bağlanmadı: ayar oyun içinde değişebiliyor
+   * ve 2 KB için koşullu yükleme kurmanın değeri yok.
+   */
+  static queueMenuSfx(scene: Phaser.Scene): void {
+    for (const ad of SFX_MENU) {
+      if (!scene.cache.audio.exists(ad)) {
+        scene.load.audio(ad, `assets/audio/sfx/${ad}.m4a`);
+      }
     }
   }
 
@@ -197,6 +233,14 @@ export class PreloadScene extends Phaser.Scene {
     // yolu tam bu klasör adına bakıyor, harita 2-3 arka planlarıyla aynı.
     if (!scene.cache.audio.exists('music_game')) {
       scene.load.audio('music_game', 'assets/lazy/music_game.m4a');
+    }
+    // `M8-P03` — boss müziği. Boss dalga 10'da çıkıyor, yani bu aşamada
+    // yüklemek fazlasıyla erken; ama `music_game` ile aynı istek
+    // grubunda gitmesi bir bağlantı kurulumu tasarruf ediyor ve
+    // `GameScene.#bossMuzigi` zaten `cache.audio.exists` ile korunuyor
+    // (dosya gelmemişse sessizce atlıyor).
+    if (!scene.cache.audio.exists('boss_music')) {
+      scene.load.audio('boss_music', 'assets/lazy/boss_music.m4a');
     }
     // `M8-T14` — geç sesler de bu aşamada (ilk dalga bitince).
     for (const ad of SFX_GEC) {

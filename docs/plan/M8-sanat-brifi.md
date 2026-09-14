@@ -172,7 +172,36 @@ konduğunda farklı iklimler olmalı.
 
 ---
 
-## M8-P03 — Üç ses dosyası
+## M8-P03 — Üç ses dosyası ☑ BİTTİ (yer tutucu üretildi)
+
+> **Üçü de artık oyunda.** Sanatçı dosyası gelmedi; kullanıcının
+> isteğiyle üretildiler:
+>
+> | dosya | nasıl | boyut |
+> |---|---|---|
+> | `ui_click` | **sentez** — `scripts/make-sfx.mjs` | 2 KB · 70 ms |
+> | `countdown_tick` | **sentez** — aynı betik | 3 KB · 130 ms |
+> | `boss_music` | **türetme** — `music_game`'den, `atempo=0.88,bass=g=5,lowpass=6000` | 667 KB · 55 sn |
+>
+> İlk ikisi sentezlenebildi çünkü brifin kendi tarifi bir beste değil bir
+> **doku**: "kuru, kısa, tok darbe", "melodik olmamalı", "tınlamıyor".
+> Sönümlü gövde + kısa gürültü atağı bunu doğrudan veriyor.
+>
+> `boss_music` sentezlenmedi, **türetildi** — ve bu da brifin kendi
+> tarifi: *"yeni bir parça değil, aynı parçanın kuşatma hâli"*, *"aynı
+> tonalitede"*. Bu yüzden perde kaydırılmadı, yalnız tempo %12 yavaşlatıldı
+> ve alt register öne çıkarıldı.
+>
+> **Kalıcı sanat değil.** Sanatçı dosyası gelirse `assets-src/audio/`
+> altına konur; `ui_click`/`countdown_tick` için `make-sfx.mjs` silinir,
+> `boss_music` için `prep-assets.mjs`'teki `kaynakAd` satırı kaldırılır ve
+> `sesKaynagiBul` yeni dosyayı kendiliğinden bulur.
+>
+> Canlı doğrulandı: menü düğmesine basınca `ui_click` çalıyor;
+> hazırlık sayacında `countdown_tick` **tam 3 kez** (3-2-1), ardından
+> `wave_start`; `music_game` → `boss_music` geçişi çalışıyor.
+
+### Özgün brif
 
 **Kod tarafı bitmiş.** Üçü de çağrılıyor ve **eksik oldukları için sessizce
 atlanıyor** (`SoundSystem.#cal` / `cache.audio.exists` kontrolleri, `Y14`
