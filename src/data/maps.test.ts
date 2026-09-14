@@ -428,12 +428,22 @@ describe('Harita 5 - M8-T05', () => {
  */
 const KALICI_HUD = [
   { ad: 'kartuş', x0: 8, y0: 16, x1: 224, y1: 156 },
-  { ad: 'hız+ayar', x0: 1204, y0: 20, x1: 1260, y1: 144 },
+  // `M8-B01`: ayar düğmesi harita 3'ün sağ girişinin (y=120) üstündeydi.
+  // İkisi **ayrı** kutu, çünkü aradaki boşluktan o yol geçiyor — tek
+  // kutuda birleştirilirse aşağıdaki yol testi kendi çözümünü kusur sanar.
+  { ad: 'hız', x0: 1204, y0: 20, x1: 1260, y1: 76 },
+  { ad: 'ayar', x0: 1204, y0: 152, x1: 1260, y1: 208 },
+  // Zorluk rozeti yalnız Kolay/Zor'da çiziliyor ama çizildiğinde bütün
+  // oyun boyunca duruyor — kalıcı sayılır. `M8-B01`'de sağ kenardan üst
+  // şeride alındı; sağ kenarda üç cebin üçü de düğmelerle doluydu.
+  { ad: 'zorluk rozeti', x0: 1086, y0: 25, x1: 1154, y1: 59 },
   { ad: 'yetenek', x0: 28, y0: 622, x1: 170, y1: 707 },
   // `M8-T12` tam ekran düğmesi. İlk yerleşimi sağ kenarın **ortasıydı**
   // ve harita 2'nin kalesinin (1220, 360) tam üstüne düşüyordu; aşağıdaki
   // "kale HUD altında kalmıyor" testi o hatayı bir daha bırakmıyor.
-  { ad: 'tam ekran', x0: 1204, y0: 222, x1: 1260, y1: 290 },
+  // `M8-B01` onu ölçülmüş en geniş boşluğa aldı (alt şerit, 45 px pay);
+  // kutu etiketi de kapsıyor, çünkü etiket de haritayı örtüyor.
+  { ad: 'tam ekran', x0: 848, y0: 636, x1: 928, y1: 714 },
 ];
 
 /** Yapı noktası dairesinin yarıçapı (`MapRenderer` SPOT_RADIUS). */
@@ -454,6 +464,32 @@ function carpisma(
   );
 }
 
+/**
+ * Bir yol parçasının (doğru parçası) bir HUD kutusuna en kısa uzaklığı.
+ *
+ * Yollar çoğunlukla eksen hizalı ama harita 4-5'te köşegen parçalar da
+ * var; o yüzden nokta-nokta değil, **parça-dikdörtgen** ölçülüyor.
+ * Parçayı 64 adıma bölüp her adımın kutuya uzaklığının en küçüğünü
+ * alıyor — 1280 px'lik en uzun parçada bile adım 20 px, aranan eşik
+ * (24) bunun üstünde.
+ */
+function parcaKutuMesafesi(
+  a: { x: number; y: number },
+  b: { x: number; y: number },
+  kutu: { x0: number; y0: number; x1: number; y1: number },
+): number {
+  let enKucuk = Infinity;
+  for (let i = 0; i <= 64; i++) {
+    const t = i / 64;
+    const x = a.x + (b.x - a.x) * t;
+    const y = a.y + (b.y - a.y) * t;
+    const dx = Math.max(kutu.x0 - x, 0, x - kutu.x1);
+    const dy = Math.max(kutu.y0 - y, 0, y - kutu.y1);
+    enKucuk = Math.min(enKucuk, Math.hypot(dx, dy));
+  }
+  return enKucuk;
+}
+
 describe('yapı noktası HUD’un altında kalmıyor', () => {
   /**
    * `M8-T04` harita 4'e `(190, 65)` noktasını koydu ve o nokta altın/can
@@ -469,6 +505,49 @@ describe('yapı noktası HUD’un altında kalmıyor', () => {
           expect(carpisma(s, b, NOKTA_YARICAPI), `${m.id} (${s.x},${s.y}) ${b.ad} altinda`).toBe(
             false,
           );
+        }
+      }
+    }
+  });
+
+  /**
+   * **`M8-B01` — YOL da düğmenin altından geçmemeli.**
+   *
+   * Yapı noktası ve kale testleri tek tek *noktaları* koruyor; asıl kusur
+   * ikisi de değildi. Harita 3'ün sağ girişi `y = 120`'de başlıyor ve yol
+   * şeridi 48 px (`MapRenderer.PATH_WIDTH`) — düşman ekrana girdiği anda
+   * ayar düğmesinin (`y = 116`, kutu 88-144) **arkasından** yürüyordu.
+   * Canlı ekran görüntüsünde görüldü, 865 testin hiçbiri göremedi.
+   *
+   * Bu test yalnız **sağdaki ve alttaki** kutuları kapsıyor. Soldaki
+   * kartuş harita 1/3/4'ün giriş yolunun ilk pikselleriyle köşede
+   * kesişiyor ve bu **bilerek kabul edildi** (gerekçe `HudScene`'in
+   * `AYAR_BTN_Y` yorumunda); listeye alınsaydı test bir kusuru değil bir
+   * kararı kırardı.
+   */
+  it('sağdaki ve alttaki HUD kutularının altından hiçbir yol geçmiyor', () => {
+    const KAPSANAN = KALICI_HUD.filter((b) => b.x0 > 640);
+    const YARI_SERIT = 24; // PATH_WIDTH / 2
+
+    expect(KAPSANAN.map((b) => b.ad)).toEqual([
+      'hız',
+      'ayar',
+      'zorluk rozeti',
+      'tam ekran',
+    ]);
+
+    for (const m of MAPS) {
+      for (const yol of [...m.paths, ...m.flyerPaths]) {
+        for (let i = 0; i < yol.length - 1; i++) {
+          const a = yol[i];
+          const c = yol[i + 1];
+          if (a === undefined || c === undefined) continue;
+          for (const b of KAPSANAN) {
+            expect(
+              parcaKutuMesafesi(a, c, b) < YARI_SERIT,
+              `${m.id}: (${a.x},${a.y})→(${c.x},${c.y}) ${b.ad} altindan geciyor`,
+            ).toBe(false);
+          }
         }
       }
     }

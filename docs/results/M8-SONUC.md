@@ -93,7 +93,7 @@ Kapsama, bütçe, Kısıt A/B testlerinin hiçbiri **HUD'u** bilmiyor:
 |---|---|
 | `M8-P01`/`P02` harita 4-5 arka planı | **Geçici görsel** oyunda; brif `docs/plan/M8-sanat-brifi.md` |
 | `M8-P03` üç ses | **Üçünün de kod tarafı bağlı**, yalnız dosyalar bekliyor |
-| `M8-B01` yolların HUD altından geçmesi | Harita 1, 3, 4'ün girişleri; geometri ya da HUD yerleşimi değişmeli |
+| `M8-B01` yolların HUD altından geçmesi | **Kapandı** — HUD yerleşimi taranarak çözüldü, harita geometrisine dokunulmadı (aşağıda) |
 | `Y11` Phaser özel yapımı | Ölçülmüş ara kazanç alındı (−%9,2); webpack yapımı hâlâ açık |
 | `Y10` / `Y02` adım 3 | Kullanıcının DevTools CPU kısıtlama ölçümünü bekliyor |
 | Toplanma noktası **sürükleme** jesti | Tarayıcı panelinde sınanamadı; dokunmayla taşıma eklendi ve sınandı |
@@ -162,3 +162,64 @@ sekmede tek bir mesaj yok.
 İki dilde geçilen QA: menü, ayarlar (altı satır), seviye seçim (zorluk
 satırı, beş kart, kilit metni), harita, yapı menüsü, rol şeridi, öğretici
 ipucu. Türkçe ve İngilizce ekranlarda çeviri boşluğu görülmedi.
+
+## `M8-B01` — HUD yerleşimi taramayla çözüldü
+
+Kusur: harita 3'ün sağ girişi `y = 120`'de, yol şeridi 48 px
+(`MapRenderer.PATH_WIDTH`) yani **96-144**; ayar düğmesi `y = 116`'daydı
+(kutu 88-144). Düşman ekrana girdiği anda bir arayüz düğmesinin
+**arkasından** yürüyordu. 865 testin hiçbiri göremedi — kapsama, bütçe ve
+Kısıt A/B testlerinin hiçbiri HUD'u bilmiyor.
+
+İki seçenek vardı: üç haritanın ölçülmüş geometrisini yeniden türetmek ya
+da HUD'u taşımak. **Ölçüm ikincisini mümkün kıldı.** Beş haritanın bütün
+yolları, yapı noktaları ve kaleleri taranınca sağ kenarda (`x = 1232`)
+56×56'lık bir düğmeye yer kalan yalnız **üç cep** olduğu çıktı:
+
+| Cep | Ne kondu |
+|---|---|
+| `30-68` | hız düğmesi (48) |
+| `172-196` | ayar düğmesi (180) |
+| `654-700` | **hiçbir şey** — harita 5'in kalesine `(1180, 600)` 2 px kalıyordu |
+
+Yani sağ kenar dolu. Kalan iki öğe ölçümün gösterdiği yere gitti:
+
+- **Zorluk rozeti** üst şeride, hız düğmesinin soluna (`1120, 42`). Üst
+  şerit `x = 362`'den sağa tamamen boş; boss can çubuğu (460-820) ile de
+  çakışmıyor.
+- **Tam ekran düğmesi** `(888, 664)` — bütün ekran tarandığında
+  düğme + etiket kutusunun (80×78) her harita öğesinden ve her HUD
+  kutusundan en uzak durabildiği nokta, **45 px** payla. Sağ alt köşede en
+  iyi pay 12 px.
+
+Alt orta bir tam ekran düğmesi alışılmadık; ama beş haritanın yolları
+köşeleri kullanıyor ve ölçüm alışkanlığı yendi.
+
+### Taramanın kendi hatası
+
+İlk tarama kutuyu **yalnız düğme** (56×56) saydı ve kazanan noktada
+etiket ekranın alt kenarından taştı — canlı ekran görüntüsünde kırpık
+göründü. Kutu `düğme + etiket` (80×78) yapılıp yeniden tarandı.
+
+### Ölçümün yine göremediği şey
+
+Yeni yerinde tam ekran etiketi harita 5'in koyu yeşil zemininde
+**okunmuyordu**: soluk altın (`#8A7250`) düz metin, çerçevesiz. Aynı
+sorun yetenek düğmelerinin "Meteor"/"Takviye" etiketlerinde de vardı ve
+oradaydı zaten. İkisi de menü alt başlığında çözülmüş olan yolla
+düzeltildi: parşömen rengi (`#E4D3A8`) + mürekkep gölge.
+
+### Bilerek kapatılmayan
+
+Soldaki kartuş harita 1/3/4'ün giriş yolunun ilk pikselleriyle köşede
+kesişiyor. Orası ekranın köşesi, düşman kartuşun altından değil yanından
+çıkıyor ve tür standardı. Düzeltmek üç haritanın yolunu yeniden çizmek
+demekti; yeni yol testi bu yüzden yalnız sağ ve alt kutuları kapsıyor —
+kartuş listeye alınsaydı test bir kusuru değil **bir kararı** kırardı.
+
+### Yeni test
+
+`maps.test.ts` artık "sağdaki ve alttaki HUD kutularının altından hiçbir
+yol geçmiyor" diyor (parça-dikdörtgen mesafesi, eşik 24 = şeridin yarısı,
+uçan hatlar dahil). Eski ayar konumu geri konduğunda **kırıldığı
+doğrulandı**. Test sayısı 866.

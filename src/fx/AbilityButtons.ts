@@ -86,9 +86,15 @@ export class AbilityButtons {
         .text(0, BTN / 2 + 12, t(ETIKET[def.id]), {
           fontFamily: 'Spectral, serif',
           fontSize: '16px', // Platform: minimum 16 px
-          color: '#8A7250',
+          color: '#E4D3A8',
         })
-        .setOrigin(0.5);
+        .setOrigin(0.5)
+        // Düğmenin çerçevesi var, etiketin yok — doğrudan haritanın
+        // üstünde duruyor. Soluk altın (#8A7250) harita 5'in koyu yeşil
+        // zemininde okunmuyordu (`M8-B01` canlı turu, tam ekran
+        // etiketiyle aynı sorun). Parşömen rengi + mürekkep gölge beş
+        // haritanın hepsinde kontrastı garantiliyor.
+        .setShadow(0, 2, '#14203A', 4, false, true);
 
       kok.add([cerceve, ikon, gfx, halka, yazi]);
       this.#butonlar.push({ id: def.id, kok, gfx, halka, parladi: true });

@@ -23,6 +23,39 @@ const BTN = 56;
 const MARGIN = 20;
 
 /**
+ * Sağ kenardaki kalıcı düğmelerin yerleri — `M8-B01`.
+ *
+ * Bu sayılar **taranarak** bulundu, göze göre değil. Beş haritanın bütün
+ * yolları, yapı noktaları ve kaleleri tarandığında sağ kenarda
+ * (`x = 1232`) 56×56'lık bir düğmeye yer kalan yalnız **üç cep** var:
+ * `30-68`, `172-196` ve `654-700`. Aradaki her şey bir yolun altında.
+ *
+ * Kusur şuydu: ayar düğmesi `y = 116`'daydı ve **harita 3'ün sağ girişi
+ * `y = 120`'de**. Yol şeridi 48 px (`MapRenderer.PATH_WIDTH`), yani
+ * 96-144 — düşman ekrana girdiği anda düğmenin arkasından yürüyordu.
+ * Canlı ekran görüntüsünde görüldü; 865 testin hiçbiri göremedi, çünkü
+ * kapsama/bütçe/Kısıt testleri HUD'u bilmiyor.
+ *
+ * Yerleşim: hız 48 · ayar 180 · tam ekran 654 (`OverlayScene`). Zorluk
+ * rozeti sağ kenardan **tamamen çıktı**: üç cebin üçü de dolu ve rozeti
+ * 415 gibi tek başına bir boşluğa koymak onu HUD'a değil haritaya ait
+ * gösteriyordu. Üst şerit (`y = 40`) `x = 362`'den sağa tamamen boş;
+ * rozet hız düğmesinin soluna, aynı satıra alındı.
+ *
+ * **Bilerek kabul edilen istisna:** soldaki kartuş harita 1/3/4'ün giriş
+ * yolunun ilk pikselleriyle köşede kesişiyor. Orası ekranın köşesi,
+ * düşman kartuşun altından değil yanından çıkıyor ve tür standardı.
+ * Düzeltmek üç haritanın yolunu yeniden çizmek demekti.
+ */
+const HIZ_BTN_Y = MARGIN + BTN / 2;
+const AYAR_BTN_Y = 180;
+/** Zorluk rozeti: üst şeritte, hız düğmesinin solunda. Boss can çubuğu
+ *  (640 merkez, 360 geniş → 460-820) ile de çakışmıyor. */
+const ZORLUK_ROZET_X = 1120;
+const ZORLUK_ROZET_Y = 42;
+
+
+/**
  * HUD. `Game`'in **üstünde paralel** çalışır (CLAUDE.md Mimari).
  *
  * Duraklatmada `Game` durur, **`Hud` durmaz** — durursa devam butonu
@@ -252,13 +285,18 @@ export class HudScene extends Phaser.Scene {
     const zorluk = getSettings(this).state.difficulty;
     if (zorluk === 'normal') return;
     const anahtar: StringKey = zorluk === 'kolay' ? 'diffKolay' : 'diffZor';
-    const x = this.scale.width - MARGIN - 28;
-    const y = MARGIN + 158;
+    const x = ZORLUK_ROZET_X;
+    const y = ZORLUK_ROZET_Y;
     // Parşömen altlık: ilk denemede rozet **düz metindi** ve harita
     // zemininde (yeşil çayır, gri kar, yosun) neredeyse görünmüyordu —
     // canlı ekran görüntüsünde arandı ve bulunamadı, yalnız sahne
     // dökümünde vardı. HUD'un geri kalanı zaten parşömen üstünde duruyor.
-    createParchmentFrame(this, x, y, 92, 34, 12);
+    // Genişlik 92 değil 68: bekçi testi 92'nin harita 3'ün `(1160, 195)`
+    // yapı noktasına değdiğini gösterdi. Rozet o sırada sağ kenardaydı;
+    // üst şeride taşındıktan sonra da 68 kaldı, çünkü hız düğmesiyle
+    // (1204'te başlıyor) arasındaki boşluğu 68 rahat bırakıyor. Her iki
+    // dildeki metin (Kolay/Zor, Easy/Hard) 16 px'te sığıyor.
+    createParchmentFrame(this, x, y, 68, 34, 12);
     this.add
       .text(x, y, t(anahtar), {
         fontFamily: 'Spectral, serif',
@@ -322,7 +360,7 @@ export class HudScene extends Phaser.Scene {
    */
   #createSettingsButton(): void {
     const x = this.scale.width - MARGIN - BTN / 2;
-    const y = MARGIN + BTN / 2 + BTN + 12;
+    const y = AYAR_BTN_Y;
     const btn = createParchmentButton(this, x, y, BTN, BTN, 14);
     this.add
       .text(x, y, '⚙', { fontFamily: 'Spectral, serif', fontSize: '24px', color: '#14203A' })
@@ -383,7 +421,7 @@ export class HudScene extends Phaser.Scene {
 
   #createSpeedButton(): void {
     const x = this.scale.width - MARGIN - BTN / 2;
-    const y = MARGIN + BTN / 2;
+    const y = HIZ_BTN_Y;
 
     // `G02` — diğer HUD butonlarıyla aynı parşömen çerçeve. Kare bir
     // kutuda 9-slice köşeleri hiç gerilmiyor, dönüşüm en ucuz durum.
