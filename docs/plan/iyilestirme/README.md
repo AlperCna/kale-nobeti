@@ -56,7 +56,7 @@ Emek/etki oranına göre. **Üstteki üçü açık ara en yüksek getirili.**
 | 1 | [Y13 · `paths[0]` kalıntıları — kışla harita 2/3'te bozuk](Y13-paths0-kalintilari.md) | **hata** | ☑ **düzeltildi** | **çok yüksek** |
 | 2 | [Y05 · Menü müziği ilk indirmenin %75'i](Y05-menu-muzigi-ilk-indirme.md) | boyut | ☑ **düzeltildi** | **çok yüksek** |
 | 3 | [Y04 · Ses tercihi açılışta uygulanmıyor](Y04-ses-tercihi-acilista-uygulanmiyor.md) | **hata** | ☑ **düzeltildi** | yüksek |
-| 4 | [Y10 · Kısıtlanmış FPS geçidi hiç ölçülmedi](Y10-kisitlanmis-fps-olculmedi.md) | doğrulama | **küçük** | yüksek |
+| 4 | [Y10 · Kısıtlanmış FPS geçidi hiç ölçülmedi](Y10-kisitlanmis-fps-olculmedi.md) | doğrulama | **küçük** | **☑ yapıldı — 50 FPS, eşik 30** |
 | 5 | [G01 · Menü "Oyna" butonu parşömene geçmedi](G01-menu-oyna-butonu-parsomen.md) | görsel | ☑ **düzeltildi** | yüksek |
 | 6 | [Y12 · Açılışta boş ekran, favicon yok](Y12-acilis-bos-ekran.md) | ilk izlenim | ☑ **düzeltildi** | orta-yüksek |
 | 7 | [G02 · HUD hız butonu parşömene geçmedi](G02-hud-hiz-butonu-parsomen.md) | görsel | ☑ **düzeltildi** | orta |

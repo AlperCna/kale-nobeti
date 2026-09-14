@@ -17,17 +17,34 @@ import { OverlayScene } from './scenes/OverlayScene';
  */
 const config: Phaser.Types.Core.GameConfig = {
   /**
-   * `research/02` §4: AUTO (WebGL öncelikli).
+   * `research/02` §4: AUTO (WebGL öncelikli). **Karar `Y10`'da ölçümle
+   * verildi** — bu yorum eskiden "ölçmeden verilmiyor" diyordu.
    *
-   * `Y10` iki sayı istiyor, bir tane değil: aynı senaryo AUTO ve CANVAS
-   * ile ölçülmeden render modu kararı verilmemeli (`research/02`'nin
-   * "eski cihazlarda Canvas %30 kazandırıyor" bulgusu bu projede
-   * doğrulanmadı).
+   * Ölçüm: harita 3, 10 kuleli tam tahta, efekt Tam, her renderer iki
+   * koşu (ilki soğuk; ısınma farkı gerçek ve büyük).
    *
-   * Karşılaştırmanın **tekrarlanabilir** olması için `?render=canvas`
-   * sorgu parametresi var. **Yalnız `import.meta.env.DEV`'de**: CLAUDE.md
-   * Platform "yayın yapısında hata ayıklama tuşları bulunmaz" diyor ve
-   * üretim paketinde bu dal hiç çalışmıyor.
+   * | | kısıtlamasız | 4× CPU kısıtlamalı |
+   * |---|---|---|
+   * | WebGL sıcak, kare ort | **2,53 ms** | 13,63 ms · **50,2 FPS** |
+   * | Canvas sıcak, kare ort | 3,04 ms | **9,29 ms** · 50,1 FPS |
+   *
+   * İki sonuç birden:
+   *
+   * 1. **`S15`'in ikincil geçidi geçildi**: eşik ≥ 30 FPS, ölçülen
+   *    49-50 FPS — %65 pay.
+   * 2. **Sıralama kısıtlama altında tersine dönüyor.** Hızlı makinede
+   *    WebGL %20 ucuz; 4× kısıtlamada Canvas %32 ucuz (p99'da %38).
+   *    `research/02`'nin "eski cihazlarda Canvas %30 kazandırıyor"
+   *    bulgusu vekil ölçümde **doğrulandı**.
+   *
+   * AUTO kalıyor çünkü eşik rahat geçiliyor ve hızlı makinede WebGL daha
+   * iyi. Ama Canvas artık **ölçülmüş bir kol**: hedef cihazda FPS 45'in
+   * altına düşerse (`RISKS.md` R13 erken uyarısı) geçiş ~%32 kazandırır.
+   *
+   * `?render=canvas` ile karşılaştırma tekrarlanabilir. **Yalnız
+   * `import.meta.env.DEV`'de**: CLAUDE.md Platform "yayın yapısında hata
+   * ayıklama tuşları bulunmaz" diyor, üretim paketinde bu dal hiç
+   * derlenmiyor.
    */
   type: import.meta.env.DEV && new URLSearchParams(location.search).get('render') === 'canvas'
     ? Phaser.CANVAS

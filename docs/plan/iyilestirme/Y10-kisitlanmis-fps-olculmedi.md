@@ -1,6 +1,28 @@
 # Y10 · S15'in "yayın öncesi zorunlu" ölçümü hiç yapılmadı
 
-> **◧ KISMEN YAPILDI.** Kısıtlamasız taraf ölçüldü ve
+> **☑ BİTTİ.** 4× kısıtlamalı okuma kullanıcı tarafından yapıldı:
+> **WebGL 50,2 FPS · Canvas 50,1 FPS**, eşik ≥ 30 → **%65 payla
+> geçildi**. `S15` kapandı, `R13` azaldı (kapanmadı — ölçüm bir vekil,
+> gerçek 4 GB Chromebook elde yok).
+>
+> **Beklenmeyen ikinci sonuç:** kısıtlama altında sıralama tersine
+> dönüyor. Hızlı makinede WebGL %20 ucuz (2,53 vs 3,04 ms); 4×
+> kısıtlamada Canvas **%32 ucuz** (9,29 vs 13,63 ms), p99'da %38.
+> `research/02` §4'ün "eski cihazlarda Canvas %30 kazandırıyor" bulgusu
+> vekil ölçümde **doğrulandı** — daha önce "bu makinede doğrulanmadı"
+> yazmıştım, kısıtlamasız ölçüme bakarak; eksik olan kısıtlamaydı.
+>
+> `Phaser.AUTO` kalıyor (eşik rahat geçiliyor, hızlı makinede WebGL daha
+> iyi) ama Canvas artık **ölçülmüş bir kol**: hedef cihazda FPS 45'in
+> altına düşerse geçiş ~%32 kazandırıyor.
+>
+> Sayılar: `docs/results/OLCUMLER.md` `F1`-`F10`. Karar ve gerekçe:
+> `src/main.ts`. Aşağıdaki analiz ve tarif olduğu gibi bırakıldı —
+> ölçüm tekrarlanabilir kalsın diye.
+>
+> ---
+>
+> **◧ Önceki durum (kısmen yapıldı):** Kısıtlamasız taraf ölçüldü ve
 > `docs/results/OLCUMLER.md` "Kare maliyeti ve render modu" bölümüne
 > işlendi. **Geriye tek adım kaldı: 4× CPU kısıtlaması altındaki okuma**
 > — Chrome DevTools gerektiriyor, tarayıcı panelinde CPU kısıtlama

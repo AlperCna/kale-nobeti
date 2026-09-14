@@ -294,6 +294,20 @@ geçişinin %30 kazanç verdiğini gösteriyor.
 **Azaltma:** render modu kararı ölçümden sonra (`research/02` §4);
 havuzlama ve atlas zaten zorunlu. **Taş:** M6 (ölçüm), M7 (`E17`).
 
+**◧ Ölçüldü (`Y10`) — risk azaldı ama kapanmadı.** 4× CPU kısıtlaması
+altında (vekil) harita 3, tam tahta, efekt Tam: **49-50 FPS**, yani
+erken uyarı eşiğinin (45) üstünde ve S15 geçidinin (30) %65 üstünde.
+
+Ve `research/02`'nin Canvas bulgusu **doğrulandı**: kısıtlama altında
+Canvas kare maliyeti %32 daha ucuz (p99'da %38) — kısıtlamasız ölçümde
+ise WebGL %20 ucuz, yani sıralama yavaş makinede tersine dönüyor.
+Sayılar `docs/results/OLCUMLER.md` `F6`-`F10`.
+
+**Kapanmadı çünkü ölçüm bir vekil.** Gerçek 4 GB Chromebook elde yok;
+vekil olduğu S15'te zaten yazılıydı. Gerçek cihaza erişilirse
+`?render=canvas` ile karşılaştırma hazır ve geçiş kolu ölçülmüş
+durumda.
+
 ### R14 · Kritik vuruş mekaniği tanımsız — ☑ **KAPANDI**
 
 **Kaynak** `GAME-DESIGN.md` §3, §10
