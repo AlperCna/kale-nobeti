@@ -359,6 +359,15 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
+    // `M10-T01` — `Overlay`'i normalde `Menu.create()` başlatıyor, ama
+    // ilk oturumda menü **atlanıyor** ve o zaman tam ekran düğmesi ile
+    // yatay çevirme perdesi hiç kurulmuyordu; kayıt uyarısı da
+    // (`fx/SaveWarning.ts`) `Overlay`'e çiziliyor, yani sessizce
+    // görünmez kalırdı. Çağrı fikirsiz (`isActive` koruması): normal
+    // akışta `Overlay` zaten ayakta ve burası hiçbir şey yapmıyor.
+    // Atlas bu noktada yüklü — `preload()` `queueGame` çağırıyor.
+    if (!this.scene.isActive('Overlay')) this.scene.launch('Overlay');
+
     // `Y04` — `BootScene`de kurulan tekil `Settings` buradan okunuyor.
     // Her `create()`'te tekrar okumak zararsız: `registry` hep aynı
     // örneği döndürüyor, yalnız *nereden* okunduğu değişti.
