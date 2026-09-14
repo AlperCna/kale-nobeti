@@ -86,7 +86,7 @@ export class MenuScene extends Phaser.Scene {
     // Başlık marka adı — çeviri sözlüğüne girmez (S63 istisnası).
     // Statik metin, bir kez yazılıp değişmiyor: `Text` serbest
     // (TIER 1 kural 7 istisnası, sonradan "ihlal mi" diye sorulmasın).
-    this.add
+    const baslik = this.add
       .text(width / 2, height / 2 - 120, 'Kale Nöbeti', {
         fontFamily: '"Grenze Gotisch", serif',
         fontSize: `${TITLE_FONT_PX}px`,
@@ -94,22 +94,60 @@ export class MenuScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
+    // `M8-T13` — altın varak parıltısı: başlığın alfası çok yavaş nefes
+    // alıyor. **Hareket ayarına bağlı** (`screenShake`, `M8-T09`'daki
+    // kararla aynı gerekçe: bilgi taşımayan görüntü hareketi ve
+    // `reducedMotionDefaults` onu zaten kapatıyor).
+    if (getSettings(this).state.screenShake) {
+      this.tweens.add({
+        targets: baslik,
+        alpha: { from: 1, to: 0.72 },
+        duration: 2200,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+    }
+
+    // `M8-T13` — alt başlık. Başlık tek başına oyunun ne olduğunu
+    // söylemiyordu; oyuncu geri bildirimi "burası çok sade duruyor".
+    this.add
+      .text(width / 2, height / 2 - 62, t('tagline'), {
+        fontFamily: 'Spectral, serif',
+        fontSize: '22px',
+        color: '#8A7250',
+      })
+      .setOrigin(0.5);
+
     this.#createPlayButton(width / 2, height / 2 + 40);
     // `M8-T07` — başarımlar. "Oyna"nın altında ve **belirgin biçimde
     // daha küçük**: birincil eylem hâlâ oynamak (`Y07` ile aynı gerekçe,
     // renk yerine boyutla hiyerarşi).
-    this.#createMenuButton(
-      width / 2,
-      height / 2 + 40 + BTN_H / 2 + 18 + IKINCIL_H / 2,
-      t('achievements'),
-      () => this.scene.start('Achievements'),
+    const ikincilUst = height / 2 + 40 + BTN_H / 2 + 18 + IKINCIL_H / 2;
+    this.#createMenuButton(ikincilUst, t('achievements'), () =>
+      this.scene.start('Achievements'),
     );
+    this.#createMenuButton(ikincilUst + IKINCIL_H + 12, t('howToPlay'), () =>
+      this.scene.start('HowTo'),
+    );
+
+    // `M8-T13` — sürüm etiketi. `vite.config.ts` `define` ile
+    // `package.json`'dan geliyor; iki yerde elle tutulan bir sürüm
+    // numarası sessizce ayrışırdı.
+    this.add
+      .text(width - 10, height - 8, `v${__APP_VERSION__}`, {
+        fontFamily: 'Spectral, serif',
+        fontSize: '16px', // Platform: minimum 16 px
+        color: 'rgba(138,114,80,0.7)',
+      })
+      .setOrigin(1, 1);
     this.#createSettingsButton(width - MARGIN - AYAR_BTN / 2, MARGIN + AYAR_BTN / 2);
     if (data?.settingsOpen === true) this.#settingsPanel?.setVisible(true);
   }
 
   /** İkincil menü butonu — `#createPlayButton`'un küçük kardeşi. */
-  #createMenuButton(x: number, y: number, metin: string, onClick: () => void): void {
+  #createMenuButton(y: number, metin: string, onClick: () => void): void {
+    const x = this.scale.width / 2;
     const cerceve = createParchmentButton(this, x, y, IKINCIL_W, IKINCIL_H, 14);
     addPressFeedback(cerceve);
     this.add
