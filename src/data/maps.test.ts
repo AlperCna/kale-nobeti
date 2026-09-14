@@ -430,10 +430,29 @@ const KALICI_HUD = [
   { ad: 'kartuş', x0: 8, y0: 16, x1: 224, y1: 156 },
   { ad: 'hız+ayar', x0: 1204, y0: 20, x1: 1260, y1: 144 },
   { ad: 'yetenek', x0: 28, y0: 622, x1: 170, y1: 707 },
+  // `M8-T12` tam ekran düğmesi. İlk yerleşimi sağ kenarın **ortasıydı**
+  // ve harita 2'nin kalesinin (1220, 360) tam üstüne düşüyordu; aşağıdaki
+  // "kale HUD altında kalmıyor" testi o hatayı bir daha bırakmıyor.
+  { ad: 'tam ekran', x0: 1204, y0: 222, x1: 1260, y1: 290 },
 ];
 
 /** Yapı noktası dairesinin yarıçapı (`MapRenderer` SPOT_RADIUS). */
 const NOKTA_YARICAPI = 28;
+/** Kale işaretinin yarı ölçüsü (`MapRenderer` kale karesi). */
+const KALE_YARICAPI = 26;
+
+function carpisma(
+  nokta: { x: number; y: number },
+  kutu: { x0: number; y0: number; x1: number; y1: number },
+  pay: number,
+): boolean {
+  return (
+    nokta.x > kutu.x0 - pay &&
+    nokta.x < kutu.x1 + pay &&
+    nokta.y > kutu.y0 - pay &&
+    nokta.y < kutu.y1 + pay
+  );
+}
 
 describe('yapı noktası HUD’un altında kalmıyor', () => {
   /**
@@ -447,13 +466,27 @@ describe('yapı noktası HUD’un altında kalmıyor', () => {
     for (const m of MAPS) {
       for (const s of m.buildSpots) {
         for (const b of KALICI_HUD) {
-          const carpisiyor =
-            s.x > b.x0 - NOKTA_YARICAPI &&
-            s.x < b.x1 + NOKTA_YARICAPI &&
-            s.y > b.y0 - NOKTA_YARICAPI &&
-            s.y < b.y1 + NOKTA_YARICAPI;
-          expect(carpisiyor, `${m.id} (${s.x},${s.y}) ${b.ad} altinda`).toBe(false);
+          expect(carpisma(s, b, NOKTA_YARICAPI), `${m.id} (${s.x},${s.y}) ${b.ad} altinda`).toBe(
+            false,
+          );
         }
+      }
+    }
+  });
+
+  /**
+   * **Kale de gizlenmemeli.** Düşmanın vardığı yer, oyuncunun bakması
+   * gereken tek nokta. `M8-T12`'nin tam ekran düğmesi ilk yerleşiminde
+   * harita 2'nin kalesini **tam olarak** kapatıyordu (kale 1220,360 —
+   * düğme 1232,360) ve bunu ancak canlı ekran görüntüsü gösterdi.
+   */
+  it('hiçbir haritanın KALESİ kalıcı HUD kutusunun altında değil', () => {
+    for (const m of MAPS) {
+      for (const b of KALICI_HUD) {
+        expect(
+          carpisma(m.castle, b, KALE_YARICAPI),
+          `${m.id} kale (${m.castle.x},${m.castle.y}) ${b.ad} altinda`,
+        ).toBe(false);
       }
     }
   });
