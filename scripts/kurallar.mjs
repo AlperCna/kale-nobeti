@@ -9,13 +9,38 @@
  * Kullanım:  node scripts/kurallar.mjs
  */
 import { execSync } from 'node:child_process';
-import { writeFileSync, mkdtempSync, readFileSync, unlinkSync } from 'node:fs';
+import { writeFileSync, mkdtempSync, readFileSync, unlinkSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const dizin = mkdtempSync(join(tmpdir(), 'kn-kural-'));
 const veriYolu = join(dizin, 'veri.json');
+
+/**
+ * Veriyi `src/data/*.ts`'ten **canlı** okumak için geçici bir vitest
+ * dosyası yazılıp siliniyor. Dosya `src/` altında olmak zorunda: import
+ * yolları oraya göre ve `vitest.config.ts` yalnız `src/**` tarıyor.
+ *
+ * **Bu dosya iki kez geride kaldı** (build yarıda kesilince) ve bir
+ * sonraki `npm run test`'i kırdı — 871 test içinde tek bir anlamsız
+ * zaman aşımı, sebebi bulunması zor. Aşağıdaki `temizle()` her koşunun
+ * başında ve sonunda çağrılıyor, yani bir kez daha kalsa bile `npm run
+ * build` onu siliyor.
+ *
+ * Denenip **çalışmayan** iki yama, bir daha denenmesin diye:
+ * `vitest.config.ts`'e `exclude` eklemek (vitest açıkça verilen dosyayı
+ * da eliyor, betiğin kendi koşusu ölüyor) ve dosyayı depo köküne taşımak
+ * (bu sefer `include` desenine girmiyor, yine koşmuyor).
+ *
+ * Kalıcı çözüm `scripts/ts-yukle.mjs` — `check-bg.mjs` ona geçti ve
+ * hiç geçici dosya üretmiyor. Buranın geçişi ayrı bir iş: bu betiğin
+ * dökümü 170 satırlık bir şablon ve gerçek koda çevrilmesi gerekiyor.
+ */
 const testDosyasi = join('src', '__kural_dokum.test.ts');
+const temizle = () => {
+  if (existsSync(testDosyasi)) unlinkSync(testDosyasi);
+};
+temizle();
 
 writeFileSync(
   testDosyasi,
@@ -184,8 +209,11 @@ it('dokum', () => {
   'utf8',
 );
 
-execSync(`npx vitest run ${testDosyasi}`, { stdio: 'pipe' });
-unlinkSync(testDosyasi);
+try {
+  execSync(`npx vitest run ${testDosyasi}`, { stdio: 'pipe' });
+} finally {
+  temizle();
+}
 const D = JSON.parse(readFileSync(veriYolu, 'utf8'));
 
 // ---------------------------------------------------------------- yardımcılar
