@@ -182,6 +182,7 @@ const HARITA_GOSTERIM_ADI = {
   'tas-kopru': 'Taş Köprü',
   'kul-ovasi': 'Kül Ovası',
   'kar-gecidi': 'Kar Geçidi',
+  'kadim-harabe': 'Kadim Harabe',
 };
 const HARITA_ADI = Object.fromEntries(
   D.haritalar.map((m, i) => {

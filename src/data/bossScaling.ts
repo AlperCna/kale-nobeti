@@ -78,6 +78,10 @@ export const BOSS_ARMOR_BY_MAP: Readonly<Record<string, number>> = {
   // `M8-T04` — harita 3'le aynı: 12 nokta, tahtanın ortalama kademesi
   // benzer. Zırhı daha da düşürmenin gerekçesi yok; 2 taban.
   'kar-gecidi': 2,
+  // `M8-T05` — aynı gerekçe. Zırh taraması (0-5) en zayıf kol tavanını
+  // 3108'den 2724'e, yani yalnız %12 oynatıyor; türetilen HP de onunla
+  // birlikte düştüğü için net zorluk etkisi ≈ 0.
+  'kadim-harabe': 2,
 };
 
 /**
@@ -94,8 +98,14 @@ export const BOSS_HP_BY_MAP: Readonly<Record<string, number>> = {
   'degirmen-gecidi': 700, // §5'in belgelenmiş değeri (türetme 718 diyor)
   'tas-kopru': 712,
   'kul-ovasi': 1023,
-  // `M8-T04` — türetildi: 0,80 × en zayıf kol tavanı (2321,2, zırh 2).
-  'kar-gecidi': 1857,
+  // `M8-T04` — türetildi: 0,80 × en zayıf kol tavanı (2416,2, zırh 2).
+  // İlk tur 1857'ydi (tavan 2321,2); `M8-T05`'te kartuşun altında kalan
+  // yapı noktası taşınınca referans tahta değişti ve tavan yükseldi.
+  'kar-gecidi': 1933,
+  // `M8-T05` — türetildi: 0,80 × **en zayıf kol** tavanı. İki kol ayrı
+  // ölçüldü (3344 / 3403); zayıf olan A kolu belirleyici, çünkü düşman
+  // hangi kolu yürüyeceğini oyuncu seçmiyor.
+  'kadim-harabe': 2675,
 };
 
 /** Türetilen değerin kabul edilebilir sapma payı (regresyon bandı, §12). */

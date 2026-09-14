@@ -9,10 +9,11 @@ import {
   MAP2_WAVES,
   MAP3_WAVES,
   MAP4_WAVES,
+  MAP5_WAVES,
   wavesFor,
 } from './waves';
 import { BALANCE, POOL_PREALLOC, SPAWN_K } from './balance';
-import { MAP_1, MAP_2, MAP_3, MAP_4 } from './maps';
+import { MAP_1, MAP_2, MAP_3, MAP_4, MAP_5 } from './maps';
 import { getEnemy } from './enemies';
 
 describe('budget — GAME-DESIGN §7 formülü', () => {
@@ -216,17 +217,18 @@ describe('BALANCE — GAME-DESIGN §6 sabitleri', () => {
 // M7 + M8-T04 — harita 2, 3 ve 4'ün dalgaları
 // ---------------------------------------------------------------------
 
-describe('M7/M8 — 40 dalga: bütçe, kadro, giriş', () => {
+describe('M7/M8 — 50 dalga: bütçe, kadro, giriş', () => {
   const HARITALAR = [
     { map: MAP_1, waves: MAP1_WAVES },
     { map: MAP_2, waves: MAP2_WAVES },
     { map: MAP_3, waves: MAP3_WAVES },
     { map: MAP_4, waves: MAP4_WAVES },
+    { map: MAP_5, waves: MAP5_WAVES },
   ];
 
-  it('her haritanın 10 dalgası var — toplam 40', () => {
+  it('her haritanın 10 dalgası var — toplam 50', () => {
     for (const { waves } of HARITALAR) expect(waves).toHaveLength(10);
-    expect(HARITALAR.reduce((t, h) => t + h.waves.length, 0)).toBe(40);
+    expect(HARITALAR.reduce((t, h) => t + h.waves.length, 0)).toBe(50);
   });
 
   it('her dalga bütçesine %15 pay içinde — §7', () => {
@@ -320,5 +322,6 @@ describe('M7/M8 — 40 dalga: bütçe, kadro, giriş', () => {
     expect(wavesFor('tas-kopru')).toBe(MAP2_WAVES);
     expect(wavesFor('kul-ovasi')).toBe(MAP3_WAVES);
     expect(wavesFor('kar-gecidi')).toBe(MAP4_WAVES);
+    expect(wavesFor('kadim-harabe')).toBe(MAP5_WAVES);
   });
 });

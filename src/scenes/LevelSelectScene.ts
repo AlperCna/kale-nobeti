@@ -75,6 +75,7 @@ const HARITA_ADI_ANAHTARI: Readonly<Record<string, StringKey>> = {
   'tas-kopru': 'mapTasKopru',
   'kul-ovasi': 'mapKulOvasi',
   'kar-gecidi': 'mapKarGecidi',
+  'kadim-harabe': 'mapKadimHarabe',
 };
 
 /** Bilinmeyen bir harita id'si gelirse (olmaması gerekir) ham id'ye düşer. */

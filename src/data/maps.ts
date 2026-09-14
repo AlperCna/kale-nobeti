@@ -385,7 +385,12 @@ const MAP4_BUILD_SPOTS: readonly Vec2[] = [
   { x: 860, y: 505 }, // orta kesim, altta
   { x: 925, y: 355 }, // viraj 3 içi — iki kesim
   { x: 1075, y: 500 }, // kale kesimi, sağda
-  { x: 190, y: 65 }, // üst kesim, üstte
+  // `M8-T05` turunda düzeltildi: eskiden `(190, 65)`'ti ve **altın/can
+  // kartuşunun tam altında** kalıyordu (kartuş 8-224 × 16-156) — oyuncu o
+  // yapı noktasını ne görebiliyor ne de rahat tıklayabiliyordu. Yolun öbür
+  // yanına, aynı kapsamayı veren konuma alındı: ortalama 290,1 px **aynı**
+  // kaldı, uçan hattını gören nokta sayısı da (11/12).
+  { x: 200, y: 215 }, // üst kesim, üstte
   { x: 780, y: 505 }, // orta kesim, altta
 ];
 
@@ -440,6 +445,10 @@ export const MAP_4: MapDef = {
     'saman',
     'trol',
     'orumcekAna',
+    // Yavru dalgada doğmuyor ama Örümcek Ana bölününce **sahada** doğuyor;
+    // kadroda olmazsa bilgi paneli onu hiç listelemiyor ve oyuncu sahada
+    // gördüğü düşmanın kartını bulamıyor (harita 3'te listede).
+    'orumcekYavrusu',
     'ogreSef',
   ],
   // ELLE YAZILMAZ — CLAUDE.md Mimari kuralı.
@@ -448,7 +457,158 @@ export const MAP_4: MapDef = {
   branchCoverage: [measureCoverage([MAP4_PATH], MAP4_BUILD_SPOTS, COVERAGE_REFERENCE_RANGE)],
 };
 
-export const MAPS: readonly MapDef[] = [MAP_1, MAP_2, MAP_3, MAP_4];
+// ---------------------------------------------------------------------
+// Harita 5 — "Kadim Harabe" (`M8-T05`)
+// ---------------------------------------------------------------------
+
+/**
+ * Çarpanlar — **ölçülerek** dolduruluyor (`M8-T04` dersi: monoton çarpan
+ * monoton zorluk demek değil; ölçüt simülasyonun verdiği **can kaybı**).
+ * Tarama gerekçesi `docs/plan/M8-genisleme.md` Faz 5 sonucunda.
+ */
+const MAP5_HP_CARPANI = 6.8;
+const MAP5_ALTIN_CARPANI = 6.8;
+
+const MAP5_KALE: Vec2 = { x: 1180, y: 600 };
+
+/**
+ * İki giriş **birleşiyor** ve birleşmeden sonra uzun bir gövde var.
+ *
+ * Harita 3 de iki girişliydi ama orada birleşme noktası neredeyse kalenin
+ * dibindeydi: kollar ayrı savunuluyordu, ortak gövde iki noktalık bir
+ * kuyruktu. Burada birleşme **ekranın solunda**; ondan sonraki 1420 px'lik
+ * gövde iki kolun da geçtiği yer. Yani karar tersine dönüyor: "iki kolu da
+ * ayrı mı tutayım, yoksa gövdeye mi yığayım" — gövdeye yığmak iki kola da
+ * hizmet ediyor ama düşmanı yolun yarısı boyunca serbest bırakıyor.
+ */
+const MAP5_BIRLESME: Vec2 = { x: 380, y: 410 };
+
+/** Birleşmeden kaleye ortak gövde — üç viraj. */
+const MAP5_GOVDE: readonly Vec2[] = [
+  MAP5_BIRLESME,
+  { x: 700, y: 410 },
+  { x: 700, y: 180 },
+  { x: 1000, y: 180 },
+  { x: 1000, y: 600 },
+  MAP5_KALE,
+];
+
+/**
+ * Sol üst giriş.
+ *
+ * `y = 250` — iki turda buraya geldi ve **ikisini de canlı ekran görüntüsü
+ * yakaladı, ölçüm değil** (kapsama ve bütçe testlerinin hiçbiri HUD'u
+ * bilmiyor):
+ *
+ * 1. `y = 120`: altın/can kartuşunun (8-224 × 16-156) **altından** giriyordu,
+ *    düşman ekrana görünmeden 260 px yürüyordu.
+ * 2. `y = 200`: kartuşu kurtardı ama erken-başlat rozetinin (17-102 × 155-211)
+ *    altında kaldı — hazırlık sayacı boyunca, yani oyuncunun yerleşim kararı
+ *    verdiği tam anda, giriş kapalıydı.
+ *
+ * HUD dikdörtgenleri canlı `Container.getBounds()` ile ölçüldü; tahmin değil.
+ */
+const MAP5_KOL_A: readonly Vec2[] = [
+  { x: -60, y: 250 },
+  { x: 200, y: 250 },
+  { x: 200, y: 410 },
+  ...MAP5_GOVDE,
+];
+
+/**
+ * Sol alt giriş — A'nın aynası (ikisinin de dikeyi 160 px), aynı köşede
+ * birleşiyor. `y = 570`: ilk tasarım 660'tı ve yetenek butonlarının
+ * (28-170 × 622-707) altından geçiyordu — A ile aynı hata, aynı turda.
+ */
+const MAP5_KOL_B: readonly Vec2[] = [
+  { x: -60, y: 570 },
+  { x: 200, y: 570 },
+  { x: 200, y: 410 },
+  ...MAP5_GOVDE,
+];
+
+/**
+ * 15 yapı noktası.
+ *
+ * Konumlar **aranarak** bulundu, elle serpilmedi. Elle serpilen başlangıç
+ * yerleşimi kol ortalamalarını 272,2 ve 278,4 veriyordu — ikisi de 285-311
+ * bandının **altında**. Tepe tırmanma (60/30/15/5 px adımlar) ceza
+ * fonksiyonunu `|A-298| + |B-298| + 0,5·|A-B|` olarak minimize etti ve
+ * **ikisini de 298,0**'a getirdi: bandın tam ortası, simetrik.
+ *
+ * Aramanın kısıtları (hepsi ölçülebilir, hiçbiri zevk meselesi değil):
+ * - yoldan **≥ 50 px** (yol yarı genişliği ~13 + nokta yarıçapı ~28 + pay);
+ *   ilk turda 40'tı ve 43 px'lik bir nokta ekranda yola **yapışık**
+ *   görünüyordu,
+ * - noktalar arası ≥ 100 px (menüler üst üste binmesin),
+ * - **HUD dikdörtgenlerinden 36 px uzak** — kartuş, hız/ayar ve yetenek
+ *   butonları. Bu kısıt canlı ekran görüntüsünden doğdu.
+ */
+const MAP5_BUILD_SPOTS: readonly Vec2[] = [
+  { x: 90, y: 315 },
+  { x: 270, y: 175 },
+  { x: 150, y: 405 },
+  { x: 345, y: 460 },
+  { x: 275, y: 535 },
+  { x: 65, y: 480 },
+  { x: 315, y: 335 },
+  { x: 480, y: 360 },
+  { x: 480, y: 470 },
+  { x: 610, y: 500 },
+  { x: 625, y: 335 },
+  { x: 910, y: 255 },
+  { x: 910, y: 105 },
+  { x: 925, y: 400 },
+  { x: 1075, y: 520 },
+];
+
+/** Her giriş için bir uçan hattı; 15 noktanın **13'ünü** kesiyor (%87 ✓). */
+const MAP5_FLYER_A: readonly Vec2[] = [
+  { x: -60, y: 280 },
+  { x: 1240, y: 560 },
+];
+const MAP5_FLYER_B: readonly Vec2[] = [
+  { x: -60, y: 600 },
+  { x: 1240, y: 240 },
+];
+
+export const MAP_5: MapDef = {
+  id: 'kadim-harabe',
+  // `M8-P02` — **GEÇİCİ görsel**, brif `docs/plan/M8-sanat-brifi.md`.
+  background: 'lazy/kadim-harabe.webp',
+  paths: [MAP5_KOL_A, MAP5_KOL_B],
+  buildSpots: MAP5_BUILD_SPOTS,
+  flyerPaths: [MAP5_FLYER_A, MAP5_FLYER_B],
+  castle: MAP5_KALE,
+  /** **Ölçüldü** — gerekçe `docs/plan/M8-genisleme.md` Faz 5 sonucu. */
+  hpMultiplier: MAP5_HP_CARPANI,
+  goldMultiplier: MAP5_ALTIN_CARPANI,
+  startGold: Math.round(280 * MAP5_ALTIN_CARPANI),
+  enemyRoster: [
+    'goblin',
+    'orkSavasci',
+    'kurtBinicisi',
+    'harpi',
+    'zirhliOrk',
+    'saman',
+    'trol',
+    'orumcekAna',
+    'orumcekYavrusu',
+    'ogreSef',
+  ],
+  // ELLE YAZILMAZ — CLAUDE.md Mimari kuralı.
+  coverage: measureCoverage(
+    [MAP5_KOL_A, MAP5_KOL_B],
+    MAP5_BUILD_SPOTS,
+    COVERAGE_REFERENCE_RANGE,
+  ),
+  branchCoverage: [
+    measureCoverage([MAP5_KOL_A], MAP5_BUILD_SPOTS, COVERAGE_REFERENCE_RANGE),
+    measureCoverage([MAP5_KOL_B], MAP5_BUILD_SPOTS, COVERAGE_REFERENCE_RANGE),
+  ],
+};
+
+export const MAPS: readonly MapDef[] = [MAP_1, MAP_2, MAP_3, MAP_4, MAP_5];
 
 export function getMap(id: string): MapDef | undefined {
   return MAPS.find((m) => m.id === id);

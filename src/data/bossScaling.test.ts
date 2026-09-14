@@ -12,8 +12,8 @@ import {
   BOSS_HP_TOLERANCE,
   bossFor,
 } from './bossScaling';
-import { MAP_1, MAP_2, MAP_3, MAP_4, MAPS, COVERAGE_REFERENCE_RANGE } from './maps';
-import { MAP1_WAVES, MAP2_WAVES, MAP3_WAVES, MAP4_WAVES } from './waves';
+import { MAP_1, MAP_2, MAP_3, MAP_4, MAP_5, MAPS, COVERAGE_REFERENCE_RANGE } from './maps';
+import { MAP1_WAVES, MAP2_WAVES, MAP3_WAVES, MAP4_WAVES, MAP5_WAVES } from './waves';
 import { OGRE_SEF, getEnemyForMap } from './enemies';
 import {
   BOSS_CEILING_RATIO,
@@ -30,6 +30,7 @@ const H = [
   { map: MAP_2, waves: MAP2_WAVES },
   { map: MAP_3, waves: MAP3_WAVES },
   { map: MAP_4, waves: MAP4_WAVES },
+  { map: MAP_5, waves: MAP5_WAVES },
 ];
 
 const tahta = (m: (typeof H)[number]) => {
@@ -55,6 +56,7 @@ describe('Boss ölçeklemesi — zırh düşer, HP türetilir', () => {
     expect(BOSS_ARMOR_BY_MAP['tas-kopru']).toBe(5);
     expect(BOSS_ARMOR_BY_MAP['kul-ovasi']).toBe(2);
     expect(BOSS_ARMOR_BY_MAP['kar-gecidi']).toBe(2);
+    expect(BOSS_ARMOR_BY_MAP['kadim-harabe']).toBe(2);
   });
 
   it('**boss HP’si MONOTON ARTIYOR** — zorluk eğrisi korunuyor', () => {
@@ -138,5 +140,6 @@ describe('Boss ölçeklemesi — zırh düşer, HP türetilir', () => {
     expect(g2 / g1).toBeGreaterThan(1.4);
     expect(g3 / g1).toBeGreaterThan(2.2);
     expect(g4).toBeGreaterThan(g3);
+    expect(cumulativeGold(MAP_5, MAP5_WAVES, 10, false)).toBeGreaterThan(g4);
   });
 });
