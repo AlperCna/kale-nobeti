@@ -19,19 +19,14 @@
  *
  *     npm run check:bg
  *
- * Harita verisi TypeScript'te; `kurallar.mjs` ile **aynı desen** kullanıldı
- * (geçici bir vitest dosyası veriyi JSON'a döküyor). Gerekçe: yeni bir
- * çalışma zamanı bağımlılığı (`vite-node`, `tsx`) eklemeden TS okumanın
- * bu depodaki yolu bu — ve veriyi buraya elle kopyalamak, `kurallar.mjs`'in
- * elle tutulan harita tablosunun sessizce boş veri basmasıyla aynı hataya
- * davetiye olurdu.
+ * Harita verisi `scripts/ts-yukle.mjs` ile **canlı** okunuyor; elle
+ * kopyalamak `kurallar.mjs`'in elle tutulan harita tablosunun sessizce
+ * boş veri basmasıyla aynı hataya davetiye olurdu.
  */
-import { execSync } from 'node:child_process';
-import { writeFileSync, mkdtempSync, readFileSync, unlinkSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
+import { tsYukle } from './ts-yukle.mjs';
 
 const KOK = join(dirname(fileURLToPath(import.meta.url)), '..');
 const YOL_LUMA = luma(0x8a, 0x72, 0x50);
@@ -42,29 +37,7 @@ function luma(r, g, b) {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
-// ------------------------------------------------------- harita verisini al
-const dizin = mkdtempSync(join(tmpdir(), 'kn-bg-'));
-const veriYolu = join(dizin, 'veri.json');
-const testDosyasi = join('src', '__bg_dokum.test.ts');
-
-writeFileSync(
-  testDosyasi,
-  `import { it } from 'vitest';
-import { writeFileSync } from 'node:fs';
-import { MAPS } from './data/maps';
-
-it('dokum', () => {
-  writeFileSync(
-    ${JSON.stringify(veriYolu)},
-    JSON.stringify(MAPS.map((m) => ({ id: m.id, paths: m.paths }))),
-  );
-});
-`,
-  'utf8',
-);
-execSync(`npx vitest run ${testDosyasi}`, { stdio: 'pipe' });
-unlinkSync(testDosyasi);
-const HARITALAR = JSON.parse(readFileSync(veriYolu, 'utf8'));
+const [{ MAPS: HARITALAR }] = await tsYukle(['/src/data/maps.ts']);
 
 // ------------------------------------------------------------------- ölçüm
 /**

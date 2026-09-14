@@ -288,8 +288,17 @@ const TR = {
    * "Yalnız Okçu ve Büyü tam hasar verir" — `towers.ts`: okçu ve büyü
    * `airMultiplier` 1, Top 0 (yalnız Barut Fıçısı 0,5). Cümle doğru.
    */
+  /**
+   * `Güçlü` eskiden "en çok canı olan" diyordu ve bu **yanlıştı**:
+   * `TargetingSystem` orada `-maxHp` kullanıyor, yani yaralanmayı değil
+   * türün dayanıklılığını (§4.5 — azami can kararlı hedef verir).
+   * `Zayıf` ise gerçekten `hp`, yani anlık can. Asimetri bilerek ve
+   * oyuncunun tahmin edemeyeceği tek şey o; iki modda da hangi canın
+   * kastedildiği artık yazılı. `modeStrongestDesc`/`modeWeakestDesc` ile
+   * aynı cümleyi kuruyor — oyun iki farklı şey söylemesin.
+   */
   hintTargetModes:
-    'Hedefleme — İlk: yolda en öndeki · Son: en gerideki · Güçlü: en çok canı olan · Zayıf: en az canı olan · Yakın: kuleye en yakın',
+    'Hedefleme — İlk: yolda en öndeki · Son: en gerideki · Güçlü: en dayanıklı tür (azami can) · Zayıf: en yaralı (anlık can) · Yakın: kuleye en yakın',
   hintFlyers: 'Kesikli hat uçanların rotası — yolu izlemezler. Yalnız Okçu ve Büyü onlara tam hasar verir.',
 } as const;
 
@@ -466,7 +475,7 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     statDuration: 'Time',
     statPeakWave: 'Wave reached',
     hintTargetModes:
-      'Targeting — First: furthest along the path · Last: furthest back · Strong: most HP · Weak: least HP · Near: closest to the tower',
+      'Targeting — First: furthest along the path · Last: furthest back · Strong: toughest type (max HP) · Weak: most wounded (current HP) · Near: closest to the tower',
     hintFlyers: 'The dashed line is the flyers’ route — they ignore the path. Only Archer and Magic deal full damage to them.',
   },
 };
