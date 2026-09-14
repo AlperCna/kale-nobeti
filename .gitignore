@@ -19,3 +19,13 @@ Thumbs.db
 .env
 .env.local
 kale-nobeti-itch.zip
+
+# Uretilen Phaser ozel yapimi (scripts/build-phaser.mjs) - vite.config.ts
+# gerektiginde yeniden uretiyor, depoya girmiyor.
+node_modules/.phaser-custom/
+
+# kurallar.mjs ve check-bg.mjs TS verisini okumak icin gecici bir vitest
+# dosyasi yazip siliyor. Build yarida kesilirse geride kaliyor ve sessizce
+# commit'e sizabiliyor (bir kez oldu).
+src/__kural_dokum.test.ts
+src/__bg_dokum.test.ts

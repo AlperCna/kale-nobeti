@@ -94,7 +94,7 @@ Kapsama, bütçe, Kısıt A/B testlerinin hiçbiri **HUD'u** bilmiyor:
 | `M8-P01`/`P02` harita 4-5 arka planı | **Kapandı** — gerçek görseller oyunda (99 KB / 225 KB); prompt'lar `docs/plan/M8-sanat-promptlari.md` |
 | `M8-P03` üç ses | **Üçünün de kod tarafı bağlı**, yalnız dosyalar bekliyor |
 | `M8-B01` yolların HUD altından geçmesi | **Kapandı** — HUD yerleşimi taranarak çözüldü, harita geometrisine dokunulmadı (aşağıda) |
-| `Y11` Phaser özel yapımı | Ölçülmüş ara kazanç alındı (−%9,2); webpack yapımı hâlâ açık |
+| `Y11` Phaser özel yapımı | **Kapandı** — özel yapım üretildi ve ölçüldü, ham JS −%26,5 (aşağıda) |
 | `Y10` / `Y02` adım 3 | Kullanıcının DevTools CPU kısıtlama ölçümünü bekliyor |
 | Toplanma noktası **sürükleme** jesti | Tarayıcı panelinde sınanamadı; dokunmayla taşıma eklendi ve sınandı |
 
@@ -261,3 +261,94 @@ kalıyordu.
 `check:bg` kapı değil gösterge olarak durdu — kontur konduktan sonra düşük
 fark okunurluğu bozmuyor; tablo yeni arka plan üretilirken "ortası ne kadar
 sakin" sorusunun cevabı.
+
+## `Y11` — Phaser özel yapımı üretildi
+
+`Y11` "önce `Y10`'u koştur, ayrıştırma payı kayda değerse dene" diyordu.
+`Y10` hâlâ kullanıcının DevTools'unu bekliyor; ama dosyanın ikinci açığı
+ondan bağımsızdı: **kazanç tablosu tahmindi** ve `OLCUMLER.md`'nin kuralı
+tahmini kabul etmiyor. Yapım üretildi, tartıldı, sayı kütüğe girdi.
+
+| | önce | sonra |
+|---|---|---|
+| Uygulama paketi (ham JS) | 1.177,7 KB | **864,8 KB** |
+| gzip | ~324,8 KB | **242,0 KB** |
+| İlk indirme | 0,93 MB | **0,86 MB** |
+
+Tam yapımdan bu yana kümülatif **−%26,5** ham JS.
+
+### Webpack gerekmedi
+
+`Y11` Phaser deposunun webpack yapılandırmasını projeye taşımayı
+öngörüyordu. Onun yerine `src/vendor/phaser-custom.js` — Phaser'ın kendi
+`src/phaser-core.js` çekirdeğinden başlayıp **yalnız kullanılan** modülleri
+geri ekleyen bir giriş modülü. Geri eklenenler tahminle değil **tarayarak**
+seçildi: `.add.*` çağrıları ve `Phaser.*` referansları sayıldı.
+
+Çıkarılan: `Physics` (Arcade + Matter), `Tilemaps`, `Actions`, `Create`,
+`Curves`, fazla `Cameras`/`Display`. Üretim yapısında dördü de `undefined`
+olarak doğrulandı.
+
+### Üç tuzak
+
+1. **Webpack bayrakları.** Phaser'ın kaynağı `if (typeof WEBGL_RENDERER)`
+   deseniyle 90+ yerde `DefinePlugin` kürelleri kullanıyor. Tanımsız
+   bırakmak zararsız değil, **tam tersi**: `typeof` her zaman
+   `'undefined'` döner ve bu truthy, yani kapalı olması gereken FBInstant
+   eklentisi açılıyor. esbuild/Vite `define`'ı `typeof X` anahtarını kabul
+   etmiyor ve hiçbir değer `typeof` altında falsy olamaz — metin değişimi
+   şart. Değerler Phaser'ın kendi webpack yapılandırmasından kopyalandı.
+2. **Dev ve üretim ayrışıyordu.** İlk tasarım giriş modülünü doğrudan
+   takma ad yapıyordu; üretimde çalıştı, dev'de çalışmadı (Vite CJS
+   ağacını esbuild ile ön-paketliyor ve `transform` kancalarını atlıyor).
+   Yamamak yerine ayrı üretim adımı seçildi, çünkü alternatif bu
+   değişiklikte **en kötü hata biçimi**: eksik bir modül dev'de çalışır,
+   yalnız yayınlanmış oyunda çöker. Artık tek üretilmiş dosya ikisine de
+   veriliyor.
+3. **`npm` yaşam döngüsü yetmedi.** `predev` tasarlanmıştı ama Browser
+   pane'in `launch.json`'ı `vite`'ı doğrudan çalıştırıyor, `npm run dev`
+   değil — bayat paket sessizce servis edilebiliyordu. Üretim artık
+   `vite.config.ts`'in kendisinden çağrılıyor; hangi yoldan başlatılırsa
+   başlatılsın kaçamıyor.
+
+### Elle tam tur — tek gerçek bekçi
+
+Eksik bir modül `typecheck`'ten **yeşil** geçer (tipler `phaser/types`'tan
+geliyor) ve testler de göremez (`node` ortamı Phaser çalıştırmıyor, S08).
+Yapılan tur:
+
+| Denendi | Modül kanıtı |
+|---|---|
+| Açılış, font, menü | `Text`, `Container`, `TileSprite` |
+| Seviye seçim (kartlar, yıldız, zorluk) | aynı + atlas |
+| Harita, arka plan, yol + yeni kontur | `Image`, `Graphics` |
+| Yapı menüsü, dört kule ailesi | `Container`, `Rectangle` |
+| Kule kurma, **T2 yükseltme, T3 dal seçimi** | `setTexture` |
+| Hedefleme modları (İlk/Son/Güçlü/Zayıf/Yakın) | — |
+| Kule bilgi paneli (yedi gösterge) | `BitmapText` |
+| Kışla, asker, toplanma işareti | `Group`, **`Arc`** |
+| Düşman akışı, can çubukları | `Sprite` |
+| Hasar sayıları, HUD sayaçları | **`BitmapText`** |
+| Meteor — 42 canlı parçacık | **`ParticleEmitter`** |
+| Başarım bildirimi | `Container` + tween |
+| Ayar paneli (altı satır) | — |
+| 2× hız, ESC duraklatma menüsü | — |
+| Kazanma ekranı + yıldızlar | — |
+| Başarımlar ekranı (12) | — |
+| Tam ekran düğmesi / `Overlay` | — |
+
+Sahnedeki canlı nesne sayımı (harita 3, oyun sırasında): `Image` 118 ·
+`TileSprite` 99 · `Sprite` 84 · `BitmapText` 73 · `Text` 64 · `Rectangle`
+61 · `Container` 48 · `Arc` 200 · `Graphics` 7 · `ParticleEmitter` 1.
+Geri eklenen her modül **kullanımda**.
+
+**Üretim yapısında konsol tamamen sessiz** — temiz sekmede tek mesaj yok.
+
+### Denenmeyen
+
+Boss dalgası, sonsuz mod ve kaybetme ekranı bu turda oynanmadı; üçü de
+`createParchmentFrame` + `Text` + `BitmapText` kullanıyor ve bunların
+hepsi başka yerde kanıtlandı, ama **oynanmadıkları kayda geçsin**.
+
+`Y11`'in asıl sorusu — ayrıştırma süresi kazancı — hâlâ `Y10`'un CPU
+kısıtlı ölçümüne bağlı ve açık.

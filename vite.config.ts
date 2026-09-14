@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import { readFileSync } from 'node:fs';
+import { uretPhaser } from './scripts/build-phaser.mjs';
 
 /**
  * `M8-T13` — surum etiketi build'de gomuluyor.
@@ -9,6 +10,30 @@ import { readFileSync } from 'node:fs';
  * sessizce ayrismasi demek. `define` ile tek kaynaktan geliyor.
  */
 const surum = (JSON.parse(readFileSync('./package.json', 'utf8')) as { version: string }).version;
+
+/**
+ * `Y11` — Phaser **ozel yapimi**.
+ *
+ * `scripts/build-phaser.mjs` uretiyor ve BU YAPILANDIRMA onu cagiriyor.
+ * npm `predev` yasam dongusu yeterli DEGIL: Browser pane'in launch.json'i
+ * `vite`'i dogrudan calistiriyor, `npm run dev` degil. Buradan cagirinca
+ * hangi yoldan baslatilirsa baslatilsin kaciramiyor.
+ *
+ * Once (`M8-T14`) hazir `phaser-arcade-physics.js` yapimina gecilmisti:
+ * Matter'siz, olculmus -%9,2. Bu ondan sonraki adim — cekirdekten
+ * baslayip yalnizca kullanilan modulleri geri ekliyor. Hangi moduller
+ * ve neden: `src/vendor/phaser-custom.js` basligi.
+ *
+ * Dev ve uretim AYNI dosyayi kullaniyor. Ayri olsalardi eksik bir modul
+ * dev'de calisip yalnizca yayinlanmis oyunda coker — bu degisiklikte en
+ * kotu hata bicimi bu.
+ *
+ * Doner deger MUTLAK yol. Goreli (`./node_modules/...`) denendiginde
+ * `npm run build` calisti ama `npm run dev` her dosyada "Failed to
+ * resolve import phaser" verdi: build takma adi kokten cozuyor, dev
+ * sunucusu ise ice aktaran dosyaya gore cozmeye calisiyor.
+ */
+const OZEL_PHASER = await uretPhaser();
 
 export default defineConfig({
   // CLAUDE.md Platform kisitlari: mutlak yol yasak (CrazyGames).
@@ -22,26 +47,14 @@ export default defineConfig({
   },
 
   resolve: {
-    alias: {
-      /**
-       * `M8-T14` — Phaser'in **Matter fiziksiz** yapimi.
-       *
-       * `Y11` "ozel yapim uret" diyordu (webpack, Phaser deposundan);
-       * bu, onun olculmus ve risksiz alt kumesi. Proje ne Matter ne
-       * Arcade fizik kullaniyor (`CLAUDE.md` Teknoloji: "Arcade fizik
-       * kullanilmiyor"), ama `phaser-arcade-physics` hazir bir giris
-       * noktasi ve ICINDE Matter yok:
-       *
-       *   dist/phaser.min.js                 1.196.122 bayt
-       *   dist/phaser-arcade-physics.min.js  1.086.308 bayt  (-%9,2)
-       *
-       * Olcum tahmin degil: iki dosya tartildi. Tilemaps ve butun oyun
-       * nesneleri (BitmapText, Container, TileSprite, Group, Particles)
-       * bu yapimda DURUYOR — `Y11`'in "phaser-core kullanilamaz" bulgusu
-       * hala gecerli, o yol icin gercek bir ozel yapim gerekiyor.
-       */
-      phaser: 'phaser/dist/phaser-arcade-physics.js',
-    },
+    // Dizi bicimi ve `find` olarak REGEX kullaniliyor, nesne bicimi degil:
+    // nesne bicimi **onek** eslestiriyor ve `phaser` takma adi
+    // `phaser-custom.js` icindeki `require('phaser/src/...')` cagrilarini
+    // da yakalayip `/src/vendor/phaser-custom.js/src/...` uretiyordu.
+    // `/^phaser$/` yalniz cip bas modul adini yakalar.
+    alias: [
+      { find: /^phaser$/, replacement: OZEL_PHASER },
+    ],
   },
 
   build: {
