@@ -28,10 +28,17 @@ Kuzeye açılan dar bir **dağ geçidi**, kışın. Kamera yukarıdan hafif eği
 (diğer üç haritayla aynı bakış açısı — referans için
 `public/assets/bg/degirmen-gecidi.webp`).
 
-**Zemin:** taşlı kar. Yolun kendisi **çamurlaşmış, basılmış kar**:
-çevresinden bir ton koyu, hafif kahverengi-gri; kenarlarda ayak izi ve
-kar birikintisi. Yol çizgisi görünür olmalı ama parlak olmamalı — üstünde
-düşman ve kule oturuyor.
+**Zemin:** taşlı kar.
+
+> **Yol ÇİZİLMEZ.** `MapRenderer.#drawMap` yolu, yuva çemberlerini ve kale
+> işaretini her karede arka planın **üstüne** çiziyor (yol `PATH_WIDTH`
+> 48 px, düz `#8A7250` şerit). Arka plana ikinci bir yol boyamak
+> motorunkiyle çakışır. Yolun geçtiği koridor **sakin, açık zemin**
+> kalmalı; detay koridorun **kenarlarına** konur — böylece motorun düz
+> şeridi yerinde durur gibi görünür.
+
+Bu not brifin ilk hâlinde yoktu ve yanıltıcıydı: "yol çizgisi görünür
+olmalı" diyordu.
 
 **Yolun geometrisi** (kod bunu zaten kullanıyor, arka plan buna uymalı;
 1280×720 mantıksal çözünürlükte):
@@ -61,7 +68,7 @@ kontrast doku yok). Kule sprite'ı 64×64 oturuyor.
 
 ```
 (100,215) (280,65)  (405,215) (555,290) (405,355) (555,505)
-(700,355) (860,505) (925,355) (1075,500) (190,65)  (780,505)
+(700,355) (860,505) (925,355) (1075,500) (200,215) (780,505)
 ```
 
 ### Palet
@@ -126,10 +133,19 @@ olmalı — oyuncu iki akışın orada buluştuğunu bakar bakmaz görmeli.
 | Alan | Dikdörtgen |
 |---|---|
 | Altın/can/dalga kartuşu | `8,16 – 224,156` |
-| Erken başlat rozeti | `17,155 – 102,211` |
-| Hız + ayar | `1204,20 – 1260,144` |
+| Dalga telgrafı | `17,155 – 102,211` |
+| Dalga sayacı (üst orta) | `500,0 – 780,120` |
+| Erken başlat düğmesi | `550,56 – 730,108` |
+| Zorluk rozeti | `1086,25 – 1154,59` |
+| Hız düğmesi | `1204,20 – 1260,76` |
+| Ayar düğmesi | `1204,152 – 1260,208` |
 | Yetenek butonları | `28,622 – 170,707` |
-| Dalga sayacı/telgraf | `500,0 – 780,120` |
+| Tam ekran düğmesi | `848,636 – 928,714` |
+
+**Bu tablo `M8-B01`'de değişti** ve **beş haritanın hepsi için geçerli**
+(brifte harita 5 bölümünde duruyor ama HUD sahneden bağımsız). Sağ kenarın
+ortası (`y` 220-620) artık **boş** — tam ekran düğmesi alt şeride indi;
+gerekçesi `docs/results/M8-SONUC.md` "`M8-B01`" bölümünde.
 
 ### Yapı noktaları — ÜSTÜNE HİÇBİR ŞEY ÇİZİLMEYECEK
 
