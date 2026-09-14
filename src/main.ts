@@ -6,6 +6,7 @@ import { LevelSelectScene } from './scenes/LevelSelectScene';
 import { GameScene } from './scenes/GameScene';
 import { HudScene } from './scenes/HudScene';
 import { GameOverScene } from './scenes/GameOverScene';
+import { AchievementsScene } from './scenes/AchievementsScene';
 
 /**
  * Sahne kaydı yalnız burada yapılır (CLAUDE.md Klasör yapısı).
@@ -45,6 +46,7 @@ const config: Phaser.Types.Core.GameConfig = {
     GameScene,
     HudScene,
     GameOverScene,
+    AchievementsScene,
   ],
 };
 

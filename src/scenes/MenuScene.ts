@@ -18,6 +18,9 @@ const BTN_FONT_PX = 28;
 const TITLE_FONT_PX = 72;
 /** Ayarlar düğmesi — `HudScene`'in dişlisiyle aynı ölçü ve köşe. */
 const AYAR_BTN = 56;
+/** İkincil menü butonu — "Oyna"dan küçük (hiyerarşi boyutla kuruluyor). */
+const IKINCIL_W = 220;
+const IKINCIL_H = 52;
 const MARGIN = 20;
 
 export class MenuScene extends Phaser.Scene {
@@ -90,8 +93,31 @@ export class MenuScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.#createPlayButton(width / 2, height / 2 + 40);
+    // `M8-T07` — başarımlar. "Oyna"nın altında ve **belirgin biçimde
+    // daha küçük**: birincil eylem hâlâ oynamak (`Y07` ile aynı gerekçe,
+    // renk yerine boyutla hiyerarşi).
+    this.#createMenuButton(
+      width / 2,
+      height / 2 + 40 + BTN_H / 2 + 18 + IKINCIL_H / 2,
+      t('achievements'),
+      () => this.scene.start('Achievements'),
+    );
     this.#createSettingsButton(width - MARGIN - AYAR_BTN / 2, MARGIN + AYAR_BTN / 2);
     if (data?.settingsOpen === true) this.#settingsPanel?.setVisible(true);
+  }
+
+  /** İkincil menü butonu — `#createPlayButton`'un küçük kardeşi. */
+  #createMenuButton(x: number, y: number, metin: string, onClick: () => void): void {
+    const cerceve = createParchmentButton(this, x, y, IKINCIL_W, IKINCIL_H, 14);
+    addPressFeedback(cerceve);
+    this.add
+      .text(x, y, metin, {
+        fontFamily: 'Spectral, serif',
+        fontSize: '22px',
+        color: '#14203A',
+      })
+      .setOrigin(0.5);
+    cerceve.on('pointerup', onClick);
   }
 
   /**

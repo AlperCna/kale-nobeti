@@ -8,7 +8,10 @@ import { createParchmentButton } from '../fx/ParchmentFrame';
 import { MAPS } from '../data/maps';
 import { FRAME_STAR, FRAME_STAR_EMPTY } from '../data/spriteFrames';
 import { EndlessRecords } from '../systems/EndlessRecords';
+import { AchievementSystem } from '../systems/AchievementSystem';
+import { AchievementToast } from '../fx/AchievementToast';
 import type { RunStatsData } from '../systems/RunStats';
+import type { RunEndContext } from '../systems/AchievementSystem';
 
 const INK = 0x14203a;
 
@@ -40,6 +43,8 @@ export class GameOverScene extends Phaser.Scene {
   /** `M8-T06` — bu el rekoru kırdı mı (`init`'te hesaplanıyor). */
   #yeniRekor = false;
   #rekor = 0;
+  /** `M8-T07` — bu elde açılan başarımlar; `create()` bandı gösteriyor. */
+  #acilanBasarimlar: readonly string[] = [];
 
   constructor() {
     super('GameOver');
@@ -66,6 +71,13 @@ export class GameOverScene extends Phaser.Scene {
       this.#yeniRekor = kayit.record(this.#data.mapId, this.#data.stats?.peakWave ?? 0);
       this.#rekor = kayit.bestOf(this.#data.mapId);
     }
+
+    // `M8-T07` — el sonu başarımları. `init`'te değerlendiriliyor ki
+    // yukarıdaki `recordResult` çağrısından **sonra** olsun: "bütün
+    // haritalar" ve "bütün yıldızlar" bu elin sonucunu da saymalı.
+    this.#acilanBasarimlar = new AchievementSystem(new LocalStore()).checkRunEnd(
+      this.#elOzeti(),
+    );
 
     // **Sonuç burada kaydediliyor** — `init` her sahne başlatmasında
     // koşuyor, yani tekrar oynanan her el kaydediliyor. `recordResult`
@@ -218,10 +230,42 @@ export class GameOverScene extends Phaser.Scene {
     // güvence.
     this.input.keyboard?.on('keydown-ENTER', birincilEylem);
 
+    // `M8-T07` — bu elde açılan başarımlar. Bant **burada** gösteriliyor,
+    // `init`'te değil: `init` sahne çizilmeden koşuyor ve tween'in
+    // tutunacağı bir görüntü listesi henüz yok.
+    if (this.#acilanBasarimlar.length > 0) {
+      const bant = new AchievementToast(this);
+      for (const id of this.#acilanBasarimlar) bant.show(id);
+    }
+
     const dev = devHooks();
     if (dev !== undefined) {
       dev.gameOver = () => ({ won, lives, stars: won ? this.#yildiz(lives) : 0 });
+      dev.achievements = () => new AchievementSystem(new LocalStore()).unlocked;
     }
+  }
+
+  /**
+   * `AchievementSystem`'in el sonu bağlamı.
+   *
+   * `SaveSystem` **bu el kaydedildikten sonra** okunuyor (yukarıdaki
+   * `recordResult` çağrısı `init`'in başında) — yoksa son haritayı
+   * bitiren el "bütün haritalar" başarımını bir el geç açardı.
+   */
+  #elOzeti(): RunEndContext {
+    const save = new SaveSystem(new LocalStore());
+    const ids = MAPS.map((m) => m.id);
+    return {
+      won: this.#data.won,
+      lives: this.#data.lives,
+      startLives: BALANCE.startLives,
+      sold: this.#data.stats?.soldAny ?? false,
+      mapsCompleted: ids.filter((id) => save.isCompleted(id)).length,
+      mapCount: ids.length,
+      stars: save.totalStars(),
+      maxStars: ids.length * 3,
+      endlessWave: this.#data.endless === true ? (this.#data.stats?.peakWave ?? 0) : 0,
+    };
   }
 
   /** `GAME-DESIGN.md` §9 yıldız tablosu. */

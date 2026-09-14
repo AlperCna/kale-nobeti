@@ -332,12 +332,12 @@ yerine `generateEndlessWave(n, roster, spawnPoints, seed)` oldu — iki
 girişli haritalarda kapı dağıtımı gerekiyordu.
 
 
-### Faz 7 — Başarımlar — `M8-T07`
+### Faz 7 — Başarımlar — `M8-T07`  ☑
 
 | | |
 |---|---|
 | **Kimlik** | `M8-T07` |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ **bitti** (2026-09-14) |
 | **Süre** | ~45 dk |
 | **Önkoşul** | `M8-T03`, `M8-T06` |
 | **TIER 1** | k.7, k.10 |
@@ -353,6 +353,57 @@ girişli haritalarda kapı dağıtımı gerekiyordu.
 **Başarımlar (varsayılan liste):** ilk kule · ilk T3 · her harita ★★★ (5) · sızmasız harita · boss'u sızdırmadan öldür · sonsuz dalga 15 · sonsuz dalga 20 · Meteor'la 5 düşman tek atışta · 100 düşman öldür · kule satmadan harita bitir.
 
 **Kabul kriteri** — `npm run test -- Achievement` ≥ 8; canlı: ilk kule → bant çıkıyor; menüde liste ✓/✗.
+
+**Durum:** ☑ **bitti** (2026-09-14) — 20 test (hedef 8).
+
+#### Sonuç — `M8-T07`
+
+**Koşul türü alanı** (`counter` / `flag` / `runEnd`) tanımların içinde.
+Başarımların yarısı olay sayıyor, yarısı elin sonucuna bakıyor; tek bir
+`check(state)` imzası mümkündü ama o zaman her başarım bütün oyun
+durumunu görürdü. Tür alanı sayesinde sistem hangi başarımı **ne zaman**
+değerlendireceğini tablodan okuyor.
+
+**Olaylara iki alan eklendi** çünkü bilgi zaten hesaplanıyordu ama hiçbir
+yere duyurulmuyordu:
+- `tower:upgraded` artık `tier` taşıyor. Olmasaydı dinleyicinin kule
+  nesnesine ulaşması gerekirdi ve `systems/` Phaser'a bakamaz (k.11).
+- `ability:cast { id, hits }` yeni. Meteor'un kaç düşmana vurduğu
+  `GameScene` içinde zaten dönüyordu.
+
+**"Satmadan bitir" için yeni olay gerekmedi:** `gold:changed`'in `sell`
+sebebi tam bu bilgiyi taşıyordu; `RunStats` bir `soldAny` bayrağı tutuyor.
+
+**Öldürme sayacı her ölümde diske YAZMIYOR.** Yoğun dalgada saniyede ~20
+ölüm var ve her biri `JSON.parse` + `stringify` + `localStorage.set`
+demekti — `M8-T01`'deki 2× kasmasının kök nedeni tam bu sınıftı (kare
+başına senkron iş). Yazma yalnız eşik geçilince ve 25'te bir; test yazma
+sayısını sayıyor (100 ölümde ≤ 5).
+
+**Canlı kontrolden çıkan iki düzeltme:**
+
+1. **Başarım listesi yukarı yapışıktı** — 12 satır `y = 410`'da bitiyor,
+   altında 230 px boşluk kalıyordu. Satır aralığı 52 → 58, üst kenar
+   150 → 190.
+2. **Kazanılmış yıldız mürekkep zeminde BOŞ görünüyordu.** `M8-T04`'te
+   seviye seçim kartlarında çözülen sorunun aynısı: atlas karesi altın
+   konturlu ama içi mürekkep dolgu (`#14213B`), mürekkep zemine karışıyor.
+   2/12 ekranı 0/12 gibi okunuyordu. Her yıldızın altına parşömen altlık
+   kondu.
+
+**Bant `Game` sahnesinde**, HUD'da değil: duraklatmada `Game` donuyor,
+yani bant da donuyor ve oyuncu duraklattığı anda kayan bir bildirimle
+karşılaşmıyor. Kuyruk sınırlı (4) — 12 başarım tek elde açılırsa oyuncu
+36 saniye bant izlemek zorunda kalırdı.
+
+**Canlı doğrulandı:** kule kur → "İlk Nöbetçi" bandı sağdan kayarak geldi;
+kışla kur → "Saf Tut" kuyruğa girip sırayla çıktı; ikisi de 3 sn sonra
+geri kaydı; menü → Başarımlar listesi 2/12 gösterdi, açık olan ikisi dolu
+yıldızla ayrıştı.
+
+**Plandan sapma:** `AchievementSystem` `SaveSystem`'i okumuyor —
+`GameOverScene` okuyup `RunEndContext` olarak veriyor. Sistem böylece
+Phaser'sız kalıyor ve `MAPS`/`SaveSystem`'e hiç bağlanmıyor.
 
 ### Faz 8 — Görsel cila 1: kule ve mermi — `M8-T08`
 
