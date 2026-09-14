@@ -421,3 +421,67 @@ describe('sonsuz mod — WaveManager listeyi bitirince durmuyor', () => {
     }
   });
 });
+
+/**
+ * `M10-T02` — tur ortası kayıttan dönüş. Oyuncu dalga 5'te çıkıp geri
+ * gelince sayacın dalga 5'in **hazırlığında** açılması gerekiyor.
+ */
+describe('turdanGeriYukle', () => {
+  /**
+   * **Tur kaydının dayandığı eşitlik.** `wave:ended` sayaç artmadan
+   * önce yayılıyor, yani taşıdığı 1 tabanlı biten dalga numarası aynı
+   * zamanda 0 tabanlı SIRADAKİ dalga indeksi. `M10-T02` kaydı buradan
+   * hesaplıyor; eşitlik bozulursa oyuncu kazandığı dalgaya geri döner
+   * (canlı testte bir kez yaşandı).
+   */
+  it('wave:ended’in index’i doğrudan sıradaki 0 tabanlı indeks', () => {
+    const { wm, bus } = kur();
+    let bitenNo = -1;
+    bus.on('wave:ended', ({ index }) => {
+      bitenNo = index;
+    });
+    wm.startWaveEarly();
+    for (let i = 0; i < 4000 && bitenNo < 0; i++) wm.update(16.67);
+    expect(bitenNo).toBe(1);
+    // Sayaç kendi doğal akışında da aynı yere gitti mi?
+    expect(wm.waveNumber).toBe(2);
+    expect(bitenNo).toBe(wm.waveNumber - 1);
+  });
+
+  it('verilen dalganın hazırlığına kuruluyor', () => {
+    const { wm } = kur();
+    wm.turdanGeriYukle(4);
+    expect(wm.waveNumber).toBe(5);
+    expect(wm.phase).toBe('prep');
+    expect(wm.prepRemainingSec).toBe(BALANCE.prepSeconds);
+  });
+
+  it('dalga sayısını aşan indeks son dalgaya kırpılıyor', () => {
+    const { wm } = kur();
+    wm.turdanGeriYukle(9999);
+    expect(wm.waveNumber).toBe(MAP1_WAVES.length);
+    expect(wm.phase).toBe('prep');
+  });
+
+  it('negatif indeks ilk dalgaya kırpılıyor', () => {
+    const { wm } = kur();
+    wm.turdanGeriYukle(-3);
+    expect(wm.waveNumber).toBe(1);
+  });
+
+  /**
+   * Dalga ortasında çağrılırsa kuyruk temizleniyor — sahada düşman
+   * bırakmamak çağıranın işi (dosyanın kendi notu), ama sayacın tutarlı
+   * kalması buranın işi.
+   */
+  it('koşan bir dalganın ortasından çağrılınca temiz hazırlığa dönüyor', () => {
+    const { wm } = kur();
+    wm.startWaveEarly();
+    wm.update(3000);
+    expect(wm.phase).toBe('running');
+    wm.turdanGeriYukle(2);
+    expect(wm.phase).toBe('prep');
+    expect(wm.waveNumber).toBe(3);
+    expect(wm.upcomingWave).toBeDefined();
+  });
+});

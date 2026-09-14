@@ -6,6 +6,9 @@ import { PreloadScene } from './PreloadScene';
 import { createParchmentButton, addPressFeedback } from '../fx/ParchmentFrame';
 import { SettingsPanel } from '../fx/SettingsPanel';
 import { MUSIC_BASE_VOLUME } from '../data/audio';
+import { RunSave } from '../systems/RunSave';
+import { LocalStore } from '../util/storage';
+import { haritaAdi } from '../data/mapNames';
 
 /**
  * Dokunmatik hedef en az 44×44 px (CLAUDE.md Platform, 1280×720 ölçeğinde).
@@ -180,7 +183,55 @@ export class MenuScene extends Phaser.Scene {
     // `M8-T07` — başarımlar. "Oyna"nın altında ve **belirgin biçimde
     // daha küçük**: birincil eylem hâlâ oynamak (`Y07` ile aynı gerekçe,
     // renk yerine boyutla hiyerarşi).
-    const ikincilUst = height / 2 + 40 + BTN_H / 2 + 18 + IKINCIL_H / 2;
+    let ikincilUst = height / 2 + 40 + BTN_H / 2 + 18 + IKINCIL_H / 2;
+
+    /**
+     * `M10-T02` — **Devam et**, yalnız sürmekte olan bir tur varken.
+     *
+     * "Oyna"nın hemen altında ve ikincil butonların en üstünde:
+     * geri dönen oyuncunun aradığı şey bu ve seviye seçiminden
+     * geçmesine gerek yok. Tur yoksa satır hiç çizilmiyor — boş ya da
+     * devre dışı bir buton, olmayan bir şeyi vaat etmek olurdu.
+     */
+    const tur = new RunSave(new LocalStore()).oku();
+    if (tur !== null) {
+      this.#createMenuButton(ikincilUst, t('continueRun'), () => {
+        this.scene.start('Game', { mapId: tur.mapId, devam: true });
+        this.scene.launch('Hud');
+      });
+      /**
+       * Harita ve dalga **butonun içinde değil altında**.
+       *
+       * İlk deneme etiketi `Devam et — Değirmen Geçidi` yapıyordu ve
+       * canlı ekranda metin 220 px'lik parşömenin iki yanından taşıyordu.
+       * Butonu genişletmek ikincil satırın ritmini bozardı; bağlamı
+       * küçük bir alt satıra almak hem sığıyor hem **daha çok şey
+       * söylüyor** — geri dönen oyuncunun asıl merak ettiği kaçıncı
+       * dalgada kaldığı.
+       */
+      this.add
+        .text(
+          width / 2,
+          ikincilUst + IKINCIL_H / 2 + 14,
+          `${haritaAdi(tur.mapId)} · ${t('wave')} ${tur.waveIndex + 1}`,
+          {
+            fontFamily: 'Spectral, serif',
+            fontSize: '16px', // Platform: minimum 16 px
+            color: '#E4D3A8',
+          },
+        )
+        .setOrigin(0.5)
+        // Menü arka planı burada açık gökyüzü değil kale silueti —
+        // parşömen renk tek başına her zaman okunmuyor (aynı gerekçe
+        // `OverlayScene`'in tam ekran etiketinde yazılı).
+        .setShadow(0, 2, '#14203A', 4, false, true);
+      // Alt satır 16 px; butonun altına 14 px, bir sonraki butona da
+      // en az o kadar boşluk kalsın diye 28 ekleniyor. İlk denemede 18
+      // vardı ve canlı ekranda yazı "Başarımlar"ın üst kenarına
+      // yapışıyordu.
+      ikincilUst += IKINCIL_H + 12 + 28;
+    }
+
     this.#createMenuButton(ikincilUst, t('achievements'), () =>
       this.scene.start('Achievements'),
     );

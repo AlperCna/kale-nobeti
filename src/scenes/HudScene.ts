@@ -367,6 +367,12 @@ export class HudScene extends Phaser.Scene {
     } else {
       haritaKaybedildi(portal, game.map.id, game.waveNumber);
     }
+    // `M10-T02` — tur bitti, kayıt siliniyor. **Kazanışta da kaybedişte
+    // de**: menüdeki "Devam et" yalnız gerçekten sürmekte olan bir tur
+    // için görünmeli, yoksa oyuncu bitirdiği haritayı yeniden açar.
+    // `Game` durmadan ÖNCE çağrılıyor — sahne durduktan sonra metodu
+    // çağırmak ölü bir sahneye dokunmak olurdu.
+    game.turKaydiniSil();
     this.scene.stop('Game');
     this.scene.start('GameOver', {
       won: kazandi,
@@ -547,6 +553,14 @@ export class HudScene extends Phaser.Scene {
     buton(t('resume'), () => this.#togglePause());
     buton(t('restart'), () => {
       const mapId = this.#game().mapId;
+      // `M10-T02` — oyuncu turu **bilerek** bırakıyor; kayıt siliniyor.
+      // Silinmeseydi yeni tur ilk dalgasını bitirene kadar eski kayıt
+      // ayakta kalırdı ve o aralıkta sekmeyi kapatan oyuncu "Devam
+      // et"te ESKİ turunu bulurdu.
+      //
+      // "Ana menü" bilerek silmiyor: oradan çıkmak turu bırakmak değil,
+      // tam da bu özelliğin var olma sebebi olan "sonra dönerim".
+      this.#game().turKaydiniSil();
       this.scene.stop('Hud');
       this.scene.stop('Game');
       this.scene.start('Game', { mapId });

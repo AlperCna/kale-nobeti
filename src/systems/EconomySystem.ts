@@ -151,6 +151,24 @@ export class EconomySystem {
     return dusen;
   }
 
+  /**
+   * Kaydedilmiş turdan dönüş — `M10-T02`.
+   *
+   * Altın ve can **doğrudan** yazılıyor, olay yayılmadan: geri yükleme
+   * sırasında tahta zaten normal satın alma yolundan yeniden kuruluyor
+   * (`spentAt` doğru kalsın diye — satış iadesi ona bakıyor) ve o
+   * alışverişler geçici bir bakiyeden ödeniyor. Bu çağrı bakiyeyi
+   * turun gerçek değerine geri çekiyor.
+   *
+   * Olay yayılmıyor çünkü `RunStats` `gold:changed`'i dinliyor ve
+   * kendi geri yüklemesini ayrıca alıyor; buradan bir olay daha
+   * geçseydi harcama iki kez sayılırdı.
+   */
+  turdanGeriYukle(gold: number, lives: number): void {
+    this.#gold = Math.max(0, Math.floor(gold));
+    this.#lives = Math.max(0, Math.floor(lives));
+  }
+
   get isDefeated(): boolean {
     return this.#lives <= 0;
   }

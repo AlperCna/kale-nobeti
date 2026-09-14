@@ -45,6 +45,8 @@ export class RunStats {
   #livesLost = 0;
   #peakWave = 0;
   #soldAny = false;
+  /** Önceki oturum(lar)da oynanan süre — `geriYukle` dolduruyor. */
+  #devredenSure = 0;
   #sonToplam: number;
   readonly #baslangic: number;
   readonly #now: () => number;
@@ -92,6 +94,45 @@ export class RunStats {
     });
   }
 
+  /**
+   * Kaydedilmiş turdan dönüş — `M10-T02`.
+   *
+   * Süre **devam ettirilmiyor, sıfırdan sayılıyor**: `durationSec` duvar
+   * saati ve oyuncunun kapalı geçirdiği saatleri "oynadı" saymak yanlış
+   * olurdu. Kaydedilen süre yine de toplanıyor (`#devredenSure`), yani
+   * iki oturumda oynanan tur ikisinin toplamını gösteriyor.
+   *
+   * Eksik alan **korunuyor, sıfırlanmıyor**: `RunStatsData`'ya yarın bir
+   * alan eklenirse eski turlar o alanı taşımıyor ve burada `??` ile
+   * mevcut değerde kalıyor.
+   */
+  geriYukle(kayit: Readonly<Record<string, number | boolean>>): void {
+    const sayi = (ad: string, simdiki: number): number => {
+      const v = kayit[ad];
+      return typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : simdiki;
+    };
+    this.#kills = sayi('kills', this.#kills);
+    this.#goldEarned = sayi('goldEarned', this.#goldEarned);
+    this.#goldSpent = sayi('goldSpent', this.#goldSpent);
+    this.#towersBuilt = sayi('towersBuilt', this.#towersBuilt);
+    this.#livesLost = sayi('livesLost', this.#livesLost);
+    this.#peakWave = sayi('peakWave', this.#peakWave);
+    this.#devredenSure = sayi('durationSec', 0);
+    this.#soldAny = kayit['soldAny'] === true || this.#soldAny;
+  }
+
+  /**
+   * Altın farkının tabanı — geri yüklemeden **sonra** çağrılıyor.
+   *
+   * `gold:changed` toplamı taşıyor ve fark alınıyor; tur geri
+   * yüklenince bakiye tek hamlede değişiyor ama bu bir harcama değil.
+   * Taban güncellenmezse o sıçrama sahte bir kazanç/harcama olarak
+   * sayılırdı.
+   */
+  altinTabaniniAyarla(toplam: number): void {
+    this.#sonToplam = toplam;
+  }
+
   get data(): RunStatsData {
     return {
       kills: this.#kills,
@@ -100,7 +141,8 @@ export class RunStats {
       towersBuilt: this.#towersBuilt,
       livesLost: this.#livesLost,
       peakWave: this.#peakWave,
-      durationSec: Math.max(0, Math.round((this.#now() - this.#baslangic) / 1000)),
+      durationSec:
+        this.#devredenSure + Math.max(0, Math.round((this.#now() - this.#baslangic) / 1000)),
       soldAny: this.#soldAny,
     };
   }

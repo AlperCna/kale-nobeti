@@ -29,6 +29,8 @@ import { AbilitySystem } from '../systems/AbilitySystem';
 import { ScreenShake } from '../fx/ScreenShake';
 import { HitStop } from '../fx/HitStop';
 import { Settings, getSettings, SAVE_FAILED_REGISTRY_KEY } from '../systems/Settings';
+import { RunSave, RUN_VERSION } from '../systems/RunSave';
+import type { RunData, SpotKaydi } from '../systems/RunSave';
 import { gosterKayitUyarisi } from '../fx/SaveWarning';
 import { KISLA, barracksTierAt, BLOCK, SOLDIER_SPEED } from '../data/barracks';
 import type { AbilityId } from '../types/ability';
@@ -47,7 +49,7 @@ import { averageCoverage, measureCoverage } from '../util/coverage';
 import { MAP_1, getMap, COVERAGE_REFERENCE_RANGE } from '../data/maps';
 import { PreloadScene } from './PreloadScene';
 import type { MapDef } from '../types/map';
-import { TOWERS, getTower, tierAt } from '../data/towers';
+import { TOWERS, TARGET_MODES, getTower, tierAt } from '../data/towers';
 import { towerFrameKey } from '../data/spriteFrames';
 import { projectileLook } from '../data/projectileVisuals';
 import { getEnemy, ENEMIES } from '../data/enemies';
@@ -114,6 +116,31 @@ const TOWER_DISPLAY_SIZE = 64;
 /** Asker (M5). Düşmandan küçük; TIER 1 kural 6: ayrım renge dayanmıyor. */
 const SOLDIER_SIZE = 20;
 const RALLY_COLOR = 0x3e6ca8;
+
+/**
+ * `M10-T02` — tahtayı geri kurarken kullanılan **geçici** bakiye.
+ *
+ * Kuleler normal satın alma yolundan kuruluyor (gerekçe
+ * `#turuGeriYukle`'de: satış iadesi `EconomySystem`'in harcama
+ * defterine bakıyor), yani o an paranın yetmesi gerekiyor. Sekiz
+ * yapı noktasının hepsi T3 olsa bile en pahalı tahta 8 × (70+110+170)
+ * = 2800 altın; buradaki değer onun on katından fazla ve tur bittiğinde
+ * bakiye zaten gerçek değerine geri çekiliyor.
+ */
+const GERI_YUKLEME_BAKIYESI = 99_999;
+
+/**
+ * Tur kaydına erişim — **alan değil, çağrı**.
+ *
+ * `RunSave` durumsuz (her çağrıda depoyu okuyor/yazıyor), ama sınıf
+ * alanı olarak tutulunca bekçinin "sahne alanları `create()` içinde
+ * sıfırlanıyor" kuralına takılıyor ve o kural dört gerçek hatayı
+ * yakalamış durumda — zayıflatılmıyor. `LevelSelectScene` ve
+ * `GameOverScene` `SaveSystem` için zaten aynı deseni kullanıyor.
+ */
+function turKaydi(): RunSave {
+  return new RunSave(new LocalStore());
+}
 
 /**
  * Altın uçuşunun vardığı nokta.
@@ -215,6 +242,9 @@ export class GameScene extends Phaser.Scene {
   #kayitUyarildi = false;
 
   readonly abilities = new AbilitySystem();
+
+  /** `init()` okuyor, `create()` uyguluyor, sonra `null`'a dönüyor. */
+  #devamTuru: RunData | null = null;
   /** Tıkla-hedefle bekleyen yetenek; `null` = yok. */
   #pendingAbility: AbilityId | null = null;
 
@@ -243,10 +273,19 @@ export class GameScene extends Phaser.Scene {
    * Seviye seçim ekranı `{ mapId }` gönderiyor; yoksa harita 1.
    * `M8-T06`: oyun sonu ekranı `{ endless: true }` ile yeniden başlatıyor.
    */
-  init(data?: { mapId?: string; endless?: boolean }): void {
+  init(data?: { mapId?: string; endless?: boolean; devam?: boolean }): void {
     this.#map = (data?.mapId !== undefined ? getMap(data.mapId) : undefined) ?? MAP_1;
     this.#waveList = wavesFor(this.#map.id);
     this.#endless = data?.endless === true;
+    // `M10-T02` — kayıtlı tur YALNIZ açıkça istendiğinde yükleniyor.
+    // "Kayıt varsa otomatik yükle" demek, menüden yeni bir tur başlatan
+    // oyuncuyu eski turuna düşürürdü.
+    this.#devamTuru = null;
+    if (data?.devam === true) {
+      const kayit = turKaydi().oku();
+      // Harita kimliği eşleşmiyorsa kayıt bu tura ait değil — yok say.
+      if (kayit !== null && kayit.mapId === this.#map.id) this.#devamTuru = kayit;
+    }
   }
 
   /** `HudScene` ve `GameOverScene` bunu okuyor. */
@@ -801,6 +840,137 @@ export class GameScene extends Phaser.Scene {
     });
 
     this.#devKancalari(path, enemyPool, mermiHavuzu, sayiHavuzu, altinHavuzu, canCubuguHavuzu);
+
+    // `M10-T02` — sıra ÖNEMLİ: her şey kurulduktan sonra, ama ilk
+    // `update()`'ten önce. Kule kurulumu `#placeTower`/`#upgradeTower`
+    // yollarından geçiyor, yani `#occupancy`, `#towers` ve `#eco`'nun
+    // hazır olması gerekiyor.
+    this.#turuGeriYukle();
+
+    // Dalga sınırı = kaydetme anı. `wave:ended` dalga bittiğinde ve
+    // hazırlık başlarken yayılıyor; saha o an boş.
+    this.bus.on('wave:ended', ({ index }) => this.#turuKaydet(index));
+  }
+
+  // ------------------------------------------------------- tur kaydı (M10)
+
+  /**
+   * Turu **dalga sınırında** yazar.
+   *
+   * Sahadaki düşman/mermi/asker durumu kaydedilmiyor — gerekçe
+   * `systems/RunSave.ts`'te. Bu yüzden çağrı yeri yalnız `wave:ended`.
+   *
+   * Sonsuz mod **kaydedilmiyor**: `WaveManager` üretilmiş dalgayı
+   * önbelleğe alıyor ve sonsuz koşunun indeksi elle yazılmış dalga
+   * listesinin dışında; turu yarıda yükleyip devam ettirmek rekorun
+   * anlamını da tartışmalı hâle getirirdi (`EndlessRecords`).
+   */
+  #turuKaydet(sonrakiWaveIndex: number): void {
+    const eco = this.#eco;
+    const waves = this.#waves;
+    if (eco === undefined || waves === undefined) return;
+    if (this.#endless || waves.isEndless) return;
+    // Kaybedilmiş ya da bitmiş tur kaydedilmiyor.
+    if (eco.lives <= 0 || waves.isComplete) return;
+
+    const spots: SpotKaydi[] = [];
+    for (const [spotIndex, kule] of this.#towerBySpot) {
+      spots.push({
+        spotIndex,
+        defId: kule.def.id,
+        tierIndex: kule.tierIndex,
+        targetMode: kule.targetMode,
+      });
+    }
+    for (const [spotIndex, k] of this.#barracksBySpot) {
+      spots.push({
+        spotIndex,
+        defId: 'kisla',
+        tierIndex: k.tier,
+        rally: { x: k.rally.x, y: k.rally.y },
+      });
+    }
+
+    turKaydi().yaz({
+      version: RUN_VERSION,
+      mapId: this.#map.id,
+      difficulty: this.settings.state.difficulty,
+      // **Olayın taşıdığı sayı kullanılıyor, `waves.waveNumber` değil.**
+      // `wave:ended` sayaç artmadan önce yayılıyor, yani o an
+      // `waveNumber` daha BİTEN dalgayı gösteriyor; ondan hesaplamak
+      // oyuncuyu kazandığı dalgaya geri gönderirdi (canlı testte
+      // yakalandı: dalga 2 koşarken kayıt `waveIndex: 0` diyordu).
+      // Olayın `index`'i 1 tabanlı biten dalga = 0 tabanlı sıradaki
+      // dalga; eşitlik `WaveManager.test.ts`'te bağlı.
+      waveIndex: sonrakiWaveIndex,
+      gold: eco.gold,
+      lives: eco.lives,
+      spots,
+      abilities: this.abilities.beklemeler,
+      stats: { ...this.#runStats?.data },
+    });
+  }
+
+  /** Tur bitti — kayıt siliniyor. `HudScene`/`GameOverScene` çağırıyor. */
+  turKaydiniSil(): void {
+    turKaydi().sil();
+  }
+
+  /**
+   * Kaydedilmiş turu sahneye uygular.
+   *
+   * ## Tahta neden NORMAL satın alma yolundan kuruluyor
+   *
+   * Doğrudan `new Tower(...)` daha kısa olurdu ama `EconomySystem`'in
+   * `#spentBySpot` defteri boş kalırdı ve **satış iadesi sıfır** olurdu
+   * (`sellRefund(spentAt(spot))`). Oyuncu turuna dönünce kuleleri
+   * satamaz hâle gelirdi ve bunu kimse test etmeden fark etmezdi.
+   *
+   * O yüzden: geçici bakiye → gerçek satın almalar → bakiyeyi turun
+   * değerine geri çek. `RunStats`'ın altın tabanı da o sıçramayı
+   * harcama sanmasın diye ayrıca ayarlanıyor.
+   */
+  #turuGeriYukle(): void {
+    const tur = this.#devamTuru;
+    this.#devamTuru = null;
+    const eco = this.#eco;
+    if (tur === null || eco === undefined) return;
+
+    // Geçici bakiye: en pahalı tahta bile bunun altında kalıyor.
+    const gercekAltin = tur.gold;
+    eco.turdanGeriYukle(GERI_YUKLEME_BAKIYESI, tur.lives);
+
+    for (const s of tur.spots) {
+      if (s.defId === 'kisla') {
+        if (!this.#placeBarracks(s.spotIndex)) continue;
+        // Kademeler **sırayla**: `#upgradeBarracks` tek adım atlıyor mu
+        // diye bakmıyor ama askerleri her adımda tazeliyor.
+        for (let k = 1; k <= s.tierIndex; k++) {
+          this.#upgradeBarracks(s.spotIndex, k as 0 | 1 | 2 | 3);
+        }
+        if (s.rally !== undefined) this.#setRally(s.spotIndex, s.rally);
+        continue;
+      }
+      // Kayıttaki kimlik `string`; `TowerId`'ye **daraltılarak**
+      // aranıyor. Tanınmayan aile sessizce atlanıyor: kule listesi
+      // değişirse eski tur yine de yüklensin, yarım da olsa.
+      const def = TOWERS.find((t) => t.id === s.defId);
+      if (def === undefined) continue;
+      if (!this.#placeTower(s.spotIndex, def)) continue;
+      // T1→T2 zorunlu ara adım; T3 dalları doğrudan hedeften geliyor
+      // (`#upgradeTower` T2'den 2'ye ya da 3'e izin veriyor).
+      if (s.tierIndex >= 1) this.#upgradeTower(s.spotIndex, 1);
+      if (s.tierIndex >= 2) this.#upgradeTower(s.spotIndex, s.tierIndex);
+      const kule = this.#towerBySpot.get(s.spotIndex);
+      const mod = TARGET_MODES.find((m) => m === s.targetMode);
+      if (kule !== undefined && mod !== undefined) kule.targetMode = mod;
+    }
+
+    eco.turdanGeriYukle(gercekAltin, tur.lives);
+    this.#runStats?.geriYukle(tur.stats);
+    this.#runStats?.altinTabaniniAyarla(gercekAltin);
+    this.abilities.turdanGeriYukle(tur.abilities);
+    this.#waves?.turdanGeriYukle(tur.waveIndex);
   }
 
   /**
