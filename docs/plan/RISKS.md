@@ -223,7 +223,33 @@ Poki elle küratörlü; incelemede "UX/his ve çekirdek oyun döngüsüne" bakı
 **Azaltma:** `research/05` §3 sıralaması — itch.io → CrazyGames Basic →
 Poki. İlk ikisinden gerçek metrik toplandıktan sonra başvur. M6'nın juice
 kısmı öncelikli (`ROADMAP.md` M6 öncelik listesi).
-**Taş:** M7 (`M7-T11`).
+**Taş:** M7 (`M7-T11`) → **M9'a kaydı** (sahip yayını erteledi).
+
+#### SDK maddesi — **mekanik ret sebebi, cila değil** (`M9-T01`)
+
+Yukarıdaki her şey öznel; bunlar değil. Poki ve CrazyGames v3 (Eylül 2026
+dokümanları) `gameplayStart()` / `gameplayStop()` çağrılarını **zorunlu**
+kılıyor ve Poki'nin açık yasağı var: *"Olaylar arka arkaya veya çift
+tetiklenemez."* Yani bu risk kalemi ikiye ayrılıyor:
+
+| | Öznel kısım | Mekanik kısım |
+|---|---|---|
+| Ne | UX/his, cila | SDK sözleşmesi |
+| Nasıl geçilir | M6 juice, `M9-T03` cila | Kod doğru çağırır |
+| Doğrulanabilir mi | Hayır | **Evet, teste bağlı** |
+
+Mekanik kısmın tamamı `systems/Portal.ts`'te ve 9 testi var
+(`Portal.test.ts`). Çift tetikleme koruması **sahnelerde değil** orada:
+`#oyundaMi` bayrağı yinelenen çağrıyı yutuyor, yani `GameScene` hem ilk
+tıklamada hem dalga başında `start` demek isterse ikisi de doğru oluyor
+ve koruma tek yerde kalıyor. Reklam yalnız duraklamadan **çıkışta**
+meşru (Poki'nin yanlış örneği: "oyundan çıkıp seviye seçime gitmek") —
+oyun sürerken gelen `commercialBreak` da yutuluyor.
+
+**Kalan risk:** testler *bizim* sözleşme okumamızı doğruluyor, SDK'nın
+gerçek davranışını değil. Bu ancak portal yapımında (`VITE_PORTAL=poki`)
+gerçek SDK ile denenince kapanır ve o deneme yayın adımının parçası —
+yani R8 Faz 5 bitmeden tam kapanmıyor.
 
 ---
 
@@ -364,6 +390,7 @@ Gizli sekmede `localStorage` erişimi istisna fırlatıyor. Sarılmazsa oyun
 | **M5** | **R6 (9 kural)** |
 | **M6** | **R2 (sanat kararı)**, R7 (WebP), R13 (ölçüm), R14, R16 |
 | **M7** | R1 (yeniden hesap), R9 (türetme), R8 (yayın sırası), R15, R16, R13 |
+| **M9** | R8'in **mekanik yarısı** (SDK sözleşmesi) — öznel yarısı Faz 5'e kadar açık |
 
 **En yüklü taşlar M6 ve M7.** İkisi de ROADMAP'te en uzun süreli taşlar
 (5-7 gün) — tesadüf değil.

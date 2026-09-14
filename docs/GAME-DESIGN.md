@@ -14,8 +14,9 @@ hizmet eder.
 
 ### Kontroller
 
-- **Hız:** 1× / 2× geçişi tek butonla. Bu bir konfor özelliği değil, mimari
-  karardır — bkz. `CLAUDE.md` TIER 1 kural 8.
+- **Hız:** 1× → 2× → 3× → 1× döngüsü tek butonla (3× `M9-T03`'te eklendi;
+  denge etkisi ölçüldü, `GameClock.setScale` dokümanı). Bu bir konfor
+  özelliği değil, mimari karardır — bkz. `CLAUDE.md` TIER 1 kural 8.
 - **Duraklatma:** ESC veya boşluk tuşu. Poki'nin zorunlu şartı
   (`docs/research/05-yayin-platformlari.md` §1).
 - **Fare/dokunmatik:** yapı noktasına tıkla → kule menüsü. Dokunmatik hedefler
@@ -665,8 +666,14 @@ TD'de oyuncu çoğu zaman **izler**. İzlenen şey tatmin edici olmak zorunda.
 Ayarlarda **Ekran sarsıntısı** ve **Efekt yoğunluğu** kapatılabilir olmalı;
 `prefers-reduced-motion` varsayılanı düşük yapar.
 
-**2× hızda:** hit-stop devre dışı, parçacık yoğunluğu yarıya iner. Yoksa
-hızlandırılmış oyun okunmaz hale gelir.
+**Hızlandırma açıkken:** hit-stop devre dışı, parçacık yoğunluğu hız
+oranında iner (2×'te yarısı, 3×'te üçte biri). Yoksa hızlandırılmış oyun
+okunmaz hale gelir.
+
+Madde eskiden "2× hızda" diyordu ve kod da `=== 2` yazıyordu; 3× eklenince
+ikisi de **sessizce tersine dönüyordu** — en okunmaz hızda hit-stop geri
+geliyor ve ekran en kalabalık hâline ulaşıyordu. Kural sayıya değil
+**niyete** bağlandı.
 
 ## 11. Bilgi paneli
 
@@ -701,9 +708,22 @@ karşı-oyun katmanını görünür kılmak.
 
 ## 13. Kapsam dışı (v1'de yok)
 
-Bunlar bilinçli olarak dışarıda: kahraman birimi, meta yükseltme ağacı, sonsuz
-mod, günlük sıralama, çoklu oyuncu, harita editörü, başarımlar.
-v1 bittikten sonra tartışılır.
+Bunlar bilinçli olarak dışarıda: kahraman birimi, meta yükseltme ağacı,
+günlük sıralama, çoklu oyuncu, harita editörü. v1 bittikten sonra
+tartışılır — hangisinin sırası geleceğine `ROADMAP.md`'deki teşhis
+matrisi karar verecek.
 
-**Kapsam dışı değil, sonradan eklendi:** 2× hız ve duraklatma (§1) —
-ikisi de mimari karar olduğu için M0'da kurulur.
+**Kapsam dışı değil, sonradan eklendi** (liste M8'de değişti, doküman
+`M9-T04`'te buna yetişti):
+
+| Ne | Ne zaman | Nerede |
+|---|---|---|
+| Duraklatma ve hızlandırma | M0 — mimari karar | `GameClock`, §1 |
+| **3× hız** | M9 — küratörlük cilası | `GameClock.setScale` dokümanı |
+| **Sonsuz mod** | M8-T06 | `systems/endlessWaves.ts`, `EndlessRecords.ts` |
+| **Başarımlar (12 adet)** | M8-T07 | `data/achievements.ts`, `AchievementToast` |
+
+Üçü de listede "yok" yazarken kodda vardı; bu tabloyu okuyan biri artık
+ikisi arasında kalmıyor. Hız satırının M0'da kurulmasının gerekçesi
+değişmedi: `GameClock.setScale` üç Phaser zaman otoritesini birden
+senkronluyor ve bu sözleşme sonradan eklenemiyor (TIER 1 kural 8).

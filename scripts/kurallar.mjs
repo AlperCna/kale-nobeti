@@ -471,7 +471,8 @@ function olustur() {
     const satir = Object.entries(a).filter(([k]) => k !== 'id' && k !== 'kind').map(([k, v]) => [`\`${k}\``, n(v)]);
     y(tablo(['Alan', 'Değer'], satir), '');
   }
-  y(`Beklemeler \`scaledDelta\` ile azalıyor — **2× hızda yarı sürede** doluyor.`);
+  y(`Beklemeler \`scaledDelta\` ile azalıyor — **hızlandırma açıkken o oranda**`);
+  y(`kısa sürede doluyor (2×'te yarısı, 3×'te üçte biri).`);
   y(`HUD'da dairesel dolumla gösteriliyor; hazır olunca altın kenar bir kez parlıyor.`);
   y(`Haritalar arası **sıfırlanıyor** (S49).`, '');
 
@@ -647,12 +648,12 @@ function olustur() {
   // ---------------------------------------------------------------- 14
   y('---', '', '## 14. Juice ve ayarlar', '');
   y(`Kaynak: \`src/fx/ScreenShake.ts\`, \`HitStop.ts\`, \`src/systems/Settings.ts\``, '');
-  y(tablo(['Efekt', 'Değer', 'Ne zaman', '2× hızda'], [
+  y(tablo(['Efekt', 'Değer', 'Ne zaman', 'hızlandırmada (2×/3×)'], [
     ['Ekran sarsıntısı', `${n(D.juice.shakeMin)}–${n(D.juice.shakeMax)} sn, **yönlü**, üstel sönüm`, 'Top patlaması, boss vuruşu, can kaybı', '**açık** (S55)'],
     ['Hit-stop', `${n(D.juice.hitStopMin)}–${n(D.juice.hitStopMax)} ms`, 'Boss hasarı ve düşman ölümü', '**kapalı** — akışı bozardı'],
-    ['Squash & stretch', '1,3× yatay ezilme, 120 ms', 'Düşman ölürken', 'süre yarıya iner'],
+    ['Squash & stretch', '1,3× yatay ezilme, 120 ms', 'Düşman ölürken', 'süre hız oranında kısalır'],
     ['Vinyet nabzı', '400 ms vermilyon', 'Can kaybı', '**efekt ayarından bağımsız** — uyarı, süs değil'],
-    ['Parçacık', 'en fazla 300', 'Vuruş, ölüm, kule yerleşimi', 'yoğunluk **yarıya** iner'],
+    ['Parçacık', 'en fazla 300', 'Vuruş, ölüm, kule yerleşimi', 'yoğunluk **hız oranında** iner'],
     ['Altın sayacı', 'kalan farkın %18\'i + en az 1, kare başına', 'Dalga sonu', 'aynı'],
   ]), '');
   y(`Sarsıntı **rastgele yönlü değil** — darbe vektörü boyunca. Rastgele yön`);

@@ -17,7 +17,7 @@ Kaynağı olmayan alanlar `// AÇIK SORU S<nn>` ile işaretli — **uydurulmadı
 export interface Vec2 { readonly x: number; readonly y: number }
 
 /** Oyun hızı. GAME-DESIGN §1 Kontroller. Duraklatma scene.pause ile, 0 yok. */
-export type Speed = 1 | 2;
+export type Speed = 1 | 2 | 3; // 3 — M9-T03, denge etkisi ölçüldü
 
 export type TowerId  = 'archer' | 'cannon' | 'magic' | 'barracks';
 export type EnemyId  =

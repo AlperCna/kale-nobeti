@@ -44,7 +44,7 @@ Zincir doğrusal ama iki **geri ok** var — ikisi de gerçek risk:
 | Bilgi paneli | M4 | `applyDamage` | "Bu düşmana karşı etkin DPS" |
 | `BarracksSystem` | M5 | `PathSystem`, `Enemy` | Düşmanın yol ilerlemesini **durdurması** gerekiyor |
 | `AbilitySystem` | M5 | `GameClock` | Bekleme süreleri |
-| `fx/*` | M6 | `GameClock` | 2× hızda hit-stop kapanmalı |
+| `fx/*` | M6 | `GameClock` | hızlandırma açıkken hit-stop kapanmalı (`speed > 1`) |
 | `SaveSystem` | M7 | `KeyValueStore` | Portal SDK adaptörü |
 
 ---
