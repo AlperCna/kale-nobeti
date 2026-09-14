@@ -14,7 +14,7 @@ içindeki "Sonuç" bölümlerinde.
 | Zorluk | tek | **üç** (Kolay / Normal / Zor) |
 | Başarım | yok | **12** |
 | İlk indirme | 1,10 MB | **0,93 MB** |
-| Test | 777 | **855** |
+| Test | 777 | **864** |
 | Ayar | 5 | **8** (müzik/efekt sesi ayrı, zorluk) |
 
 ## Ölçümün planı değiştirdiği yerler
@@ -71,7 +71,8 @@ Kapsama, bütçe, Kısıt A/B testlerinin hiçbiri **HUD'u** bilmiyor:
 - Harita 4'ün bir yapı noktası kartuşun tam altındaydı: görülemiyor ve
   tıklanamıyordu. Testler yeşildi.
 - Kazanılmış yıldızın atlas karesi **içi mürekkep dolgu**; mürekkep zeminde
-  boş görünüyordu. İki ayrı ekranda (seviye seçim, başarımlar) aynı hata.
+  boş görünüyordu. **Üç** ayrı ekranda aynı hata (seviye seçim, başarım
+  listesi, oyun sonu) — üçüncüsü doğrulama turunda çıktı.
 - Zorluk rozeti düz metinken harita zemininde **bulunamıyordu**.
 
 → `maps.test.ts` artık "hiçbir yapı noktası kalıcı bir HUD kutusuyla

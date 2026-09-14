@@ -71,19 +71,24 @@ export class OverlayScene extends Phaser.Scene {
   }
 
   /**
-   * Tam ekran düğmesi — **sol üstte**.
+   * Tam ekran düğmesi — **sağ kenar, HUD yığınının altında**.
    *
-   * Sağ üst zaten dolu: hız (`1×`), ayarlar dişlisi ve `M8-T11` zorluk
-   * rozeti orada. Sol üstte HUD kartuşu var ama o `y ≤ 156`; düğme onun
-   * **altına** değil, menüde de oyunda da boş kalan **sol alt** köşeye
-   * konamıyor (yetenek düğmeleri orada). Kalan tek sakin yer: sağ kenarın
-   * ortası.
+   * İlk yerleşim sağ kenarın **ortasıydı** (`y = height / 2`) ve canlı
+   * kontrolde harita 2'nin **kalesinin tam üstüne** düştü: kale
+   * `(1220, 360)`, düğme `(1232, 360)`. Düşmanın vardığı yeri bir arayüz
+   * düğmesiyle kapatmak, oyuncunun bakması gereken tek noktayı
+   * gizlemek demek.
+   *
+   * Yeni yer sağ üstteki yığının devamı: hız (`y≈48`), ayar (`y≈116`),
+   * zorluk rozeti (`y≈178`), tam ekran (`y=250`). Beş haritanın kalesi
+   * de (`y` 360/560/600/660/690) ve bütün yapı noktaları bu şeridin
+   * dışında — `x = 1232`, en sağdaki nokta `x = 1120`.
    */
   #tamEkranDugmesi(): void {
     if (!this.scale.fullscreen.available) return;
 
     const x = this.scale.width - MARGIN - BTN / 2;
-    const y = this.scale.height / 2;
+    const y = 250;
     const cerceve = createParchmentButton(this, x, y, BTN, BTN, 12);
     addPressFeedback(cerceve);
     this.add
