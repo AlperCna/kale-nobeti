@@ -112,7 +112,12 @@ export class Particles {
     if (olcek <= 0) return; // TIER 1 k.6 — efekt kapalı
 
     // §10 "2× hızda parçacık yoğunluğu yarıya iner": okunurluk için.
-    const hizBolen = this.#clock.scale === 2 ? 2 : 1;
+    // `M9-T03` — bölen artık hızın **kendisi**, `=== 2` değil. Sabit
+    // karşılaştırma kalsaydı 3×'te yoğunluk tam değerine geri dönerdi:
+    // yani en okunmaz hızda en kalabalık ekran. §10 sayıyı değil oranı
+    // söylüyor — hız arttıkça aynı saniyede daha çok olay oluyor, ekran
+    // başına düşen parçacık sabit kalmalı.
+    const hizBolen = this.#clock.scale;
     const n = Math.max(1, Math.round((adet * olcek) / hizBolen));
 
     // `M8-T08` — **yön artık kullanılıyor.** Eskiden `aci` hesaplanıp

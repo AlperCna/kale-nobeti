@@ -34,6 +34,33 @@ describe('GameClock', () => {
     expect(clock.scaledDelta).toBeCloseTo(33.34, 5);
   });
 
+  it('3× hızda scaledDelta üç katı', () => {
+    const clock = new GameClock();
+
+    clock.setScale(3, sahteHedef());
+    clock.tick(16.67);
+
+    expect(clock.scale).toBe(3);
+    expect(clock.scaledDelta).toBeCloseTo(50.01, 5);
+  });
+
+  /**
+   * `M9-T03` — hız döngüsü 1→2→3→1. Üçü de üç Phaser otoritesini
+   * yazmalı; 3× eklenirken biri unutulursa yalnız o hızda sapar ve
+   * sessizce olur.
+   */
+  it('her hız üç Phaser özelliğini de yazıyor — 3× dahil', () => {
+    const clock = new GameClock();
+    const hedef = sahteHedef();
+
+    for (const h of [1, 2, 3] as const) {
+      clock.setScale(h, hedef);
+      expect(hedef.tweens.timeScale, `hız ${h} tweens`).toBe(h);
+      expect(hedef.time.timeScale, `hız ${h} time`).toBe(h);
+      expect(hedef.anims.globalTimeScale, `hız ${h} anims`).toBe(h);
+    }
+  });
+
   it('setScale üç Phaser özelliğini de yazar', () => {
     const clock = new GameClock();
     const hedef = sahteHedef();

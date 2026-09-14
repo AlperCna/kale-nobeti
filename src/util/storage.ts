@@ -50,8 +50,10 @@ export class MemoryStore implements KeyValueStore {
  * bazı tarayıcılarda `SecurityError` fırlatıyor — bu yüzden kurucudaki
  * yoklama da sarılı.
  *
- * @param onFailure Yazma **ilk kez** başarısız olduğunda bir kez çağrılır
- *   (`CLAUDE.md` kural 10: "kayıt başarısızsa oyuncuya bir kez bildirilir").
+ * @param onFailure Depolamanın kullanılamadığı **ilk kez** anlaşıldığında
+ *   bir kez çağrılır — kurucudaki yoklama başarısızsa hemen, yoksa ilk
+ *   başarısız yazmada (`CLAUDE.md` kural 10: "kayıt başarısızsa oyuncuya
+ *   bir kez bildirilir").
  */
 export class LocalStore implements KeyValueStore {
   #bildirildi = false;
@@ -66,6 +68,16 @@ export class LocalStore implements KeyValueStore {
   constructor(onFailure?: () => void) {
     this.#onFailure = onFailure;
     this.#kullanilabilir = LocalStore.destekleniyorMu();
+    // `M9-T03` — **yoklama başarısızsa oyuncu HEMEN bilmeli.**
+    //
+    // Eskiden bildirim yalnız ilk `set()` çağrısına bağlıydı. Ama
+    // `destekleniyorMu()` deneme yazması yapıyor, yani gizli sekmede
+    // kurucu daha o an depolamanın çalışmadığını biliyor. Bildirim ilk
+    // yazmaya bırakılınca oyuncu bir haritayı **bitirene kadar** hiçbir
+    // şey görmüyor, sonra ilerlemesinin kaybolduğunu kendi fark ediyordu.
+    // `research/05`: "İlerlemenin kaydedilmediği durumlarda oyuncuyu
+    // açıkça bilgilendirin" — açıkça, ve zamanında.
+    if (!this.#kullanilabilir) this.#bildir();
   }
 
   /** Gizli sekme sınaması — yoklamanın kendisi de sarılı. */

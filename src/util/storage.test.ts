@@ -261,6 +261,52 @@ describe('LocalStore — "oyuncuya bir kez bildir" (CLAUDE.md TIER 1 k.10)', () 
     }
   });
 
+  /**
+   * `M9-T03`. Bildirim eskiden **yalnız ilk `set()`'e** bağlıydı; oysa
+   * kurucudaki yoklama deneme yazması yapıyor, yani gizli sekmede
+   * depolamanın çalışmadığı daha kurucuda belli. Bildirim ilk yazmaya
+   * bırakılınca oyuncu bir haritayı bitirene kadar hiçbir uyarı
+   * görmüyordu — `research/05`'in "açıkça bilgilendirin" şartı ancak
+   * ilerleme çoktan kaybolduktan sonra yerine geliyordu.
+   */
+  it('depolama HİÇ kullanılamıyorsa KURUCUDA bildiriliyor — yazmayı beklemeden', () => {
+    const geriAl = sahteKur(undefined);
+    try {
+      let sayac = 0;
+      new LocalStore(() => sayac++);
+      expect(sayac).toBe(1);
+    } finally {
+      geriAl();
+    }
+  });
+
+  it('kurucuda bildirdiyse sonraki başarısız yazmalar TEKRAR bildirmiyor', () => {
+    const geriAl = sahteKur(undefined);
+    try {
+      let sayac = 0;
+      const d = new LocalStore(() => sayac++);
+      d.set('a', '1');
+      d.set('b', '2');
+      expect(sayac).toBe(1);
+    } finally {
+      geriAl();
+    }
+  });
+
+  /** Depolama çalışıyorken kurucu **sessiz** kalmalı — yanlış alarm yok. */
+  it('depolama çalışıyorsa kurucu hiç bildirmiyor', () => {
+    const geriAl = sahteKur(new SahteLocalStorage());
+    try {
+      let sayac = 0;
+      const d = new LocalStore(() => sayac++);
+      expect(sayac).toBe(0);
+      expect(d.set('a', '1')).toBe(true);
+      expect(sayac).toBe(0);
+    } finally {
+      geriAl();
+    }
+  });
+
   it('onFailure verilmediyse çökmüyor', () => {
     const geriAl = sahteKur(undefined);
     try {

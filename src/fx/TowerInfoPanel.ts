@@ -67,6 +67,12 @@ export interface TowerInfoState {
   readonly refund: number;
   /** Bir sonraki kademe (varsa) — yükseltme farkı için. */
   readonly nextTier?: TowerTier;
+  /**
+   * Sıradaki adım **dal seçimi** mi (T2)? O zaman `nextTier` yok ama
+   * kule son kademede de değil — satır sayı yerine etiket gösteriyor.
+   * Ayrıntı `TowerInfoLabels`'ın `#dalSecimi` notunda.
+   */
+  readonly branchChoice?: boolean;
   /** Seçili yapı noktasının konumu — panel karşı köşeye geçsin diye. */
   readonly spot: { readonly x: number; readonly y: number };
 }
@@ -221,7 +227,8 @@ export class TowerInfoPanel {
     if (s !== null) {
       this.#etiketler.setType(s.def.damageType === 'magic');
       this.#etiketler.setAir(s.tier.airMultiplier > 0);
-      this.#etiketler.setMaxTier(s.nextTier === undefined);
+      this.#etiketler.setMaxTier(s.nextTier === undefined && s.branchChoice !== true);
+      this.#etiketler.setBranchChoice(s.branchChoice === true);
     }
   }
 
@@ -246,9 +253,11 @@ export class TowerInfoPanel {
     // §11: yükseltme farkı (öncesi › sonrası, DPS). §6 yükseltmenin altın
     // başına verimsiz olduğunu söylüyor ve panel bunu **gizlemiyor**.
     const dps = s.tier.damage * s.tier.fireRate;
-    const sonKademe = s.nextTier === undefined;
-    this.#yukseltme.setVisible(!sonKademe);
+    const dalMi = s.branchChoice === true;
+    const sonKademe = s.nextTier === undefined && !dalMi;
+    this.#yukseltme.setVisible(s.nextTier !== undefined);
     this.#etiketler.setMaxTier(sonKademe);
+    this.#etiketler.setBranchChoice(dalMi);
     if (s.nextTier !== undefined) {
       const yeni = s.nextTier.damage * s.nextTier.fireRate;
       this.#yukseltme.setText(`${dps.toFixed(1)}›${yeni.toFixed(1)}`);

@@ -44,6 +44,7 @@ export class TowerInfoLabels {
   readonly #ucanaVurur: Phaser.GameObjects.Text;
   readonly #ucanaVurmaz: Phaser.GameObjects.Text;
   readonly #sonKademe: Phaser.GameObjects.Text;
+  readonly #dalSecimi: Phaser.GameObjects.Text;
 
   constructor(scene: Phaser.Scene, solPay: number, tipSutunX: number) {
     const etiket = (y: number, metin: string, x = solPay, renk: string = PARCHMENT) => {
@@ -74,11 +75,33 @@ export class TowerInfoLabels {
     // kapanıyor, `Fiziksel`/`Büyü` çiftiyle aynı desen.
     this.#sonKademe = etiket(SATIRLAR.upgrade, t('infoMaxTier'), tipSutunX, '#9A948A');
     this.#sonKademe.setVisible(false);
+
+    /**
+     * **T2'de yükseltme satırı yalan söylüyordu** (`M9-T03`'te yakalandı).
+     *
+     * `BuildMenu` `nextTier`'i yalnız T1 için veriyordu, yani T2 bir kule
+     * seçilince panel "Son kademe" yazıyordu — oysa menünün kendisi tam
+     * o sırada **iki T3 dalı** gösteriyor. Oyunun en önemli kararının
+     * üstüne "burası son" yazmak, ölçülebilir bir yanlış bilgi.
+     *
+     * Sayı yerine etiket, çünkü iki dalın DPS'i farklı (Keskin Nişancı
+     * 15.6, Kundakçı 12.6 + yanma) ve ikisini `13.0›12.6-15.6` diye tek
+     * satıra sığdırmak hem sütunu taşırıyor hem yanmayı saymadığı için
+     * yine yanıltıyor. Dal adları ve bedelleri zaten menüde, hemen
+     * panelin yanında.
+     */
+    this.#dalSecimi = etiket(SATIRLAR.upgrade, t('infoBranchChoice'), tipSutunX, PARCHMENT);
+    this.#dalSecimi.setVisible(false);
   }
 
   /** Son kademe mi? Öyleyse yükseltme sayısının yerine etiket çıkıyor. */
   setMaxTier(max: boolean): void {
     this.#sonKademe.setVisible(max);
+  }
+
+  /** T2 — sıradaki adım tek kademe değil, **dal seçimi**. */
+  setBranchChoice(dal: boolean): void {
+    this.#dalSecimi.setVisible(dal);
   }
 
   setType(magic: boolean): void {
