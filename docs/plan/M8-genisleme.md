@@ -678,12 +678,12 @@ sağ üstte "Zor" rozeti okunur biçimde durdu.
 seviyenin her haritadaki ölçülen can kaybını ve geçip geçmediğini
 gösteriyor — sayı değişirse doküman kendiliğinden değişiyor.
 
-### Faz 12 — Mobil / dokunmatik cila — `M8-T12`
+### Faz 12 — Mobil / dokunmatik cila — `M8-T12`  ☑
 
 | | |
 |---|---|
 | **Kimlik** | `M8-T12` |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ **bitti** (2026-09-14) |
 | **Süre** | ~45 dk |
 | **Önkoşul** | `M8-T02` |
 | **TIER 1** | Platform (44 px, yatay) |
@@ -696,6 +696,51 @@ gösteriyor — sayı değişirse doküman kendiliğinden değişiyor.
 - Toplanma noktası sürükleme dokunmatikte doğrulanır (mobil ön ayar, `pointer` olayları).
 
 **Kabul kriteri** — Browser pane mobil ön ayarında (375×812 → yatay) menü→harita→kule kur→bayrak sürükle tamamlanıyor; ekran görüntüleri.
+
+**Durum:** ☑ **bitti** (2026-09-14) — bir maddesi **kanıtlanamadı**, aşağıda.
+
+#### Sonuç — `M8-T12`
+
+**`OverlayScene`** — oyunun üstünde sürekli çalışan ince bir sahne.
+Tam ekran düğmesi ve yatay çevirme perdesi ikisi de sahneden bağımsız
+olmalı: perde sahneye bağlansaydı her geçişte yok olup yeniden kurulurdu
+ve `GameOver` gibi ara ekranlarda hiç görünmezdi; düğmeyi beş sahneye ayrı
+ayrı eklemek beş kopya ve beş kez unutma riski demekti. `BootScene`
+`launch` ediyor, hiç durdurulmuyor, sahne listesinde en sonda (en üstte).
+
+**Yatay çevirme perdesinin ölçütü `screen.orientation` DEĞİL**, tuvalin
+gerçek en-boy oranı: `orientation` masaüstünde `undefined` olabiliyor ve
+portal iframe'inde sayfanın yönü ile oyunun aldığı alan farklı olabiliyor.
+"Oyun gerçekten dar mı" tek doğru soru.
+
+**`touch-action: manipulation`** — çift dokunma yakınlaştırmasını kesiyor.
+Oyun hızlı art arda dokunmalarla oynanıyor ve tarayıcı bunları çift
+dokunma sayıp sayfayı yakınlaştırıyordu; yakınlaşan sayfada tuval kayıyor
+ve dokunma koordinatları oyunun gördüğüyle uyuşmuyor.
+
+**Toplanma noktası: sürüklemeye ek olarak DOKUNMA.** Sürükleme 44 px'lik
+bir işaretçiyi parmakla yakalamayı gerektiriyor ve **parmak işaretçinin
+üstünü kapatıyor** — masaüstünde doğal olan jest telefonda en kırılgan
+etkileşim. Seçili kışlanın menzili içinde boş bir yere dokunmak artık
+bayrağı oraya taşıyor; sürükleme kalkmadı, ikisi bir arada. Sıra korundu:
+bir yapı noktasına dokunmak hâlâ o noktanın menüsünü açıyor, yoksa
+kışlanın yanındaki noktalar erişilemez hâle gelirdi.
+
+**Kanıtlanamayan madde — dürüst kayıt.** Kabul kriterindeki "bayrağı
+**sürükle**" adımı bu ortamda doğrulanamadı: Browser pane'in
+`left_click_drag` eylemi Phaser'ın girdi sistemine hiç ulaşmıyor (sahne
+`pointerdown`/`pointermove`/`pointerup` sayaçları sıfır kalıyor), elle
+gönderilen `PointerEvent`'ler de öyle. Yani **sürükleme jesti canlı olarak
+sınanmadı**; sürükleme mantığı (`setRally` + `clampRally`) dev kancasıyla
+doğrulandı, jestin kendisi doğrulanmadı. Dokunmayla taşıma tam da bu
+boşluğu kapatmak için eklendi ve **o canlı doğrulandı**: tek dokunuşla
+bayrak `(700,240) → (700,313)` taşındı (yola sabitlenerek).
+
+**Canlı doğrulama (375×812 dikey → 812×375 yatay):** dikeyde perde
+"Cihazı yatay çevirin" ile her şeyi kapatıyor; yatayda menü → seviye seçim
+(zorluk satırı ve beş kart okunur) → harita → yapı menüsü → kışla → bayrak
+dokunmayla taşındı. Tam ekran düğmesi sağ kenarda, HUD'un hiçbir parçasıyla
+çakışmıyor.
 
 ### Faz 13 — Menü ve seviye seçim — `M8-T13`
 

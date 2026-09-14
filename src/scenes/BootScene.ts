@@ -73,6 +73,10 @@ export class BootScene extends Phaser.Scene {
     // Promise içeride yönetilip bitince sahne değiştiriliyor.
     void this.#loadFonts().finally(() => {
       this.scene.start('Preload');
+      // `M8-T12` — oyunun üstünde sürekli duran katman (tam ekran düğmesi,
+      // yatay çevirme perdesi). `launch`, `start` DEĞİL: `Preload`'u
+      // durdurmadan yanına ekleniyor ve bir daha hiç durdurulmuyor.
+      this.scene.launch('Overlay');
     });
   }
 

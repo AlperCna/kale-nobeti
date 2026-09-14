@@ -27,6 +27,17 @@
         -ms-user-select: none;
         user-select: none;
         -webkit-tap-highlight-color: transparent;
+        /*
+         * `M8-T12` — dokunmatikte çift dokunma yakınlaştırmasını keser.
+         *
+         * Oyun hızlı art arda dokunmalarla oynanıyor (kule kur, menüden
+         * seç, dalgayı erken başlat) ve tarayıcı bunları "çift dokunma"
+         * sayıp sayfayı yakınlaştırıyordu; yakınlaşan sayfada tuval
+         * kayıyor ve dokunma koordinatları oyunun gördüğüyle uyuşmuyor.
+         * `manipulation` kaydırma ve iki parmakla yakınlaştırmayı
+         * bırakıyor, yalnız çift dokunma jestini kapatıyor.
+         */
+        touch-action: manipulation;
       }
 
       /* Phaser tuvali gövdeye eklenir; blok yapıp alttaki boşluğu keser. */
