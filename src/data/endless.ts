@@ -21,6 +21,25 @@
  *
  * İkisinin çarpımı (sayı × dayanıklılık) düz üstel bir tek koldan daha
  * uzun süre anlamlı kalıyor ve havuz tavanını hiç zorlamıyor.
+ *
+ * ## Eğri ~40. dalgada DÜZLEŞİYOR — ölçüldü, kabul edildi
+ *
+ * `endlessSim.test.ts` sabit bir dalga-10 tahtasıyla on dalgalık pencere
+ * ortalamalarını ölçtü (harita 1, can kaybı):
+ *
+ * | Dalga | 11-20 | 21-30 | 31-40 | 41-50 | 51-60 | 61-70 | 71-80 |
+ * |---|---|---|---|---|---|---|---|
+ * | Ortalama can | 7,2 | 32,7 | 40,1 | 41,9 | 41,1 | 41,7 | 42,0 |
+ *
+ * Yani **HP kolu sonsuza kadar taşımıyor**: bir noktadan sonra tahta
+ * dalganın hiçbirini öldüremiyor ve can kaybı "dalganın tamamı sızdı"
+ * değerine doyuyor. Düşmanı daha dayanıklı yapmak orada görünmez bir
+ * değişiklik.
+ *
+ * **Zararsız** çünkü doyum değeri (~42) başlangıç canının (20) iki katı:
+ * oyuncu o bölgeye gelmeden çoktan kaybetmiş oluyor. Düzleşme oyunun
+ * hiç görülmeyen kısmında. Bunu düzeltmek (ör. çarpanı üstel yapmak)
+ * ölçülebilir hiçbir şeyi değiştirmezdi.
  */
 
 import { POOL_PREALLOC } from './balance';
