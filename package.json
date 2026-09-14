@@ -13,6 +13,7 @@
     "test": "vitest run",
     "guard": "node scripts/guard-rules.mjs",
     "kurallar": "node scripts/kurallar.mjs",
+    "check:bg": "node scripts/check-bg.mjs",
     "prep-assets": "node scripts/prep-assets.mjs"
   },
   "dependencies": {

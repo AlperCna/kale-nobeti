@@ -20,6 +20,36 @@ import { averageCoverage, coveredSegments } from '../util/coverage';
  */
 const PATH_COLOR = 0x8a7250; // Yol: parşömen ile mürekkep arası ara ton
 const PATH_WIDTH = 48;
+/**
+ * Yolun mürekkep konturu — `M8-B02`.
+ *
+ * Yol düz `#8A7250` (luma 117) bir şerit ve **arka planın lumasına
+ * bağımlı**. Beş arka planın yolun iki yanından ölçülen zemin lumasi:
+ *
+ * | harita | zemin | fark |
+ * |---|---|---|
+ * | değirmen geçidi | 108 | **9** |
+ * | kadim harabe | 112 | **5** |
+ * | taş köprü | 92 | 25 |
+ * | kül ovası | 134 | 18 |
+ * | kar geçidi | 182 | 65 |
+ *
+ * Üçünde yol gri tonlamada zeminden ayrılmıyor (ekran görüntüsüyle
+ * doğrulandı — harita 1 ve 5'te yol kayboluyor). Renkte ayrılıyor çünkü
+ * ton farkı var: yeşil çayır, kahverengi yol. Ama **yeşil-kahverengi en
+ * yaygın renk körlüğünde birbirine en çok karışan çift** ve `CLAUDE.md`
+ * TIER 1 kural 6 "yalnız renge dayanmaz" diyor.
+ *
+ * Çözüm arka planda değil **burada**: 2 px mürekkep kontur. Zemin ne
+ * olursa olsun yolun kenarı ayrılıyor, çünkü mürekkep (luma 32) her beş
+ * zeminin de çok altında. Ayrıca oyunun görsel dili zaten bu — kule,
+ * düşman, kartuş, kale, yapı yuvası, hepsinin konturu var; yol tek
+ * konturluydu ve tezhip sayfasında yamalı duruyordu.
+ *
+ * Arka planı değiştirmek üç haritayı yeniden ürettirmek olurdu ve
+ * dördüncü harita geldiğinde sorun geri gelirdi.
+ */
+const PATH_OUTLINE = 4;
 const SPOT_COLOR = 0xe4d3a8; // Parşömen
 /** Yarıçap 22 → çap 44 px: platform dokunmatik hedef alt sınırı. */
 const SPOT_RADIUS = 22;
@@ -54,14 +84,22 @@ export class MapRenderer {
     // Birden fazla giriş varsa (harita 2/3) **hepsi** çizilir — yalnız
     // `paths[0]` çizilirse ikinci girişin yolu ekranda hiç görünmez, oysa
     // düşman artık gerçekten oradan da geliyor.
-    for (const yol of this.#map.paths) {
-      g.lineStyle(PATH_WIDTH, PATH_COLOR, 1);
-      g.beginPath();
-      yol.forEach((p, i) => (i === 0 ? g.moveTo(p.x, p.y) : g.lineTo(p.x, p.y)));
-      g.strokePath();
-      // Keskin virajda (S13) köşe boşluk bırakıyor; nokta ile dolduruluyor.
-      g.fillStyle(PATH_COLOR, 1);
-      for (const p of yol) g.fillCircle(p.x, p.y, PATH_WIDTH / 2);
+    // İki geçiş: önce **bütün** yolların mürekkep konturu, sonra bütün
+    // yolların gövdesi. Tek geçişte (kontur+gövde, yol yol) harita 2/3/5'te
+    // ikinci yolun konturu birincinin gövdesinin üstüne biner ve kolların
+    // birleştiği yerde şeridi ikiye bölen bir çizgi kalır.
+    for (const gecis of [0, 1] as const) {
+      const kalinlik = gecis === 0 ? PATH_WIDTH + PATH_OUTLINE : PATH_WIDTH;
+      const renk = gecis === 0 ? INK : PATH_COLOR;
+      for (const yol of this.#map.paths) {
+        g.lineStyle(kalinlik, renk, 1);
+        g.beginPath();
+        yol.forEach((p, i) => (i === 0 ? g.moveTo(p.x, p.y) : g.lineTo(p.x, p.y)));
+        g.strokePath();
+        // Keskin virajda (S13) köşe boşluk bırakıyor; nokta ile dolduruluyor.
+        g.fillStyle(renk, 1);
+        for (const p of yol) g.fillCircle(p.x, p.y, kalinlik / 2);
+      }
     }
 
     for (const s of this.#map.buildSpots) {
