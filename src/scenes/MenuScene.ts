@@ -85,7 +85,37 @@ export class MenuScene extends Phaser.Scene {
     // önlüyoruz.
     const ayarlar = getSettings(this);
     if (ayarlar.musicScale > 0 && this.sound.get('music_menu')?.isPlaying !== true) {
+      /**
+       * Oyuncu geri bildirimi: "oyuna başladığımda müzik gelmiyor, ilk
+       * direkt oyun müziği".
+       *
+       * Sebep tarayıcının **otomatik oynatma kilidi**: sayfa açıldığında
+       * ses bağlamı kilitli ve ilk kullanıcı jestine kadar açılmıyor.
+       * `MenuScene.create()` müziği tam o anda, yani kilitliyken bir kez
+       * deniyordu ve **bir daha denemiyordu** — oyuncu "Oyna"ya bastığında
+       * kilit açılıyor ama menü sahnesi çoktan kapanmış oluyor. İlk
+       * duyulan müzik, dalga 1'den sonra başlayan oyun müziği kalıyordu.
+       *
+       * Kodda hiçbir yerde `UNLOCKED` dinleyicisi yoktu. Tarayıcı
+       * panelinde üretilemedi (otomasyon bağlamı otomatik oynatmaya izin
+       * veriyor, `sound.locked` false geliyor) — yani düzeltme
+       * **oyuncunun ölçümüne** ve tarayıcı davranışının belgelenmiş
+       * kuralına dayanıyor, benim tekrar üretimime değil.
+       */
       const calmayaBasla = (): void => {
+        if (this.sound.locked) {
+          // Kilit açılınca bir kez daha dene. `once`: sahne kapansa bile
+          // dinleyici tüketiliyor, birikmiyor (mimari kural).
+          this.sound.once(Phaser.Sound.Events.UNLOCKED, () => {
+            if (getSettings(this).musicScale > 0 && this.sound.get('music_menu')?.isPlaying !== true) {
+              this.sound.play('music_menu', {
+                loop: true,
+                volume: MUSIC_BASE_VOLUME * getSettings(this).musicScale,
+              });
+            }
+          });
+          return;
+        }
         this.sound.play('music_menu', { loop: true, volume: MUSIC_BASE_VOLUME * ayarlar.musicScale });
       };
       if (this.cache.audio.exists('music_menu')) {

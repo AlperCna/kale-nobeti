@@ -39,7 +39,10 @@ export class SoundSystem {
    * değil), bu yüzden örnekler sahne kapanışında `destroy()` ile elle
    * yok ediliyor — yoksa her "tekrar dene" bir tur daha biriktirirdi.
    */
-  readonly #havuz = new Map<string, { sesler: Phaser.Sound.BaseSound[]; sira: number }>();
+  readonly #havuz = new Map<
+    string,
+    { sesler: Phaser.Sound.BaseSound[]; baslangic: number[]; sira: number }
+  >();
 
   /**
    * `M8-T10` — ses efekti seviyesi. Çağrı anında okunuyor (kurucuda
@@ -129,8 +132,11 @@ export class SoundSystem {
     if (!this.#scene.cache.audio.has(anahtar)) return;
     let kayit = this.#havuz.get(anahtar);
     if (kayit === undefined) {
-      kayit = { sesler: [], sira: 0 };
-      for (let i = 0; i < SFX_POOL_PER_KEY; i++) kayit.sesler.push(this.#scene.sound.add(anahtar));
+      kayit = { sesler: [], baslangic: [], sira: 0 };
+      for (let i = 0; i < SFX_POOL_PER_KEY; i++) {
+        kayit.sesler.push(this.#scene.sound.add(anahtar));
+        kayit.baslangic.push(-Infinity);
+      }
       this.#havuz.set(anahtar, kayit);
     }
     // `M8-T10` — seviye 0 ise hiç çalmıyoruz. `volume: 0` ile çalmak da
@@ -139,11 +145,50 @@ export class SoundSystem {
     const seviye = this.#sfxScale();
     if (seviye <= 0) return;
 
-    const ses = kayit.sesler[kayit.sira];
-    kayit.sira = (kayit.sira + 1) % kayit.sesler.length;
-    // Çalmakta olan örnek yeniden başlıyor (Phaser `play` durdurup başlatır)
-    // — kısa efektlerde duyulmuyor, tahsis hiç yok.
-    ses?.play({ rate: rastgeleHiz(), volume: seviye });
+    /**
+     * **Önce BOŞ örnek, yoksa EN ESKİ başlayan** — oyuncu geri bildirimi:
+     * "ses efektleri biraz tutarsız, okçunun ok atma sesi 2×'te gelmiyor,
+     * sonradan geliyor".
+     *
+     * Eski kod katı sıra (round-robin) kullanıyordu ve yorumu "kısa
+     * efektlerde duyulmuyor" diyordu. **Ölçüm bunu yalanladı:** dört
+     * okçuyla bir dalga boyunca `shot_okcu` çağrılarının **%100'ü**
+     * (1×) ve **%95'i** (2×) hâlâ çalmakta olan bir örneği kesiyordu.
+     *
+     * Aritmetiği: `shot_okcu` **2,25 sn**, dört okçu ~4,4 atış/sn, havuz
+     * 3 örnek → aynı örnek her **0,68 sn**'de yeniden çalınıyor. 2,25
+     * saniyelik ses 0,68 saniyede bir baştan başlarsa hiçbir zaman
+     * bitmiyor; oyuncunun duyduğu şey "ses gelmedi" oluyor.
+     *
+     * İki kollu düzeltme:
+     *
+     * 1. **Boş örnek aranıyor.** Serbest bir örnek varken çalanı kesmek
+     *    saf kayıptı.
+     * 2. **Hepsi doluysa en eski başlayan kesiliyor** — yani bitmesine en
+     *    az kalan. Katı sırada kesilen örnek rastgeleydi ve daha yeni
+     *    başlamış bir sesi kesebiliyordu. Oyun sesinde bunun adı "voice
+     *    stealing" ve doğrusu budur.
+     *
+     * **Kalan kök neden ses dosyasının kendisinde:** 2,25 saniyelik bir
+     * ok atışı, temsil ettiği olaya göre çok uzun (karşılaştırma:
+     * `tower_place`/`gold`/`enemy_death` 1,5 sn). Havuzu dosyaya göre
+     * büyütmek yanlış olur; efektler kısaldığında bu havuz fazlasıyla
+     * yetiyor. Gereksinim `docs/plan/M6-ses-uretim-brifi.md`'ye yazıldı.
+     */
+    let sec = kayit.sesler.findIndex((x) => !x.isPlaying);
+    if (sec === -1) {
+      let enEski = Infinity;
+      sec = 0;
+      for (let i = 0; i < kayit.baslangic.length; i++) {
+        const t = kayit.baslangic[i] ?? -Infinity;
+        if (t < enEski) {
+          enEski = t;
+          sec = i;
+        }
+      }
+    }
+    kayit.baslangic[sec] = performance.now();
+    kayit.sesler[sec]?.play({ rate: rastgeleHiz(), volume: seviye });
   }
 
   /** `GameScene` kapanışında — bkz. `#havuz`. */
