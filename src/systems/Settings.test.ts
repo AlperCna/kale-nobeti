@@ -31,18 +31,20 @@ describe('Settings — §10 + TIER 1 kural 6', () => {
     expect(s.effectScale).toBe(1);
   });
 
-  it('yedi ayar da değiştirilebiliyor (TIER 1 k.6)', () => {
+  it('sekiz ayar da değiştirilebiliyor (TIER 1 k.6)', () => {
     const s = new Settings(new MemoryStore(), azaltma);
     s.set('sound', false);
     s.set('screenShake', false);
     s.set('effects', 'off');
     s.set('hints', false);
     s.set('locale', 'en');
+    s.set('difficulty', 'zor');
     expect(s.state).toEqual({
       sound: false,
       // `M8-T10` — `sound: false` iki kademeyi de sürüklüyor.
       musicLevel: 'off',
       sfxLevel: 'off',
+      difficulty: 'zor',
       screenShake: false,
       effects: 'off',
       hints: false,

@@ -4,6 +4,7 @@ import type { GameScene } from './GameScene';
 import type { Speed } from '../types/common';
 import { t } from '../util/i18n';
 import { getSettings } from '../systems/Settings';
+import type { StringKey } from '../data/strings';
 import { devHooks } from '../util/devHooks';
 import { HudReadout } from '../fx/HudReadout';
 import { WaveTelegraph } from '../fx/WaveTelegraph';
@@ -117,6 +118,7 @@ export class HudScene extends Phaser.Scene {
     // söylememesi için gerçek hız veriyle taşınıyor.
     this.#speed = data?.speed ?? 1;
     this.#createSpeedButton();
+    this.#zorlukRozeti();
     // Altın/can/dalga sayaç kartı — P02 brifi "HUD sol üstte üç parşömen
     // kart" (`docs/plan/M6-sanat-uretim-brifi.md`). Etiket+sayı bloğunun
     // gerçek yerleşimini saran, ölçülmüş bir kutu.
@@ -232,6 +234,36 @@ export class HudScene extends Phaser.Scene {
 
     this.#geriSayimTiki(game.prepRemainingSec, game.soundSystem);
     this.#oyunSonuKontrol(game);
+  }
+
+  /**
+   * Zorluk rozeti — `M8-T11`.
+   *
+   * Yalnız Normal **dışında** çiziliyor. Normal varsayılan; her ele bir
+   * "Normal" etiketi koymak ekranda bilgi değil gürültü olurdu, ve HUD'un
+   * sağ üstü zaten hız/ayar düğmeleriyle dolu.
+   *
+   * TIER 1 kural 7: bir kez yazılıyor, `setText` yok — zorluk bir elin
+   * ortasında değişmiyor (seçim seviye seçim ekranında).
+   */
+  #zorlukRozeti(): void {
+    const zorluk = getSettings(this).state.difficulty;
+    if (zorluk === 'normal') return;
+    const anahtar: StringKey = zorluk === 'kolay' ? 'diffKolay' : 'diffZor';
+    const x = this.scale.width - MARGIN - 28;
+    const y = MARGIN + 158;
+    // Parşömen altlık: ilk denemede rozet **düz metindi** ve harita
+    // zemininde (yeşil çayır, gri kar, yosun) neredeyse görünmüyordu —
+    // canlı ekran görüntüsünde arandı ve bulunamadı, yalnız sahne
+    // dökümünde vardı. HUD'un geri kalanı zaten parşömen üstünde duruyor.
+    createParchmentFrame(this, x, y, 92, 34, 12);
+    this.add
+      .text(x, y, t(anahtar), {
+        fontFamily: 'Spectral, serif',
+        fontSize: '16px', // Platform: minimum 16 px
+        color: zorluk === 'zor' ? '#B03A2E' : '#14203A',
+      })
+      .setOrigin(0.5);
   }
 
   /**

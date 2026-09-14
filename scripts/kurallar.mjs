@@ -43,6 +43,7 @@ import { applyDamage } from './systems/combat';
 import { buildReferenceBoards, ceilingAPerBranch, effectiveHp, effectiveDps, BOSS_CEILING_RATIO, cumulativeGold, spotsFullAtWave, KISLA_ILE_DOGRULANAN } from './systems/balanceChecks';
 import { simulateAllWaves } from './systems/waveSim';
 import { measureCoverage } from './util/coverage';
+import { DIFFICULTY, DEFAULT_DIFFICULTY } from './data/difficulty';
 
 it('dokum', () => {
   const AD = ['T1', 'T2', 'T3a', 'T3b'];
@@ -137,8 +138,32 @@ it('dokum', () => {
     };
   });
 
+  const zorluk = {
+    varsayilan: DEFAULT_DIFFICULTY,
+    seviyeler: Object.entries(DIFFICULTY).map(([ad, d]) => ({
+      ad,
+      hpScale: d.hpScale,
+      startLives: d.startLives,
+      recordStars: d.recordStars,
+      // Referans tahtanın o seviyede kaybettiği can — harita başına.
+      canKaybi: MAPS.map((m) => {
+        const harita = { ...m, hpMultiplier: m.hpMultiplier * d.hpScale };
+        const w = wavesFor(m.id);
+        const k = measureCoverage(harita.paths, harita.buildSpots, COVERAGE_REFERENCE_RANGE);
+        const sim = simulateAllWaves(w, buildReferenceBoards(harita, w, k, true), harita);
+        let can = 0;
+        for (const r of sim) {
+          for (const [id, n] of Object.entries(r.leakedByEnemy)) {
+            can += (getEnemyForMap(id, harita)?.leakDamage ?? 0) * n;
+          }
+        }
+        return can;
+      }),
+    })),
+  };
+
   const veri = {
-    kuleler, kisla, dusmanlar, matris, haritalar,
+    kuleler, kisla, dusmanlar, matris, haritalar, zorluk,
     yetenekler: ABILITIES.map((a) => ({ ...a })),
     blok: { ...BLOCK }, soldierSpeed: SOLDIER_SPEED, meleeK: +MELEE_DPS_PER_POINT.toFixed(4),
     balance: { startLives: BALANCE.startLives, sellRefund: BALANCE.sellRefund, damageFloor: BALANCE.damageFloor,
@@ -184,6 +209,9 @@ const HARITA_GOSTERIM_ADI = {
   'kar-gecidi': 'Kar Geçidi',
   'kadim-harabe': 'Kadim Harabe',
 };
+/** Zorluk adını olduğu gibi yazan küçük yardımcı (harita adı tablosuyla karışmasın). */
+const HARITA_ADI_YOK = (x) => String(x);
+
 const HARITA_ADI = Object.fromEntries(
   D.haritalar.map((m, i) => {
     const ad = HARITA_GOSTERIM_ADI[m.id];
@@ -473,6 +501,35 @@ function olustur() {
       ])), '');
     if (m.kollar > 1) y(`⁽ⁿ⁾ = giriş/kol numarası. **Sabit ve veride yazılı** (S58) — rastgele değil.`, '');
   }
+
+  // ------------------------------------------------------------ 11b zorluk
+  y('---', '', '## 11b. Zorluk seviyeleri', '');
+  y(`Kaynak: \`src/data/difficulty.ts\` (S80). Varsayılan **${HARITA_ADI_YOK(D.zorluk.varsayilan)}**.`, '');
+  y(
+    '**Zor HP’ye dokunmuyor, canı kısıyor.** Ölçüm: HP çarpanı ×1,10’da',
+    'harita 1’in bossu referans tahtanın Kısıt A tavanını aşıyordu (%101),',
+    'yani öğretici harita **geçilemez** hâle geliyordu. Can sayısı Kısıt A’ya,',
+    'referans tahtaya, tavana ve boss türetmesine hiç girmiyor — hiçbir düşmanı',
+    'öldürülemez yapmadan hata payını daraltıyor.',
+    '',
+  );
+  y(
+    tablo(
+      ['Seviye', 'HP çarpanı', 'Başlangıç canı', 'Yıldız', ...D.haritalar.map((m) => HARITA_ADI[m.id].split(' · ')[0])],
+      D.zorluk.seviyeler.map((z) => [
+        z.ad,
+        `×${n(z.hpScale)}`,
+        n(z.startLives),
+        z.recordStars ? 'kaydediliyor' : '**kaydedilmiyor**',
+        ...z.canKaybi.map((c, i) => {
+          const sinir = z.startLives;
+          return `${n(c)} / ${n(sinir)}${c < sinir ? ' ✓' : ' ✗'}`;
+        }),
+      ]),
+    ),
+    '',
+  );
+  y('Hücreler: referans tahtanın kaybettiği can / o seviyenin canı.', '');
 
   // ---------------------------------------------------------------- 12
   y('---', '', '## 12. Haritalar', '');

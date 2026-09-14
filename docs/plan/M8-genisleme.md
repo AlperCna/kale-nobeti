@@ -595,16 +595,16 @@ hiçbir ses sistemine erişemiyor. Yarım bir bağlantı (oyun içi butonlarda
 ses, menüde sessizlik) bir eksikten daha çok dikkat çekerdi; Faz 13
 (menü/HUD) o yolu zaten açacak.
 
-### Faz 11 — Zorluk seviyeleri — `M8-T11`
+### Faz 11 — Zorluk seviyeleri — `M8-T11`  ☑
 
 | | |
 |---|---|
 | **Kimlik** | `M8-T11` |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ **bitti** (2026-09-14) |
 | **Süre** | ~45 dk |
 | **Önkoşul** | `M8-T05` |
 | **TIER 1** | k.1 |
-| **Açık soru** | S80 (Zor çarpanı — ölçülecek) |
+| **Açık soru** | ~~S80~~ **kapandı** — Zor çarpan değil, can kısıyor (aşağıdaki sonuç) |
 | **Doküman** | §6 Denge ilkesi, §9 · `waveSim` · `kisitB.test.ts` |
 
 **Yapılacak**
@@ -614,6 +614,69 @@ ses, menüde sessizlik) bir eksikten daha çok dikkat çekerdi; Faz 13
 - Denge testleri Normal'de koşmaya devam eder + Zor için "geçilebilir" testi.
 
 **Kabul kriteri** — `npm run test` yeşil; `KURALLAR.md` zorluk tablosu eklenmiş.
+
+**Durum:** ☑ **bitti** (2026-09-14) — **S80 kapandı**, ama planın öngördüğü
+cevapla değil.
+
+#### Sonuç — `M8-T11`
+
+**Planın sorusu: "referans tahtayla beş haritanın da geçilebildiği en
+yüksek 0,05 adımı". Ölçülen cevap: `1,00` — yani öyle bir adım yok.**
+
+| HP çarpanı | En yüksek can kaybı (5 harita) |
+|---|---|
+| ×1,00 | 16 / 20 ✓ |
+| ×1,05 | **21 / 20 ✗** (Kadim Harabe) |
+
+Sebep tasarımın kendisi: her harita zaten "referans tahta 20 canın altında
+kalsın" ölçütüyle ayarlandı ve harita 5 o bandın üst ucunda (16/20).
+Üstüne çarpan koymak için önce haritaları gevşetmek gerekirdi.
+
+**İkinci ölçüm daha belirleyici oldu: HP çarpanı boss'u HİÇ etkilemiyordu.**
+`BOSS_HP_BY_MAP` mutlak bir sayı ve `bossFor` onu `hpMultiplier`'a bölüyor;
+`MapDef.hpMultiplier`'ı çarpmak bölmeyi de çarpıyor, boss aynı kalıyor.
+Boss'u da ölçekleyen tek yol doğum anındaki çarpan (sonsuz modun
+`endlessHpScale` yolu) — ve o yolla ölçüldüğünde:
+
+| Çarpan | En kötü Kısıt A oranı | Nerede |
+|---|---|---|
+| ×1,00 | %92 | Harita 1 bossu (§5'in belgelenmiş 700'ü) |
+| ×1,10 | **%101** | aynı — referans tahta boss'u **öldüremiyor** |
+
+Yani ×1,10'da **öğretici harita** referans tahtayla geçilemez hâle
+geliyordu. Bir "Zor" zorlaştırmalı, imkânsızlaştırmamalı.
+
+**Uygulanan çözüm: Zor canı kısıyor (20 → 12).** Can sayısı Kısıt A'ya,
+referans tahtaya, tavana ve boss türetmesine **hiç girmiyor** — hiçbir
+düşmanı öldürülemez yapmadan hata payını daraltıyor. Ölçülen can
+kayıplarına göre (0/6/10/13/16) bu, haritalar 1-3'ü referans tahtayla
+geçilebilir bırakıyor (öğrenme yayı korunuyor) ve 4-5'te **referans
+tahtadan daha iyisini** istiyor. Zor'un tanımı tam bu.
+
+**Kolay HP çarpanı olarak kaldı** (×0,85, ölçülen kayıplar 0/2/3/4/7):
+orada tavan sorunu yok, tersine pay artıyor.
+
+**Yıldız Kolay'da kaydedilmiyor** ama harita kilidi **açılıyor**:
+`SaveSystem` yıldızı düşürmediği için Kolay'da alınan ★★★ sonsuza kadar
+kalırdı; öte yandan Kolay oynayan biri de ilerleyebilmeli, o yüzden
+kazanınca ★ eşiğinde bir "bitirdi" kaydı yazılıyor.
+
+**Zorluk seçici ayarlar panelinde DEĞİL, seviye seçim ekranında.** Bir elin
+ortasında değiştirilmemesi gereken tek ayar bu (dalga 7'de "Kolay"a geçmek
+kaydı anlamsızlaştırırdı).
+
+**Canlı kontrolden bir düzeltme:** HUD rozeti ilk denemede düz metindi ve
+harita zemininde (yeşil çayır, gri kar, yosun) **bulunamadı** — sahne
+dökümünde vardı, ekranda yoktu. Parşömen altlık kondu; HUD'un geri kalanı
+zaten parşömen üstünde.
+
+**Canlı doğrulama:** seviye seçimde "Zor" seçildi → sahne yeniden kuruldu,
+düğme parşömene döndü; harita 4 açıldı → HUD canı **12** gösterdi ve
+sağ üstte "Zor" rozeti okunur biçimde durdu.
+
+`KURALLAR.md`'ye **11b. Zorluk seviyeleri** bölümü eklendi; tablo her
+seviyenin her haritadaki ölçülen can kaybını ve geçip geçmediğini
+gösteriyor — sayı değişirse doküman kendiliğinden değişiyor.
 
 ### Faz 12 — Mobil / dokunmatik cila — `M8-T12`
 

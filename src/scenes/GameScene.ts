@@ -617,15 +617,23 @@ export class GameScene extends Phaser.Scene {
       return havuz[spawnPoint] ?? havuz[0] ?? groundMovers[0] ?? new PathMover(path);
     };
 
-    this.#eco = new EconomySystem(this.#map, this.bus);
-    this.#abilities = new EnemyAbilitySystem(enemyPool, this.#map.hpMultiplier, getEnemy);
+    // `M8-T11` — zorluk yalnız iki yerden giriyor: başlangıç canı (burada)
+    // ve doğum anındaki HP çarpanı (`WaveManager`'a geçen `hpScale`).
+    this.#eco = new EconomySystem(this.#map, this.bus, this.settings.difficulty.startLives);
+    // Bölünmeden doğan yavru da zorluk çarpanını almalı — yoksa Zor'da
+    // ana ölçekleniyor, yavrusu ölçeklenmiyordu.
+    this.#abilities = new EnemyAbilitySystem(
+      enemyPool,
+      this.#map.hpMultiplier * this.settings.difficulty.hpScale,
+      getEnemy,
+    );
     this.#waves = new WaveManager(
       enemyPool,
       moverFor,
       this.bus,
       this.#eco,
       this.#waveList,
-      this.#map.hpMultiplier,
+      this.#map.hpMultiplier * this.settings.difficulty.hpScale,
       getEnemy,
       // `G05` — sızan düşmanın can çubuğu da havuza dönmeden önce
       // serbest kalmalı, ölüm yoluyla aynı sözleşme (`Particles.olumEfekti`).

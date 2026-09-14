@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { t } from '../util/i18n';
 import { SaveSystem, starsFor } from '../systems/SaveSystem';
+import { getSettings } from '../systems/Settings';
+import { DIFFICULTY } from '../data/difficulty';
 import { LocalStore } from '../util/storage';
 import { BALANCE } from '../data/balance';
 import { devHooks } from '../util/devHooks';
@@ -83,11 +85,19 @@ export class GameOverScene extends Phaser.Scene {
     // koşuyor, yani tekrar oynanan her el kaydediliyor. `recordResult`
     // yıldızı **düşürmüyor**: kötü bir tekrar kazanılmış ★★★'ü silmiyor.
     if (this.#data.mapId !== undefined) {
-      new SaveSystem(new LocalStore()).recordResult(
-        this.#data.mapId,
-        this.#data.lives,
-        this.#data.won,
-      );
+      // `M8-T11` — Kolay'da yıldız **kaydedilmiyor** (karar `difficulty.ts`
+      // içinde yazılı: `SaveSystem` yıldızı düşürmüyor, yani Kolay'da
+      // alınan ★★★ sonsuza kadar kalırdı). Harita kilidi yine açılıyor:
+      // `isUnlocked` bitirmeye bakıyor ve Kolay da bir bitirme.
+      const zorluk = getSettings(this).state.difficulty;
+      const save = new SaveSystem(new LocalStore());
+      if (DIFFICULTY[zorluk].recordStars) {
+        save.recordResult(this.#data.mapId, this.#data.lives, this.#data.won);
+      } else if (this.#data.won) {
+        // Yıldızsız "bitirdi" kaydı: 1 can ile bitmiş gibi — §9 tablosunda
+        // ★ eşiği. Kilit zincirinin kopmaması için gerekli en küçük kayıt.
+        save.recordResult(this.#data.mapId, 1, true);
+      }
     }
   }
 

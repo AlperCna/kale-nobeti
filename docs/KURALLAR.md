@@ -477,6 +477,26 @@ Doğum penceresi `SPAWN_K = 24` (saniye × düşman). **Uydurulmadı,
 
 ---
 
+## 11b. Zorluk seviyeleri
+
+Kaynak: `src/data/difficulty.ts` (S80). Varsayılan **normal**.
+
+**Zor HP’ye dokunmuyor, canı kısıyor.** Ölçüm: HP çarpanı ×1,10’da
+harita 1’in bossu referans tahtanın Kısıt A tavanını aşıyordu (%101),
+yani öğretici harita **geçilemez** hâle geliyordu. Can sayısı Kısıt A’ya,
+referans tahtaya, tavana ve boss türetmesine hiç girmiyor — hiçbir düşmanı
+öldürülemez yapmadan hata payını daraltıyor.
+
+| Seviye | HP çarpanı | Başlangıç canı | Yıldız | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|---|---|---|
+| kolay | ×0,85 | 20 | **kaydedilmiyor** | 0 / 20 ✓ | 2 / 20 ✓ | 3 / 20 ✓ | 4 / 20 ✓ | 7 / 20 ✓ |
+| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 6 / 20 ✓ | 10 / 20 ✓ | 13 / 20 ✓ | 16 / 20 ✓ |
+| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 6 / 12 ✓ | 10 / 12 ✓ | 13 / 12 ✗ | 16 / 12 ✗ |
+
+Hücreler: referans tahtanın kaybettiği can / o seviyenin canı.
+
+---
+
 ## 12. Haritalar
 
 Kaynak: `src/data/maps.ts` · `GAME-DESIGN.md` §9

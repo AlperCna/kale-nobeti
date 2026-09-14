@@ -20,9 +20,16 @@ export class EconomySystem {
   constructor(
     private readonly map: MapDef,
     private readonly bus: EventBus,
+    /**
+     * `M8-T11` — zorluk seviyesinin başlangıç canı. Verilmezse §6'nın 20'si.
+     * Zor **yalnız bunu** değiştiriyor: can sayısı Kısıt A'ya, referans
+     * tahtaya, tavana ve boss türetmesine hiç girmiyor, yani hiçbir
+     * düşmanı öldürülemez yapmıyor — gerekçe `data/difficulty.ts`.
+     */
+    startLives: number = BALANCE.startLives,
   ) {
     this.#gold = map.startGold;
-    this.#lives = BALANCE.startLives;
+    this.#lives = startLives;
   }
 
   get gold(): number {

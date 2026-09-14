@@ -9,6 +9,8 @@
  */
 
 import type { KeyValueStore } from '../util/storage';
+import { DEFAULT_DIFFICULTY, DIFFICULTY, isDifficulty } from '../data/difficulty';
+import type { Difficulty } from '../data/difficulty';
 import { SAVE_KEY } from '../util/storage';
 import type { Locale } from '../data/strings';
 import { DEFAULT_LOCALE } from '../data/strings';
@@ -63,6 +65,12 @@ export interface SettingsState {
   /** `M8-T10` — müzik ve ses efekti **ayrı** kısılabiliyor. */
   musicLevel: AudioLevel;
   sfxLevel: AudioLevel;
+  /**
+   * `M8-T11` — zorluk seviyesi. Ayarlar panelinde **değil**, seviye seçim
+   * ekranında: bir elin ortasında değiştirilmemesi gereken tek ayar bu
+   * (dalga 7'de "Kolay"a geçmek kaydı anlamsızlaştırırdı).
+   */
+  difficulty: Difficulty;
   /** §10 + TIER 1 k.6: ekran sarsıntısı kapatılabilir olmalı. */
   screenShake: boolean;
   effects: EffectLevel;
@@ -87,6 +95,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   sound: true,
   musicLevel: 'full',
   sfxLevel: 'full',
+  difficulty: DEFAULT_DIFFICULTY,
   screenShake: true,
   effects: 'full',
   hints: true,
@@ -106,6 +115,7 @@ export function reducedMotionDefaults(): SettingsState {
     sound: true,
     musicLevel: 'full',
     sfxLevel: 'full',
+    difficulty: DEFAULT_DIFFICULTY,
     screenShake: false,
     effects: 'low',
     hints: true,
@@ -240,6 +250,9 @@ export class Settings {
     // Bozuk/eski kayıt tipsiz geliyor — `t()` çökmeden önce burada elenir.
     if (!gecerliLocale(this.#durum.locale)) this.#durum.locale = taban.locale;
     this.#durum = gocSesKademeleri(this.#durum, kayitli);
+    // `M8-T11` — bozuk/eski kayıtta zorluk yoksa ya da tanınmıyorsa
+    // varsayılana düşüyor; `locale` ile aynı sınır gerekçesi.
+    if (!isDifficulty(this.#durum.difficulty)) this.#durum.difficulty = DEFAULT_DIFFICULTY;
     setLocale(this.#durum.locale);
   }
 
@@ -259,6 +272,11 @@ export class Settings {
   /** `M8-T10` — müzik ses seviyesi çarpanı (0-1). */
   get musicScale(): number {
     return AUDIO_SCALE[this.#durum.musicLevel];
+  }
+
+  /** `M8-T11` — seçili zorluğun tanımı. */
+  get difficulty(): (typeof DIFFICULTY)[Difficulty] {
+    return DIFFICULTY[this.#durum.difficulty];
   }
 
   /**
