@@ -51,6 +51,7 @@ import { towerFrameKey } from '../data/spriteFrames';
 import { projectileLook } from '../data/projectileVisuals';
 import { getEnemy, ENEMIES } from '../data/enemies';
 import { BALANCE, POOL_PREALLOC, GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI } from '../data/balance';
+import { MUSIC_BASE_VOLUME } from '../data/audio';
 
 import { MAP1_WAVES, wavesFor } from '../data/waves';
 import { devHooks } from '../util/devHooks';
@@ -560,7 +561,9 @@ export class GameScene extends Phaser.Scene {
       },
     );
 
-    this.#soundSystem = new SoundSystem(this, this.bus, this.#waveList);
+    // `M8-T10` — seviye çağrı anında okunuyor: ayar oyun içinde
+    // değişince bir sonraki efekt doğru seviyede çalıyor.
+    this.#soundSystem = new SoundSystem(this, this.bus, this.#waveList, () => this.settings.sfxScale);
     // `M8-T03` — yalnız `bus` dinliyor. Duvar saati enjekte ediliyor:
     // `RunStats` saf mantık, zamanı kendi okumaz (bekçi k.8).
     this.#runStats = new RunStats(this.bus, () => performance.now(), this.#map.startGold);
@@ -692,7 +695,10 @@ export class GameScene extends Phaser.Scene {
     this.bus.on('wave:ended', ({ index }) => {
       if (index !== 1) return;
       const basla = (): void => {
-        this.sound.play('music_game', { loop: true, volume: 0.5 });
+        this.sound.play('music_game', {
+          loop: true,
+          volume: MUSIC_BASE_VOLUME * this.settings.musicScale,
+        });
       };
       if (this.cache.audio.exists('music_game')) {
         basla();
@@ -726,6 +732,7 @@ export class GameScene extends Phaser.Scene {
       // M6-T11 — `Game`den çıkarken oyun müziği susuyor; `Menu` kendi
       // müziğini kendi başlatıyor (`MenuScene.create()`).
       this.sound.stopByKey('music_game');
+      this.sound.stopByKey('boss_music');
       // Ses efekti örnekleri `SoundManager`'da (oyun geneli) yaşıyor —
       // sahneyle birlikte gitmiyor, elle bırakılıyor.
       this.#soundSystem?.destroy();
@@ -797,7 +804,30 @@ export class GameScene extends Phaser.Scene {
     this.#bossSahada = this.bossInfo !== null;
     if (this.#bossSahada && !vardi) {
       this.#bossBanner?.goster(() => this.shake.trigger(1, 0, 0.8));
+      this.#bossMuzigi();
     }
+  }
+
+  /**
+   * Boss müziğine geçiş — `M8-T10`, `M8-P03`.
+   *
+   * Parça **henüz üretilmedi**. `cache.audio.exists` kontrolü sayesinde
+   * bugün hiçbir şey olmuyor (oyun müziği çalmaya devam ediyor) ve dosya
+   * `public/assets/audio/music/boss_music.m4a` olarak geldiğinde koda
+   * dokunmadan devreye giriyor — `Y14`'ün "kritik olmayan varlık eksikse
+   * sessizce devam et" deseni.
+   *
+   * Geri dönüş yok: boss dalgası haritanın son dalgası, ardından zafer
+   * ya da yenilgi geliyor ve ikisi de müziği durduruyor.
+   */
+  #bossMuzigi(): void {
+    if (!this.cache.audio.exists('boss_music')) return;
+    if (this.settings.musicScale <= 0) return;
+    this.sound.stopByKey('music_game');
+    this.sound.play('boss_music', {
+      loop: true,
+      volume: MUSIC_BASE_VOLUME * this.settings.musicScale,
+    });
   }
 
   /**

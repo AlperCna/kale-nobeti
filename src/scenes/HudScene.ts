@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import type { SoundSystem } from '../fx/SoundSystem';
 import type { GameScene } from './GameScene';
 import type { Speed } from '../types/common';
 import { t } from '../util/i18n';
@@ -25,7 +26,12 @@ const MARGIN = 20;
  * Duraklatmada `Game` durur, **`Hud` durmaz** — durursa devam butonu
  * tıklanamaz hale gelir. Bu görevin "bitmedi sayılır eğer" maddesi bu.
  */
+/** Geri sayım tikinin başladığı saniye — `M8-T10`. */
+const GERI_SAYIM_TIK_SN = 3;
+
 export class HudScene extends Phaser.Scene {
+  /** `M8-T10` — son çalınan geri sayım tikinin saniyesi; -1 = yok. */
+  #sonTik = -1;
   #paused = false;
   #speed: Speed = 1;
 
@@ -90,6 +96,7 @@ export class HudScene extends Phaser.Scene {
    */
   create(data?: { readonly speed?: Speed; readonly settingsOpen?: boolean }): void {
     this.#bitti = false;
+    this.#sonTik = -1;
     // **Bekçi kural 10'un bulduğu iki gerçek hata.**
     //
     // `#paused`: duraklatılmışken kaybedilip yeniden başlanınca `true`
@@ -223,7 +230,26 @@ export class HudScene extends Phaser.Scene {
     this.#earlyBtn?.setVisible(erkenAcik);
     this.#earlyLabel?.setVisible(erkenAcik);
 
+    this.#geriSayimTiki(game.prepRemainingSec, game.soundSystem);
     this.#oyunSonuKontrol(game);
+  }
+
+  /**
+   * Hazırlık sayacının son 3 saniyesinde saniyede bir tik — `M8-T10`.
+   *
+   * **Tam saniye sınırında** çalıyor, her karede değil: sayaç kaydı
+   * (`#sonTik`) yalnız değer değiştiğinde tetikliyor. Ses dosyası henüz
+   * yok; `SoundSystem` eksik anahtarı sessizce atlıyor.
+   */
+  #geriSayimTiki(kalanSn: number | null, ses: SoundSystem | undefined): void {
+    if (kalanSn === null) {
+      this.#sonTik = -1;
+      return;
+    }
+    const tam = Math.ceil(kalanSn);
+    if (tam === this.#sonTik) return;
+    this.#sonTik = tam;
+    if (tam >= 1 && tam <= GERI_SAYIM_TIK_SN) ses?.playCountdownTick();
   }
 
   /**

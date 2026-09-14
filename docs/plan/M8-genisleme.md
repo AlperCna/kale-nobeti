@@ -535,12 +535,12 @@ faz farklı (1,3° / 3,4°); doğuş sönümü yakalandı (alfa 0,09);
 hepsi 0; dalga 10'da boss sahaya çıkarken "Ogre Şef geliyor" bandı
 ekran görüntüsünde.
 
-### Faz 10 — Ses cilası — `M8-T10`, `M8-P03`
+### Faz 10 — Ses cilası — `M8-T10`, `M8-P03`  ☑
 
 | | |
 |---|---|
 | **Kimlik** | `M8-T10` |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ **bitti** (2026-09-14) |
 | **Süre** | ~45 dk |
 | **Önkoşul** | `M8-T01` |
 | **TIER 1** | k.7 |
@@ -553,6 +553,47 @@ ekran görüntüsünde.
 - `docs/plan/M8-sanat-brifi.md` — `M8-P03`: üç ses için üretim brifi (M6 ses brifi biçimi)
 
 **Kabul kriteri** — `npm run test -- Settings` (yeni alanlar + geri düşme); canlı: müzik "Düşük"te müzik kısılıyor efekt değişmiyor.
+
+**Durum:** ☑ **bitti** (2026-09-14) — `Settings` 35 test (önce 27).
+
+#### Sonuç — `M8-T10`
+
+**Tek "Ses: Açık/Kapalı" anahtarı ikiye bölündü.** Oyuncunun en sık
+istediği şey "müziği kapat ama vuruş seslerini duy" ve eski tek anahtar
+bunu imkânsız kılıyordu: ses tamamen kapanıyor, oyun geri bildirimsiz
+kalıyordu.
+
+**`sound` bayrağı kaldırılmadı, TÜRETİLDİ** (`musicLevel` veya `sfxLevel`
+`off` değilse `true`). Gerekçe: `BootScene` ve `MenuScene` açılışta tek bir
+"ses var mı" sorusu soruyor, `sound.mute` da ikili, ve `Y05`'in "ses
+kapalıysa müziği hiç indirme" iyileştirmesi o soruya dayanıyor.
+
+**Göç sürüm yükseltmeden.** Eski kayıtta yalnız `sound` var; kademeler
+yoksa ondan türetiliyor (kapalıysa ikisi de `off`). Çelişki varsa
+**kademeler** kazanıyor — daha ayrıntılı bilgi onlarda. Göç kodu ayrı bir
+dosyada değil, `Settings` kurucusunda tek fonksiyon.
+
+**`low` = 0,35, efektin 0,4'ünden düşük.** Ses logaritmik algılanıyor;
+0,4 "kısılmış" değil "biraz kısık" gibi duyuluyordu.
+
+**Ses seviyesi çağrı anında okunuyor** (kurucuda kopyalanmıyor): oyuncu
+ayarı oyun içinde değiştirince bir sonraki efekt doğru seviyede çalıyor.
+`off` seviyesinde efekt **hiç çalınmıyor** — `volume: 0` de sessiz olurdu
+ama boşuna bir WebAudio düğümü kurardı.
+
+**Canlı ölçüm:** "Müzik: Düşük" seçilince menü müziğinin ses seviyesi
+**anında** 0,5 → **0,175** oldu (= 0,5 × 0,35) ve parça yeniden
+başlamadı; "Ses efekti" satırı **Tam** kaldı.
+
+**Panel 380 → 440 px**, altı satır, paylar yeniden ölçüldü.
+
+**`M8-P03` brifi yazıldı** (`docs/plan/M8-sanat-brifi.md`). Üç sesin ikisi
+(`countdown_tick`, `boss_music`) **kod tarafında bağlı** ve dosya yokken
+sessizce atlanıyor; üçüncüsü (`ui_click`) bilinçli olarak ertelendi:
+`SoundSystem` yalnız `GameScene` içinde yaşıyor, menü ve ayarlar paneli
+hiçbir ses sistemine erişemiyor. Yarım bir bağlantı (oyun içi butonlarda
+ses, menüde sessizlik) bir eksikten daha çok dikkat çekerdi; Faz 13
+(menü/HUD) o yolu zaten açacak.
 
 ### Faz 11 — Zorluk seviyeleri — `M8-T11`
 
