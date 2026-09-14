@@ -155,7 +155,44 @@ Bu brifte olmayan: sanat (`M6-sanat-uretim-brifi.md`, ayrı dosya).
 
 ---
 
-## ⚠ ÖLÇÜLDÜ: mevcut efektler **çok uzun** — yeniden kesilmeli
+## ☑ ÇÖZÜLDÜ: baş sessizliği koda bağlandı, yeniden kesmeye gerek kalmadı
+
+Aşağıdaki "çok uzun" teşhisi **eksikti**. Zarf analizi asıl kusuru
+gösterdi: `shot_okcu.wav`'ın ilk **1,59 saniyesi tamamen boştu**, ses
+1,60'ta başlıyordu. Yani ok atışı gerçekten bir buçuk saniye sonra
+duyuluyordu — oyuncunun "sonradan geliyor" dediği şey birebir buydu.
+Havuz o sese ulaşmadan örneği yeniden başlattığı için çoğu zaman **hiç**
+duyulmuyordu.
+
+Ölçülen baş sessizlikleri:
+
+| dosya | baş sessizlik | gerçek ses |
+|---|---|---|
+| `shot_okcu` | **1,59 sn** | 0,58 sn |
+| `error` | 0,76 sn | 0,41 sn |
+| `tower_place` | 0,64 sn | 0,74 sn |
+| `wave_start` | 0,46 sn | 1,01 sn |
+| diğerleri | 0,00 sn | — |
+
+`prep-assets.mjs` artık bu boşluğu **kaynaktan ölçüp** atıyor (`-ss`).
+Değer elle girilmiyor: yeni bir kaynak dosya geldiğinde kimse tabloyu
+güncellemek zorunda kalmasın.
+
+Sonuç (harita 1, dört okçu, bir dalga):
+
+| | önce | sonra |
+|---|---|---|
+| `shot_okcu` süresi | 2,25 sn | **0,68 sn** |
+| kesilme, 1× hız | %100 | **%0** |
+| kesilme, 2× hız | %95 | **%1** |
+| dosya boyutu | 36 KB | 12 KB |
+
+**Yeniden ses kesmeye gerek kalmadı.** Aşağıdaki hedef süreler yine de
+yeni ses üretilirken geçerli.
+
+---
+
+## Süre hedefleri (yeni ses üretilirken)
 
 Oyuncu geri bildirimi: *"ses efektleri biraz tutarsız, okçunun ok atma
 sesi 2×'te gelmiyor, sonradan geliyor"*. Ölçüm doğruladı ve sebebi
