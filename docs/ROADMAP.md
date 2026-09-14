@@ -331,7 +331,7 @@ istediği şeyleri yapıp matrisin okuyacağı sinyalleri göndermek.
 | 2 | Olay sayacı — matrisin üç sinyali | ✅ `systems/olcum.ts` |
 | 3 | Küratörlük cilası — 3× hız, satış onayı, kayıt uyarısı | ✅ |
 | 4 | Doküman tazeleme | ✅ bu satır |
-| 5 | **Yayınla, sonra en az bir hafta bekle** | sahibin işi |
+| 5 | **Yayınla, sonra en az bir hafta bekle** | sahibin işi — üç yapım komutu planda |
 | 6 | İçeriği teşhis matrisi seçsin | 5 bitmeden başlamaz |
 
 Faz 5–6'nın sırası **bu kez izlenecek**: M8'de atlandığı yazılı, sebebi
