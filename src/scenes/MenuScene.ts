@@ -129,9 +129,15 @@ export class MenuScene extends Phaser.Scene {
       .text(width / 2, height / 2 - 62, t('tagline'), {
         fontFamily: 'Spectral, serif',
         fontSize: '22px',
-        color: '#8A7250',
+        color: '#E4D3A8',
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      // Menü arka planı burada **sabit değil**: kalenin sancağı ve
+      // kulesi tam bu yüksekliği kesiyor ve soluk altın yazı taşın
+      // üstünde okunmuyordu (canlı ekran görüntüsü). Mürekkep gölge,
+      // zemin ne olursa olsun kontrastı garantiliyor — başlık 72 px
+      // olduğu için ona gerek yok, 22 px'lik alt başlığa var.
+      .setShadow(0, 2, '#14203A', 4, false, true);
 
     this.#createPlayButton(width / 2, height / 2 + 40);
     // `M8-T07` — başarımlar. "Oyna"nın altında ve **belirgin biçimde
