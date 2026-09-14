@@ -585,7 +585,7 @@ export class GameScene extends Phaser.Scene {
         effect: tier.effect,
       });
       // Görünüm `fire`'dan sonra (konum/hedef dolu), `activate`'ten önce.
-      const gorunum = projectileLook(kule.def.id, tier.effect?.kind);
+      const gorunum = projectileLook(kule.def.id, tier.effect?.kind, kule.tierIndex);
       m?.setLook(gorunum);
       m?.activate();
 
