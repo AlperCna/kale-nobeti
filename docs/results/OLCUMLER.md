@@ -797,3 +797,28 @@ ok sesi çoğu zaman **hiç** duyulmuyordu.
 | kesilme 1× | %100 | **%0** (59 çağrı) |
 | kesilme 2× | %95 | **%1** (90 çağrı) |
 | ilk indirme | 0,86 MB | **0,80 MB** |
+
+---
+
+## Tahsis oranı (`Y02` adım 2)
+
+`Y02` "Adım 3'e girmeden önce bugünkü sayı kayda geçmeli" diyordu ve iki
+ölçüm istiyordu: 4× kısıtlamalı FPS (→ `F6`-`F9`, **50 FPS**) ve tahsis
+oranı. İkincisi `performance.memory.usedJSHeapSize` yüksek frekansta
+örneklenip **yükselen kenarların eğimi** alınarak ölçüldü.
+
+| # | Koşul | Tahsis | Heap bandı | Ort. düşman |
+|---|---|---|---|---|
+| A1 | Harita 3, dalga 1 | **16,08 MB/sn** | 40-43 MB | ~2 |
+| A2 | Harita 3, dalga 7 | **15,99 MB/sn** | 40-43 MB | 3,7 (tepe 6) |
+
+**A1 ≈ A2.** Tahsis oranı, tıpkı kare maliyeti gibi (`F5`), **varlık
+sayısından bağımsız**. `Pool.activeItems()`'ın kare başına ürettiği 6-7
+dizi entity sayısıyla ölçeklenseydi bu iki satır ayrışırdı; ayrışmıyor.
+
+Heap 3 MB'lık bir bantta salınıyor ve GC yetişiyor — bu, V8'in ucuz
+**minor GC** bölgesi, duraklama üretmiyor (`F7`: p99 kare 3,70 ms).
+
+→ **`Y02` adım 3 YAPILMADI ve yapılmamalı.** Dosyanın kendi kuralı:
+*"Mal olmuyorsa Adım 3 yapılmaz — sıra kararlılığı, kazanılmayan bir
+başarım için feda edilmez."* Ölçüm mal olmadığını gösterdi.
