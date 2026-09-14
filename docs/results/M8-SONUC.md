@@ -91,7 +91,7 @@ Kapsama, bütçe, Kısıt A/B testlerinin hiçbiri **HUD'u** bilmiyor:
 
 | Konu | Durum |
 |---|---|
-| `M8-P01`/`P02` harita 4-5 arka planı | **Geçici görsel** oyunda; brif `docs/plan/M8-sanat-brifi.md` |
+| `M8-P01`/`P02` harita 4-5 arka planı | **Kapandı** — gerçek görseller oyunda (99 KB / 225 KB); prompt'lar `docs/plan/M8-sanat-promptlari.md` |
 | `M8-P03` üç ses | **Üçünün de kod tarafı bağlı**, yalnız dosyalar bekliyor |
 | `M8-B01` yolların HUD altından geçmesi | **Kapandı** — HUD yerleşimi taranarak çözüldü, harita geometrisine dokunulmadı (aşağıda) |
 | `Y11` Phaser özel yapımı | Ölçülmüş ara kazanç alındı (−%9,2); webpack yapımı hâlâ açık |
@@ -223,3 +223,41 @@ kartuş listeye alınsaydı test bir kusuru değil **bir kararı** kırardı.
 yol geçmiyor" diyor (parça-dikdörtgen mesafesi, eşik 24 = şeridin yarısı,
 uçan hatlar dahil). Eski ayar konumu geri konduğunda **kırıldığı
 doğrulandı**. Test sayısı 866.
+
+## `M8-B02` — yol gri tonlamada zemine yapışıyordu
+
+Harita 4-5'in gerçek arka planları gelince kabul ölçütü 4'ü (gri tonlamada
+okunurluk) çalıştırdım ve harita 5'te **yol kayboldu**. İlk refleks "yeni
+görsel kötü" demekti; ölçüm bunu yalanladı.
+
+`npm run check:bg` — yolun iki yanından 40 px dışarıda zemin lumasi
+örnekliyor, yol lumasi 117 (`#8A7250`):
+
+| harita | zemin | fark | en kötü çeyrek |
+|---|---|---|---|
+| değirmen geçidi | 108 | **9** | 5 |
+| taş köprü | 92 | 25 | 16 |
+| kül ovası | 134 | 18 | 38 |
+| kar geçidi | 182 | 65 | 70 |
+| kadim harabe | 112 | **5** | 5 |
+
+Yani sorun **yeni sanatta değil**: harita 1'in aylardır yayında olan arka
+planı da 9'da ve gri tonlamada onun yolu da kayboluyor (ekran görüntüsüyle
+doğrulandı). Renkte ayrışıyorlar çünkü **ton** farkı var — yeşil çayır,
+kahverengi yol. Ama yeşil-kahverengi en yaygın renk körlüğünde en çok
+karışan çift ve TIER 1 kural 6 "yalnız renge dayanmaz" diyor.
+
+→ Çözüm arka planda değil `MapRenderer`'da: yola **2 px mürekkep kontur**
+(`PATH_OUTLINE`). Tek değişiklik, beş haritanın hepsini düzeltiyor, altıncı
+harita geldiğinde de düzeltmiş olacak. Ayrıca oyunun görsel dili zaten bu —
+kule, düşman, kartuş, kale, yapı yuvası, hepsinin konturu vardı; yol tek
+konturluydu ve tezhip sayfasında yamalı duruyordu.
+
+Çizim **iki geçişe** ayrıldı (önce bütün yolların konturu, sonra bütün
+gövdeleri): tek geçişte harita 2/3/5'te ikinci kolun konturu birincinin
+gövdesine biniyor ve kolların birleştiği yerde şeridi ikiye bölen bir çizgi
+kalıyordu.
+
+`check:bg` kapı değil gösterge olarak durdu — kontur konduktan sonra düşük
+fark okunurluğu bozmuyor; tablo yeni arka plan üretilirken "ortası ne kadar
+sakin" sorusunun cevabı.

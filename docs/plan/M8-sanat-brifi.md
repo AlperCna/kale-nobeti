@@ -14,11 +14,12 @@ oyunun ilerlemesini durdurmuyor.
 
 ---
 
-## M8-P01 — Harita 4 arka planı: "Kar Geçidi"
+## M8-P01 — Harita 4 arka planı: "Kar Geçidi" ☑ BİTTİ
 
 **Dosya:** `assets-src/bg/kar-gecidi.png`
 **Hedef çıktı:** `public/assets/lazy/kar-gecidi.webp` (1280×720, q80, ≤400 KB)
-**Şu anki durum:** GEÇİCİ. Harita 1'in arka planından türetildi
+**Şu anki durum:** **GERÇEK GÖRSEL OYUNDA** (99 KB). Önceki geçici hâli
+harita 1'in arka planından türetiliyordu
 (`sharp().modulate({ saturation: 0.35, brightness: 1.18 }).tint(214,228,245)`)
 — yani soğutulmuş bir değirmen vadisi. Kar yok, kaya yok, geçit yok.
 
@@ -91,11 +92,12 @@ Altın varak (`#D4A032`) yalnız kalede ve birkaç vurguda.
 
 ---
 
-## M8-P02 — Harita 5 arka planı: "Kadim Harabe"
+## M8-P02 — Harita 5 arka planı: "Kadim Harabe" ☑ BİTTİ
 
 **Dosya:** `assets-src/bg/kadim-harabe.png`
 **Hedef çıktı:** `public/assets/lazy/kadim-harabe.webp` (1280×720, q80, ≤400 KB)
-**Şu anki durum:** GEÇİCİ. Harita 3'ün (Kül Ovası, lav) arka planından
+**Şu anki durum:** **GERÇEK GÖRSEL OYUNDA** (225 KB). Önceki geçici hâli
+harita 3'ün (Kül Ovası, lav) arka planından
 türetildi (`sharp().modulate({ saturation: 0.28, brightness: 0.88 })
 .tint(150,168,150)`) — yani soğutulup soluklaştırılmış bir lav ovası.
 Harabe yok, yapı yok, yosun yok.
