@@ -255,12 +255,12 @@ yerleşimini değiştirmek demek — bu fazın kapsamına sığmaz, **Faz 13
 için); `PreloadScene` yine değişmedi.
 
 
-### Faz 6 — Sonsuz mod — `M8-T06`
+### Faz 6 — Sonsuz mod — `M8-T06`  ☑
 
 | | |
 |---|---|
 | **Kimlik** | `M8-T06` |
-| **Durum** | ☐ bekliyor |
+| **Durum** | ☑ **bitti** (2026-09-14) |
 | **Süre** | ~45 dk |
 | **Önkoşul** | `M8-T03` (istatistik), `M8-T05` |
 | **TIER 1** | k.1, k.3 (havuz tavanı), k.8 |
@@ -278,6 +278,59 @@ için); `PreloadScene` yine değişmedi.
 **Kabul kriteri** — `npm run test -- endless`: bütçe ±%10, yalnız kadro, deterministik, dalga 30 simülasyonu < 2 sn, tepe düşman ≤ havuz; canlı: harita 1 bitir → devam → dalga 11+ geliyor, HUD "11".
 
 **Bitmedi sayılır eğer:** havuz dolunca dalga sessizce eksiliyorsa (WaveManager erteleme korunmalı).
+
+**Durum:** ☑ **bitti** (2026-09-14)
+
+#### Sonuç — `M8-T06`
+
+**`budget(n)` olduğu gibi kullanılamadı** ve bu fazın asıl kararı bu oldu.
+Formül dalga başına %20 büyüyor; dalga 30'da 10 × 1,20²⁹ ≈ **1900 puan**
+eder ve en ucuz düşman 1 puan olduğu için bu tek dalgada 1900 düşman
+demek. Havuz 60 ve `WaveManager` havuz dolunca **erteliyor** (sessizce
+atlamıyor, bilerek) — yani dalga hiç bitmez, oyun kilitlenirdi.
+
+Zorluk bu yüzden **iki kola** ayrıldı:
+- **bütçe** %8 büyüyor ve düşman **bedeni** tavanla sınırlı (havuzun %75'i),
+- tavan bağlayınca zorluğu **HP çarpanı** taşıyor: dalga başına kalıcı +%8.
+
+**Ölçerek düzeltilen üç şey** (üçü de üretilen dalgalar basılarak görüldü,
+teste bakarak değil):
+
+1. **Beden ≠ kafa.** Örümcek Ana tek kafa ama **dört beden** (kendisi + 3
+   yavru). Tavanı kafayla ölçmek dalga 30'da 13 Ana × 4 = 52 beden demekti
+   ve havuz taşıyordu. `endlessBodyCost()` eklendi, tavan ona bakıyor.
+2. **Tek tipe çökme.** Bütçe tavanı geçtikten sonra en pahalı düşmanla
+   doldurmak tek çare oluyor ve dalga 40, 50, 60 hepsi "44 Trol" çıkıyordu.
+   `ENDLESS_TYPE_SHARE_CAP` (%55) eklendi.
+3. **Ucuz tipler yine de kayboluyordu** — pahalılar bedenlerin hepsini
+   yiyordu. Birinci tur artık sırada bekleyen her aday için bir beden
+   **ayırıyor**; dalga 60'ta bile kadronun tamamı sahada.
+
+**Kayıt.** `EndlessRecords` ayrı bir üst alan (`endless`) kullanıyor,
+`progress.version` **değişmedi** — `TutorialSystem` deseni. İki sistemin
+aynı `localStorage` anahtarını paylaşması asıl risk olduğu için test her
+iki sırayı da (önce yıldız/önce rekor) deniyor.
+
+**Canlı doğrulama — ve onu mümkün kılan kanca.** Sonsuz mod dalga 11'de
+başlıyor; tarayıcıda oraya elle oynayarak varmak pratik değil (dalga başına
+24 sn doğum penceresi). Bu yüzden `DEV`-korumalı `killAllEnemies` kancası
+eklendi (normal hasar yolundan geçiyor: altın, efekt, olaylar aynı) ve
+sayfada 100 ms'lik bir otomat dalgaları sürdü. Sonuç: **dalga 11'e
+ulaşıldı**, `isEndlessWave` `true` oldu, HUD sayacı `11.10` yerine **`11`**
+yazdı ve üretilen dalga harita 1'in kadrosuyla geldi (kurtBinicisi, harpi,
+orkSavasci, goblin — trol yok, çünkü kadroda yok; boss yok, çünkü 11 boss
+dalgası değil). Kanca olmasa bu soruların hiçbiri canlı doğrulanamazdı.
+
+**Oyun sonu ekranı.** Kazanınca "Sonsuz moda devam" (**birincil değil** —
+ilk kez kazanan oyuncunun doğal yolu sıradaki harita). Sonsuz elde
+"Ulaşılan dalga / En iyi" satırı ve rekor kırılmışsa altın "Yeni rekor!".
+Canlı kontrolde o satır istatistik bloğuyla **üst üste bindi**; blok ve
+butonlar rekor satırı varsa 34 px aşağı kayıyor.
+
+**Plandan sapma:** `endlessWaves.ts` imzası `generateWave(n, roster, seed)`
+yerine `generateEndlessWave(n, roster, spawnPoints, seed)` oldu — iki
+girişli haritalarda kapı dağıtımı gerekiyordu.
+
 
 ### Faz 7 — Başarımlar — `M8-T07`
 

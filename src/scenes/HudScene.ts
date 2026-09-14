@@ -210,6 +210,7 @@ export class HudScene extends Phaser.Scene {
       prepRemainingSec: game.prepRemainingSec,
       waveNumber: game.waveNumber,
       totalWaves: game.totalWaves,
+      endless: game.isEndlessWave,
     });
     this.#telegraph?.show(game.upcomingWave);
     this.#abilityButtons?.update((id) => game.abilities.progress(id), game.pendingAbility);
@@ -249,6 +250,8 @@ export class HudScene extends Phaser.Scene {
       // `M8-T03` — `Game` birazdan duruyor; istatistik **veri olarak**
       // taşınıyor, nesne referansı olarak değil.
       stats: game.runStats?.data,
+      // `M8-T06` — oyun sonu ekranı rekoru yalnız sonsuz elde kaydediyor.
+      endless: game.isEndlessRun,
     });
   }
 

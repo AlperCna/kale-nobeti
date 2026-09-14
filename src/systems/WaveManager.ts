@@ -35,6 +35,21 @@ export function earlyStartBonus(remainingSec: number, waveNo: number): number {
   return Math.floor(remainingSec) * Math.ceil(waveNo / 2);
 }
 
+/**
+ * Sonsuz mod kaynağı — `M8-T06`.
+ *
+ * `WaveManager` sonsuz modun **kurallarını** bilmiyor; yalnız "listem
+ * bitti, sıradaki dalgayı sen üret" diyor. Üretim `systems/endlessWaves.ts`
+ * içinde ve Phaser'sız; böylece sonsuz mod dalga yaşam döngüsüne hiç
+ * dokunmadan ölçülebiliyor.
+ */
+export interface EndlessSource {
+  /** 1 tabanlı dalga numarası için dalga üretir. */
+  waveAt(n: number): Wave;
+  /** O dalgada haritanın HP çarpanına uygulanacak **ek** çarpan. */
+  hpScaleAt(n: number): number;
+}
+
 /** Doğurma sırasında bekleyen tek bir düşman. */
 interface Bekleyen {
   readonly def: EnemyDef;
@@ -53,6 +68,8 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
   /** Bu dalgada henüz doğmamış düşmanlar, `at`'a göre sıralı. */
   #kuyruk: Bekleyen[] = [];
   #spawnedThisWave = 0;
+  /** Sonsuz modda son üretilen dalga (bkz. `#waveAt`). */
+  #uretilen?: Wave;
 
   constructor(
     private readonly pool: Pool<T>,
@@ -75,19 +92,53 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
      * `M3-T09` sızan HP'yi buradan ölçüyor.
      */
     private readonly onLeak?: (enemy: T) => void,
+    /**
+     * Verilirse, elle yazılmış dalgalar bitince oyun **durmuyor**: bundan
+     * sonraki dalgalar üretiliyor (`M8-T06`). Verilmezse eski davranış —
+     * son dalgadan sonra `phase = 'done'`.
+     */
+    private readonly endless?: EndlessSource,
   ) {
     this.#prepLeftSec = BALANCE.prepSeconds;
     // Dalgasız harita hazırlık aşamasında beklemez — hazırlanacak bir şey yok.
-    if (waves.length === 0) this.#phase = 'done';
+    if (waves.length === 0 && endless === undefined) this.#phase = 'done';
   }
 
   get phase(): WavePhase {
     return this.#phase;
   }
 
-  /** 1 tabanlı dalga numarası. Bitince son dalganın numarası kalır. */
+  /**
+   * 1 tabanlı dalga numarası. Bitince son dalganın numarası kalır.
+   *
+   * Sonsuz modda **kırpılmıyor** — 11, 12, 13… diye artıyor; HUD ve skor
+   * bu sayıyı gösteriyor.
+   */
   get waveNumber(): number {
+    if (this.endless !== undefined) return this.#index + 1;
     return Math.min(this.#index + 1, this.waves.length);
+  }
+
+  /** Elle yazılmış dalgalar bitti mi — HUD "N/10" yerine "N" gösteriyor. */
+  get isEndless(): boolean {
+    return this.endless !== undefined && this.#index >= this.waves.length;
+  }
+
+  /**
+   * Bu indeksteki dalga: önce elle yazılmış liste, sonra sonsuz üretici.
+   *
+   * Üretilen dalga **önbelleğe alınıyor**: `upcomingWave` (dalga telgrafı)
+   * her karede okunuyor ve üretim her çağrıda yeniden koşarsa telgraf ile
+   * gerçekten doğan dalga ayrışabilir — üretim deterministik olsa bile
+   * boşuna iş olurdu.
+   */
+  #waveAt(i: number): Wave | undefined {
+    const elle = this.waves[i];
+    if (elle !== undefined) return elle;
+    if (this.endless === undefined) return undefined;
+    const no = i + 1;
+    if (this.#uretilen?.index !== no) this.#uretilen = this.endless.waveAt(no);
+    return this.#uretilen;
   }
 
   get prepRemainingSec(): number {
@@ -96,7 +147,7 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
 
   /** Hazırlık aşamasındaysa gelecek dalga; değilse `undefined`. */
   get upcomingWave(): Wave | undefined {
-    return this.#phase === 'prep' ? this.waves[this.#index] : undefined;
+    return this.#phase === 'prep' ? this.#waveAt(this.#index) : undefined;
   }
 
   get isComplete(): boolean {
@@ -146,7 +197,7 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
   }
 
   #dalgayiBaslat(): void {
-    const wave = this.waves[this.#index];
+    const wave = this.#waveAt(this.#index);
     if (wave === undefined) {
       this.#phase = 'done';
       return;
@@ -185,9 +236,21 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
         return;
       }
       this.#kuyruk.shift();
-      dusman.spawn(this.moverFor(bas.def, bas.spawnPoint), bas.def, this.hpMultiplier);
+      dusman.spawn(this.moverFor(bas.def, bas.spawnPoint), bas.def, this.#hpCarpani());
       this.#spawnedThisWave++;
     }
+  }
+
+  /**
+   * O dalgada uygulanacak HP çarpanı.
+   *
+   * Sonsuz modda haritanınkinin **üstüne** dalga başına bir çarpan biniyor:
+   * düşman sayısı havuz tavanıyla sınırlı olduğu için zorluğun tek
+   * sürdürülebilir kolu dayanıklılık (`data/endless.ts` başlığı).
+   */
+  #hpCarpani(): number {
+    if (this.endless === undefined) return this.hpMultiplier;
+    return this.hpMultiplier * this.endless.hpScaleAt(this.waveNumber);
   }
 
   #ilerlet(dt: number): void {
@@ -214,7 +277,7 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
     this.bus.emit('wave:ended', { index: no });
 
     this.#index++;
-    if (this.#index >= this.waves.length) {
+    if (this.#index >= this.waves.length && this.endless === undefined) {
       this.#phase = 'done';
       return;
     }
