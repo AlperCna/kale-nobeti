@@ -105,6 +105,30 @@ async function main() {
     process.exit(1);
   }
 
+  // `M9-T04` — **yanlış yapımı paketleme kapısı.**
+  //
+  // Bu betik `dist/`'te ne varsa zip'liyor ve `dist/` üç farklı yapımdan
+  // herhangi biri olabiliyor (`build`, `build:poki`, `build:crazygames`).
+  // `npm run build:crazygames` koşup ardından `package:itch` demek,
+  // CrazyGames SDK'sı gömülü bir zip'i itch.io'ya yüklemek demekti ve
+  // hiçbir şey uyarmıyordu. `research/05`'in yasak listesi bunu iki ayrı
+  // maddeyle yasaklıyor: "üçüncü taraf reklam (yalnız Poki SDK)" ve
+  // "dışa giden bağlantılar".
+  //
+  // Hata sessiz olurdu: oyun itch'te **çalışırdı** — yalnız her açılışta
+  // bir portal CDN'ine istek atardı ve karşılığı olmayan bir SDK'yı
+  // beklerdi.
+  const indexHtml = await readFile(path.join(DIST, 'index.html'), 'utf8');
+  const portalBetigi = /<script[^>]+src="https:\/\/[^"]*(poki|crazygames)[^"]*"/i.exec(indexHtml);
+  if (portalBetigi !== null) {
+    console.error(
+      `[package-itch] dist/ bir PORTAL yapımı (${portalBetigi[1]}) — itch.io sürümü SDK'sız olmalı.
+` +
+        '              Önce `npm run build` (portalsız), sonra `npm run package:itch`.',
+    );
+    process.exit(1);
+  }
+
   const dosyalar = await dosyalariTopla(DIST);
   // `index.html` **ilk** giriş: itch'in açıcısı sıraya bakmıyor ama
   // `unzip -l` çıktısının ilk satırı bu görevin kabul kriteri.

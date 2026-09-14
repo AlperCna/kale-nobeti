@@ -131,8 +131,41 @@ döngüsüne bakılıyor. Yani cila ve his, içerik miktarından önemli."*
 
 ### Faz 5 — YAYINLA, sonra bekle
 
+**Bu faz sahibin işi** (hesap/yayın kapsam dışı). Kod tarafı hazır;
+aşağısı ne çalıştırılacağı.
+
+#### Üç ayrı yapım — karıştırılmamalı
+
+| Nereye | Komut | `<head>`'deki SDK |
+|---|---|---|
+| itch.io | `npm run build` sonra `npm run package:itch` | **yok** |
+| Poki | `npm run build:poki` | `game-cdn.poki.com/scripts/v2/poki-sdk.js` |
+| CrazyGames | `npm run build:crazygames` | `sdk.crazygames.com/crazygames-sdk-v3.js` |
+
+Seçilmeyen portalın kodu pakete **hiç girmiyor** — `portalSec()`
+`import.meta.env.VITE_PORTAL`'ı derleme zamanında okuyor. Ölçüldü: Poki
+yapımında `CrazyGames` dizesi 0 kez, CrazyGames yapımında `PokiSDK` 0
+kez, itch yapımında ikisi de 0 kez geçiyor.
+
+`build:poki` / `build:crazygames` `scripts/build-portal.mjs` üzerinden
+koşuyor: `VITE_PORTAL=poki vite build` sözdizimi POSIX kabuğuna ait ve
+Windows'ta çalışmıyor, `cross-env` ise yeni bir bağımlılık olurdu.
+
+**`package:itch` artık portal yapımını reddediyor.** Bu betik `dist/`'te
+ne varsa zip'liyordu; `build:crazygames` koşup ardından `package:itch`
+demek, CrazyGames SDK'sı gömülü bir zip'i itch.io'ya yüklemek demekti ve
+hiçbir şey uyarmıyordu (oyun çalışırdı bile — yalnız her açılışta
+karşılığı olmayan bir CDN'e istek atardı). `research/05` bunu iki ayrı
+maddeyle yasaklıyor.
+
+#### Sonra
+
 `ROADMAP`: *"En az bir hafta veri biriktir — daha erken bakmak gürültü
 okumak."*
+
+Bir hafta sonra bakılacak beş sinyal ve hangi birleşimin hangi yöne
+işaret ettiği `ROADMAP.md`'deki teşhis matrisinde. Üçü artık portal
+panelinde kendiliğinden birikiyor (`systems/olcum.ts`).
 
 ### Faz 6 — İçerik *(yönü VERİ seçer)*
 
