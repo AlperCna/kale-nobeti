@@ -306,6 +306,8 @@ const TR = {
   statRegen: 'yenilenir',
   statSplit: 'bölünür',
   statHeals: 'iyileştirir',
+  statEnrage: 'yarısında hızlanır',
+  statSummon: 'yandaş çağırır',
 
   /** `M8-T03` — duraklatma menüsü ve oyun sonu istatistikleri. */
   restart: 'Yeniden başla',
@@ -527,6 +529,8 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     statRegen: 'regenerates',
     statSplit: 'splits',
     statHeals: 'heals',
+    statEnrage: 'enrages at half HP',
+    statSummon: 'summons minions',
     restart: 'Restart',
     settingsButton: 'Settings',
     statKills: 'Kills',

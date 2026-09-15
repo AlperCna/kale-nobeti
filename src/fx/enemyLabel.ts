@@ -46,11 +46,23 @@ export function enemySummary(def: EnemyDef): string {
     parcalar.push(`${t('statResist')} %${Math.round(def.magicResist * 100)}`);
   }
   if (def.flying) parcalar.push(t('statFlying'));
+  /**
+   * **Her yetenek burada yazılı olmalı.** `M13`'te boss'a çağırma
+   * eklendi ve telgraf onu söylemiyordu: oyuncu yandaşları ancak boss'u
+   * dilimleyince öğreniyordu. Harita 5'in ikinci evresi de aynı durumda
+   * — `M10`'dan beri sessizdi.
+   *
+   * Yetenek, oyuncunun karşı-oyun kararını değiştiren tek şey (bu
+   * dosyanın başlığı); "tam bilgi ver" kuralı (S93) onu satın almadan —
+   * burada **dalga gelmeden** — göstermeyi istiyor.
+   */
   const y = def.ability?.kind;
   if (y === 'regen') parcalar.push(t('statRegen'));
   else if (y === 'split') parcalar.push(t('statSplit'));
   else if (y === 'heal') parcalar.push(t('statHeals'));
   else if (y === 'burrow') parcalar.push(t('statBurrow'));
+  else if (y === 'enrage') parcalar.push(t('statEnrage'));
+  else if (y === 'summon') parcalar.push(t('statSummon'));
 
   const ad = enemyName(def.id);
   return parcalar.length === 0 ? ad : `${ad} — ${parcalar.join(', ')}`;
