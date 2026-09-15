@@ -1,6 +1,7 @@
 # M12 — Yeni verb ve altıncı harita
 
-> **Durum:** plan. `M11` bitti; bu taş **içerik** ekliyor.
+> **Durum:** BİTTİ (dört fazın dördü). `M11` karar katmanını düzeltti;
+> bu taş **içerik** ekledi: yeni bir düşman verb'ü ve altıncı harita.
 
 ## Neden bu taş
 
@@ -81,6 +82,17 @@ hatadan doğdu: kuralın iki kopyası.
 üstünden geçen düşmana karşı ölçülebilir biçimde zayıf; `kisitB` rampası
 bozulmuyor.
 
+> **BİTTİ.** Ölçüldü (harita 3, Okçu T3a, sızan düşman): Goblin ×6 →
+> aralık içi tahta **0**, dışı 3; Tünelci ×6 → **5 / 5**. Yani normal
+> düşmana karşı kapsama kazanıyor, Tünelci'ye karşı o üstünlük
+> tamamen siliniyor. Kural `TargetingSystem.gomuluMu`'da ve
+> `TowerSystem` üzerinden hem oyun hem `waveSim` onu çağırıyor.
+> Kısıt A'nın gömülü aralığı görmemesi **bilinen körlük** olarak
+> kaydedildi (S99) — bugün hiçbir sonucu değiştirmiyor.
+>
+> Canlı ekranda bir kusur yakalandı ve düzeltildi: gömülü düşman %35
+> saydamken can çubuğu tam opak kalıyordu.
+
 ### Faz 2 — Harita 6 iskeleti *(≈0,5 gün · risk düşük)*
 
 - `MAP_6` — yol, yapı noktaları, uçan hattı, kale, kilit zinciri,
@@ -94,6 +106,10 @@ bozulmuyor.
 **Kabul:** harita açılıyor, oynanıyor, `buildSpots.test` ve
 `panelLayout.test` altı haritayla geçiyor.
 
+> **BİTTİ.** 15 yapı noktası, ortalama kapsama 297,3 px (bant 285-311),
+> uçan hattı %75. Üç ölçüm turu gerekti; ayrıntı commit mesajında.
+> Arka plan `M8-P01` deseniyle türetildi (80 KB, tembel).
+
 ### Faz 3 — Harita 6 dalgaları ve dengesi *(≈1 gün · risk ORTA)*
 
 - Kadro: yeraltı düşmanı + geç oyun kadrosu.
@@ -105,12 +121,27 @@ bozulmuyor.
 **Kabul:** `kisitB`, `difficulty`, `bossScaling` testleri altı haritayla
 geçiyor; hiçbiri gevşetilmiyor.
 
+> **BİTTİ.** hp **6,2** · altın **11,0** · boss **2778** (0,80 × 3472).
+> Rampa `0 · 4 · 5 · 12 · 14 · 16`, Kolay ×0,80'de 5.
+>
+> **Tek gevşetme `maps.test.ts`'in GİRDİ monotonluğunda** ve bilerek:
+> harita 6'nın çarpanı harita 5'inkinden düşük (6,2 < 7,0) ama ölçülen
+> zorluğu daha yüksek (16 > 14), çünkü zorluk kadronun kendisinden
+> geliyor. `M8-T04`'ün "ölçüt çıktı olmalı" dersi. Gerçek iddia
+> `kisitB.test.ts`'te ve o **gevşetilmedi**.
+
 ### Faz 4 — Doğrulama ve doküman *(≈0,5 gün)*
 
 - Tarayıcıda oynanış doğrulaması (oyuncu gözüyle ekran görüntüsü).
 - `GAME-DESIGN` §5 kadro tablosu, §9 harita tablosu, karşı-oyun satırı.
 - `OPEN-QUESTIONS`: yeni verb'ün açık kalan tanımları (gömülü aralık
   uzunluğu, çıkış anındaki dokunulmazlık).
+
+> **BİTTİ.** S97 (Tünelci'nin sayıları), S98 (dokunulmaz değil
+> hedeflenemez), S99 (Kısıt A'nın gömülü aralığı görmemesi) kaydedildi.
+> `GAME-DESIGN` §5 karşı-oyun tablosu ve §9 harita/boss tabloları
+> güncellendi. Tarayıcıda: seviye seçimde altı kart, harita 6 oynanıyor,
+> gömülü düşmanın alfası 129 örneklemin hepsinde 0,35.
 
 ---
 
