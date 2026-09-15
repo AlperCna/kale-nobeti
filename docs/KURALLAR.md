@@ -350,9 +350,9 @@ tahta 3820'de takılıyor ve oyuncu 34 can kaybediyordu (20 canla kayıp).
 |---|---|---|---|---|
 | 1 · Değirmen Geçidi | ×1 | ×1 | 1350 | 0 / 20 ✓ |
 | 2 · Taş Köprü | ×1,6 | ×1,6 | 2210 | 8 / 20 ✓ |
-| 3 · Kül Ovası | ×2,5 | ×3,8 **←ayrıştı** | 4870 | 11 / 20 ✓ |
-| 4 · Kar Geçidi | ×4,4 | ×4,4 | 5100 | 15 / 20 ✓ |
-| 5 · Kadim Harabe | ×6,8 | ×6,8 | 6440 | 16 / 20 ✓ |
+| 3 · Kül Ovası | ×2,6 | ×3,8 **←ayrıştı** | 4870 | 6 / 20 ✓ |
+| 4 · Kar Geçidi | ×4,4 | ×4,4 | 5100 | 5 / 20 ✓ |
+| 5 · Kadim Harabe | ×6,8 | ×6,8 | 6440 | 10 / 20 ✓ |
 
 Türetilebilir kural: **altın, haritanın noktalarını tam yükseltmeye
 yetmeli.** 3,8'de maliyet doyuyor (üstü fazladan kule almıyor), yani sayı
@@ -361,7 +361,7 @@ seçilmedi — tam yükseltme noktası olarak **ölçüldü**.
 **Başlangıç altını da çarpanı izliyor** — S72, kapandı. §9 tablosu
 280/340/400 diyordu ama 340 ve 400 çarpanı izlemiyordu (×1,21 ve ×1,43,
 oysa HP ×1,6 ve ×2,6). Ölçülen sonuç: dalga 1 tahtası üç haritada da 3-4
-kule, ama goblin efektif HP'si 45/72/113/198/306. §9'un kendi gerekçesi
+kule, ama goblin efektif HP'si 45/72/117/198/306. §9'un kendi gerekçesi
 ("altın/HP oranı düşmesin") başlangıç altınına da uygulandı:
 
 | Harita | §9 tablosu | Kullanılan | Dalga 1 sızıntısı (önce → sonra) |
@@ -370,7 +370,7 @@ kule, ama goblin efektif HP'si 45/72/113/198/306. §9'un kendi gerekçesi
 | 2 · Taş Köprü | 340 | **448** = 280 × 1,6 | **4 → 0** |
 | 3 · Kül Ovası | 400 | **1064** = 280 × 2,6 | **7 → 0** |
 
-Toplam sızıntı: harita 2'de 13 → 8, harita 3'te 43 → 8.
+Toplam sızıntı: harita 2'de 13 → 8, harita 3'te 43 → 5.
 
 ---
 
@@ -490,9 +490,9 @@ referans tahtaya, tavana ve boss türetmesine hiç girmiyor — hiçbir düşman
 
 | Seviye | HP çarpanı | Başlangıç canı | Yıldız | 1 | 2 | 3 | 4 | 5 |
 |---|---|---|---|---|---|---|---|---|
-| kolay | ×0,75 | 20 | **kaydedilmiyor** | 0 / 20 ✓ | 2 / 20 ✓ | 2 / 20 ✓ | 5 / 20 ✓ | 5 / 20 ✓ |
-| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 8 / 20 ✓ | 11 / 20 ✓ | 15 / 20 ✓ | 16 / 20 ✓ |
-| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 8 / 12 ✓ | 11 / 12 ✓ | 15 / 12 ✗ | 16 / 12 ✗ |
+| kolay | ×0,85 | 20 | **kaydedilmiyor** | 0 / 20 ✓ | 4 / 20 ✓ | 1 / 20 ✓ | 2 / 20 ✓ | 6 / 20 ✓ |
+| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 8 / 20 ✓ | 6 / 20 ✓ | 5 / 20 ✓ | 10 / 20 ✓ |
+| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 8 / 12 ✓ | 6 / 12 ✓ | 5 / 12 ✓ | 10 / 12 ✓ |
 
 Hücreler: referans tahtanın kaybettiği can / o seviyenin canı.
 
@@ -506,7 +506,7 @@ Kaynak: `src/data/maps.ts` · `GAME-DESIGN.md` §9
 |---|---|---|---|---|---|---|
 | 1 · Değirmen Geçidi | 1 kol | 8 | ×1 | 280 | 1 hat, 7/8 nokta kesiyor | 5 tip |
 | 2 · Taş Köprü | 2 kol | 10 | ×1,6 | 448 | 1 hat, 5/10 nokta kesiyor | 7 tip |
-| 3 · Kül Ovası | 2 kol | 12 | ×2,5 | 1064 | 2 hat, 6/12 nokta kesiyor | 10 tip |
+| 3 · Kül Ovası | 2 kol | 12 | ×2,6 | 1064 | 2 hat, 6/12 nokta kesiyor | 10 tip |
 | 4 · Kar Geçidi | 1 kol | 12 | ×4,4 | 1232 | 1 hat, 11/12 nokta kesiyor | 10 tip |
 | 5 · Kadim Harabe | 2 kol | 15 | ×6,8 | 1904 | 2 hat, 13/15 nokta kesiyor | 10 tip |
 
@@ -591,15 +591,15 @@ Ayrık yolda **en zayıf kol** belirleyici — düşman hangi kolu seçeceğini 
 
 | Düşman | Efektif HP | Tavan | Kollar | Oran |
 |---|---|---|---|---|
-| Goblin | 113 | 689 | 689 / 818 | %16,3 |
-| Ork Savaşçı | 275 | 877 | 877 / 1043 | %31,3 |
-| Kurt Binicisi | 150 | 367 | 367 / 437 | %40,8 |
-| Harpi | 175 | 445 | 445 / 597 | %39,3 |
-| Zırhlı Ork | 400 | 890 | 890 / 1067 | %44,9 |
-| Şaman | 325 | 844 | 844 / 977 | %38,5 |
-| Trol | 1000 | 1253 | 1253 / 1494 | %79,8 |
-| Örümcek Ana | 375 | 768 | 768 / 901 | %48,8 |
-| Örümcek Yavrusu | 75 | 460 | 460 / 545 | %16,3 |
+| Goblin | 117 | 689 | 689 / 818 | %17 |
+| Ork Savaşçı | 286 | 877 | 877 / 1043 | %32,6 |
+| Kurt Binicisi | 156 | 367 | 367 / 437 | %42,5 |
+| Harpi | 182 | 445 | 445 / 597 | %40,9 |
+| Zırhlı Ork | 416 | 890 | 890 / 1067 | %46,7 |
+| Şaman | 338 | 844 | 844 / 977 | %40 |
+| Trol | 1040 | 1253 | 1253 / 1494 | %83 |
+| Örümcek Ana | 390 | 768 | 768 / 901 | %50,8 |
+| Örümcek Yavrusu | 78 | 460 | 460 / 545 | %17 |
 | Ogre Şef (boss) | 1023 | 1278 | 1278 / 1497 | %80 |
 
 
@@ -653,9 +653,9 @@ Simülasyon **canlı oyunla aynı kodu** kullanıyor: aynı
 |---|---|---|---|
 | 1 · Değirmen Geçidi | **0** | 0 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:0 |
 | 2 · Taş Köprü | **8** | 445 | d1:0 d2:1 d3:1 d4:1 d5:1 d6:3 d7:0 d8:0 d9:1 d10:0 |
-| 3 · Kül Ovası | **8** | 1143 | d1:0 d2:1 d3:0 d4:0 d5:0 d6:1 d7:0 d8:1 d9:4 d10:1 |
-| 4 · Kar Geçidi | **12** | 5199 | d1:0 d2:1 d3:1 d4:1 d5:0 d6:1 d7:0 d8:2 d9:3 d10:3 |
-| 5 · Kadim Harabe | **13** | 7321 | d1:0 d2:2 d3:1 d4:1 d5:0 d6:1 d7:0 d8:2 d9:4 d10:2 |
+| 3 · Kül Ovası | **5** | 175 | d1:0 d2:1 d3:0 d4:1 d5:0 d6:2 d7:0 d8:0 d9:1 d10:0 |
+| 4 · Kar Geçidi | **4** | 1390 | d1:0 d2:1 d3:1 d4:1 d5:0 d6:0 d7:0 d8:0 d9:0 d10:1 |
+| 5 · Kadim Harabe | **7** | 3839 | d1:0 d2:2 d3:1 d4:1 d5:0 d6:0 d7:0 d8:1 d9:1 d10:1 |
 
 
 **Hangi düşman sızıyor** — toplam sayı *neyin* sızdığını söylemiyor ve
@@ -665,9 +665,9 @@ bu ikisi farklı düzeltmeler gerektiriyor:
 |---|---|
 | 1 · Değirmen Geçidi | **hiç yok** |
 | 2 · Taş Köprü | Zırhlı Ork ×3 · Ork Savaşçı ×2 · Harpi ×2 · Şaman ×1 |
-| 3 · Kül Ovası | Harpi ×3 · Trol ×3 · Ork Savaşçı ×1 · Zırhlı Ork ×1 |
-| 4 · Kar Geçidi | Zırhlı Ork ×5 · Trol ×3 · Ork Savaşçı ×2 · Şaman ×2 |
-| 5 · Kadim Harabe | Zırhlı Ork ×5 · Ork Savaşçı ×3 · Trol ×3 · Şaman ×2 |
+| 3 · Kül Ovası | Ork Savaşçı ×2 · Harpi ×2 · Trol ×1 |
+| 4 · Kar Geçidi | Ork Savaşçı ×2 · Zırhlı Ork ×1 · Trol ×1 |
+| 5 · Kadim Harabe | Ork Savaşçı ×3 · Trol ×3 · Zırhlı Ork ×1 |
 
 **Kısıt A ile Kısıt B aynı şeyi ölçmüyor.** Kısıt A *tek* düşman için
 ("bir Ork Savaşçı öldürülebilir mi"), Kısıt B *dalga* için ("on bir tanesi
