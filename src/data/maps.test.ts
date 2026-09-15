@@ -146,12 +146,12 @@ describe('Harita 2 ve 3 — GAME-DESIGN.md §9 tablosu', () => {
     // S87 — zorluk rampası ölçülerek yeniden türetildi; gerekçe ve
     // tarama `data/maps.ts`'in harita 2 üstündeki S87 notunda.
     expect(MAP_2.hpMultiplier).toBe(1.6);
-    expect(MAP_2.goldMultiplier).toBe(1.6);
+    expect(MAP_2.goldMultiplier).toBe(2.2); // `M20` (S118): 1,6 → 2,2
     // S72 — §9 tablosu 340/400 diyor ama altın çarpanını izlemiyordu.
     // §9'un kendi gerekçesi ("altın/HP oranı düşmesin") başlangıç altınına
     // da uygulandı: 280 × çarpan. Ölçülen etki: dalga 1 sızıntısı
     // harita 2'de 4→0, harita 3'te 7→0.
-    expect(MAP_2.startGold).toBe(448);
+    expect(MAP_2.startGold).toBe(616); // 280 × 2,2
 
     expect(MAP_3.id).toBe('kul-ovasi');
     expect(MAP_3.buildSpots).toHaveLength(12);

@@ -250,14 +250,33 @@ export const MAP_2: MapDef = {
    * yol). Değişen yalnız sıradan düşmanların canı.
    */
   hpMultiplier: 1.6, // S87 → S95 → S101 (erken bonus ölçeklenince rampa yeniden)
-  goldMultiplier: 1.6, // S87 — HP'den ayrıştı, gerekçe yukarıda
+  /**
+   * **`M20` (S118): 1,6 → 2,2.** HP çarpanından ayrıştı.
+   *
+   * Harita 2, T3 **dal kararını** hiç açmıyordu: dalga 10'daki tahta
+   * `{T1:1, T2:9}` ile bitiyordu, yani gelir tam "noktaları doldur +
+   * T2" kadardı ve oyuncu oyunun en zengin seçimini (Havan ↔ Barut
+   * Fıçısı, Keskin Nişancı ↔ Kundakçı, Yıldırım ↔ Buz) ilk kez
+   * **üçüncü** haritada görüyordu.
+   *
+   * Tarama (can kaybı her değerde **0**, rampa etkilenmiyor):
+   * 1,6 → T3 yok · 1,8 → 1 (yalnız Buz) · 2,0 → 1 (yalnız Buz) ·
+   * **2,2 → 3, hem T3a hem T3b** · 2,4 → 4. 1,8 ve 2,0 bir *seçim*
+   * göstermiyor çünkü dal kuralı gereği ilk T3 hep Buz oluyor; 2,2
+   * takasın iki yakasını da tahtaya koyan **en küçük** adım.
+   *
+   * Altın/HP oranı 1,00 → **1,375**, yani harita 3'ün 1,36'sının
+   * yanında. Eski 1,00 bütün kampanyada tek başına aykırıydı (harita
+   * 1 zaten §9 gereği 1,00).
+   */
+  goldMultiplier: 2.2, // S87 → S118
   // S72 — §9 tablosu 340 diyor; **280 × 1,6 = 448** kullanılıyor.
   // Gerekçe §9'un kendi cümlesi: altın çarpanı "altın/HP oranı düşmesin"
   // diye var. Çarpan öldürme altınına ve (S70'te) dalga bonusuna
   // uygulanıyordu ama başlangıç altınına uygulanmıyordu — ölçülen sonuç:
   // dalga 1 tahtası üç haritada da 3-4 kule, ama goblin efektif HP'si
   // 45/72/117. Erken dalga sızıntısının kaynağı buydu.
-  startGold: Math.round(280 * 1.6),
+  startGold: Math.round(280 * 2.2),
   // §5 kadro tablosu: harita 1 + Zırhlı Ork, Şaman.
   enemyRoster: ['goblin', 'orkSavasci', 'kurtBinicisi', 'harpi', 'zirhliOrk', 'saman', 'ogreSef'],
   // ELLE YAZILMAZ — CLAUDE.md Mimari kuralı.
