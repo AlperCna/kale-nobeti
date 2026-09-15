@@ -200,8 +200,49 @@ export const MAP_2: MapDef = {
   buildSpots: MAP2_BUILD_SPOTS,
   flyerPaths: [MAP2_FLYER],
   castle: MAP2_KALE,
-  hpMultiplier: 1.6,
-  goldMultiplier: 1.6, // = hpMultiplier (§9)
+  /**
+   * **S87 — zorluk rampası ölçülerek yeniden türetildi (`M10`).**
+   *
+   * `waveSim`'in üç körlüğü (S80 boss, S81 düşman yetenekleri, S86
+   * süreli etkiler) kapanınca ölçülen Zor rampası `0 · 8 · 6 · 3 · 8`
+   * çıktı: **monoton değil** (harita 2, harita 3 ve 4'ten zor) ve
+   * harita 4-5 `difficulty.ts`'in "Zor'da referans tahtadan fazlasını
+   * ister" tanımını karşılamıyordu. Oyun hep böyleydi; simülasyon
+   * göremiyordu.
+   *
+   * Yeni rampa (Zor / Kolay), hepsi taranarak seçildi:
+   *
+   * | Harita | HP çarpanı | Altın çarpanı | Zor | Kolay |
+   * |---|---|---|---|---|
+   * | 1 | 1,0 | 1,0 | 0 | 0 |
+   * | 2 | **1,3** | 1,6 | 4 | 1 |
+   * | 3 | **3,0** | 3,8 | 7 | 4 |
+   * | 4 | **7,2** | **7,2** | 13 | 7 |
+   * | 5 | **10,0** | **10,0** | 17 | 8 |
+   *
+   * Dört ölçüt de sağlanıyor: monoton · öğrenme yayı (2-3) Zor'da
+   * geçilebilir (< 12) · harita 4-5 Zor'un tanımını karşılıyor (≥ 12) ·
+   * Kolay'da hepsi ≤ 10.
+   *
+   * **Harita 2 DÜŞTÜ, diğerleri yükseldi.** Ölçüm harita 2'nin
+   * konumuna göre fazla zor olduğunu gösterdi (20 canın 8'i, ikinci
+   * haritada) — rampayı yalnız yukarı iterek düzeltmek öğrenme yayını
+   * daha da sertleştirirdi.
+   *
+   * **Altın çarpanı HP ile birlikte yükseldi (harita 4-5).** İlk
+   * deneme yalnız HP'yi yükseltiyordu ve `maps.test.ts`'in S73
+   * değişmezini deldi: *"altın çarpanı HP çarpanından AZ OLAMAZ"*.
+   * Değişmez haklı — altın referans tahtanın karşılanabilirliğini
+   * belirliyor, HP onu geçerse harita yapısı gereği geçilemez hâle
+   * gelir. Altın da yükseltilince tahta güçlendi, o yüzden HP hedefi
+   * 5,6 → 7,2 ve 8,0 → 10,0'a çıktı: ikisi birlikte tarandı.
+   *
+   * **Boss HP'si etkilenmiyor:** `bossFor` mutlak `BOSS_HP_BY_MAP`'i
+   * çarpana BÖLÜYOR, yani sonuç çarpandan bağımsız (S80'in düzelttiği
+   * yol). Değişen yalnız sıradan düşmanların canı.
+   */
+  hpMultiplier: 1.3,
+  goldMultiplier: 1.6, // S87 — HP'den ayrıştı, gerekçe yukarıda
   // S72 — §9 tablosu 340 diyor; **280 × 1,6 = 448** kullanılıyor.
   // Gerekçe §9'un kendi cümlesi: altın çarpanı "altın/HP oranı düşmesin"
   // diye var. Çarpan öldürme altınına ve (S70'te) dalga bonusuna
@@ -303,7 +344,7 @@ export const MAP_3: MapDef = {
    * körlükleri kapatmadan sayı türetmek, düzeltmeyi iki kez yapmak
    * demek.
    */
-  hpMultiplier: 2.6,
+  hpMultiplier: 3.0, // S87 — rampa taraması, gerekçe harita 2'nin notunda
   /**
    * **S73 — altın çarpanı HP çarpanından AYRIŞTI (2,6 → 3,8).**
    *
@@ -446,9 +487,9 @@ export const MAP_4: MapDef = {
    * Boss tavanı çarpandan bağımsız (tahta DPS'i ÷ boss zırhı), o yüzden
    * türetilen boss HP 1857 bu değişiklikte **aynı kaldı**.
    */
-  hpMultiplier: 4.4,
-  goldMultiplier: 4.4,
-  startGold: Math.round(280 * 4.4),
+  hpMultiplier: 7.2, // S87
+  goldMultiplier: 7.2, // S87 — HP ile birlikte yükseldi (S73 değişmezi)
+  startGold: Math.round(280 * 7.2), // S87
   // §5: kadro **tam** — dokuz tip, yeni tanıtım yok.
   enemyRoster: [
     'goblin',
@@ -480,8 +521,8 @@ export const MAP_4: MapDef = {
  * monoton zorluk demek değil; ölçüt simülasyonun verdiği **can kaybı**).
  * Tarama gerekçesi `docs/plan/M8-genisleme.md` Faz 5 sonucunda.
  */
-const MAP5_HP_CARPANI = 6.8;
-const MAP5_ALTIN_CARPANI = 6.8;
+const MAP5_HP_CARPANI = 10.0; // S87 — rampa taraması
+const MAP5_ALTIN_CARPANI = 10.0; // S87 — HP ile birlikte (S73 değişmezi)
 
 const MAP5_KALE: Vec2 = { x: 1180, y: 600 };
 

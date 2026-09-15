@@ -84,31 +84,19 @@ describe('Kısıt B — düşman kırılımı', () => {
   });
 
   /**
-   * **Zorluk rampası — iddia GEVŞETİLMEDİ, ÖLÇÜLENE bağlandı (S87).**
+   * **Zorluk rampası MONOTON — S87'de ölçülerek yeniden türetildi.**
    *
-   * `M8-T04` dersi hâlâ geçerli: monoton `hpMultiplier` monoton zorluk
-   * vermiyor, ölçüt çıktı olmalı. Ama `M10`'da `waveSim`'in **üç ayrı
-   * körlüğü** kapandı (S80 haritaya duyarlı boss, S81 düşman
-   * yetenekleri, S86 süreli kule etkileri) ve ölçülen rampa şu çıktı:
+   * `M8-T04` dersi: monoton `hpMultiplier` monoton zorluk vermiyor,
+   * ölçüt **çıktı** olmalı. `M10`'da bu testin bir süre ölçülen
+   * değerlere kilitlenmesi gerekti, çünkü `waveSim`'in üç körlüğü
+   * (S80 boss, S81 düşman yetenekleri, S86 süreli etkiler) kapanınca
+   * gerçek rampa `0 · 8 · 6 · 3 · 8` çıktı — monoton değil. Oyun hep
+   * böyleydi; simülasyon göremiyordu.
    *
-   *     harita 1..5 →  0 · 8 · 6 · 3 · 8
-   *
-   * (`M10-T05` kule sinerjisi haritaland 4 ve 5'i ikişer can
-   * kolaylaştırdı: 5 → 3 ve 10 → 8. Kilit onu **yakaladı** — testin
-   * işi tam buydu.)
-   *
-   * Yani rampa **monoton değil**: harita 2, harita 3 ve 4'ten zor.
-   * Bu yeni bir bozulma değil — oyun hep böyleydi, simülasyon
-   * göremiyordu. Dolayısıyla "monoton olmalı" iddiasını yeşile boyamak
-   * için dört haritanın çarpanını değiştirmek **oyuncunun deneyimini
-   * değiştiren bir tasarım kararı** ve sahibin onayını bekliyor
-   * (`OPEN-QUESTIONS.md` S87, tarama verisiyle birlikte).
-   *
-   * O karara kadar bu test **ölçülen rampayı kilitliyor**: herhangi bir
-   * değişiklik sayıları oynatırsa burası kırılır ve rampa yeniden
-   * gözden geçirilir. Yani kapsam kaybı yok, iddia yer değiştirdi.
+   * S87'de dört harita çarpanı taranarak yeniden türetildi ve iddia
+   * **geri kondu**: rampa artık `0 · 4 · 7 · 12 · 14`.
    */
-  it('zorluk rampası ÖLÇÜLEN değerlerde — monotonluk S87’de açık', () => {
+  it('**zorluk MONOTON** — çarpan değil, ölçülen can kaybı (M8-T04, S87)', () => {
     const kayip = [
       canKaybi(MAP_1, MAP1_WAVES),
       canKaybi(MAP_2, MAP2_WAVES),
@@ -116,10 +104,11 @@ describe('Kısıt B — düşman kırılımı', () => {
       canKaybi(MAP_4, MAP4_WAVES),
       canKaybi(MAP_5, MAP5_WAVES),
     ];
-    expect(kayip, `ölçülen rampa: ${kayip.join(' → ')}`).toEqual([0, 8, 6, 3, 8]);
-    // Uçlar hâlâ doğru yönde: öğretici harita bedava, son harita en zor.
+    for (let i = 1; i < kayip.length; i++) {
+      expect(kayip[i]!, `harita ${i + 1}: ${kayip.join(' → ')}`).toBeGreaterThan(kayip[i - 1]!);
+    }
+    // Öğretici harita bedava kalmalı — rampanın alt ucu.
     expect(kayip[0]).toBe(0);
-    expect(kayip[4]).toBe(Math.max(...kayip));
   });
 
   it('Ork Savaşçı debisi çözüldü — S73', () => {

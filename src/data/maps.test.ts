@@ -142,7 +142,9 @@ describe('Harita 2 ve 3 — GAME-DESIGN.md §9 tablosu', () => {
     expect(MAP_2.id).toBe('tas-kopru');
     expect(MAP_2.buildSpots).toHaveLength(10);
     expect(MAP_2.paths).toHaveLength(2); // Y ayrımı
-    expect(MAP_2.hpMultiplier).toBe(1.6);
+    // S87 — zorluk rampası ölçülerek yeniden türetildi; gerekçe ve
+    // tarama `data/maps.ts`'in harita 2 üstündeki S87 notunda.
+    expect(MAP_2.hpMultiplier).toBe(1.3);
     expect(MAP_2.goldMultiplier).toBe(1.6);
     // S72 — §9 tablosu 340/400 diyor ama altın çarpanını izlemiyordu.
     // §9'un kendi gerekçesi ("altın/HP oranı düşmesin") başlangıç altınına
@@ -153,8 +155,8 @@ describe('Harita 2 ve 3 — GAME-DESIGN.md §9 tablosu', () => {
     expect(MAP_3.id).toBe('kul-ovasi');
     expect(MAP_3.buildSpots).toHaveLength(12);
     expect(MAP_3.paths).toHaveLength(2); // iki giriş
-    // S82 geri alındı (S86): 2,5 yarım simülasyonun artefaktıydı.
-    expect(MAP_3.hpMultiplier).toBe(2.6);
+    // S82 geri alındı (S86), sonra S87 rampasıyla 3,0'a çıktı.
+    expect(MAP_3.hpMultiplier).toBe(3.0);
     expect(MAP_3.goldMultiplier).toBe(3.8); // S73 — HP çarpanından ayrıştı
     expect(MAP_3.startGold).toBe(1064); // 280 × 3,8
   });
@@ -218,9 +220,10 @@ describe('Harita 4 — M8-T04', () => {
     // monotonluk 3,4/4,0 diyordu ama simülasyon o değerlerle **sıfır**
     // can kaybı verdi — harita 3'ten kolay. Tarama 4,4'ü verdi (can 13,
     // harita 3'ün 10'unun üstünde, 20 sınırının altında).
-    expect(MAP_4.hpMultiplier).toBe(4.4);
-    expect(MAP_4.goldMultiplier).toBe(4.4);
-    expect(MAP_4.startGold).toBe(1232);
+    // S87 — HP ve altın birlikte yükseldi (S73 değişmezi korunuyor).
+    expect(MAP_4.hpMultiplier).toBe(7.2);
+    expect(MAP_4.goldMultiplier).toBe(7.2);
+    expect(MAP_4.startGold).toBe(2016);
   });
 
   it('kadro harita 3 + ogreSef — yeni düşman tipi YOK', () => {
@@ -363,9 +366,10 @@ describe('Harita 5 - M8-T05', () => {
     // 6,0→12 · 6,4→11 · 6,6→11 · **6,8→16** · 7,0→18 · 7,2→20.
     // 6,8 seçildi: harita 4'ün 13'ünün üstünde, 20 sınırının %20 altında ve
     // dalga profili tek bir uçurum içermiyor ([0,2,1,1,0,1,0,2,4,2]).
-    expect(MAP_5.hpMultiplier).toBe(6.8);
-    expect(MAP_5.goldMultiplier).toBe(6.8);
-    expect(MAP_5.startGold).toBe(1904);
+    // S87 — HP ve altın birlikte yükseldi (S73 değişmezi korunuyor).
+    expect(MAP_5.hpMultiplier).toBe(10.0);
+    expect(MAP_5.goldMultiplier).toBe(10.0);
+    expect(MAP_5.startGold).toBe(2800);
   });
 
   it('iki kol da BIRLESIYOR - ortak govde gercekten ortak', () => {
