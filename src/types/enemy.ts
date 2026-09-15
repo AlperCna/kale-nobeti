@@ -26,7 +26,9 @@ export type EnemyId =
   | 'orumcekAna'
   | 'ogreSef'
   /** Bölünmeden çıkar; kadroda ve dalga bütçesinde yer almaz (§5). */
-  | 'orumcekYavrusu';
+  | 'orumcekYavrusu'
+  /** `M12` — yeraltı geçişi yapan düşman. Harita 6'nın tanıttığı mekanik. */
+  | 'tunelci';
 
 /**
  * Düşman özel yetenekleri. `GAME-DESIGN.md` §5 "Özellik" sütunu.
@@ -59,6 +61,41 @@ export type EnemyAbility =
       readonly kind: 'enrage';
       readonly hpRatio: number;
       readonly speedMultiplier: number;
+    }
+  /**
+   * **Yeraltı geçişi** — `M12` Faz 1, harita 6'nın tanıttığı mekanik.
+   *
+   * Düşman yolun `fromFraction`..`toFraction` aralığında **hedeflenemez**.
+   * Görünmez değil: saydamlaşıyor ve yürümeye devam ediyor, ama hiçbir
+   * kule onu hedef olarak seçemiyor.
+   *
+   * ## Neden bu verb
+   *
+   * Bugünkü yeteneklerin hepsi **dayanıklılık** ekseninde (iyileştirme,
+   * yenilenme, bölünme, kalkan, ikinci evre). Hiçbiri oyuncunun **yer**
+   * kararına dokunmuyor — oysa ölçüm yerleştirmenin oyunun en çok fark
+   * yaratan kararı olduğunu söylüyor (aynı kuleler rastgele noktalara
+   * konunca can kaybı 5'ten 9-14'e çıkıyor). Gömülü aralık, "bütün
+   * kuleleri en yüksek kapsamalı iki noktaya yığ" cevabını cezalandırıyor.
+   *
+   * ## Dokunulmaz DEĞİL, hedeflenemez
+   *
+   * Patlama ve yanma gömülüye de değiyor — kural yalnız **hedef
+   * seçimini** kapatıyor. Bu bilerek: dokunulmazlık oyuncuya "bekle ve
+   * izle" derdi; hedeflenemezlik ise bir **cevap** bırakıyor (alan
+   * hasarı, önceden yakılmış yanma, ve gömülü aralığın dışını kapsayan
+   * yerleşim).
+   *
+   * Durum tutulmuyor — `enrage` gibi her karede `pathFraction`'dan
+   * **türetiliyor**, yani havuza dönen düşmanda sıfırlanacak bir bayrak
+   * doğmuyor (TIER 1 kural 3).
+   */
+  | {
+      readonly kind: 'burrow';
+      /** Yolun bu oranından itibaren gömülü. `0` = doğumdan itibaren. */
+      readonly fromFraction: number;
+      /** Bu orandan sonra çıkıyor. `1` = kaleye kadar. */
+      readonly toFraction: number;
     };
 
 /**
@@ -127,6 +164,17 @@ export interface EnemyState {
    */
   speedFactor: number;
   progress: PathProgress;
+  /**
+   * Yolun **kat edilen** oranı, 0..1. Doğumda `0`, kalede `1`.
+   *
+   * `Mover.step` yazıyor — yolun toplam uzunluğunu yalnız o biliyor.
+   * `remainingDistance` tek başına oran vermiyor (harita başına toplam
+   * uzunluk farklı) ve düşman tanımı haritalar arasında paylaşılıyor,
+   * yani piksel cinsinden bir aralık taşınamazdı.
+   *
+   * Kullanan: yeraltı geçişi (`EnemyAbility` `burrow`).
+   */
+  pathFraction: number;
   /**
    * Kışla askeri tarafından engellenmiş mi (`DEPENDENCIES.md` §7).
    *
@@ -200,6 +248,16 @@ export interface Targetable {
    * Tip zorunluluğu o riski ortadan kaldırıyor.
    */
   readonly effects: { readonly slowSeconds: number };
+  /**
+   * Yolun kat edilen oranı, 0..1 — yeraltı geçişi bunu okuyor
+   * (`TargetingSystem.gomuluMu`).
+   *
+   * `EnemyState.pathFraction` ile aynı sayı; arayüzde olmasının sebebi
+   * S80/S81/S86/S92'nin dersi: kural **tek** bir yerde yaşasın ve hem
+   * oyun hem simülasyon aynı fonksiyonu çağırsın. Alanı arayüza koymak
+   * derleyiciyi bütün uygulayıcıları saymaya zorluyor.
+   */
+  readonly pathFraction: number;
 }
 
 export interface Mover {

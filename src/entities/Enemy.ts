@@ -41,6 +41,8 @@ export class Enemy extends Phaser.GameObjects.Sprite implements Poolable, EnemyS
   /** Süreli kule etkileri (yanma, yavaşlatma). */
   readonly effects = emptyEffects();
   progress: PathProgress = { segmentIndex: 0, tInSegment: 0, remainingDistance: 0 };
+  /** Yolun kat edilen oranı — `Mover.step` yazıyor (`M12` yeraltı geçişi). */
+  pathFraction = 0;
   blockedBy: object | null = null;
   alive = false;
   /** `M10-T03` — kalan buz kalkanı. `resetEnemyState` sıfırlıyor. */

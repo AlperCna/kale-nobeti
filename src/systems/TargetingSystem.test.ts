@@ -43,6 +43,7 @@ function dusman(o: Partial<Targetable> = {}): Targetable {
     maxHp: 100,
     alive: true,
     effects: { slowSeconds: 0 },
+    pathFraction: 0,
     remainingDistance: 1000 - sayac,
     def: GOBLIN,
     ...o,

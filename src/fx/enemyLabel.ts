@@ -23,6 +23,7 @@ const AD_ANAHTARI: Readonly<Record<EnemyId, StringKey>> = {
   trol: 'enemyTrol',
   orumcekAna: 'enemyOrumcekAna',
   orumcekYavrusu: 'enemyOrumcekYavrusu',
+  tunelci: 'enemyTunelci',
   ogreSef: 'enemyOgreSef',
 };
 
@@ -49,6 +50,7 @@ export function enemySummary(def: EnemyDef): string {
   if (y === 'regen') parcalar.push(t('statRegen'));
   else if (y === 'split') parcalar.push(t('statSplit'));
   else if (y === 'heal') parcalar.push(t('statHeals'));
+  else if (y === 'burrow') parcalar.push(t('statBurrow'));
 
   const ad = enemyName(def.id);
   return parcalar.length === 0 ? ad : `${ad} — ${parcalar.join(', ')}`;

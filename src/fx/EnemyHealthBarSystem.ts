@@ -47,9 +47,9 @@ export class EnemyHealthBarSystem {
         const yeni = this.#pool.acquire();
         if (yeni === null) continue; // havuz dolu — sessizce atla (TIER 1 kural 3)
         this.#atanan.set(e, yeni);
-        yeni.show(e.x, e.y, e.hp, e.maxHp);
+        yeni.show(e.x, e.y, e.hp, e.maxHp, e.alpha);
       } else {
-        varOlan.show(e.x, e.y, e.hp, e.maxHp);
+        varOlan.show(e.x, e.y, e.hp, e.maxHp, e.alpha);
       }
     }
   }

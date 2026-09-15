@@ -53,8 +53,9 @@ describe('S39 — Trol yenilenmesi (bkz. EnemyAbilitySystem.test.ts, burada tekr
 });
 
 describe('ENEMIES — liste bütünlüğü', () => {
-  it('dokuz düşman + örümcek yavrusu (kadroda sayılmaz)', () => {
-    expect(ENEMIES).toHaveLength(10);
+  it('on düşman + örümcek yavrusu (kadroda sayılmaz)', () => {
+    // `M12` Faz 1: Tünelci eklendi (yeraltı geçişi), 9 → 10.
+    expect(ENEMIES).toHaveLength(11);
     expect(ENEMIES).toContain(ORUMCEK_YAVRUSU);
   });
 
