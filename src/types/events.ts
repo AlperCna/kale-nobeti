@@ -49,6 +49,12 @@ export interface GameEvents {
    * kesikli hattın ne olduğunu anlatıyor.
    */
   'wave:flyers': Record<string, never>;
+  /**
+   * `M10` — sahada **kalkanlı** bir düşman göründü. Yalnız kalkan
+   * halkası ilk kez çizildiğinde, her karede değil. Öğretici ilk
+   * seferinde kalkanın ne olduğunu anlatıyor (`wave:flyers` deseni).
+   */
+  'enemy:shielded': Record<string, never>;
 
   /** S06 onaylandı. HUD hız butonu yayıyor. */
   'speed:changed': { readonly scale: Speed };

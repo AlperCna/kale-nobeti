@@ -26,6 +26,11 @@ const SATIRLAR: readonly StringKey[] = [
   'howTo5',
   'howTo6',
   'howTo7',
+  // `M10` — yeni mekanikler. Sinerji oyuncuya BAŞKA hiçbir yerde
+  // görünmüyor; kalkan ve boss evresi ekranda görünüyor ama ne
+  // olduklarını söylemiyor.
+  'howTo8',
+  'howTo9',
 ];
 
 export class HowToScene extends Phaser.Scene {
