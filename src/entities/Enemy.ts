@@ -4,7 +4,7 @@ import type { PathProgress } from '../types/path';
 import type { Poolable } from '../util/pool';
 import { resetEnemyState } from '../systems/movers';
 import { emptyEffects, resetEffects } from '../systems/effects';
-import { enemyFrameKey } from '../data/spriteFrames';
+import { enemyFrameKey, enemyDisplaySize } from '../data/spriteFrames';
 import {
   HIT_FLASH_COLOR,
   HIT_FLASH_MS,
@@ -145,7 +145,12 @@ export class Enemy extends Phaser.GameObjects.Sprite implements Poolable, EnemyS
     this.shieldLeft = def.shield ?? 0;
     this.progress = mover.spawnProgress();
     this.setFrame(enemyFrameKey(def.id));
-    this.setDisplaySize(this.#size, this.#size);
+    // `M10` — boyut **düşman başına**, havuz nesnesi başına değil:
+    // aynı yuva bir karede goblin bir karede boss olabiliyor.
+    // `resetForPool` varsayılana dönüyor (kural 3), `spawn` üstüne
+    // yazıyor. Gerekçe `data/spriteFrames.ts` `enemyDisplaySize`'da.
+    const boyut = enemyDisplaySize(def.id);
+    this.setDisplaySize(boyut, boyut);
     this.setActive(true).setVisible(true);
     // `M8-T09` — doğuş sönümü. Düşman ekran kenarında bir anda
     // "belirmiyor"; 200 ms içinde beliriyor. Faz her doğumda sıfırdan
