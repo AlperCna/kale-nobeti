@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   budget,
+  budgetFor,
   spawnDelayFor,
   MAP1_WAVES,
   wavePoints,
@@ -231,10 +232,16 @@ describe('M7/M8 — 50 dalga: bütçe, kadro, giriş', () => {
     expect(HARITALAR.reduce((t, h) => t + h.waves.length, 0)).toBe(50);
   });
 
+  /**
+   * **`M21`: hedef `budgetFor`'dan geliyor, `budget`'tan değil.**
+   * Dalga 6 elit dalgası taşıyan haritalarda (`ELIT_DALGALI_HARITALAR`)
+   * bütçe ×2,2; düz `budget(n)` kullanmak o dalgayı %104 sapmış
+   * gösteriyordu. Kural tek adreste (`waves.budgetFor`).
+   */
   it('her dalga bütçesine %15 pay içinde — §7', () => {
     for (const { map, waves } of HARITALAR) {
       waves.forEach((w, i) => {
-        const hedef = budget(i + 1);
+        const hedef = budgetFor(map.id, i + 1);
         const puan = wavePoints(w);
         const sapma = Math.abs(puan - hedef) / hedef;
         expect(sapma, `${map.id} dalga ${i + 1}: ${puan} vs bütçe ${hedef}`).toBeLessThanOrEqual(

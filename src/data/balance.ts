@@ -132,6 +132,26 @@ export const BALANCE = {
   breatherWaves: [4, 7],
   /** §7 — nefes dalgasının bütçe çarpanı. */
   breatherFactor: 0.85,
+  /**
+   * **Elit dalgası** — `M21` (S116). Nefes dalgasının aynadaki kardeşi:
+   * nefes bütçeyi kısar, elit **büyütür**.
+   *
+   * Ölçülen gerekçe: orta oyunda hiçbir dalga tehdit etmiyordu (altı
+   * haritanın beşinde 1-9 arası sızıntı **sıfır**). Üç yol denendi ve
+   * elendi — bütçeyi 5-9 boyunca büyütmek finali şişiriyor (`M16` üst
+   * üste binmesi fazlalığı boss dalgasına devrediyor), aynı bütçeyle
+   * kalabalığı elite çevirmek hiç sızdırmıyor, elitleri yaymak finali
+   * 20 sınırının üstüne çıkarıyor.
+   *
+   * İşe yarayan **noktasal** olanı: fazlalık tek bir dalgaya toplanıp
+   * **tek sert birime** (Trol) verilince orta oyun canlanıyor ve final
+   * sabit kalıyor (Kar Geçidi: orta 0 → 4, final 12 → 12).
+   *
+   * Yalnız kadrosunda elit olan haritalarda geçerli — bkz.
+   * `waves.ELIT_DALGALI_HARITALAR`.
+   */
+  eliteWaves: [6],
+  eliteFactor: 2.2,
   /** §7 — bütçe tabanı ve büyüme oranı. */
   budgetBase: 10,
   budgetGrowth: 1.2,
