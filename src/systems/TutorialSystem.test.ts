@@ -50,6 +50,19 @@ describe('TutorialSystem — Y09, iki ipucu (S65, S69)', () => {
     expect(gosterilen).toEqual(['flyers']);
   });
 
+  it('enemy:burrowed → burrow ipucu, yalnız ilk kez (M15)', () => {
+    // `M12`'nin yeraltı geçişi `Y09`'un ölçütünü karşılıyor: sonucu
+    // değiştiriyor (o aralıkta hiçbir kule hedef alamıyor) ve
+    // kendiliğinden keşfedilemiyor — oyuncu "kulelerim neden ateş
+    // etmiyor" diye düşünür. Kalkan ipucunun birebir deseni.
+    const bus = new EventBus();
+    const gosterilen: string[] = [];
+    new TutorialSystem(new MemoryStore(), true, (h) => gosterilen.push(h), bus);
+    bus.emit('enemy:burrowed', {});
+    bus.emit('enemy:burrowed', {}); // olay her karede yayılıyor
+    expect(gosterilen).toEqual(['burrow']);
+  });
+
   it('iki ipucu birbirinden bağımsız — biri görülse diğeri hâlâ tetiklenir', () => {
     const bus = new EventBus();
     const gosterilen: string[] = [];

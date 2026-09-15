@@ -429,6 +429,8 @@ menzilinden geçmeli (8 noktalı haritada ≥ 3). `util/coverage.ts` ile ölçü
 | **Buz kalkanı** (harita 4 Ork Savaşçı) | Patlama/ağır vuruş — kalkan **toplam** bir havuz, erimeden cana hasar geçmiyor |
 | **Ogre Şef 2. evre** (harita 5, can %50) | Hız ×1,6 — kaleye varmadan bitirmek gerekiyor |
 | **Tünelci** (`M12`, yeraltı geçişi) | Yolun %15-%60'ında **hedeflenemez**: kuleleri aralığın DIŞINA kur. Patlama ve önceden tutuşmuş yanma hâlâ değer |
+
+**Yeni mekanikler oyuncuya söyleniyor (`M15`).** Dalga telgrafı düşmanı **haritaya göre** çözüyor — eskiden temel tanımı gösteriyordu ve harita 6'nın bossunu "zırh 10, yetenek yok" diye yazıyordu (S106). Yeraltı geçişi ayrıca bir öğretici ipucu alıyor (`hintBurrow`), buz kalkanıyla aynı ölçütle: sonucu değiştiriyor ve kendiliğinden keşfedilemiyor. **Çağırmaya ipucu verilmedi** — olay görünür (ekrana yandaş geliyor) ve telgraf zaten "yandaş çağırır" diyor.
 | **Ogre Şef çağırma** (harita 6, `M13`) | Canının her çeyreğinde 2 Ork Savaşçı doğuruyor — boss'u dilimlemek ekrana gövde getiriyor; alan hasarı öbeği topluyor |
 
 **Hedefleme modları ölçüldü (`M11` Faz 4, S94).** Yedi senaryoda, metrik
