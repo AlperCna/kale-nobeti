@@ -102,28 +102,17 @@ describe('DIFFICULTY — M8-T11 (S80)', () => {
   });
 
   /**
-   * **Bu iddia yeşile boyanmadı, ÖLÇÜLENE bağlandı (S87).**
-   *
-   * Zor'un tanımı "harita 4 ve 5 referans tahtadan daha iyisini
-   * istiyor" (can kaybı ≥ 12) idi. `M10`'da `waveSim`'in üç körlüğü
-   * kapanınca (S80/S81/S86) ölçülen değerler **5** ve **10** çıktı,
-   * yani tanım karşılanmıyor. `M10-T05`'in kule sinerjisi ikisini
-   * ikişer can daha kolaylaştırdı (**3** ve **8**) — kilit bunu
-   * yakaladı ve sayı bilinçli olarak güncellendi.
-   *
-   * Bu yeni bir gevşeme değil: oyun hep böyleydi, simülasyon
-   * yanmayı/yavaşlatmayı/yetenekleri görmediği için haritaları olduğundan
-   * zor sanıyordu. Düzeltmek dört haritanın çarpanını yükseltmek demek
-   * — **oyuncunun deneyimini değiştiren bir tasarım kararı** ve sahibin
-   * onayını bekliyor (`OPEN-QUESTIONS.md` S87, tarama verisiyle).
-   *
-   * O karara kadar burası ölçülen değerleri kilitliyor: denge oynarsa
-   * test kırılır ve karar yeniden gündeme gelir.
+   * Zor'un tanımı: harita 4 ve 5 referans tahtadan **daha iyisini**
+   * istiyor. `M10`'da bu iddia bir süre ölçülen değerlere kilitlendi
+   * (S87) çünkü `waveSim`'in üç körlüğü kapanınca gerçek değerler 3 ve
+   * 8 çıkmıştı. S87'de harita çarpanları yeniden türetildi ve iddia
+   * **geri kondu**.
    */
-  it('Zor: harita 4 ve 5’in ölçülen can kaybı — hedef 12, S87’de açık', () => {
+  it('Zor: harita 4 ve 5 referans tahtadan DAHA İYİSİNİ istiyor (S87)', () => {
     expect(DIFFICULTY.zor.startLives).toBe(12);
-    expect(canKaybi(MAPS[3]!, 1), 'kar-gecidi').toBe(3);
-    expect(canKaybi(MAPS[4]!, 1), 'kadim-harabe').toBe(8);
+    for (const m of MAPS.slice(3)) {
+      expect(canKaybi(m, 1), m.id).toBeGreaterThanOrEqual(DIFFICULTY.zor.startLives);
+    }
   });
 
   it('Kolay: BEŞ harita da bol payla geçiliyor', () => {

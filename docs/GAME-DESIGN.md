@@ -508,8 +508,8 @@ kenar bir kez parlar.
 | # | Ad | Tema | Yol | Yapı noktası | Giriş | HP çarpanı | Altın çarpanı | Başlangıç altını |
 |---|---|---|---|---|---|---|---|---|
 | 1 | Değirmen Geçidi | Yeşil vadi, değirmen | Tek yol, 2 keskin viraj | 8 | 1 | 1,0 | 1,0 | 280 |
-| 2 | Taş Köprü | Nehir, taş köprü, sis | Y şeklinde ikiye ayrılır, köprüde birleşir | 10 | 1 | 1,6 | 1,6 | 448 |
-| 3 | Kül Ovası | Yanmış toprak, volkanik | İki ayrı giriş, kalede birleşir | 12 | 2 | 2,6 | **3,8** | **1064** |
+| 2 | Taş Köprü | Nehir, taş köprü, sis | Y şeklinde ikiye ayrılır, köprüde birleşir | 10 | 1 | **1,3** | 1,6 | 448 |
+| 3 | Kül Ovası | Yanmış toprak, volkanik | İki ayrı giriş, kalede birleşir | 12 | 2 | **3,0** | **3,8** | **1064** |
 
 **Altın çarpanı ≥ HP çarpanı** (M7, S70/S72/S73). Eskiden "eşit" kuralı
 vardı ve yalnız öldürme altınına uygulanıyordu; kule maliyetleri sabit
@@ -524,11 +524,29 @@ düzeltildi:
   haritada aynı sayıda kule alırken düşman HP'si haritayla büyüyordu ve
   ilk dalgalar sızdırıyordu.
 - **S73** — harita 3'te altın çarpanı HP çarpanından **ayrıştı** (2,6 → 3,8).
-- **S82 → S86** — harita 3'ün çarpanı bir ara 2,5'e çekildi, sonra
-  **geri alındı**. `waveSim` M10'a kadar üç şeyi birden simüle
-  etmiyordu: haritaya duyarlı boss (S80), düşman yetenekleri (S81) ve
-  süreli kule etkileri (S86). Üçü kapanınca 2,6 ölçütünü zaten
-  karşılıyor; 2,5 yarım simülasyonun artefaktıydı.
+- **S82 → S86 → S87** — harita 3'ün çarpanı bir ara 2,5'e çekildi,
+  **geri alındı**, sonra rampa yeniden türetilirken **3,0** oldu.
+  `waveSim` M10'a kadar üç şeyi birden simüle etmiyordu: haritaya
+  duyarlı boss (S80), düşman yetenekleri (S81) ve süreli kule etkileri
+  (S86). Üçü kapanınca ölçülen zorluk rampası monoton çıkmadı; **S87**
+  dört haritanın çarpanını ölçerek yeniden türetti.
+
+- **S87 — ölçülen zorluk rampası (Zor'da can kaybı):**
+
+  | Harita | HP çarpanı | Altın çarpanı | Zor | Kolay |
+  |---|---|---|---|---|
+  | 1 Değirmen Geçidi | 1,0 | 1,0 | 0 | 0 |
+  | 2 Taş Köprü | **1,3** | 1,6 | 4 | 1 |
+  | 3 Kül Ovası | **3,0** | 3,8 | 7 | 4 |
+  | 4 Kar Geçidi | **7,2** | **7,2** | 13 | 7 |
+  | 5 Kadim Harabe | **10,0** | **10,0** | 17 | 8 |
+
+  Dört ölçüt: monoton · öğrenme yayı (2-3) Zor'da geçilebilir (< 12) ·
+  harita 4-5 Zor'un tanımını karşılıyor (≥ 12) · Kolay'da hepsi ≤ 10.
+  **Harita 2 düştü**, çünkü ölçüm onun konumuna göre fazla zor olduğunu
+  gösterdi (20 canın 8'i, ikinci haritada). Harita 4-5'te altın çarpanı
+  HP ile **birlikte** yükseldi: S73'ün değişmezi (altın ≥ HP) referans
+  tahtanın karşılanabilirliğini koruyor.
   Eşit tutulunca 12 nokta tam yükseltilemiyordu; tarama sonucu 3,8'de
   tahta maliyeti **doyuyor** (üstü fazladan kule almıyor) — sayı seçilmedi,
   tam yükseltme noktası olarak ölçüldü.
