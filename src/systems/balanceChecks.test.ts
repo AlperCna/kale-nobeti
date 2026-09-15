@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  etkinHiz,
   buildReferenceBoards,
   ceilingA,
   cumulativeGold,
@@ -14,11 +15,14 @@ import { MAP1_WAVES } from '../data/waves';
 import { ENEMIES, GOBLIN, ORK_SAVASCI } from '../data/enemies';
 import { BUYU, OKCU, TOP } from '../data/towers';
 import { BALANCE } from '../data/balance';
-import { measureCoverage } from '../util/coverage';
-import type { ReferenceBoard } from '../types/board';
+import { measureCoverage, pathLength } from '../util/coverage';
+import type { BoardTower, ReferenceBoard } from '../types/board';
 
 const KAPSAMA_150 = measureCoverage(MAP_1.paths, MAP_1.buildSpots, 150);
 const cov = (range: number) => measureCoverage(MAP_1.paths, MAP_1.buildSpots, range);
+/** `M18` — `ceilingA` artık kolun uzunluğunu istiyor (S113). */
+const YOL_1 = pathLength(MAP_1.paths[0] ?? []);
+const YOL_2 = pathLength(MAP_2.paths[0] ?? []);
 const BOARDS = buildReferenceBoards(MAP_1, MAP1_WAVES, KAPSAMA_150);
 const GERCEKCI = buildReferenceBoards(MAP_1, MAP1_WAVES, KAPSAMA_150, true);
 
@@ -45,7 +49,7 @@ describe('Kısıt A — GAME-DESIGN §6', () => {
   it('boss DIŞINDAKİ sekiz düşman %15 payla geçiyor', () => {
     for (const e of ENEMIES) {
       if (e.id === 'ogreSef' || e.id === 'orumcekYavrusu') continue;
-      const tavan = ceilingA(son, cov, e, MAP_1);
+      const tavan = ceilingA(son, cov, e, MAP_1, YOL_1);
       const hp = effectiveHp(e, MAP_1);
       expect(tavan, `${e.id}`).toBeGreaterThan(hp * BALANCE.safetyMargin);
     }
@@ -67,8 +71,8 @@ describe('Kısıt A — GAME-DESIGN §6', () => {
     const bossDef = ENEMIES.find((e) => e.id === 'ogreSef')!;
     const hp = effectiveHp(bossDef, MAP_1);
 
-    const muhafazakar = ceilingA(son, cov, bossDef, MAP_1);
-    const gercekci = ceilingA(GERCEKCI[GERCEKCI.length - 1]!, cov, bossDef, MAP_1);
+    const muhafazakar = ceilingA(son, cov, bossDef, MAP_1, YOL_1);
+    const gercekci = ceilingA(GERCEKCI[GERCEKCI.length - 1]!, cov, bossDef, MAP_1, YOL_1);
 
     // İkisinde de öldürülebilir.
     expect(muhafazakar).toBeGreaterThan(hp);
@@ -103,8 +107,8 @@ describe('Kısıt A — GAME-DESIGN §6', () => {
       ...hepsi,
       towers: [...hepsi.towers].reverse(),
     };
-    expect(ceilingA(tersi, cov, GOBLIN, MAP_1)).toBeCloseTo(
-      ceilingA(hepsi, cov, GOBLIN, MAP_1),
+    expect(ceilingA(tersi, cov, GOBLIN, MAP_1, YOL_1)).toBeCloseTo(
+      ceilingA(hepsi, cov, GOBLIN, MAP_1, YOL_1),
       9,
     );
   });
@@ -115,22 +119,22 @@ describe('Kısıt A — GAME-DESIGN §6', () => {
       towers: [{ spotIndex: 999, towerId: 'okcu', tier: 0 }], // olmayan nokta
       cumulativeCost: 0,
     };
-    expect(ceilingA(olu, cov, GOBLIN, MAP_1)).toBe(0);
+    expect(ceilingA(olu, cov, GOBLIN, MAP_1, YOL_1)).toBe(0);
   });
 
   it('boş tahta için tavan 0', () => {
     const bos: ReferenceBoard = { waveIndex: 1, towers: [], cumulativeCost: 0 };
-    expect(ceilingA(bos, cov, GOBLIN, MAP_1)).toBe(0);
+    expect(ceilingA(bos, cov, GOBLIN, MAP_1, YOL_1)).toBe(0);
   });
 
   it('hızlı düşmanın tavanı daha düşük — menzilde az kalıyor', () => {
     const kurt = ENEMIES.find((e) => e.id === 'kurtBinicisi')!;
-    expect(ceilingA(son, cov, kurt, MAP_1)).toBeLessThan(ceilingA(son, cov, GOBLIN, MAP_1));
+    expect(ceilingA(son, cov, kurt, MAP_1, YOL_1)).toBeLessThan(ceilingA(son, cov, GOBLIN, MAP_1, YOL_1));
   });
 
   it('daha çok kule → daha yüksek tavan', () => {
     const az: ReferenceBoard = { waveIndex: 1, towers: BOARDS[0]!.towers, cumulativeCost: 0 };
-    expect(ceilingA(son, cov, GOBLIN, MAP_1)).toBeGreaterThan(ceilingA(az, cov, GOBLIN, MAP_1));
+    expect(ceilingA(son, cov, GOBLIN, MAP_1, YOL_1)).toBeGreaterThan(ceilingA(az, cov, GOBLIN, MAP_1, YOL_1));
   });
 });
 
@@ -277,6 +281,7 @@ describe('M7-T03 — Kısıt A ayrık yolda KOL BAŞINA (§9 uyarısı)', () => 
       (r) => measureCoverage(MAP_2.paths, MAP_2.buildSpots, r),
       GOBLIN,
       MAP_2,
+      YOL_2,
     );
     const enZayif = ceilingAWeakestBranch(ustKolTahtasi, GOBLIN, MAP_2);
     expect(toplam).toBeGreaterThan(enZayif);
@@ -312,7 +317,7 @@ describe('M7-T03 — Kısıt A ayrık yolda KOL BAŞINA (§9 uyarısı)', () => 
     const kol = ceilingAPerBranch(tahta, GOBLIN, MAP_1);
     expect(kol).toHaveLength(1);
     expect(kol[0]).toBeCloseTo(
-      ceilingA(tahta, (r) => measureCoverage(MAP_1.paths, MAP_1.buildSpots, r), GOBLIN, MAP_1),
+      ceilingA(tahta, (r) => measureCoverage(MAP_1.paths, MAP_1.buildSpots, r), GOBLIN, MAP_1, YOL_1),
       6,
     );
   });
@@ -330,5 +335,58 @@ describe('M7-T03 — Kısıt A ayrık yolda KOL BAŞINA (§9 uyarısı)', () => 
     const [sol, sag] = ceilingAPerBranch(solTahta, GOBLIN, MAP_3);
     expect(sol).toBeGreaterThan(0);
     expect(sag).toBe(0); // sağ giriş savunmasız
+  });
+});
+
+/**
+ * **`M18` (S113) — tavan yavaşlatmayı görüyor.**
+ *
+ * `effectiveDps` yavaşlatmayı bilerek 0 sayıyor (kendi hasarı yok), ama
+ * yavaşlatma Kısıt A'nın **paydasını** değiştiriyor: `towers.ts`'in
+ * `M11-T02` notu *"yavaşlatma hızı bölüyor, yani yavaşlatan kule bütün
+ * tahtanın hasarını çarpıyor"* diyor. Formül bunu öğrenene kadar tavan,
+ * yavaşlatıcısı bol tahtalarda gerçeği %60'a varan oranda küçümsüyordu.
+ */
+describe('etkinHiz — yavaşlatma tavanın paydasında (S113)', () => {
+  const YOL = pathLength(MAP_1.paths[0] ?? []);
+  const buz = (spotIndex: number): BoardTower => ({ spotIndex, towerId: 'buyu', tier: 3 });
+  const tahta = (towers: BoardTower[]): ReferenceBoard => ({
+    waveIndex: 10,
+    towers,
+    cumulativeCost: 0,
+  });
+
+  it('yavaşlatıcı yoksa etkin hız taban hızdır', () => {
+    const okcuTahta = tahta([{ spotIndex: 0, towerId: 'okcu', tier: 1 }]);
+    expect(etkinHiz(okcuTahta, cov, GOBLIN, YOL)).toBeCloseTo(GOBLIN.speed, 9);
+  });
+
+  it('Buz etkin hızı DÜŞÜRÜYOR', () => {
+    expect(etkinHiz(tahta([buz(0)]), cov, GOBLIN, YOL)).toBeLessThan(GOBLIN.speed);
+  });
+
+  it('daha çok yavaşlatıcı → daha düşük etkin hız (kapsanan yol büyüyor)', () => {
+    const bir = etkinHiz(tahta([buz(0)]), cov, GOBLIN, YOL);
+    const iki = etkinHiz(tahta([buz(0), buz(3)]), cov, GOBLIN, YOL);
+    expect(iki).toBeLessThan(bir);
+  });
+
+  it('yol tamamen kaplandığında etkin hız hız × (1 − oran)’a DAYANIYOR', () => {
+    // Görev döngüsü min(1, 2 sn × 0,8/sn) = 1, yani oran tam `factor`.
+    // Alt sınır: q 1'i aşmıyor, yani hız × 0,7'nin altına inmiyor.
+    const hepsi = tahta(MAP_1.buildSpots.map((_, i) => buz(i)));
+    const v = etkinHiz(hepsi, cov, GOBLIN, YOL);
+    expect(v).toBeGreaterThanOrEqual(GOBLIN.speed * 0.7 - 1e-9);
+  });
+
+  it('**tavan yavaşlatıcıyla YÜKSELİYOR** — S113’ün asıl iddiası', () => {
+    const yavassiz = tahta([{ spotIndex: 0, towerId: 'buyu', tier: 2 }]);
+    const yavasli = tahta([
+      { spotIndex: 0, towerId: 'buyu', tier: 2 },
+      buz(3),
+    ]);
+    expect(ceilingA(yavasli, cov, GOBLIN, MAP_1, YOL)).toBeGreaterThan(
+      ceilingA(yavassiz, cov, GOBLIN, MAP_1, YOL),
+    );
   });
 });

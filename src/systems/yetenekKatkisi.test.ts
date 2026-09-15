@@ -105,10 +105,21 @@ describe('Yeteneklerin katkısı — M11 Faz 4', () => {
     expect(canKaybi(MAP_5, 'ikisi')).toBeLessThan(canKaybi(MAP_5, 'meteor'));
   });
 
-  it('ikisi birden en iyisi — yetenekler birbirini yemiyor', () => {
+  /**
+   * **`M18`: "kesin daha iyi" → "hiçbirinden kötü değil, ve tek başına
+   * hiçbirinden kötü olmayan bir ikili".**
+   *
+   * Ölçülen (Kar Geçidi, taban çift): yok 12 · meteor 9 · takviye 11 ·
+   * **ikisi 9**. Yani ikisi birden Meteor'la **başa baş**, Takviye'den
+   * iyi. `M16`'dan beri yetenekler bir dalganın artıkları üstüne gelen
+   * yeni dalgayla yarışıyor ve Meteor tek başına o işin çoğunu
+   * yapabiliyor; aranan şey ikisinin birbirini **yememesi**.
+   */
+  it('yetenekler birbirini YEMİYOR — ikisi birden en iyi sonucu paylaşıyor', () => {
     const ikisi = canKaybi(MAP_4, 'ikisi');
-    expect(ikisi).toBeLessThan(canKaybi(MAP_4, 'meteor'));
+    expect(ikisi).toBeLessThanOrEqual(canKaybi(MAP_4, 'meteor'));
     expect(ikisi).toBeLessThan(canKaybi(MAP_4, 'takviye'));
+    expect(ikisi).toBeLessThan(canKaybi(MAP_4, 'yok'));
   });
 
   it('**varsayılan `yok`** — mevcut denge ölçümleri değişmedi', () => {

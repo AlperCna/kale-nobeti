@@ -59,34 +59,65 @@ describe('Boss ölçeklemesi — zırh düşer, HP türetilir', () => {
     expect(BOSS_ARMOR_BY_MAP['kadim-harabe']).toBe(2);
   });
 
-  it('**boss HP’si MONOTON ARTIYOR** — zorluk eğrisi korunuyor', () => {
-    const hp = MAPS.map((m) => BOSS_HP_BY_MAP[m.id]!);
+  /**
+   * **`M18` (S113) — HAM HP artık monoton değil, ZORLUK monoton.**
+   *
+   * Boss HP'si `0,80 × ceilingA` ile türetiliyordu ve o formül tek bir
+   * düşmanı, taban hızda, yeteneksiz varsayıyor. Harita 5'in bossunun
+   * ikinci evresi (`M10-T03`), harita 6'nınkinin **çağırması** (`M13`)
+   * ve `M16`'nın üst üste binen dalgaları var; üçü de bossu HP'sinden
+   * bağımsız olarak zorlaştırıyor. Ölçülen "referans tahta en fazla kaç
+   * HP'lik bossu öldürebilir" eşiği bu yüzden harita 4'te 3750, harita
+   * 5'te 2452 — yani **daha yetenekli boss, daha az ham HP taşıyabilir**.
+   *
+   * Ham HP'nin monotonluğunu dayatmak, yeteneği olan bossu öldürülemez
+   * yapmak demekti (`M17`'nin duvara tosladığı yer). İddia ikiye
+   * ayrıldı: düz bossların (harita 1-4) HP'si monoton artıyor, **ölçülen
+   * zorluk** ise `kisitB.test.ts`'te altı harita için monoton.
+   */
+  it('düz bossların HP’si monoton artıyor (harita 1-4)', () => {
+    const hp = MAPS.slice(0, 4).map((m) => BOSS_HP_BY_MAP[m.id]!);
     for (let i = 1; i < hp.length; i++) expect(hp[i]!).toBeGreaterThan(hp[i - 1]!);
+    // Yetenekli bosslar (5-6) kendi aralarında da artıyor.
+    expect(BOSS_HP_BY_MAP['sisli-bataklik']!).toBeGreaterThan(BOSS_HP_BY_MAP['kadim-harabe']!);
   });
 
-  it('regresyon bandı: yazılı HP hâlâ 0,80 × tavan (±%6)', () => {
-    // §12'nin tautoloji-olmayan sağlaması. Ekonomi veya geometri sessizce
-    // değişirse burası kırılır ve insan bakar.
-    for (const m of H) {
-      if (m.map.id === 'degirmen-gecidi') continue; // 700 elle sabit (S65)
-      const boss = bossFor(m.map);
-      const tavan = Math.min(...ceilingAPerBranch(tahta(m), boss, m.map));
-      const beklenen = BOSS_CEILING_RATIO * tavan;
-      const yazili = BOSS_HP_BY_MAP[m.map.id]!;
-      expect(Math.abs(yazili - beklenen) / beklenen, `${m.map.id}`).toBeLessThanOrEqual(
-        BOSS_HP_TOLERANCE,
-      );
-    }
+  /**
+   * **`M18` (S113) — türetme statik tavandan SİMÜLASYONA taşındı.**
+   *
+   * Eski iki test HP'yi `0,80 × ceilingA`'ya kilitliyordu. `ceilingA`
+   * tek düşman / taban hız / yeteneksiz bir dünyayı ölçüyor; oyun
+   * artık o dünya değil (boss yetenekleri + `M16` üst üste binme).
+   * Ölçüldü: yazılı HP'nin tavana oranı haritaya göre **0,41 ile 0,88**
+   * arasında geziniyor ve bu bir hata değil, boss yeteneklerinin bedeli.
+   * Sabit bir bant dayatmak yetenekli bossu öldürülemez yapıyordu.
+   *
+   * Sayılar artık şöyle türetiliyor: referans tahtanın **sürekli
+   * koşuda** (bütün dalgalar, üst üste binme dahil) öldürebildiği en
+   * yüksek HP ikili aramayla ölçülüyor ve `0,80` payla yazılıyor.
+   * Asıl davranış sağlaması `kisitB.test.ts`'te: **boss hiçbir haritada
+   * sızmıyor**. Buradaki iki test o türetmenin kaydı.
+   */
+  it('yazılı HP’ler ÖLÇÜLEN değerler — regresyon kilidi', () => {
+    expect(BOSS_HP_BY_MAP).toEqual({
+      'degirmen-gecidi': 700, // §5'in belgelenmiş değeri (S65)
+      'tas-kopru': 862,
+      'kul-ovasi': 1322,
+      'kar-gecidi': 3000,
+      'kadim-harabe': 1962,
+      'sisli-bataklik': 2100,
+    });
   });
 
-  it('boss tasarım bandında (%75-85) — harita 2’den itibaren', () => {
+  it('hiçbir boss statik tavanın üstünde değil, hiçbiri de önemsiz', () => {
+    // İki taraflı akıl sağlığı: tavanı aşan boss statik olarak bile
+    // öldürülemez; tavanın üçte birinin altındaki boss dövüş değil.
     for (const m of H) {
-      if (m.map.id === 'degirmen-gecidi') continue;
       const boss = bossFor(m.map);
       const tavan = Math.min(...ceilingAPerBranch(tahta(m), boss, m.map));
-      const oran = (effectiveHp(boss, m.map) / tavan) * 100;
-      expect(oran, `${m.map.id}: %${oran.toFixed(1)}`).toBeGreaterThanOrEqual(75);
-      expect(oran, `${m.map.id}: %${oran.toFixed(1)}`).toBeLessThanOrEqual(85);
+      const oran = effectiveHp(boss, m.map) / tavan;
+      expect(oran, `${m.map.id}: ${oran.toFixed(3)}`).toBeLessThan(1);
+      expect(oran, `${m.map.id}: ${oran.toFixed(3)}`).toBeGreaterThan(0.3);
     }
   });
 

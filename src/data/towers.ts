@@ -149,7 +149,27 @@ export const BUYU: TowerDef = {
     // 3a Yıldırım — 3 hedefe zincirleme, her sıçramada %70'e düşerek.
     {
       cost: 230,
-      damage: 30,
+      /**
+       * **`M18` (S110): 30 → 36.** Fiyatına göre çıktısı savunulamazdı.
+       *
+       * Kümülatif fiyatlar: Okçu Keskin Nişancı **350**, Yıldırım
+       * **480**, Top Havan **510**. Yıldırım 30 hasarla 21,0 DPS
+       * veriyordu — Okçu'nun 20,4'üne eşit sayılır, ama Okçu 130 altın
+       * **ucuz** ve menzili 260 (Yıldırım 170). Yani oyuncu %37 fazla
+       * ödeyip daha kısa menzille aynı hasarı alıyordu; karşılığındaki
+       * iki şey (zincir ve zırhı yok sayma) ölçüldü, ikisi de küçük:
+       * kadroların HP ağırlıklı ortalama zırhı 2,9-3,3 ve zırh **vuruş
+       * başına** düştüğü için Havan'ın 48'lik vuruşunu zırh 8'de bile
+       * yalnız %17 törpülüyor.
+       *
+       * Menzil yükseltilmedi bilerek: menzil **Okçu'nun kimliği**
+       * (`M11` Faz 5). `M11`'in kuralı da korundu — yeni çarpan
+       * eklenmedi, yalnız kademe çıktısı hizaya alındı.
+       *
+       * Tarama (tek aile, taban tahta, Kar Geçidi/Kadim Harabe can
+       * kaybı): 30 → 8/21 · 32 → 8/16 · 34 → 7/16 · **36 → 5/13**.
+       */
+      damage: 36,
       fireRate: 0.7,
       range: 170,
       airMultiplier: 1,

@@ -87,11 +87,31 @@ describe('DIFFICULTY — M8-T11 (S80)', () => {
     }
   });
 
-  it('ölçülen dayanak: HP çarpanı ×1,10 haritayı GEÇİLEMEZ yapıyordu', () => {
-    // Reddedilen tasarımın kanıtı — sayı iyileşirse bu test bilinçli
-    // güncellenir, kötüleşirse kırılır.
+  /**
+   * Reddedilen tasarımın kanıtı — *"sayı iyileşirse bu test bilinçli
+   * güncellenir"*. **`M18`'de iyileşti ve güncellendi.**
+   *
+   * Eskiden oran **1'i aşıyordu**: HP çarpanı ×1,10'da harita 1'in
+   * bossu referans tahtanın tavanının üstünde kalıyor, yani öğretici
+   * harita geçilemez oluyordu. `M18`'den sonra tahta güçlendi (S112
+   * bayrağı + S110 Yıldırım) ve tavan yavaşlatmayı görmeye başladı
+   * (S113); oran **0,965**'e indi, yani ×1,10 artık teknik olarak
+   * geçilebilir.
+   *
+   * Zor'un HP'ye dokunmama kararı yine de duruyor, çünkü gerekçe
+   * "geçilemez" değil **pay**: 0,965 demek düşmanın tavanın %96,5'ini
+   * yemesi, yani `BALANCE.safetyMargin`'in istediği %15 payın (oran
+   * eşiği ≈ 0,870) **hiç** kalmaması.
+   * Kısıt A'nın bütün kabulü o payın üstünde durmak.
+   */
+  it('ölçülen dayanak: HP çarpanı ×1,10 PAYI tüketiyor', () => {
+    // `safetyMargin` bir ÇARPAN (1,15): `tavan > hp × 1,15` isteniyor,
+    // yani oran eşiği `1 / 1,15 ≈ 0,870`.
     const enKotu = Math.max(...MAPS.map((m) => enKotuKisitA(m, 1.1).oran));
-    expect(enKotu).toBeGreaterThan(1);
+    expect(enKotu).toBeGreaterThan(1 / BALANCE.safetyMargin);
+    // ×1,10 durumu kesinlikle kötüleştiriyor — kıyas noktası.
+    const normal = Math.max(...MAPS.map((m) => enKotuKisitA(m, 1).oran));
+    expect(enKotu).toBeGreaterThan(normal);
   });
 
   it('Zor: can 12 — haritalar 1-3 referans tahtayla HÂLÂ geçiliyor', () => {

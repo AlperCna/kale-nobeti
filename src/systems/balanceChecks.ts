@@ -17,7 +17,7 @@ import { getEnemy, getEnemyForMap } from '../data/enemies';
 import { BUYU, OKCU, TOP, getTower, tierAt } from '../data/towers';
 import { KISLA, barracksTierAt } from '../data/barracks';
 import { applyDamage, etkiDps } from './combat';
-import { measureCoverage } from '../util/coverage';
+import { measureCoverage, pathLength } from '../util/coverage';
 
 // --------------------------------------------------------------- Kısıt A
 
@@ -55,13 +55,82 @@ export function effectiveDps(def: TowerDef, tier: TierIndex, enemy: EnemyDef): n
  * Menzil kule kademesine göre değiştiği için kapsama **kule kule** alınıyor;
  * `coverageByRange` her menzil için o haritanın ölçümünü veriyor.
  */
+/**
+ * **Yavaşlatmanın hesaba katıldığı etkin hız** — `M18` (S113).
+ *
+ * `ceilingA`'nın paydası. Kısıt A `DPS × kapsananYol / hız` diyor ve
+ * `hız` taban hız olarak alınıyordu; oysa `towers.ts`'in `M11-T02`
+ * notu şunu söylüyor: *"yavaşlatma `hız`ı bölüyor, yani yavaşlatan
+ * kule **bütün tahtanın** hasarını çarpıyor — kendi hasarını değil."*
+ * Formül bunu hiç öğrenmemişti ve tavan, yavaşlatıcısı bol tahtalarda
+ * gerçeği %60'a varan oranda küçümsüyordu (S113 ölçümü).
+ *
+ * Model üç parçadan kuruluyor:
+ *
+ * 1. **Görev döngüsü** `min(1, süre × atışHızı)` — `combat.etkiDps`'in
+ *    yanma için kullandığı fikrin aynısı. Buz'da `2 × 0,8 = 1,6`, yani
+ *    menzildeki hedefte yavaşlatma **sürekli**.
+ * 2. **Yığılma yok, en güçlüsü kazanıyor** (`effects.ts` S35). Bu
+ *    yüzden oranlar çarpılmıyor, `max` alınıyor.
+ * 3. **Yolun ne kadarı yavaş** — `q = Σ kapsananYol / yolUzunluğu`,
+ *    1 ile sınırlı. Zaman ağırlıklı ortalama hız buradan çıkıyor:
+ *    yol `L` ise süre `(1−q)L/v + qL/(v·s)`, etkin hız da `L` bölü o.
+ *
+ * **Bedeli:** `research/01` §2'nin *"tavan kule yerleşiminden
+ * bağımsızdır"* bulgusu yavaşlatma varken **artık geçerli değil** —
+ * yavaşlatıcıyı yolun başına koymak sonraki bütün kuleleri besler.
+ * `q` bunu kapsama kesriyle **yaklaşık** alıyor; sırayı görmüyor.
+ * Yerleşimden bağımsızlık yavaşlatıcısız tahtalarda aynen duruyor.
+ */
+export function etkinHiz(
+  board: ReferenceBoard,
+  coverageByRange: (range: number) => readonly SpotCoverage[],
+  enemy: EnemyDef,
+  yolUzunlugu: number,
+): number {
+  const hiz = enemy.speed;
+  if (!(hiz > 0) || !(yolUzunlugu > 0)) return hiz;
+
+  let enGucluOran = 0;
+  let yavasKapsama = 0;
+  for (const bt of board.towers) {
+    const def = getTower(bt.towerId);
+    if (def === undefined) continue;
+    const t = tierAt(def, bt.tier);
+    const fx = t.effect;
+    if (fx === undefined || fx.kind !== 'slow') continue;
+    // Vuramadığı düşmanı yavaşlatamaz (§4.2 uçan kuralı).
+    if (enemy.flying && t.airMultiplier === 0) continue;
+
+    const gorevDongusu = Math.min(1, fx.seconds * t.fireRate);
+    if (!(gorevDongusu > 0)) continue;
+    enGucluOran = Math.max(enGucluOran, fx.factor * gorevDongusu);
+    yavasKapsama +=
+      coverageByRange(t.range).find((c) => c.spotIndex === bt.spotIndex)?.coveredPx ?? 0;
+  }
+
+  if (!(enGucluOran > 0) || !(yavasKapsama > 0)) return hiz;
+
+  const q = Math.min(1, yavasKapsama / yolUzunlugu);
+  const yavasHiz = hiz * (1 - enGucluOran);
+  if (!(yavasHiz > 0)) return hiz; // tam durdurma modellenmiyor
+  return 1 / ((1 - q) / hiz + q / yavasHiz);
+}
+
 export function ceilingA(
   board: ReferenceBoard,
   coverageByRange: (range: number) => readonly SpotCoverage[],
   enemy: EnemyDef,
   map: MapDef,
+  /**
+   * Düşmanın yürüdüğü **kolun** uzunluğu (px). `M18`'de **zorunlu**
+   * eklendi: yavaşlatmanın yolun ne kadarını kapladığını bilmeden
+   * etkin hız hesaplanamıyor. Zorunlu olması bilinçli — derleyici
+   * bütün çağıranları saysın (S80/S109'un panzehiri).
+   */
+  yolUzunlugu: number,
 ): number {
-  const hiz = enemy.speed;
+  const hiz = etkinHiz(board, coverageByRange, enemy, yolUzunlugu);
   if (!(hiz > 0)) return 0;
 
   let toplam = 0;
@@ -364,8 +433,14 @@ export function buildReferenceBoards(
       // sonrakiler Yıldırım. Top'un ilkinin Barut Fıçısı alması ile
       // **birebir aynı desen** ve aynı gerekçe: tahtada bir tane
       // "farklı iş yapan" kule olmalı.
-      let ilkTop = true;
-      let ilkBuyu = true;
+      // **S112 — bayrak TAHTADAN okunuyor, dalgadan değil.**
+      //
+      // Bu ikisi `true` ile başlıyordu ve döngü **dalga başına** koştuğu
+      // için kural her dalga sıfırlanıyordu: tahta bir tane değil,
+      // **dalga başına bir tane** yavaşlatıcı kuruyordu (ölçüldü: Kül
+      // Ovası 4 Buz, Kar Geçidi 5). Üstteki yorum hep "bir tane" diyordu.
+      let ilkTop = !kuleler.some((k) => k.towerId === 'top' && k.tier === 3);
+      let ilkBuyu = !kuleler.some((k) => k.towerId === 'buyu' && k.tier === 3);
       for (let i = 0; i < kuleler.length; i++) {
         const k = kuleler[i];
         if (k === undefined || k.tier !== 1) continue;
@@ -432,7 +507,9 @@ export function ceilingAPerBranch(
   enemy: EnemyDef,
   map: MapDef,
 ): number[] {
-  return map.paths.map((_, i) => ceilingA(board, branchCoverageFn(map, i), enemy, map));
+  return map.paths.map((_, i) =>
+    ceilingA(board, branchCoverageFn(map, i), enemy, map, pathLength(map.paths[i] ?? [])),
+  );
 }
 
 /**

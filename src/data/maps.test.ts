@@ -238,7 +238,7 @@ describe('Harita 4 — M8-T04', () => {
     // can kaybı verdi — harita 3'ten kolay. Tarama 4,4'ü verdi (can 13,
     // harita 3'ün 10'unun üstünde, 20 sınırının altında).
     // S87 → S91: HP düştü, altın kaldı (tahta kule başına zayıfladı).
-    expect(MAP_4.hpMultiplier).toBe(5.6); // S109
+    expect(MAP_4.hpMultiplier).toBe(6.4); // S109 → S113
     expect(MAP_4.goldMultiplier).toBe(7.2);
     expect(MAP_4.startGold).toBe(2016);
   });
@@ -384,7 +384,7 @@ describe('Harita 5 - M8-T05', () => {
     // 6,8 seçildi: harita 4'ün 13'ünün üstünde, 20 sınırının %20 altında ve
     // dalga profili tek bir uçurum içermiyor ([0,2,1,1,0,1,0,2,4,2]).
     // S87 → S91.
-    expect(MAP_5.hpMultiplier).toBe(7.6); // S109
+    expect(MAP_5.hpMultiplier).toBe(9.2); // S109 → S113
     expect(MAP_5.goldMultiplier).toBe(10.0);
     expect(MAP_5.startGold).toBe(2800);
   });
