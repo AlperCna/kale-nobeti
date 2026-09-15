@@ -189,6 +189,17 @@ export interface Targetable {
   /** Kaleye kalan yol. `first`/`last` buna bakar (`GAME-DESIGN.md` §4.5). */
   readonly remainingDistance: number;
   readonly def: EnemyDef | null;
+  /**
+   * Süreli kule etkileri — `M10-T05`.
+   *
+   * Hedefleme bunu kullanmıyor; **sinerji** kullanıyor
+   * (`combat.yavaslatmaSinerjisi`). Arayüze eklenmesinin sebebi
+   * `ProjectileSystem`'in çarpanı **kendi içinde** hesaplayabilmesi:
+   * çağırana bırakılsaydı biri unutabilirdi ve bu oturumda oyun ile
+   * simülasyonun ayrı şey çalıştırdığı üç kez bulundu (S80, S81, S86).
+   * Tip zorunluluğu o riski ortadan kaldırıyor.
+   */
+  readonly effects: { readonly slowSeconds: number };
 }
 
 export interface Mover {

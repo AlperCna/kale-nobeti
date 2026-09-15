@@ -351,8 +351,8 @@ tahta 3820'de takılıyor ve oyuncu 34 can kaybediyordu (20 canla kayıp).
 | 1 · Değirmen Geçidi | ×1 | ×1 | 1350 | 0 / 20 ✓ |
 | 2 · Taş Köprü | ×1,6 | ×1,6 | 2210 | 8 / 20 ✓ |
 | 3 · Kül Ovası | ×2,6 | ×3,8 **←ayrıştı** | 4870 | 6 / 20 ✓ |
-| 4 · Kar Geçidi | ×4,4 | ×4,4 | 5100 | 5 / 20 ✓ |
-| 5 · Kadim Harabe | ×6,8 | ×6,8 | 6440 | 10 / 20 ✓ |
+| 4 · Kar Geçidi | ×4,4 | ×4,4 | 5100 | 3 / 20 ✓ |
+| 5 · Kadim Harabe | ×6,8 | ×6,8 | 6440 | 8 / 20 ✓ |
 
 Türetilebilir kural: **altın, haritanın noktalarını tam yükseltmeye
 yetmeli.** 3,8'de maliyet doyuyor (üstü fazladan kule almıyor), yani sayı
@@ -490,9 +490,9 @@ referans tahtaya, tavana ve boss türetmesine hiç girmiyor — hiçbir düşman
 
 | Seviye | HP çarpanı | Başlangıç canı | Yıldız | 1 | 2 | 3 | 4 | 5 |
 |---|---|---|---|---|---|---|---|---|
-| kolay | ×0,85 | 20 | **kaydedilmiyor** | 0 / 20 ✓ | 4 / 20 ✓ | 1 / 20 ✓ | 2 / 20 ✓ | 6 / 20 ✓ |
-| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 8 / 20 ✓ | 6 / 20 ✓ | 5 / 20 ✓ | 10 / 20 ✓ |
-| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 8 / 12 ✓ | 6 / 12 ✓ | 5 / 12 ✓ | 10 / 12 ✓ |
+| kolay | ×0,85 | 20 | **kaydedilmiyor** | 0 / 20 ✓ | 4 / 20 ✓ | 1 / 20 ✓ | 0 / 20 ✓ | 4 / 20 ✓ |
+| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 8 / 20 ✓ | 6 / 20 ✓ | 3 / 20 ✓ | 8 / 20 ✓ |
+| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 8 / 12 ✓ | 6 / 12 ✓ | 3 / 12 ✓ | 8 / 12 ✓ |
 
 Hücreler: referans tahtanın kaybettiği can / o seviyenin canı.
 
@@ -653,9 +653,9 @@ Simülasyon **canlı oyunla aynı kodu** kullanıyor: aynı
 |---|---|---|---|
 | 1 · Değirmen Geçidi | **0** | 0 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:0 |
 | 2 · Taş Köprü | **8** | 445 | d1:0 d2:1 d3:1 d4:1 d5:1 d6:3 d7:0 d8:0 d9:1 d10:0 |
-| 3 · Kül Ovası | **5** | 175 | d1:0 d2:1 d3:0 d4:1 d5:0 d6:2 d7:0 d8:0 d9:1 d10:0 |
-| 4 · Kar Geçidi | **4** | 1390 | d1:0 d2:1 d3:1 d4:1 d5:0 d6:0 d7:0 d8:0 d9:0 d10:1 |
-| 5 · Kadim Harabe | **7** | 3839 | d1:0 d2:2 d3:1 d4:1 d5:0 d6:0 d7:0 d8:1 d9:1 d10:1 |
+| 3 · Kül Ovası | **5** | 174 | d1:0 d2:1 d3:0 d4:1 d5:0 d6:2 d7:0 d8:0 d9:1 d10:0 |
+| 4 · Kar Geçidi | **3** | 407 | d1:0 d2:1 d3:1 d4:1 d5:0 d6:0 d7:0 d8:0 d9:0 d10:0 |
+| 5 · Kadim Harabe | **6** | 2546 | d1:0 d2:2 d3:1 d4:1 d5:0 d6:0 d7:0 d8:0 d9:1 d10:1 |
 
 
 **Hangi düşman sızıyor** — toplam sayı *neyin* sızdığını söylemiyor ve
@@ -666,8 +666,8 @@ bu ikisi farklı düzeltmeler gerektiriyor:
 | 1 · Değirmen Geçidi | **hiç yok** |
 | 2 · Taş Köprü | Zırhlı Ork ×3 · Ork Savaşçı ×2 · Harpi ×2 · Şaman ×1 |
 | 3 · Kül Ovası | Ork Savaşçı ×2 · Harpi ×2 · Trol ×1 |
-| 4 · Kar Geçidi | Ork Savaşçı ×2 · Zırhlı Ork ×1 · Trol ×1 |
-| 5 · Kadim Harabe | Ork Savaşçı ×3 · Trol ×3 · Zırhlı Ork ×1 |
+| 4 · Kar Geçidi | Ork Savaşçı ×2 · Zırhlı Ork ×1 |
+| 5 · Kadim Harabe | Ork Savaşçı ×3 · Trol ×2 · Zırhlı Ork ×1 |
 
 **Kısıt A ile Kısıt B aynı şeyi ölçmüyor.** Kısıt A *tek* düşman için
 ("bir Ork Savaşçı öldürülebilir mi"), Kısıt B *dalga* için ("on bir tanesi

@@ -81,3 +81,28 @@ export function kalkandanGecir(dealt: number, hedef: { shieldLeft: number }): nu
   hedef.shieldLeft -= emilen;
   return dealt - emilen;
 }
+
+/**
+ * **Kule sinerjisi** — `M10-T05`.
+ *
+ * Yavaşlatılmış düşman fiziksel hasardan daha çok etkileniyor. Çarpan
+ * **ham hasara** uygulanıyor, zırhtan önce: "daha sert vuruyor"un doğal
+ * okunuşu bu. Zırhtan sonra uygulansaydı zırhsız düşmanla zırhlı düşman
+ * arasındaki farkı büyütürdü ve sinerji zırhı delen bir şeye dönüşürdü
+ * — Büyü ailesinin işine girerdi (§3: zırhı delen şey büyü hasarı).
+ *
+ * **Yalnız fiziksel.** Büyü zaten zırhı yok sayıyor; ikisini birden
+ * güçlendirmek "her kule her kuleyle iyi" demek olurdu ve sinerjinin
+ * amacı **seçim** üretmek.
+ *
+ * Saf ve paylaşılan: `ProjectileSystem` bunu hem oyunda hem `waveSim`'de
+ * aynı yerden çağırıyor. Bu oturumda üç kez (S80, S81, S86) oyun ile
+ * simülasyonun ayrı şey çalıştırdığı bulundu; dördüncüsü olmasın.
+ */
+export function yavaslatmaSinerjisi(
+  type: DamageType,
+  hedef: { readonly effects: { readonly slowSeconds: number } },
+): number {
+  if (type !== 'physical') return 1;
+  return hedef.effects.slowSeconds > 0 ? BALANCE.yavaslatmaFizikselBonus : 1;
+}

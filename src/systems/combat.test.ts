@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { applyDamage, kalkandanGecir, DAMAGE_FLOOR_RATIO } from './combat';
+import { applyDamage, kalkandanGecir, yavaslatmaSinerjisi, DAMAGE_FLOOR_RATIO } from './combat';
 import { OKCU, TOP } from '../data/towers';
+import { BALANCE } from '../data/balance';
 import { GOBLIN, ORK_SAVASCI, getEnemy, getEnemyForMap } from '../data/enemies';
 
 /** Zırhsız, dirençsiz. */
@@ -219,5 +220,52 @@ describe('getEnemyForMap — kalkan kapsamı', () => {
   it('temel tanım DEĞİŞMİYOR — varyant kopya üzerinden', () => {
     getEnemyForMap('orkSavasci', harita('kar-gecidi'));
     expect(getEnemy('orkSavasci')?.shield).toBeUndefined();
+  });
+});
+
+/**
+ * **Kule sinerjisi** — `M10-T05`. GameAnalytics'in en iyi TD'leri ayıran
+ * dört kaldıracından dördüncüsü; ilk üçü (dalga arası planlama, seçim
+ * çeşitliliği, kaynak kısıtı) bu oyunda zaten vardı.
+ */
+describe('yavaslatmaSinerjisi — yavaşlatılmış düşman fiziksele açık', () => {
+  const YAVAS = { effects: { slowSeconds: 1.4 } };
+  const NORMAL = { effects: { slowSeconds: 0 } };
+
+  it('yavaşlatılmış düşmana fiziksel hasar artıyor', () => {
+    expect(yavaslatmaSinerjisi('physical', YAVAS)).toBe(BALANCE.yavaslatmaFizikselBonus);
+  });
+
+  it('yavaşlatılmamış düşmana çarpan yok', () => {
+    expect(yavaslatmaSinerjisi('physical', NORMAL)).toBe(1);
+  });
+
+  /**
+   * Büyü zaten zırhı yok sayıyor (§3). İkisini birden güçlendirmek
+   * "her kule her kuleyle iyi" demek olurdu ve sinerjinin amacı
+   * **seçim** üretmek.
+   */
+  it('BÜYÜ hasarına dokunmuyor — sinerji seçim üretmeli', () => {
+    expect(yavaslatmaSinerjisi('magic', YAVAS)).toBe(1);
+  });
+
+  it('gerçek hasara (yetenekler) dokunmuyor', () => {
+    expect(yavaslatmaSinerjisi('true', YAVAS)).toBe(1);
+  });
+
+  /**
+   * Çarpan **ham hasara**, zırhtan önce. Zırhtan sonra uygulansaydı
+   * zırhlı/zırhsız farkını büyütür ve sinerji "zırh delen" bir şeye
+   * dönüşürdü — Büyü ailesinin işine girerdi.
+   */
+  it('çarpan zırhtan ÖNCE — zırhın etkisi korunuyor', () => {
+    const zirhli = { armor: 4, magicResist: 0 };
+    const carpan = yavaslatmaSinerjisi('physical', YAVAS);
+    const sinerjili = applyDamage(10 * carpan, 'physical', zirhli).dealt;
+    const duz = applyDamage(10, 'physical', zirhli).dealt;
+    // Zırh her iki durumda da aynı miktarı emiyor (4), yani fark ham
+    // hasarın farkı kadar: 12,5 − 4 = 8,5 ve 10 − 4 = 6.
+    expect(sinerjili).toBeCloseTo(10 * carpan - 4, 6);
+    expect(duz).toBeCloseTo(6, 6);
   });
 });
