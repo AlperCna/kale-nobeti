@@ -1,6 +1,6 @@
 # M16 — Dalgalar üst üste binsin (S102)
 
-> **Durum:** plan. `M14` ölçtü, bu taş düzeltiyor.
+> **Durum:** BİTTİ (dört fazın dördü). `M14` ölçtü, bu taş düzeltti.
 
 ## Neden
 
@@ -113,6 +113,23 @@ yine yalan söyler.
 
 Tarayıcıda: erken basınca iki dalga aynı anda sahada. §6 ve
 `OPEN-QUESTIONS` S102 güncelleniyor.
+
+> **BİTTİ.** Kül Ovası'nda oynandı (5 Top, karışık yerleşim) ve saha
+> 250 ms'de bir örneklendi; her düşman ilk canlı görüldüğü dalgayla
+> etiketlendi, havuza dönen etiketini bırakıyor (yoksa geri dönüşüm
+> etiketi yalan söylüyor — ilk denemede tam olarak bu oldu).
+>
+> Ölçülen: dalga 3 sahada **7 düşman varken** başladı; 230 örneğin
+> **142'sinde** sahada birden fazla dalga vardı; dalga 4 başladığında
+> etiketler `[0, 3, 4]` — yani **üç** kuşak aynı anda yoldaydı.
+> Ekran görüntüsü oyuncu gözüyle de doğruluyor: "Dalgayı başlat"
+> düğmesi ve 20 sn'lik sayaç, düşmanlar hâlâ yürürken açık. `M16`
+> öncesi bu ekran **imkânsızdı**.
+>
+> Konsol temiz. İlk okumada `#patlama` sözdizimi hatası ve 16 adet
+> `Texture key already in use: sayilar` göründü; ikisi de **bayat**
+> çıktı (tampon sekme başına ve o sekme uzun süredir açıktı) — temiz
+> sekmede Seviye Seç → Oyun yolunda tek satır hata yok.
 
 ---
 
