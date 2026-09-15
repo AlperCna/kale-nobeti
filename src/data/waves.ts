@@ -22,7 +22,7 @@ import { getEnemy } from './enemies';
  * @throws Dalga numarası 1'den küçükse — sessizce 0 dönmek dalga üretimini
  *   boş bırakır ve hata çok sonra ortaya çıkar.
  */
-export function budget(n: number): number {
+export function budget(n: number, elit = false): number {
   if (!Number.isInteger(n) || n < 1) {
     throw new Error(`budget: dalga numarası ≥ 1 tam sayı olmalı, ${n} geldi`);
   }
@@ -30,8 +30,50 @@ export function budget(n: number): number {
   return Math.round(
     BALANCE.budgetBase *
       Math.pow(BALANCE.budgetGrowth, n - 1) *
-      (nefes ? BALANCE.breatherFactor : 1),
+      (nefes ? BALANCE.breatherFactor : 1) *
+      (elit ? BALANCE.eliteFactor : 1),
   );
+}
+
+/**
+ * **Elit dalgası taşıyan haritalar** — `M21` (S116).
+ *
+ * Kadrosunda elit (Trol) olan haritalar. Harita 1-2 öğrenme yayı:
+ * kadrolarında Trol yok ve orta oyunları zaten öğretme işi yapıyor.
+ *
+ * **Harita 4 ve 5 ölçümle DIŞARIDA.** Kar Geçidi'nde elit dalgası Okçu'yu
+ * S95'in 20 can eşiğinin üstüne atıyor ve **hiçbir çarpanda** ikisi
+ * birden sağlanmıyor: hp 5,6→Okçu 23 · 5,8→23 · 6,0→27 · 6,1→27, oysa
+ * karışık tahtaya baskı ancak +4 Trol'de doğuyor (+3'te orta pay 0).
+ * Kompozisyon da kurtarmıyor (2 Trol + 2 Örümcek Ana → Okçu 23).
+ * Sebep haritaya özgü: 12 nokta (harita 5'te 15) ve kadrosundaki
+ * **kalkanlı** Ork Savaşçı varyantı (`M10-T03`) tek hedefli, çarpansız
+ * aileyi ikinci kez cezalandırıyor. S95'in koruması gevşetilmedi.
+ * Kadim Harabe'de de aynısı: elit dalgası Okçu'yu 17 → **27** yapıyor.
+ *
+ * **Ölçülen sınır şu:** elit dalgası ancak Okçu tahtasının payı olan
+ * yerde kaldırılabiliyor. Harita 3'te Okçu 0 → 4 (sınır 20, rahat);
+ * harita 4-5'te karışık tahtaya baskı yapacak ağırlık **en zayıf
+ * aileyi** eziyor. Yani orta oyunu daha ileri götürmek için önce
+ * karışık tahta ile tek aile tahtası arasındaki makasın (S95'in alanı)
+ * ya da maliyet/gelir oranının (S117) ele alınması gerekiyor.
+ *
+ * **Harita 6 ölçümle DIŞARIDA.** Sisli Bataklık'ın orta oyununda zaten
+ * baskı var (Tünelci, dalga 6'da 2 can) ve elit dalgası eklenince
+ * tepkisi kaotikleşiyor: çarpan taramasında orta pay 0'a düşerken final
+ * 4 ↔ 17 ↔ 9 arasında zıplıyor. Çağıran boss (`M13`) + yeraltı geçişi
+ * bileşimi bu haritayı zaten farklı bir rejimde tutuyor.
+ */
+export const ELIT_DALGALI_HARITALAR: readonly string[] = ['kul-ovasi'];
+
+/**
+ * Bir haritanın `n`. dalgasının bütçesi. **Tek adres** — hem dalga
+ * verisi hem `waves.test`'in ±%10 sağlaması bunu kullanıyor; iki yerde
+ * iki ayrı kural yazmak sessizce ayrışırdı.
+ */
+export function budgetFor(mapId: string, n: number): number {
+  const elit = ELIT_DALGALI_HARITALAR.includes(mapId) && BALANCE.eliteWaves.includes(n as 6);
+  return budget(n, elit);
 }
 
 /** Grup içi doğum aralığı (`GAME-DESIGN.md` §7). Birim: saniye. */
@@ -296,12 +338,14 @@ export const MAP3_WAVES: readonly Wave[] = [
     ['orumcekAna', 2, 1],
     ['kurtBinicisi', 1],
   ]), // 21 = bütçe 21. ÖRÜMCEK ANA tanıtılıyor: bölünme.
+  // **ELİT DALGASI** (`M21`, S116) — bütçe ×2,2 ve fazlalık tek sert
+  // birime gidiyor. Gerekçe `balance.eliteWaves`'te.
   dalgaKur(6, [
     ['zirhliOrk', 2],
-    ['trol', 1, 1],
-    ['orkSavasci', 3],
+    ['trol', 4, 1],
+    ['orkSavasci', 4],
     ['harpi', 1, 1],
-  ]), // 25 = bütçe 25. TROL tanıtılıyor: yenilenme + kışla.
+  ]), // 51 ≈ elit bütçe 55. TROL tanıtılıyor: yenilenme + kışla.
   dalgaKur(7, [
     ['goblin', 4],
     ['orkSavasci', 5, 1],
@@ -370,7 +414,7 @@ export const MAP4_WAVES: readonly Wave[] = [
     ['harpi', 2],
     ['saman', 1],
     ['orkSavasci', 1],
-  ]), // 25 = bütçe 25
+  ]), // 25 = bütçe 25 — elit dalgası DIŞARIDA, gerekçe waves.ts başlığında
   dalgaKur(7, [
     ['goblin', 4],
     ['orkSavasci', 6],
@@ -437,7 +481,7 @@ export const MAP5_WAVES: readonly Wave[] = [
     ['zirhliOrk', 3],
     ['harpi', 1, 1],
     ['saman', 2, 1],
-  ]), // 25 = bütçe 25
+  ]), // 25 = bütçe 25 — elit dalgası DIŞARIDA, gerekçe waves.ts başlığında
   dalgaKur(7, [
     ['goblin', 6],
     ['orkSavasci', 6, 1],
