@@ -153,23 +153,44 @@ Fiziksel hasar. Uçanlara vurabilir. Zırha karşı zayıf.
 | 1 | 70 | 6 | 1.1 | 150 |
 | 2 | 110 | 10 | 1.3 | 165 |
 | 3a Keskin Nişancı | 170 | 26 | 0.6 | 260 |
-| 3b Kundakçı | 170 | 9 + 4/sn yanma (4 sn) | 1.4 | 165 |
+| 3b Kundakçı | 170 | 9 + **7**/sn yanma (4 sn) | 1.4 | **195** |
+
+**`M11` Faz 2 (S91):** Kundakçı yanması 4 → 7/sn, menzili 165 → 195.
+Öncesi hiçbir senaryoda kazanmıyordu: aynı menzilde, daha az vuruş
+hasarıyla Keskin Nişancı'nın zayıf bir kopyasıydı. Kimliği artık
+**çok hedefte sabit hasar** — yanma hedef başına işliyor, yani düşman
+sayısıyla doğrusal büyüyor; Keskin Nişancı ise **tek sert** hedefte.
 
 ### 4.2 Top Kulesi — alan hasarı, yavaş
 Fiziksel hasar, patlama yarıçapı. Kalabalığın cevabı.
-**Havan dalı uçana vuramaz; Barut Fıçısı dalı vurabilir (hasarın %50'si).**
+**İki dal da uçana vurur (hasarın %50'si)** — `M11` Faz 2'ye kadar Havan hiç vuramıyordu, bkz. aşağıdaki not.
 
 | Tier | Maliyet | Hasar | Atış/sn | Menzil | Yarıçap | Uçan |
 |---|---|---|---|---|---|---|
 | 1 | 110 | 22 | 0.5 | 140 | 45 | hayır |
 | 2 | 160 | 34 | 0.55 | 150 | 55 | hayır |
-| 3a Havan | 240 | 48 | 0.45 | 230 | 70 | hayır |
-| 3b Barut Fıçısı | 240 | 30 + %40 yavaşlatma (2 sn) | 0.6 | 150 | 65 | **evet, %50** |
+| 3a Havan | 240 | 48 | 0.45 | 230 | **55** | **evet, %50** |
+| 3b Barut Fıçısı | 240 | **24** | **0.9** | 150 | **85** | evet, %50 |
 
-Gerekçe: 4 aileden 2'si uçana etkisiz olduğunda harpi dalgasında oyuncunun
-tahtasının yarısı ölü kalıyor. Barut Fıçısı'na uçan yetisi vermek T3
-dallanmasını gerçek bir seçime çeviriyor: Havan = kara uzmanı,
-Barut Fıçısı = esnek (`docs/research/03-mekanik-tasarim.md` §2).
+**`M11` Faz 2 (S91) — ikisinin DPS'i artık EŞİT (21,6).** Takas tek bir
+eksene indi: **menzil ↔ patlama yarıçapı.** Havan uzağı dar vuruyor
+(230/55), Barut Fıçısı yakını geniş (150/85). Ölçüm ikisini de
+kazandırıyor: Barut kalabalık ve hızlı sürülerde (kurt binicisi ×40:
+1260'a 2237), Havan zırhlı/uçan/tek sert hedefte (zırhlı ork ×30:
+1384'e 2272). Test: `systems/dalKimligi.test.ts`.
+
+**Yavaşlatma Barut Fıçısı'ndan ALINDI** ve Buz'un tek kimliği oldu.
+Sebep yapısal: Kısıt A `DPS × kapsananYol / hız` ve yavaşlatma **hızı
+böler** — yani yavaşlatan bir kule yalnız kendi hasarını değil
+**bütün tahtanın** hasarını çarpıyor. İki dalın biri yavaşlatıp diğeri
+yavaşlatmıyorsa seçim yok: yavaşlatan her zaman kazanır.
+
+**Havan da artık uçana vuruyor (%50).** `airMultiplier: 0` *kategorik*
+bir delikti: harpi dalgasında Havan'lı tahtanın Top kısmı tamamen ölü
+kalıyordu ve oyuncu dal seçerken bunu tek bir dalgaya bakarak
+yapıyordu. Asıl gerekçe (4 aileden 2'si uçana etkisizse tahtanın yarısı
+ölü — `docs/research/03-mekanik-tasarim.md` §2) zaten bunu söylüyordu;
+uçan farkı artık kimlik değil, menzil/yarıçap kimlik.
 
 ### 4.3 Büyü Kulesi — zırh delen
 Büyü hasarı. Zırhlı düşmanların tek temiz cevabı. Büyü dirençli düşmanlara zayıf.
@@ -179,7 +200,16 @@ Büyü hasarı. Zırhlı düşmanların tek temiz cevabı. Büyü dirençli dü�
 | 1 | 100 | 14 | 0.7 | 155 |
 | 2 | 150 | 24 | 0.75 | 170 |
 | 3a Yıldırım | 230 | 30, 3 hedefe zincirleme (%70 azalarak) | 0.7 | 170 |
-| 3b Buz | 230 | 20 + %50 yavaşlatma (2.5 sn) | 0.8 | 180 |
+| 3b Buz | 230 | **8** + %**30** yavaşlatma (**2** sn), patlama **30** | 0.8 | 180 |
+
+**`M11` Faz 2 (S91):** Buz **tahtanın yavaşlatıcısı**. Hasarı bilerek
+düşük (8) — ödediği bedel bu; karşılığında yavaşlatma bütün tahtanın
+hasarını çarpıyor (yukarıdaki §4.2 notu). Küçük bir patlama (30)
+eklendi ki yavaşlatma **tek hedefe** değil gruba değsin: eskiden Barut
+Fıçısı'nın patlamayla dağıttığı daha zayıf yavaşlatma, Buz'un tek
+hedefli güçlü yavaşlatmasından **daha çok** düşmana değiyordu.
+Ölçüm: kalabalıkta ezici (ork ×60: 3928'e 13515), tek sert hedefte ve
+uçanda Yıldırım önde.
 
 ### 4.4 Kışla — asker çıkarır, yolu tıkar
 Hasar vermez, **zaman kazandırır**. Türün en önemli mekaniği: düşmanı durdurup
@@ -357,17 +387,19 @@ menzilinden geçmeli (8 noktalı haritada ≥ 3). `util/coverage.ts` ile ölçü
 | Kalabalık goblin | Top |
 | Zırhlı Ork | Büyü |
 | Şaman | Keskin Nişancı — **`first` ile ODAKLAN**, `last` değil (S83) |
-| Harpi sürüsü | Okçu + Büyü + Barut Fıçısı (Havan işe yaramaz) |
+| Harpi sürüsü | Okçu + Büyü + Top (ikisi de %50 vuruyor; **Havan önde**, uzun menzili uçan hattını daha çok görüyor — S91) |
 | Trol | Kışla ile tut + yoğun tek hedef |
-| Kurt Binicisi | Buz / Barut Fıçısı yavaşlatma |
+| Kurt Binicisi | **Buz** (yavaşlatma artık yalnız onda) / Barut Fıçısı'nın geniş patlaması |
 | Ogre Şef | Büyü + Top, `strongest` hedefleme, Meteor |
 | **Buz kalkanı** (harita 4 Ork Savaşçı) | Patlama/ağır vuruş — kalkan **toplam** bir havuz, erimeden cana hasar geçmiyor |
 | **Ogre Şef 2. evre** (harita 5, can %50) | Hız ×1,6 — kaleye varmadan bitirmek gerekiyor |
 
 **Kule sinerjisi (M10):** yavaşlatılmış düşman **fiziksel** hasardan
-×1,25 etkileniyor. Yani Barut Fıçısı / Buz ile Okçu-Top birlikte
-çalışıyor; Büyü'ye uygulanmıyor (§3: büyü zaten zırhı yok sayıyor,
-ikisini birden güçlendirmek seçimi yok ederdi).
+×1,25 etkileniyor. Yani **Buz** ile Okçu-Top birlikte çalışıyor;
+Büyü'ye uygulanmıyor (§3: büyü zaten zırhı yok sayıyor, ikisini birden
+güçlendirmek seçimi yok ederdi). **S91'den sonra yavaşlatmanın tek
+kaynağı Buz** — sinerji böylece bir *aile arası* karar oldu: Büyü
+dalını Buz yapan oyuncu, Okçu ve Top kulelerini de güçlendiriyor.
 
 ## 6. Ekonomi
 
@@ -539,18 +571,26 @@ düzeltildi:
   (S86). Üçü kapanınca ölçülen zorluk rampası monoton çıkmadı; **S87**
   dört haritanın çarpanını ölçerek yeniden türetti.
 
-- **S87 — ölçülen zorluk rampası (Zor'da can kaybı):**
+- **S87 → S91 — ölçülen zorluk rampası (Zor'da can kaybı):**
 
-  | Harita | HP çarpanı | Altın çarpanı | Zor | Kolay |
+  | Harita | HP çarpanı | Altın çarpanı | Zor | Kolay (×0,80) |
   |---|---|---|---|---|
   | 1 Değirmen Geçidi | 1,0 | 1,0 | 0 | 0 |
-  | 2 Taş Köprü | **1,3** | 1,6 | 4 | 1 |
-  | 3 Kül Ovası | **3,0** | 3,8 | 7 | 4 |
-  | 4 Kar Geçidi | **7,2** | **7,2** | 13 | 7 |
-  | 5 Kadim Harabe | **10,0** | **10,0** | 17 | 8 |
+  | 2 Taş Köprü | 1,3 | 1,6 | 4 | 0 |
+  | 3 Kül Ovası | **2,4** | 3,8 | 7 | 1 |
+  | 4 Kar Geçidi | **4,8** | 7,2 | 13 | 3 |
+  | 5 Kadim Harabe | **7,0** | 10,0 | 15 | 7 |
 
   Dört ölçüt: monoton · öğrenme yayı (2-3) Zor'da geçilebilir (< 12) ·
   harita 4-5 Zor'un tanımını karşılıyor (≥ 12) · Kolay'da hepsi ≤ 10.
+
+  **`M11` Faz 2 (S91): 3-4-5 yeniden türetildi.** Dal dengesi referans
+  tahtayı zayıflattı (Buz'un hasarı 20 → 8; karşılığında yavaşlatma,
+  ama tahta başına bir tane) ve aynı çarpanlarla rampa `0·4·13·17·19`
+  çıktı — harita 3 Zor'da geçilemez (13 ≥ 12), harita 5 ise 20 canın
+  19'unu alıyordu. Çarpanlar tarandı, **HP düştü, altın sabit kaldı**:
+  ekonomiye dokunmamak boss türetmesini (altına bağlı) yerinde
+  bırakıyor ve S73'ün "altın ≥ HP" değişmezi zaten sağlanıyor.
   **Harita 2 düştü**, çünkü ölçüm onun konumuna göre fazla zor olduğunu
   gösterdi (20 canın 8'i, ikinci haritada). Harita 4-5'te altın çarpanı
   HP ile **birlikte** yükseldi: S73'ün değişmezi (altın ≥ HP) referans
@@ -666,7 +706,15 @@ hiçbir tahta bunu indiremezdi (M7'de ölçüldü: Kısıt A oranı %165 ve %282
 |---|---|---|---|
 | 1 Değirmen Geçidi | 10 | 700 | %92,0 |
 | 2 Taş Köprü | 5 | 712 | %80,0 |
-| 3 Kül Ovası | 2 | 1023 | %80,0 |
+| 3 Kül Ovası | 2 | 886 | %80,0 |
+| 4 Kar Geçidi | 2 | 1709 | %80,0 |
+| 5 Kadim Harabe | 2 | 2189 | %80,0 |
+
+**`M11` Faz 2 (S91): 3-4-5 yeniden türetildi** (1023 / 1933 / 2675 →
+886 / 1709 / 2189). Dal dengesi referans tahtayı zayıflattı, üç tavan
+birden düştü ve yazılı HP'ler banttan çıktı (%92,4 / %90,5 / %93,1).
+Sayıyı **test söyledi**: regresyon bandı kırıldı, aynı kuralla
+(`0,80 × en zayıf kol tavanı`) yeniden hesaplandı.
 
 Zırhın haritayla düşmesi bilinçli: geç haritalarda altın daha çok noktaya
 bölündüğü için tahtanın ortalama kademesi düşüyor ve yüksek zırh o tahtayı
@@ -719,6 +767,14 @@ geliyor ve ekran en kalabalık hâline ulaşıyordu. Kural sayıya değil
 | Uçana vurur/vurmaz ikonu | §4.2 |
 | Yükseltme farkı (öncesi → sonrası) | Yükseltme kararı |
 | Satış iadesi (%70) | |
+| **Patlama yarıçapı** (`M11` Faz 2) | Top'un iki dalı arasındaki takasın yarısı bu sayı; görünmezse seçim de görünmez |
+| **Etki satırı** (`M11` Faz 1) | Yanma/yavaşlatma/zincir; etkisiz dalda `—` |
+
+**Dal özeti — satın almadan ÖNCE (`M11` Faz 2, S93).** T3 menüsü yalnız
+*ad + fiyat* yazıyordu; oyuncu iki dalın farkını 240 altın harcadıktan
+sonra görüyordu. Menüde artık her dalın bir satırlık özeti var
+(`Havan · DPS 21,6 · menzil 230 · patlama 55`), `towers.ts`'ten
+**üretiliyor**. Hover değil **sabit iki satır**: dokunmatikte imleç yok.
 
 En kritik olan üçüncüsü. Panelin altında küçük bir düşman ikonu şeridi;
 üstüne gelince o düşmana karşı etkin DPS yazılır. Hesap zaten `applyDamage`

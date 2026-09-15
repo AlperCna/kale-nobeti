@@ -36,6 +36,9 @@
  * | 2 Taş Köprü | 5 | 890 | **712** |
  * | 3 Kül Ovası | **2** | 925 | **740** |
  *
+ * (Sayılar M7'nin ölçümü; bugünkü değerler aşağıdaki `BOSS_HP_BY_MAP`
+ * içinde ve her biri yanındaki notta hangi ölçümden geldiğini yazıyor.)
+ *
  * **Harita 3 iki kez yeniden türetildi ve iki kez de regresyon bandı
  * yakaladı** — sayı hiç elle ayarlanmadı:
  *
@@ -97,15 +100,28 @@ export const BOSS_ARMOR_BY_MAP: Readonly<Record<string, number>> = {
 export const BOSS_HP_BY_MAP: Readonly<Record<string, number>> = {
   'degirmen-gecidi': 700, // §5'in belgelenmiş değeri (türetme 718 diyor)
   'tas-kopru': 712,
-  'kul-ovasi': 1023,
+  // **`M11-T02` (S91): 1023 → 886.** Aynı sebep, aşağıdaki harita 5
+  // notuna bakınız: dal dengesi referans tahtayı zayıflattı, tavan
+  // 1278'den 1107'ye düştü. 0,80 × 1107 ≈ 886.
+  'kul-ovasi': 886,
   // `M8-T04` — türetildi: 0,80 × en zayıf kol tavanı (2416,2, zırh 2).
   // İlk tur 1857'ydi (tavan 2321,2); `M8-T05`'te kartuşun altında kalan
   // yapı noktası taşınınca referans tahta değişti ve tavan yükseldi.
-  'kar-gecidi': 1933,
+  //
+  // **`M11-T02` (S91): 1933 → 1709.** Tavan 2136; 0,80 × 2136 ≈ 1709.
+  'kar-gecidi': 1709,
   // `M8-T05` — türetildi: 0,80 × **en zayıf kol** tavanı. İki kol ayrı
-  // ölçüldü (3344 / 3403); zayıf olan A kolu belirleyici, çünkü düşman
-  // hangi kolu yürüyeceğini oyuncu seçmiyor.
-  'kadim-harabe': 2675,
+  // ölçüldü; zayıf olan belirleyici, çünkü düşman hangi kolu
+  // yürüyeceğini oyuncu seçmiyor.
+  //
+  // **`M11-T02` (S91): 2675 → 2189.** Dal dengesi değişince referans
+  // tahta zayıfladı (Barut Fıçısı'nın yavaşlatması Buz'a geçti, Buz'un
+  // hasarı 20'den 8'e indi) ve **üç haritanın tavanı birden** düştü.
+  // Yazılı HP'ler bandın (%75-85) dışına çıktı: %92,4 / %90,5 / %93,1.
+  // Üçü de aynı türetme kuralıyla yeniden hesaplandı — elle
+  // ayarlanmadı, `bossScaling.test.ts` bandı bir kez daha kırdı ve
+  // sayıyı o söyledi: 0,80 × 2736 ≈ 2189.
+  'kadim-harabe': 2189,
 };
 
 /** Türetilen değerin kabul edilebilir sapma payı (regresyon bandı, §12). */

@@ -212,13 +212,21 @@ export const MAP_2: MapDef = {
    *
    * Yeni rampa (Zor / Kolay), hepsi taranarak seçildi:
    *
-   * | Harita | HP çarpanı | Altın çarpanı | Zor | Kolay |
+   * **S91 (`M11-T02`) rampayı yeniden türetti:** dal dengesi
+   * değişince (yavaşlatma Barut Fıçısı'ndan Buz'a geçti) referans
+   * tahta zayıfladı ve rampa `0·4·15·30·35`'e fırladı. Güncel:
+   *
+   * | Harita | HP çarpanı | Altın çarpanı | Zor | Kolay (×0,80) |
    * |---|---|---|---|---|
    * | 1 | 1,0 | 1,0 | 0 | 0 |
-   * | 2 | **1,3** | 1,6 | 4 | 1 |
-   * | 3 | **3,0** | 3,8 | 7 | 4 |
-   * | 4 | **7,2** | **7,2** | 13 | 7 |
-   * | 5 | **10,0** | **10,0** | 17 | 8 |
+   * | 2 | **1,3** | 1,6 | 4 | 0 |
+   * | 3 | **2,4** | 3,8 | 7 | 1 |
+   * | 4 | **4,8** | 7,2 | 13 | 3 |
+   * | 5 | **7,0** | 10,0 | 15 | 7 |
+   *
+   * Altın çarpanları **düşmedi**: tahta kule başına zayıfladığı için
+   * (Barut Fıçısı'nın yavaşlatması gitti) daha çok altın onu
+   * dengeliyor, ve S73'ün "altın ≥ HP" değişmezi rahat sağlanıyor.
    *
    * Dört ölçüt de sağlanıyor: monoton · öğrenme yayı (2-3) Zor'da
    * geçilebilir (< 12) · harita 4-5 Zor'un tanımını karşılıyor (≥ 12) ·
@@ -344,7 +352,7 @@ export const MAP_3: MapDef = {
    * körlükleri kapatmadan sayı türetmek, düzeltmeyi iki kez yapmak
    * demek.
    */
-  hpMultiplier: 3.0, // S87 — rampa taraması, gerekçe harita 2'nin notunda
+  hpMultiplier: 2.4, // S87 → S91 (M11-T02 dal dengesi rampayı yeniden türettirdi)
   /**
    * **S73 — altın çarpanı HP çarpanından AYRIŞTI (2,6 → 3,8).**
    *
@@ -487,7 +495,7 @@ export const MAP_4: MapDef = {
    * Boss tavanı çarpandan bağımsız (tahta DPS'i ÷ boss zırhı), o yüzden
    * türetilen boss HP 1857 bu değişiklikte **aynı kaldı**.
    */
-  hpMultiplier: 7.2, // S87
+  hpMultiplier: 4.8, // S87 → S91
   goldMultiplier: 7.2, // S87 — HP ile birlikte yükseldi (S73 değişmezi)
   startGold: Math.round(280 * 7.2), // S87
   // §5: kadro **tam** — dokuz tip, yeni tanıtım yok.
@@ -521,7 +529,7 @@ export const MAP_4: MapDef = {
  * monoton zorluk demek değil; ölçüt simülasyonun verdiği **can kaybı**).
  * Tarama gerekçesi `docs/plan/M8-genisleme.md` Faz 5 sonucunda.
  */
-const MAP5_HP_CARPANI = 10.0; // S87 — rampa taraması
+const MAP5_HP_CARPANI = 7.0; // S87 → S91
 const MAP5_ALTIN_CARPANI = 10.0; // S87 — HP ile birlikte (S73 değişmezi)
 
 const MAP5_KALE: Vec2 = { x: 1180, y: 600 };

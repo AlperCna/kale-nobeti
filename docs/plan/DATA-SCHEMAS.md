@@ -42,7 +42,7 @@ export type TargetMode = 'first' | 'last' | 'strongest' | 'weakest' | 'closest';
 export type TowerEffect =
   /** Kundakçı: 4 hasar/sn, 4 sn. §4.1 */
   | { readonly kind: 'burn';  readonly dps: number;    readonly seconds: number }
-  /** Barut Fıçısı %40 / 2 sn · Buz %50 / 2.5 sn. §4.2, §4.3 */
+  /** Buz %30 / 2 sn — `M11` Faz 2'den beri **tek** yavaşlatma kaynağı. §4.3 */
   | { readonly kind: 'slow';  readonly factor: number; readonly seconds: number }
   /** Yıldırım: 3 hedef, her sıçramada %70'e düşer. §4.3 */
   | { readonly kind: 'chain'; readonly targets: number; readonly falloff: number };
@@ -59,7 +59,7 @@ export interface TowerTier {
   readonly range: number;
   /** Patlama yarıçapı. Yalnız Top ailesi. Birim: px. §4.2 */
   readonly splashRadius?: number;
-  /** Uçana vurma çarpanı: 0 = vuramaz, 0.5 = Barut Fıçısı, 1 = tam. §4.2 */
+  /** Uçana vurma çarpanı: 0 = vuramaz, 0.5 = Top T3 dalları, 1 = tam. §4.2 */
   readonly airMultiplier: 0 | 0.5 | 1;
   readonly effect?: TowerEffect;
 }
@@ -86,8 +86,8 @@ export interface TowerDef {
 | Okçu | 3b Kundakçı | 170 | 9 + yanma | 1.4 | 165 | — | 1 |
 | Top | T1 | 110 | 22 | 0.5 | 140 | 45 | **0** |
 | Top | T2 | 160 | 34 | 0.55 | 150 | 55 | **0** |
-| Top | 3a Havan | 240 | 48 | 0.45 | 230 | 70 | **0** |
-| Top | 3b Barut Fıçısı | 240 | 30 + yavaşlatma | 0.6 | 150 | 65 | **0.5** |
+| Top | 3a Havan | 240 | 48 | 0.45 | 230 | 55 | **0.5** |
+| Top | 3b Barut Fıçısı | 240 | 24 | 0.9 | 150 | 85 | **0.5** |
 | Büyü | T1 | 100 | 14 | 0.7 | 155 | — | 1 |
 | Büyü | T2 | 150 | 24 | 0.75 | 170 | — | 1 |
 | Büyü | 3a Yıldırım | 230 | 30 + zincir | 0.7 | 170 | — | 1 |

@@ -171,7 +171,29 @@ export function simulateWave(
   board: ReferenceBoard,
   map: MapDef,
   stepMs = 1000 / 60,
+  /**
+   * Zorluk seviyesinin **doğum anındaki** ek HP çarpanı
+   * (`DIFFICULTY[x].hpScale`). Varsayılan 1 — Normal ve Zor.
+   *
+   * **S92 — ölçüm körlüğünün dördüncüsü, bu kez `waveSim`'de değil
+   * onu ÇAĞIRANDA.** Kolay'ı ölçmenin yolu `MapDef.hpMultiplier`'ı
+   * çarpmaktı; ama `bossFor` mutlak boss HP'sini aynı çarpana
+   * **bölüyor**, yani ikisi sadeleşiyor ve **boss Kolay'da hiç
+   * ölçeklenmiyordu**. Canlı oyun öyle çalışmıyor: `GameScene`
+   * düşman tanımını çarpansız haritadan çözüyor
+   * (`dusmanCoz → getEnemyForMap(id, this.#map)`) ama doğum çarpanını
+   * `map.hpMultiplier * difficulty.hpScale` olarak veriyor — yani
+   * boss gerçekte `BOSS_HP × hpScale`. Ölçüm onu `BOSS_HP` sanıyordu.
+   *
+   * `difficulty.ts` başlığındaki *"HP çarpanı boss'u hiç
+   * etkilemiyordu"* cümlesi bu yüzden **ölçüm aracının** davranışını
+   * anlatıyordu, oyunun değil. Burada ikisi ayrıldı: tanım çarpansız
+   * haritadan, doğum çarpanı ayrı parametreden — `GameScene`'in
+   * birebir şekli.
+   */
+  hpScale = 1,
 ): SimResult {
+  const dogumCarpani = map.hpMultiplier * hpScale;
   const bus = new EventBus();
   const eco = new EconomySystem(map, bus);
   // Birden fazla giriş olabilir (harita 2/3) — her yol/uçan hattı kendi
@@ -265,7 +287,7 @@ export function simulateWave(
     bus,
     eco,
     [wave],
-    map.hpMultiplier,
+    dogumCarpani,
     (id) => getEnemyForMap(id, map),
     (e) => {
       leakedHp += Math.max(0, e.hp);
@@ -345,7 +367,7 @@ export function simulateWave(
    * bu sefer düşman tarafında. Gerçek oyunla aynı sıra: yetenekler
    * kulelerden **önce** işleniyor (`GameScene.update`).
    */
-  const yetenekler = new EnemyAbilitySystem<SimEnemy>(enemyPool, map.hpMultiplier, (id) =>
+  const yetenekler = new EnemyAbilitySystem<SimEnemy>(enemyPool, dogumCarpani, (id) =>
     getEnemyForMap(id, map),
   );
 
@@ -401,6 +423,10 @@ export function simulateAllWaves(
   boards: readonly ReferenceBoard[],
   map: MapDef,
   stepMs = 1000 / 60,
+  /** Zorluk seviyesinin doğum çarpanı — bkz. `simulateWave` (S92). */
+  hpScale = 1,
 ): SimResult[] {
-  return waves.map((w, i) => simulateWave(w, boards[i] ?? boards[boards.length - 1]!, map, stepMs));
+  return waves.map((w, i) =>
+    simulateWave(w, boards[i] ?? boards[boards.length - 1]!, map, stepMs, hpScale),
+  );
 }

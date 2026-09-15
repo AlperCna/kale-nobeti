@@ -10,6 +10,7 @@ import { TOWERS, TARGET_MODES, tierAt } from '../data/towers';
 import { KISLA, barracksTierAt } from '../data/barracks';
 import { FRAME_CARTOUCHE } from '../data/spriteFrames';
 import { measureCoverage } from '../util/coverage';
+import { dalOzeti } from '../util/dalOzeti';
 import { t } from '../util/i18n';
 import type { StringKey } from '../data/strings';
 import { createParchmentButton, createParchmentFrame } from './ParchmentFrame';
@@ -430,6 +431,41 @@ export class BuildMenu {
     } else if (kule.tierIndex === 1) {
       // T2 → **iki dal**. `M4-T03`: dal seçimi zorunlu, kademe atlanamıyor.
       const [a, b] = kule.def.branches;
+      /**
+       * **Dal özetleri — butonların ÜSTÜNDE, iki satır.** (`M11` Faz 2, S93)
+       *
+       * Buraya kadar menü yalnız *ad + fiyat* yazıyordu. Faz 2 iki dalın
+       * DPS'ini bilerek eşitledi (Havan ve Barut Fıçısı 21,6) ve farkı
+       * menzil/patlama yaptı — yani oyuncunun okuması gereken sayılar tam
+       * da menüde olmayanlardı. Kararı verdikten sonra göstermek, karar
+       * vermesine yardım etmiyor.
+       *
+       * **Hover değil, sabit:** dokunmatikte imleç yok (rol şeridinin `?`
+       * düğmesinin var olma sebebi). İki satır her zaman görünüyor, yan
+       * yana karşılaştırılabiliyor.
+       *
+       * Üstte, çünkü altta hedefleme satırı (y=52) ve açıklaması (y=88)
+       * var; menü yukarı doğru büyüyor ve arkalık `getBounds()` ile
+       * sonradan kuruluyor, yani kendini bu satırlara göre ölçüyor.
+       */
+      [a, b].forEach((dal, i) => {
+        kap.add(
+          this.#scene.add
+            .text(
+              0,
+              i === 0 ? -104 : -58,
+              dalOzeti(dalAdi(dal.branchNameKey, i === 0 ? '3a' : '3b'), dal),
+              {
+                fontFamily: 'Spectral, serif',
+                fontSize: '16px', // bekçi k.13 — Platform alt sınırı
+                color: '#8A7250',
+                align: 'center',
+                wordWrap: { width: DAL_BUTON_ARA * 3 },
+              },
+            )
+            .setOrigin(0.5),
+        );
+      });
       this.#menuButonu(
         kap,
         -DAL_BUTON_ARA,
