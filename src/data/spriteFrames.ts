@@ -55,6 +55,31 @@ export function enemyFrameKey(id: EnemyId): string {
 }
 
 /** Kışla askeri düşman değil — kadroda yok, ayrı sabit. */
+/**
+ * Savaş alanı gösterim boyutu (px, en uzun kenar).
+ *
+ * **Oyuncu geri bildirimi (`M10`):** *"bosslar diğer askerlerden biraz
+ * daha büyük olabilir."* Haklıydı — boss dahil **bütün** düşmanlar
+ * 30 px'e ölçekleniyordu, yani Ogre Şef ekranda bir goblinle aynı
+ * boydaydı. Oysa atlas karesi zaten daha büyük çizilmiş (boss 96 px,
+ * yavru 40, geri kalan 64): bilgi kaynakta vardı, gösterimde
+ * kayboluyordu.
+ *
+ * **Oynanışı etkilemiyor.** Menzil, isabet ve engelleme kontrollerinin
+ * hiçbiri sprite ölçüsünü okumuyor (`MERMI_ISABET_YARICAPI` gibi
+ * sabitler kullanılıyor) — tarandı. Yani bu tamamen okunurluk.
+ *
+ * Boss 30 → **46**: bir goblinin bir buçuk katı, tek bakışta ayrılıyor
+ * ama 12 yapı noktalı haritada yolu tıkayacak kadar değil. Örümcek
+ * yavrusu 30 → **22**: "ana öldü, yavrular çıktı" anlatısı boyutla da
+ * okunuyor ve yavru kalabalığı ekranı boğmuyor.
+ */
+export function enemyDisplaySize(id: EnemyId): number {
+  if (id === 'ogreSef') return 46;
+  if (id === 'orumcekYavrusu') return 22;
+  return 30;
+}
+
 export const SOLDIER_FRAME = 'kisla_askeri';
 
 /** Yetenek HUD ikonları (`AbilityButtons`). */
