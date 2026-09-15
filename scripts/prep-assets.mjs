@@ -66,6 +66,11 @@ const ARKA_PLANLAR = [
   // `M8-P02` — **GEÇİCİ**: harita 3'ün arka planından soğutup soluklaştırarak
   // türetildi. Gerçek görsel brifi `docs/plan/M8-sanat-brifi.md`.
   { src: ['bg', 'kadim-harabe.png'], out: 'lazy/kadim-harabe.webp' },
+  // `M12-P01` — **GEÇİCİ**: Taş Köprü'nün arka planından yatay çevirip
+  // soluklaştırarak ve yeşil-kahve tonlayarak türetildi (`sharp flop +
+  // modulate + tint`), yeni sanat değil. `M8-P01`'in birebir deseni.
+  // Gerçek görsel üretilince yalnız kaynak PNG değişecek.
+  { src: ['bg', 'sisli-bataklik.png'], out: 'lazy/sisli-bataklik.webp' },
   // M6-T05 — menü arka planı, `queueBoot`'ta (ilk indirmenin parçası).
   { src: ['menu', 'menu-bg.png'], out: 'menu-bg.webp' },
 ];
@@ -99,6 +104,7 @@ const KART_KUCUK_RESIMLERI = [
   { src: ['bg', 'kul-ovasi.png'], id: 'kul-ovasi' },
   { src: ['bg', 'kar-gecidi.png'], id: 'kar-gecidi' },
   { src: ['bg', 'kadim-harabe.png'], id: 'kadim-harabe' },
+  { src: ['bg', 'sisli-bataklik.png'], id: 'sisli-bataklik' },
 ];
 
 async function kartKucukResimleriUret() {

@@ -671,7 +671,136 @@ export const MAP_5: MapDef = {
   ],
 };
 
-export const MAPS: readonly MapDef[] = [MAP_1, MAP_2, MAP_3, MAP_4, MAP_5];
+/* ------------------------------------------------------------------ */
+/* Harita 6 — Sisli Bataklık (`M12` Faz 2)                             */
+/* ------------------------------------------------------------------ */
+
+const MAP6_GIRIS: Vec2 = { x: -60, y: 300 }; // GEÇİCİ — S17 (ekran dışı)
+const MAP6_KALE: Vec2 = { x: 1180, y: 640 };
+
+/**
+ * **Tek yol, altı viraj.** Harita 4'ün yılankavi şekli, ama daha uzun
+ * (2340 px) ve ters yönde.
+ *
+ * Uzunluk bilerek: harita 6'nın tanıttığı mekanik **yeraltı geçişi** ve
+ * gömülü aralık yolun `%15`-`%60`'ı. Kısa bir yolda o aralık iki viraja
+ * sıkışır ve karar "hangi noktayı seçeyim"den çıkıp "zaten yer yok"a
+ * döner. 2340 px'de aralığın içinde **altı** yapı noktası kalıyor
+ * (toplam kapsamanın yarısından çoğu) — yani seçim gerçekten var.
+ */
+const MAP6_PATH: readonly Vec2[] = [
+  MAP6_GIRIS,
+  { x: 250, y: 300 }, // viraj 1 — aşağı
+  { x: 250, y: 560 }, // viraj 2 — sağa
+  { x: 620, y: 560 }, // viraj 3 — yukarı
+  { x: 620, y: 180 }, // viraj 4 — sağa
+  { x: 1000, y: 180 }, // viraj 5 — aşağı
+  // **x = 1000, 950 değil:** 950'deki dikey kesit 48 px'lik yol şeridiyle
+  // tam ekran düğmesinin kutusuna (848-928 × 636-714) 2 px giriyordu ve
+  // `maps.test.ts`'in "HUD altından yol geçmiyor" testi bunu yakaladı.
+  { x: 1000, y: 640 }, // viraj 6 — sağa
+  MAP6_KALE,
+];
+
+/**
+ * 15 yapı noktası. Reçete harita 1/4'ünkiyle aynı: hepsi yoldan **75 px**,
+ * virajın içindekiler iki kesimi birden görüyor (≈410 px), düz kesimdekiler
+ * ≈260 px. Ortalama **297,3 px** — bandın (285-311) ortası.
+ *
+ * İlk tur 242,0 çıktı (noktalar 100-145 px uzaktaydı) ve ikinci tur
+ * 334,8'e fırladı (altı viraj noktasının hepsi doldurulmuştu); üçüncü
+ * turda üç viraj noktası düz kesime çekilerek banda oturdu. Sayı
+ * seçilmedi, **ölçülerek** bulundu.
+ */
+const MAP6_BUILD_SPOTS: readonly Vec2[] = [
+  { x: 100, y: 225 }, // üst kesim, üstte
+  { x: 100, y: 375 }, // üst kesim, altta
+  { x: 175, y: 430 }, // dikey kesim 1, solda
+  { x: 325, y: 485 }, // viraj 2 içi — iki kesim
+  { x: 430, y: 635 }, // alt kesim, altta
+  { x: 545, y: 635 }, // alt kesim, altta (sağ)
+  { x: 545, y: 370 }, // dikey kesim 2, solda
+  { x: 695, y: 255 }, // viraj 4 içi — iki kesim
+  { x: 785, y: 105 }, // üst kesim 2, üstte
+  { x: 785, y: 255 }, // üst kesim 2, altta
+  { x: 925, y: 410 }, // dikey kesim 3, solda
+  { x: 1075, y: 410 }, // dikey kesim 3, sağda
+  // **15 nokta, 12 değil** — `maps.test.ts`'in monotonluk testi yapı
+  // noktası sayısının düşmemesini istiyor (harita 5'te 15 var) ve bunu
+  // ilk turda kırdı. Üçü de düz kesimden 75 px: ortalama 297,3'ten
+  // 290'a iniyor, bant (285-311) korunuyor.
+  { x: 200, y: 225 }, // üst kesim, üstte (sağ)
+  { x: 430, y: 485 }, // alt kesim, üstte
+  { x: 695, y: 370 }, // dikey kesim 2, sağda
+];
+
+/**
+ * Uçan hattı: üç noktalı yay — 12 noktanın **9'unu** kesiyor (%75 ≥ %40).
+ *
+ * Düz çapraz denendi ve yalnız %25 verdi (yolun yılankavi şekli düz bir
+ * hattı köşelere sıkıştırıyor); yay tepe noktasıyla üst kesimi de
+ * topluyor.
+ */
+const MAP6_FLYER: readonly Vec2[] = [
+  { x: -60, y: 420 },
+  { x: 640, y: 200 },
+  { x: 1240, y: 480 },
+];
+
+/**
+ * **Sisli Bataklık** — altıncı harita (`M12`).
+ *
+ * `// GEÇİCİ görsel — M12-P01`: arka plan Taş Köprü'den yatay çevirip
+ * soluklaştırarak ve yeşil-kahve tonlayarak türetildi, yeni sanat değil
+ * (`M8-P01`'in birebir deseni, `scripts/prep-assets.mjs`).
+ *
+ * Çarpanlar `M12` Faz 3'te rampa ölçütleriyle taranacak — buradaki
+ * değerler ilk tahmin.
+ */
+export const MAP_6: MapDef = {
+  id: 'sisli-bataklik',
+  background: 'lazy/sisli-bataklik.webp',
+  paths: [MAP6_PATH],
+  buildSpots: MAP6_BUILD_SPOTS,
+  flyerPaths: [MAP6_FLYER],
+  castle: MAP6_KALE,
+  /**
+   * **Ölçülen değerler (`M12` Faz 3), tahmin değil.**
+   *
+   * Harita 6'nın HP çarpanı harita 5'inkinden **düşük** (6,2 < 7,0) ve
+   * bu bir kusur değil: zorluk artık kadronun kendisinden geliyor.
+   * Tünelci yolun %15-%60'ında hedeflenemez, yani tahtanın kapsamasının
+   * yarısından çoğu ona karşı ölü. Aynı çarpanla (7,0) ölçüm **24 can**
+   * verdi — 20 sınırının çok üstünde.
+   *
+   * Tarama (altın 11,0): hp 5,8 → 10 · **6,2 → 16** · 6,4 → 19 ·
+   * 7,0 → 24. 6,2 seçildi: harita 5'in 14'ünün üstünde, 20 sınırının
+   * dört altında, Kolay'da 5 (sınır 10).
+   *
+   * `M8-T04`'ün dersi tam burada somutlaştı: *monoton çarpan monoton
+   * zorluk vermiyor, ölçüt **çıktı** olmalı.* `maps.test.ts`'in girdi
+   * monotonluğu iddiası bu yüzden güncellendi; gerçek iddia
+   * `kisitB.test.ts`'te (ölçülen can kaybı monoton).
+   */
+  hpMultiplier: 6.2,
+  goldMultiplier: 11.0,
+  startGold: Math.round(280 * 11.0),
+  enemyRoster: [
+    'goblin',
+    'orkSavasci',
+    'kurtBinicisi',
+    'harpi',
+    'zirhliOrk',
+    'saman',
+    'trol',
+    'tunelci',
+    'ogreSef',
+  ],
+  coverage: measureCoverage([MAP6_PATH], MAP6_BUILD_SPOTS, COVERAGE_REFERENCE_RANGE),
+  branchCoverage: [measureCoverage([MAP6_PATH], MAP6_BUILD_SPOTS, COVERAGE_REFERENCE_RANGE)],
+};
+
+export const MAPS: readonly MapDef[] = [MAP_1, MAP_2, MAP_3, MAP_4, MAP_5, MAP_6];
 
 export function getMap(id: string): MapDef | undefined {
   return MAPS.find((m) => m.id === id);

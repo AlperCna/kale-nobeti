@@ -236,6 +236,7 @@ const HARITA_GOSTERIM_ADI = {
   'kul-ovasi': 'Kül Ovası',
   'kar-gecidi': 'Kar Geçidi',
   'kadim-harabe': 'Kadim Harabe',
+  'sisli-bataklik': 'Sisli Bataklık',
 };
 /** Zorluk adını olduğu gibi yazan küçük yardımcı (harita adı tablosuyla karışmasın). */
 const HARITA_ADI_YOK = (x) => String(x);

@@ -85,6 +85,8 @@ export const BOSS_ARMOR_BY_MAP: Readonly<Record<string, number>> = {
   // 3108'den 2724'e, yani yalnız %12 oynatıyor; türetilen HP de onunla
   // birlikte düştüğü için net zorluk etkisi ≈ 0.
   'kadim-harabe': 2,
+  // `M12` — harita 6; 4 ve 5 ile aynı gerekçe (12+ nokta, seyrelmiş tahta).
+  'sisli-bataklik': 2,
 };
 
 /**
@@ -126,6 +128,9 @@ export const BOSS_HP_BY_MAP: Readonly<Record<string, number>> = {
   // ayarlanmadı, `bossScaling.test.ts` bandı bir kez daha kırdı ve
   // sayıyı o söyledi: 0,80 × 2736 ≈ 2189.
   'kadim-harabe': 2492, // `M11` Faz 5 (S95): 2189 → 2492 — aynı sebep.
+  // `M12` Faz 3 — harita 6, aynı kuralla türetildi: en zayıf kol tavanı
+  // 3472, 0,80 × 3472 ≈ 2778. Monotonluk korunuyor (2492 → 2778).
+  'sisli-bataklik': 2778,
 };
 
 /** Türetilen değerin kabul edilebilir sapma payı (regresyon bandı, §12). */

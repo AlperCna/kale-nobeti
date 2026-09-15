@@ -18,6 +18,7 @@ const HARITA_ADI_ANAHTARI: Readonly<Record<string, StringKey>> = {
   'kul-ovasi': 'mapKulOvasi',
   'kar-gecidi': 'mapKarGecidi',
   'kadim-harabe': 'mapKadimHarabe',
+  'sisli-bataklik': 'mapSisliBataklik',
 };
 
 /** Bilinmeyen bir harita kimliği gelirse (olmaması gerekir) ham kimliğe düşer. */
