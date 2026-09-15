@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { yenidenKurOverlay } from './OverlayScene';
 import { t } from '../util/i18n';
 import { getSettings } from '../systems/Settings';
+import { queueNumberFont } from '../fx/numberFont';
 import { PreloadScene } from './PreloadScene';
 import { createParchmentButton, addPressFeedback } from '../fx/ParchmentFrame';
 import { SettingsPanel } from '../fx/SettingsPanel';
@@ -46,6 +47,28 @@ export class MenuScene extends Phaser.Scene {
    */
   preload(): void {
     PreloadScene.queueAtlas(this);
+    /**
+     * **`M15` — sayı fontu da burada.** Gerekçe canlı ekranda ölçüldü:
+     *
+     * | Yol | `Texture key already in use: sayilar` |
+     * |---|---|
+     * | Menü → Seviye Seç → harita | **0** |
+     * | Menü → **Devam et** → harita | **1** |
+     *
+     * `numberFont.ts`'in yorumu "gerçek akışta bu yarış oluşmuyor, çünkü
+     * `LevelSelectScene.preload` zaten `queueGame` çağırıyor" diyordu ve
+     * yazıldığında (`M8`) doğruydu. **`M10`'un "Devam et" düğmesi o
+     * varsayımı sessizce geçersiz kıldı**: menüden doğrudan `Game`'e
+     * giriliyor, font hiç yüklenmemiş oluyor ve `Game` ile `Hud` aynı
+     * tikte onu kuyruğa atıp yarışıyor.
+     *
+     * Çözüm `M8-T01`'de denenen modül düzeyinde bayrak **değil** — o,
+     * `Hud`'un beklemeyi de atlamasına yol açıp oyunu çökertmişti. Fontu
+     * tek bir sahibin (menü) **önceden** yüklemesi yarışı kaynağında
+     * kapatıyor: iki sahne de `cache.bitmapFont.has` kontrolünde `true`
+     * görüyor. Atlasın buraya konma gerekçesiyle birebir aynı desen.
+     */
+    queueNumberFont(this);
   }
 
   /**

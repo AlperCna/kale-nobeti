@@ -26,8 +26,15 @@ export const NUMBER_FONT_KEY = 'sayilar';
  * `Game` ve `Hud` aynı tikte `preload` ediyor; her sahnenin kendi
  * `LoaderPlugin`'i var, o yüzden ikisi de `cache.has` kontrolünde `false`
  * görüp aynı fontu istiyor. Sonuç: Phaser'ın `Texture key already in use:
- * sayilar` uyarısı (dev'de görünür; gerçek akışta `LevelSelect` önce
- * yüklediği için çıkmıyor).
+ * sayilar` hatası.
+ *
+ * **`M15` düzeltmesi.** Bu yorum eskiden "gerçek akışta çıkmıyor, çünkü
+ * `LevelSelect` önce yüklüyor" diyordu ve `M8`'de doğruydu. `M10`'un
+ * **"Devam et"** düğmesi menüden doğrudan `Game`'e giriyor ve o yolu
+ * kırdı — canlı ekranda ölçüldü: Seviye Seç yolunda 0, Devam et yolunda
+ * 1 hata. Font artık `MenuScene.preload`'da yükleniyor, yani iki sahne
+ * de önbellekte buluyor. Çift kuyruk **yine zararsız** ve her sahnenin
+ * kendi yükleyicisini beklemesi hâlâ zorunlu.
  *
  * `M8-T01`'de bu uyarıyı susturmak için modül düzeyinde bir "yükleniyor"
  * bayrağı denendi ve **oyunu çökertti**: `Hud` kuyruğa atmayı atlayınca
