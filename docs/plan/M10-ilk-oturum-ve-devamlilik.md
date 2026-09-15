@@ -236,9 +236,12 @@ sinerji "toplam DPS" varsayımını kırıyor. Üç sağlama testi de yeniden
 | 1 · Menüyü atla | ✅ `55a8b1e` |
 | 2 · Tur ortası devamlılık | ✅ `cfe907d` |
 | 3a · Harita 4'e buz kalkanı | ✅ `827651e` |
-| 3b · Harita 5'in yeni mekaniği | ⬜ **açık** |
+| 3b · Harita 5'e ikinci evre | ✅ `cc806f8` |
 | 4 · Portre karesi | ✅ `d85cee5` |
-| 5 · Kule sinerjisi | ⬜ **açık** |
+| 5 · Kule sinerjisi | ✅ `8736677` |
+
+**Beş fazın hepsi kapandı.** Geriye sahibin kararını bekleyen tek bir
+şey kaldı: **S87** (zorluk rampası).
 
 ## Faz 3 yol boyunca İKİ ciddi hata buldu
 
@@ -253,14 +256,31 @@ karşılaşıyordu, oysa her ölçüm **2675 / 2** varsayıyordu. Düzeltildi
 
 **S81 — `waveSim` düşman yeteneklerini hiç simüle etmiyordu.** Şaman
 iyileştirmiyor, Trol yenilenmiyor, Örümcek Ana bölünmüyordu. Yani M3'ten
-beri her denge ölçümü iyimserdi. Düzeltilince üç kabul testi birden
-düştü ve iki denge sayısı ölçülerek yeniden türetildi (S82, S84). Ayrıca
-§5'in Şaman tavsiyesinin yarısının **tersine döndüğü** ortaya çıktı
-(S83). Düzeltildi (`1f82f54`).
+beri her denge ölçümü iyimserdi. Ayrıca §5'in Şaman tavsiyesinin
+yarısının **tersine döndüğü** ortaya çıktı (S83). Düzeltildi
+(`1f82f54`).
+
+**S86 — ve süreli kule etkilerini de simüle etmiyordu.** Aynı sınıfın
+üçüncüsü: `onEffect` geri çağrısı hiç verilmiyordu, yani yanma ve
+yavaşlatma hiç uygulanmıyordu. Faz 5'in sinerjisi yavaşlatmaya
+dayandığı için onu yazmadan önce soruldu ve bulundu (`0a9b332`).
+
+**Bu üçlü bir ders bıraktı** ve o ders S82/S84'e mal oldu: `waveSim`
+yarım düzeltilmişken iki denge sayısı türetildi, üçüncü körlük
+kapanınca ikisi de **geri alındı**. Ölçüm aracı düzeltilirken bütün
+körlükler kapanmadan sayı türetmek, işi iki kez yapmak demek.
+
+**S87 — sahibin kararını bekleyen gerçek bulgu.** Üç körlük kapandıktan
+sonra ölçülen Zor rampası `0 · 8 · 6 · 3 · 8`: monoton değil ve harita
+4-5 "referans tahtadan fazlası" tanımını karşılamıyor. Bu yeni bir
+bozulma değil — oyun hep böyleydi, simülasyon göremiyordu. Düzeltmek
+dört haritanın çarpanını yükseltmek, yani **oyuncunun deneyimini
+değiştiren bir tasarım kararı**; tek başına yapılmadı. Tarama verisi
+`OPEN-QUESTIONS.md` S87'de, iki test de ölçülen değerleri kilitliyor.
 
 İkisi de `docs/plan/OPEN-QUESTIONS.md`'de kayıtlı.
 
-**Kalan iki faz için not:** Faz 5 (kule sinerjisi) "toplam DPS"
-varsayımını kırıyor ve Kısıt A/B'nin yeniden ölçülmesini gerektiriyor —
-denge katmanı S81'den sonra zaten bir kez yeniden türetildi, bu yüzden
-sıradaki turda aynı ölçümler tekrar koşturulmalı.
+**Faz 5 not:** sinerji beklendiği gibi "toplam DPS" varsayımını kırdı
+ve rampayı iki can kolaylaştırdı (harita 4 `5→3`, harita 5 `10→8`).
+S87'nin kilitleri bunu **yakaladı** — testin işi tam buydu. O karar
+verilirken taban bu olmalı.
