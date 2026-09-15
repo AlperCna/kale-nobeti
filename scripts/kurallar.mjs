@@ -425,7 +425,7 @@ function olustur() {
     ['Harpi sürüsü', 'Okçu + Büyü tam hasar; Top T3 dalları %50 (T1/T2 vuramaz)'],
     ['Trol', 'Kışla ile tut + yoğun tek hedef'],
     ['Kurt Binicisi', 'Buz (yavaşlatmanın tek kaynağı) / Barut Fıçısı geniş patlama'],
-    ['Ogre Şef', 'Büyü + Top, `strongest` hedefleme, Meteor'],
+    ['Ogre Şef', 'Büyü + Top, **`weakest`/`closest`** hedefleme (S94), Meteor'],
   ]), '');
 
   // ---------------------------------------------------------------- 7

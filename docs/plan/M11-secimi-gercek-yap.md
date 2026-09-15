@@ -248,6 +248,34 @@ Dal seçimi tek "seçim" değil. Aynı domine-edilme testi:
 
 Bulunan her ölü seçenek ölçülerek düzeltilir; bulunmazsa kaydedilir.
 
+> **BİTTİ — üç sorunun üçü de cevaplandı, biri büyük çıktı.**
+>
+> **1. Hedefleme modları (S94).** Yedi senaryo, metrik can kaybı:
+> `weakest` 4 · `last` 3 · `first` 3 · `closest` 1 kazandı,
+> **`strongest` hiçbirini tek başına kazanmadı.** Modun ayarlanabilir
+> bir sayısı yok (seçim kuralı), yani düzeltme ancak yeni bir kural
+> eklemek olurdu — kaydedildi. §5'in boss tavsiyesi ise ölçümle
+> çeliştiği için **düzeltildi**: `strongest` değil `weakest`/`closest`.
+>
+> **2. Yetenekler — ikisi de meşru.** Önce bir körlük kapandı:
+> `waveSim` oyuncunun yeteneklerini hiç simüle etmiyordu. Artık
+> edebiliyor (varsayılan **kapalı**, yani mevcut denge sayıları
+> birebir aynı). Kadim Harabe'de can kaybı: yok 15 · Meteor 12 ·
+> **Takviye 10** · ikisi 6 — Takviye Meteor'un gölgesinde değil, en
+> zor haritada ondan iyi.
+>
+> **3. Aile dengesi — BOZUK (S95, açık).** En büyük bulgu. Maliyet
+> dahil, gerçek dalgalarla ölçüldü: yalnız Top kuran oyuncu modelin
+> "makul oyuncu" tahtasından belirgin biçimde iyi (harita 4'te 13 → 7,
+> harita 5'te 15 → 8) ve **Okçu her haritada açık farkla en kötü**
+> (14/23/28/33). Sebep: Top'un alan hasarı bedava bir çarpan (S22),
+> Okçu'nun hiçbir çarpanı yok. Patlama kenar azalması yazıldı ve
+> tarandı — arayı kapatıyor ama kapatmıyor, üstelik bütün rampayı
+> sertleştiriyor. **Düzeltme kendi geçişini hak ediyor:** Okçu'nun
+> çarpanı ile patlamanın bedeli **birlikte** türetilmeli, sonra rampa
+> ve boss HP'leri yeniden. Yarım modelde sayı türetmemek S82/S84'ün
+> dersi; bu yüzden Faz 4 burada durdu ve bulguyu kayda geçirdi.
+
 ### Faz 5 — Yeni verb *(sanat gerekiyor — sahibin işi)*
 
 Faz 1-4 var olanı çalışır hâle getiriyor. Yeni **tür** içerik (yeni
