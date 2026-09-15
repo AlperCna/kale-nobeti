@@ -15,8 +15,15 @@
  * biri diğerinin yerine geçmiyor.
  */
 import { describe, expect, it } from 'vitest';
-import { MAP_1, MAP_2, MAP_3, MAP_4, MAP_5, COVERAGE_REFERENCE_RANGE } from '../data/maps';
-import { MAP1_WAVES, MAP2_WAVES, MAP3_WAVES, MAP4_WAVES, MAP5_WAVES } from '../data/waves';
+import { MAP_1, MAP_2, MAP_3, MAP_4, MAP_5, MAP_6, COVERAGE_REFERENCE_RANGE } from '../data/maps';
+import {
+  MAP1_WAVES,
+  MAP2_WAVES,
+  MAP3_WAVES,
+  MAP4_WAVES,
+  MAP5_WAVES,
+  MAP6_WAVES,
+} from '../data/waves';
 import { buildReferenceBoards } from './balanceChecks';
 import { simulateAllWaves } from './waveSim';
 import { REFERANS_ERKEN_BONUSU, REFERANS_POLITIKA } from './referansOlcum';
@@ -74,15 +81,27 @@ describe('Kısıt B — düşman kırılımı', () => {
     expect(r.toplam).toEqual({});
   });
 
+  /**
+   * **Boss türetmesinin ASIL sağlaması** — `M18` (S113).
+   *
+   * Boss HP'si artık statik tavandan değil, referans tahtanın **sürekli
+   * koşuda** öldürebildiği eşikten türetiliyor (`bossScaling.ts`). O
+   * türetmenin doğru olup olmadığını söyleyen tek şey bu test.
+   *
+   * **Harita 6 `M18`'de eklendi ve eklenir eklenmez bir kusur ortaya
+   * çıkardı:** Sisli Bataklık'ın bossu `M16`'dan (üst üste binen
+   * dalgalar) beri sızıyordu ve hiçbir test bakmıyordu — liste harita
+   * 5'te bitiyordu. Çağıran boss (`M13`) artıkların üstüne gelince
+   * tahta ona yetişemiyordu.
+   */
   it('**boss hiçbir haritada sızmıyor** — türetme çalışıyor', () => {
-    // Boss HP'si haritadan türetildiği için (0,80 × tavan) geçilebilir
-    // olmalı. Bu, türetmenin uçtan uca sağlaması.
     for (const [m, w] of [
       [MAP_1, MAP1_WAVES],
       [MAP_2, MAP2_WAVES],
       [MAP_3, MAP3_WAVES],
       [MAP_4, MAP4_WAVES],
       [MAP_5, MAP5_WAVES],
+      [MAP_6, MAP6_WAVES],
     ] as const) {
       expect(kosu(m, w).toplam.ogreSef ?? 0, m.id).toBe(0);
     }

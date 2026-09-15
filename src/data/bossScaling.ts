@@ -104,18 +104,23 @@ export const BOSS_HP_BY_MAP: Readonly<Record<string, number>> = {
   // **`M11` Faz 5 (S95): 712 → 859.** Okçu ailesi güçlenince (ölü
   // aileydi) her haritanın tavanı yükseldi; boss HP'leri aynı kuralla
   // yeniden türetildi. Bu sayı M7'den beri ilk kez değişti.
-  'tas-kopru': 859,
+  'tas-kopru': 862,
   // **`M11-T02` (S91): 1023 → 886.** Aynı sebep, aşağıdaki harita 5
   // notuna bakınız: dal dengesi referans tahtayı zayıflattı, tavan
   // 1278'den 1107'ye düştü. 0,80 × 1107 ≈ 886.
   // `M11` Faz 5 (S95): 886 → 979 — aynı sebep.
-  'kul-ovasi': 979,
+  // **`M18` (S113 + S112).** Tavan artık yavaşlatmayı görüyor ve tahta
+  // dalga başına yavaşlatıcı kurmayı bıraktı; ikisi de tavanı yükseltti.
+  // HP aynı kuralla yeniden türetildi: 0,80 × tavan. Simülasyonla
+  // doğrulandı — referans tahta her haritada bossu öldürüyor.
+  'kul-ovasi': 1322,
   // `M8-T04` — türetildi: 0,80 × en zayıf kol tavanı (2416,2, zırh 2).
   // İlk tur 1857'ydi (tavan 2321,2); `M8-T05`'te kartuşun altında kalan
   // yapı noktası taşınınca referans tahta değişti ve tavan yükseldi.
   //
   // **`M11-T02` (S91): 1933 → 1709.** Tavan 2136; 0,80 × 2136 ≈ 1709.
-  'kar-gecidi': 1956, // `M11` Faz 5 (S95): 1709 → 1956 — aynı sebep.
+  // `M11` Faz 5 (S95): 1709 → 1956. `M18` (S113): 1956 → 2835.
+  'kar-gecidi': 3000,
   // `M8-T05` — türetildi: 0,80 × **en zayıf kol** tavanı. İki kol ayrı
   // ölçüldü; zayıf olan belirleyici, çünkü düşman hangi kolu
   // yürüyeceğini oyuncu seçmiyor.
@@ -127,10 +132,12 @@ export const BOSS_HP_BY_MAP: Readonly<Record<string, number>> = {
   // Üçü de aynı türetme kuralıyla yeniden hesaplandı — elle
   // ayarlanmadı, `bossScaling.test.ts` bandı bir kez daha kırdı ve
   // sayıyı o söyledi: 0,80 × 2736 ≈ 2189.
-  'kadim-harabe': 2492, // `M11` Faz 5 (S95): 2189 → 2492 — aynı sebep.
+  // `M11` Faz 5 (S95): 2189 → 2492. `M18` (S113): 2492 → 2519.
+  'kadim-harabe': 1962,
   // `M12` Faz 3 — harita 6, aynı kuralla türetildi: en zayıf kol tavanı
   // 3472, 0,80 × 3472 ≈ 2778. Monotonluk korunuyor (2492 → 2778).
-  'sisli-bataklik': 2778,
+  // `M18` (S113): 2778 → 1825 — aynı türetme.
+  'sisli-bataklik': 2100,
 };
 
 /** Türetilen değerin kabul edilebilir sapma payı (regresyon bandı, §12). */

@@ -149,10 +149,10 @@ describe('towers.ts — GAME-DESIGN §4.3 Büyü tablosu', () => {
     expect(BUYU.damageType).toBe('magic');
   });
 
-  it('Yıldırım: 230 / 30 / 0.7 / 170, 3 hedefe %70 azalarak', () => {
+  it('Yıldırım: 230 / 36 / 0.7 / 170, 3 hedefe %70 azalarak (S110)', () => {
     const y = BUYU.branches[0];
     expect(y.cost).toBe(230);
-    expect(y.damage).toBe(30);
+    expect(y.damage).toBe(36); // `M18` (S110): 30 → 36, gerekçe towers.ts'te
     expect(y.fireRate).toBe(0.7);
     expect(y.range).toBe(170);
     expect(y.effect).toEqual({ kind: 'chain', targets: 3, falloff: 0.7 });

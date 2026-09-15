@@ -138,10 +138,30 @@ describe('Aile dengesi — M11 Faz 5 (S95)', () => {
    * Bu test bu yüzden **bozuk durumu iddia etmiyor** — yalnız ölçülen
    * ve sağlam olan iki şeyi bağlıyor.
    */
-  it('Okçu ve Top’un parladığı bir harita var', () => {
-    // Okçu Kül Ovası'nda karışık tahtadan bile iyi (0 < 3).
+  /**
+   * **`M18` — S110 KAPANDI, iddia geri kondu.**
+   *
+   * `M16`'da bu test ikiye bölünmüştü çünkü Büyü hiçbir haritada
+   * parlamıyordu. Sebep ailenin sayıları değil **tahtanın kendisiydi**
+   * (S112: dalga başına bir Buz) ve Yıldırım'ın fiyat/çıktı dengesi
+   * (S110: 30 → 36). İkisi de düzelince üç ailenin üçü de bir haritada
+   * en iyisi oluyor.
+   *
+   * Ölçülen (taban çift, Zor): Kül Ovası karışık 3 · Okçu **0** ·
+   * Top 4 · Büyü 2 | Kar Geçidi karışık 12 · Okçu 19 · Top **13** ·
+   * Büyü 18 | Kadim Harabe karışık 13 · Okçu 19 · Top 14 · Büyü **7**.
+   *
+   * Okçu ve Büyü karışık tahtayı da geçiyor; Top yalnız **tek aileler
+   * arasında** birinci. Bu bilinçli: S95'in istediği şey hiçbir ailenin
+   * karışık tahtayı her yerde yenmemesi ve Top eskiden onu yapıyordu.
+   */
+  it('her ailenin parladığı bir harita var', () => {
+    // Okçu — Kül Ovası'nda karışık tahtadan bile iyi.
     expect(canKaybi(MAP_3, 'okcu')).toBeLessThan(canKaybi(MAP_3));
-    // Top geç haritalarda: Kar Geçidi'nde 10 < 13.
-    expect(canKaybi(MAP_4, 'top')).toBeLessThan(canKaybi(MAP_4));
+    // Büyü — Kadim Harabe'de karışık tahtadan iyi (S110'un kapanışı).
+    expect(canKaybi(MAP_5, 'buyu')).toBeLessThan(canKaybi(MAP_5));
+    // Top — Kar Geçidi'nde en iyi TEK aile.
+    expect(canKaybi(MAP_4, 'top')).toBeLessThan(canKaybi(MAP_4, 'buyu'));
+    expect(canKaybi(MAP_4, 'top')).toBeLessThan(canKaybi(MAP_4, 'okcu'));
   });
 });

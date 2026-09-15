@@ -502,8 +502,13 @@ export const MAP_4: MapDef = {
    * Eski çift tahtaya tam erken bonusu yazıp simülasyonda hiç
    * bastırmıyordu, yani tahta hak etmediği altınla kuruluyordu.
    * Düzeltilmiş tabanda tarama: 4,4→9 · 4,8→10 · 5,2→12 · **5,6→13**.
+   *
+   * **`M18` (S113) — yedinci türetme (5,6 → 6,4).** Tavan yavaşlatmayı
+   * görmeye başladı, tahta dalga başına yavaşlatıcı kurmayı bıraktı
+   * (S112) ve boss HP'leri simülasyondan türetildi; üçü birden rampayı
+   * kaydırdı. Tarama: 6,2→9 · **6,4→12** · 6,6→16 · 7,0→16.
    */
-  hpMultiplier: 5.6, // S87 → S91 → S101 → S109 (dalgalar üst üste binince)
+  hpMultiplier: 6.4, // S87 → S91 → S101 → S109 → S113
   goldMultiplier: 7.2, // S87 — HP ile birlikte yükseldi (S73 değişmezi)
   startGold: Math.round(280 * 7.2), // S87
   // §5: kadro **tam** — dokuz tip, yeni tanıtım yok.
@@ -538,7 +543,10 @@ export const MAP_4: MapDef = {
  * Tarama gerekçesi `docs/plan/M8-genisleme.md` Faz 5 sonucunda.
  */
 // S109 — düzeltilmiş tabanda tarama: 7,2→12 · **7,6→15** · 8,0→15 · 8,4→16.
-const MAP5_HP_CARPANI = 7.6; // S87 → S91 → S101 → S109
+// **`M18` (S113): 7,6 → 9,2.** Boss HP'si simülasyondan türetilince
+// (2492 → 1962) harita belirgin biçimde kolaylaştı ve çarpan onu geri
+// almak için yükseldi. Tarama: 8,5→10 · **9,2→13** · 9,9→14.
+const MAP5_HP_CARPANI = 9.2; // S87 → S91 → S101 → S109 → S113
 const MAP5_ALTIN_CARPANI = 10.0; // S87 — HP ile birlikte (S73 değişmezi)
 
 const MAP5_KALE: Vec2 = { x: 1180, y: 600 };
@@ -798,7 +806,7 @@ export const MAP_6: MapDef = {
    * monotonluğu iddiası bu yüzden güncellendi; gerçek iddia
    * `kisitB.test.ts`'te (ölçülen can kaybı monoton).
    */
-  hpMultiplier: 5.6, // S109 — bkz. yukarıdaki beşinci türetme
+  hpMultiplier: 6.8, // S109 → S113 — bkz. yukarıdaki türetmeler
   goldMultiplier: 11.0,
   startGold: Math.round(280 * 11.0),
   enemyRoster: [
