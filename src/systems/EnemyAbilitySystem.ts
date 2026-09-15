@@ -47,6 +47,27 @@ export class EnemyAbilitySystem<T extends AbilityEnemy & Poolable> {
       const y = e.def.ability;
       if (y === undefined) continue;
 
+      if (y.kind === 'enrage') {
+        /**
+         * **İkinci evre** — `M10-T03`, harita 5.
+         *
+         * Durum tutulmuyor: hız her karede can oranından **türetiliyor**.
+         * Bunun iki faydası var. (1) İdempotent — bayrak tutup "bir kez
+         * uygula" deseydik havuza dönen düşmanda sıfırlanması gerekirdi
+         * ve bu, bu projede beş kez yaşanmış hata sınıfı (TIER 1 kural 3).
+         * (2) **Geri dönebiliyor** — bir Şaman boss'u eşiğin üstüne
+         * iyileştirirse hız da normale dönüyor, yani iki sistem
+         * birbirini tutarlı biçimde görüyor.
+         *
+         * `speedFactor`'a dokunulmuyor: o yavaşlatma etkisinin alanı ve
+         * `Mover` ikisini **çarparak** kullanıyor — yani yavaşlatma
+         * öfkelenmiş boss'ta da çalışıyor.
+         */
+        const oran = e.maxHp > 0 ? e.hp / e.maxHp : 1;
+        e.speed = e.def.speed * (oran <= y.hpRatio ? y.speedMultiplier : 1);
+        continue;
+      }
+
       if (y.kind === 'regen') {
         // §5: Trol 6 HP/sn. **Harita çarpanıyla ölçeklenmiyor (S39)** —
         // §5 mutlak bir hız veriyor, oran değil. Sonuç: harita 3'te

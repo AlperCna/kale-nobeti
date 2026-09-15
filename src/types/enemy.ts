@@ -39,7 +39,27 @@ export type EnemyAbility =
   /** Trol: 6 HP/sn kendini yeniler. */
   | { readonly kind: 'regen'; readonly hps: number }
   /** Örümcek Ana: ölünce 3× yavru. */
-  | { readonly kind: 'split'; readonly count: number; readonly childId: EnemyId };
+  | { readonly kind: 'split'; readonly count: number; readonly childId: EnemyId }
+  /**
+   * **İkinci evre** — `M10-T03`, harita 5 (Kadim Harabe).
+   *
+   * Canı `hpRatio`'nun altına düşünce hızlanıyor. Boss dövüşünü tek
+   * uzun bir HP çubuğundan **iki evreli** bir şeye çeviriyor: ilk yarı
+   * "yetişiyor muyum", ikinci yarı "yetişemiyorum, şimdi ne yapacağım".
+   *
+   * Hız seçildi çünkü **yeni sanat gerektirmiyor ve gözle görünüyor**:
+   * boss'un adımı bir anda açılıyor, oyuncu bunu can çubuğuna bakmadan
+   * fark ediyor (TIER 1 kural 6 — bilgi renge değil harekete bağlı).
+   *
+   * Durum tutulmuyor: her karede can oranından **türetiliyor**, yani
+   * idempotent. Ayrı bir "öfkelendi mi" bayrağı olsaydı havuza dönen
+   * düşmanda sıfırlanması gerekirdi (kural 3'ün beşinci tuzağı).
+   */
+  | {
+      readonly kind: 'enrage';
+      readonly hpRatio: number;
+      readonly speedMultiplier: number;
+    };
 
 /**
  * `GAME-DESIGN.md` §3: iki hasar tipi, iki savunma tipi. Kule
