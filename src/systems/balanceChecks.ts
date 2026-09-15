@@ -28,6 +28,34 @@ import { measureCoverage, pathLength } from '../util/coverage';
  * değil. Okçu T2 (14 hasar) boss'a (zırh 10) saniyede 18,2 değil **5,2**
  * veriyor; farkı yaratan bu. (`M11` Faz 5 öncesi sayı 10 hasar / 1,95
  * DPS'ti — örnek aynı, kadro güçlendi.)
+ *
+ * ## Hangi etki sayılıyor, hangisi sayılmıyor — ve NEDEN (S115)
+ *
+ * Bu fonksiyon **tek bir düşmana** verilen hasarı ölçüyor; Kısıt A'nın
+ * sorusu da o ("bu boss öldürülebilir mi"). Dört etki dört farklı yere
+ * düşüyor ve karışıklık `M18`'e kadar sürdü:
+ *
+ * | etki | sayılıyor mu | neden |
+ * |---|---|---|
+ * | **yanma** | ✅ burada | tek hedefe gerçek hasar (`combat.etkiDps`) |
+ * | **yavaşlatma** | ✅ ama **paydada** | hızı bölüyor → `etkinHiz` (S113) |
+ * | **zincir** | ❌ ve bu DOĞRU | tek düşmana sıçrayamıyor |
+ * | **patlama** | ❌ ve bu DOĞRU | birincil hedef zaten tam hasar alıyor |
+ *
+ * Zincir ve patlamanın sıfır olması bir eksiklik **değil**, ölçülmüş bir
+ * gerçek. `ProjectileSystem.#zincirle` aynı hedefe iki kez sıçramıyor
+ * (S36 — sıçrasaydı Yıldırım kalabalık cevabı olmaktan çıkıp tek hedef
+ * silahı olurdu) ve `#patlat` birincil hedefi `merkezdenOran(0) = 1` ile
+ * vuruyor, yani patlama ona fazladan hiçbir şey eklemiyor.
+ *
+ * **Ölçüldü (S115):** tek boss, tek kule, harita 1 — Yıldırım'ın zinciri
+ * kaldırıldığında boss'un kalan HP'si **484 → 484**, Havan'ın patlaması
+ * kaldırıldığında **472 → 472**. Fark tam olarak sıfır.
+ *
+ * Yani bu ikisini buraya eklemek tavanı **şişirir** ve boss HP'si tavandan
+ * türetildiği için öldürülemez boss üretir — `M17`'nin tam olarak
+ * tosladığı duvar. Kalabalık değeri zaten doğru yerde ölçülüyor: Kısıt B,
+ * yani `waveSim`, zinciri de patlamayı da gerçekten simüle ediyor.
  */
 export function effectiveDps(def: TowerDef, tier: TierIndex, enemy: EnemyDef): number {
   const t = tierAt(def, tier);
@@ -37,7 +65,9 @@ export function effectiveDps(def: TowerDef, tier: TierIndex, enemy: EnemyDef): n
   // `M11-T01` — **yanma da hasar.** Buraya kadar sayılmıyordu ve sonucu
   // ölçüldü: referans tahta altı T3 dalından üçünü hiç seçmiyordu.
   // Yanma gerçek hasar, `applyDamage`'dan geçmiyor (§4.1). Gerekçenin
-  // tamamı `combat.etkiDps`'te; yavaşlatma ve zincir bilerek 0.
+  // tamamı `combat.etkiDps`'te. Zincir ve patlama bilerek 0 (S115);
+  // yavaşlatma da burada 0 ama **yok sayılmıyor** — paydada, `etkinHiz`
+  // içinde (S113). Üçünün gerekçesi başlıktaki tabloda.
   return vurus.dealt * t.fireRate + etkiDps(t.effect, t.fireRate);
 }
 
