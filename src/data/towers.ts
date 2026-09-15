@@ -37,10 +37,10 @@ export const OKCU: TowerDef = {
       cost: 170,
       damage: 9,
       fireRate: 1.4,
-      range: 165,
+      range: 195, // M11-T02: 165 → 195
       airMultiplier: 1,
       branchNameKey: 'branchIncendiary',
-      effect: { kind: 'burn', dps: 4, seconds: 4 },
+      effect: { kind: 'burn', dps: 7, seconds: 4 }, // M11-T02: dps 4 → 7
     },
   ],
 };
@@ -68,20 +68,38 @@ export const TOP: TowerDef = {
       damage: 48,
       fireRate: 0.45,
       range: 230,
-      splashRadius: 70,
-      airMultiplier: 0,
+      splashRadius: 55, // M11-T02: 70 → 55, kimliği DAR ve UZAK
+      // `M11-T02` — **0 → 0,5.** `airMultiplier: 0` düşmanı hedef
+      // listesinden tümden eliyor (§4.2), yani Havan harpi dalgasında
+      // **tamamen ölü** kalıyordu. Araştırmanın "kilit-anahtar tasarımı
+      // kaçın, her tehdide çok çözüm ver" kuralının ihlali: bir dalın
+      // bütün bir düşman sınıfına sıfır yazması, o dalı o dalgalarda
+      // yok sayılabilir yapıyor. Tip `0 | 0,5 | 1` ile sınırlı;
+      // sıfırdan sonraki en küçük adım 0,5.
+      airMultiplier: 0.5,
       branchNameKey: 'branchMortar',
     },
     // 3b Barut Fıçısı — esnek: uçana %50, ve %40 yavaşlatma (2 sn).
     {
       cost: 240,
-      damage: 30,
-      fireRate: 0.6,
+      damage: 24, // M11-T02: 30 → 24 (DPS 21,6 = Havan ile eşit; takas menzil↔patlama)
+      fireRate: 0.9, // M11-T02: 0,6 → 0,9
       range: 150,
-      splashRadius: 65,
+      splashRadius: 85, // M11-T02: 65 → 85, kimliği GENİŞ ve HIZLI
       airMultiplier: 0.5,
       branchNameKey: 'branchPowderKeg',
-      effect: { kind: 'slow', factor: 0.4, seconds: 2 },
+      // `M11-T02` — **yavaşlatma KALDIRILDI.**
+      //
+      // Ölçüm yapısal bir sebep gösterdi: Kısıt A `DPS × kapsananYol /
+      // hız`. Yavaşlatma `hız`ı bölüyor, yani yavaşlatan kule **bütün
+      // tahtanın** hasarını çarpıyor — kendi hasarını değil. Bu yüzden
+      // yavaşlatan bir dal, yavaşlatmayan her dalı yeniyor; hasar ya da
+      // menzilde ne verirsen ver kapatamıyorsun. (`M10`'un sinerjisi
+      // bunu daha da büyütmüştü.)
+      //
+      // Sonuç: yavaşlatma **tek bir dalın kimliği** olmalı. Buz aldı.
+      // Barut Fıçısı geniş patlama + hızlı atışa, Havan uzun menzil +
+      // ağır vuruşa ayrıştı.
     },
   ],
 };
@@ -116,12 +134,18 @@ export const BUYU: TowerDef = {
     // 3b Buz — %50 yavaşlatma (2,5 sn).
     {
       cost: 230,
-      damage: 20,
+      damage: 8,
       fireRate: 0.8,
       range: 180,
+      // `M11-T02` — **Buz'a alan verildi.** Ölçüm yapısal bir sorun
+      // gösterdi: Buz yavaşlatmayı tek tek uyguluyordu (0,8 hedef/sn),
+      // Barut Fıçısı ise patlamayla gruba. Yani ZAYIF yavaşlatan, iyi
+      // yavaşlatandan daha çok düşman yavaşlatıyordu. `ProjectileSystem`
+      // patlama içindeki her hedefe etkiyi zaten uyguluyor.
+      splashRadius: 30,
       airMultiplier: 1,
       branchNameKey: 'branchFrost',
-      effect: { kind: 'slow', factor: 0.5, seconds: 2.5 },
+      effect: { kind: 'slow', factor: 0.3, seconds: 2 },
     },
   ],
 };

@@ -84,10 +84,20 @@ describe('towers.ts — GAME-DESIGN §4.2 Top tablosu', () => {
     expect(TOP.tiers[1].airMultiplier).toBe(0);
   });
 
-  it('T3 dalları: Havan uçana vuramaz, Barut Fıçısı %50 ile vurur', () => {
-    // §4.2: T3 dallanmasını gerçek bir seçime çeviren şey bu.
-    expect(TOP.branches[0].airMultiplier).toBe(0);
+  /**
+   * `M11-T02` — **Havan artık uçana vurabiliyor (0 → 0,5).**
+   * `airMultiplier: 0` düşmanı hedef listesinden tümden eliyordu, yani
+   * Havan harpi dalgasında **tamamen ölü** kalıyordu. Ölçüm altı T3
+   * dalından üçünün hiçbir senaryoda kazanmadığını gösterdi; bu
+   * onlardan biriydi. Dallar artık patlama/menzil/atış hızıyla
+   * ayrışıyor, kategorik bir delikle değil.
+   */
+  it('T3 dalları: ikisi de uçana vuruyor — kategorik delik YOK', () => {
+    expect(TOP.branches[0].airMultiplier).toBe(0.5);
     expect(TOP.branches[1].airMultiplier).toBe(0.5);
+    // T1/T2 hâlâ vuramıyor — §4.2'nin "Top uçana zayıf" kimliği duruyor.
+    expect(TOP.tiers[0].airMultiplier).toBe(0);
+    expect(TOP.tiers[1].airMultiplier).toBe(0);
   });
 });
 
@@ -147,13 +157,21 @@ describe('towers.ts — GAME-DESIGN §4.3 Büyü tablosu', () => {
     expect(y.effect).toEqual({ kind: 'chain', targets: 3, falloff: 0.7 });
   });
 
-  it('Buz: 230 / 20 / 0.8 / 180, %50 yavaşlatma 2,5 sn', () => {
+  /**
+   * `M11-T02` — Buz **alan yavaşlatıcısı** oldu. Ölçüm yapısal bir
+   * sorun gösterdi: Buz yavaşlatmayı tek tek uyguluyordu (0,8 hedef/sn)
+   * ve bu yüzden Barut Fıçısı'nın patlamayla dağıttığı daha zayıf
+   * yavaşlatmadan **daha az** düşman yavaşlatıyordu. Hasarı düştü
+   * (20 → 8), patlama ve yavaşlatma kimliği oldu.
+   */
+  it('Buz: 230 / 8 / 0.8 / 180, patlama 30, yavaşlatma %30 · 2 sn (M11-T02)', () => {
     const b = BUYU.branches[1];
     expect(b.cost).toBe(230);
-    expect(b.damage).toBe(20);
+    expect(b.damage).toBe(8);
     expect(b.fireRate).toBe(0.8);
     expect(b.range).toBe(180);
-    expect(b.effect).toEqual({ kind: 'slow', factor: 0.5, seconds: 2.5 });
+    expect(b.splashRadius).toBe(30);
+    expect(b.effect).toEqual({ kind: 'slow', factor: 0.3, seconds: 2 });
   });
 });
 
@@ -171,28 +189,31 @@ describe('towers.ts — T3 dalları (12 kademe)', () => {
     expect(k.effect).toBeUndefined();
   });
 
-  it('Kundakçı: 170 / 9 / 1.4 / 165, yanma 4/sn 4 sn', () => {
+  it('Kundakçı: 170 / 9 / 1.4 / 195, yanma 7/sn 4 sn (M11-T02)', () => {
     const k = OKCU.branches[1];
-    expect([k.cost, k.damage, k.fireRate, k.range]).toEqual([170, 9, 1.4, 165]);
-    expect(k.effect).toEqual({ kind: 'burn', dps: 4, seconds: 4 });
+    expect([k.cost, k.damage, k.fireRate, k.range]).toEqual([170, 9, 1.4, 195]);
+    expect(k.effect).toEqual({ kind: 'burn', dps: 7, seconds: 4 });
   });
 
-  it('Havan: 240 / 48 / 0.45 / 230, yarıçap 70, uçana VURAMAZ', () => {
+  it('Havan: 240 / 48 / 0.45 / 230, yarıçap 55, uçana %50 (M11-T02)', () => {
     const h = TOP.branches[0];
     expect([h.cost, h.damage, h.fireRate, h.range, h.splashRadius]).toEqual([
-      240, 48, 0.45, 230, 70,
+      240, 48, 0.45, 230, 55,
     ]);
-    expect(h.airMultiplier).toBe(0);
+    expect(h.airMultiplier).toBe(0.5);
   });
 
-  it('Barut Fıçısı: 240 / 30 / 0.6 / 150, yarıçap 65, uçana %50', () => {
+  it('Barut Fıçısı: 240 / 24 / 0.9 / 150, yarıçap 85, YAVAŞLATMA YOK (M11-T02)', () => {
     const b = TOP.branches[1];
     expect([b.cost, b.damage, b.fireRate, b.range, b.splashRadius]).toEqual([
-      240, 30, 0.6, 150, 65,
+      240, 24, 0.9, 150, 85,
     ]);
-    // §4.2: T3 dallanmasını gerçek bir seçime çeviren şey bu.
     expect(b.airMultiplier).toBe(0.5);
-    expect(b.effect).toEqual({ kind: 'slow', factor: 0.4, seconds: 2 });
+    // `M11-T02` — yavaşlatma KALDIRILDI, Buz'un kimliği oldu. Sebep
+    // yapısal: Kısıt A'da yavaşlatma `hız`ı bölüyor, yani bütün
+    // tahtanın hasarını çarpıyor — yavaşlatan dal, yavaşlatmayanı her
+    // zaman yener. Gerekçenin tamamı `towers.ts`'te.
+    expect(b.effect).toBeUndefined();
   });
 
   it('T3 dalları T2\'den pahalı — kademe atlanamıyor', () => {

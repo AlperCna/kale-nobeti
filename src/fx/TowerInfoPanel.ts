@@ -91,6 +91,7 @@ export class TowerInfoPanel {
   readonly #hasar: Phaser.GameObjects.BitmapText;
   readonly #atisHizi: Phaser.GameObjects.BitmapText;
   readonly #menzil: Phaser.GameObjects.BitmapText;
+  readonly #patlama: Phaser.GameObjects.BitmapText;
   readonly #kapsama: Phaser.GameObjects.BitmapText;
   readonly #iade: Phaser.GameObjects.BitmapText;
   readonly #etkinDps: Phaser.GameObjects.BitmapText;
@@ -138,6 +139,7 @@ export class TowerInfoPanel {
     this.#hasar = sayi(SATIRLAR.damage, PARCHMENT);
     this.#atisHizi = sayi(SATIRLAR.rate, PARCHMENT);
     this.#menzil = sayi(SATIRLAR.range, PARCHMENT);
+    this.#patlama = sayi(SATIRLAR.splash, PARCHMENT);
     this.#kapsama = sayi(SATIRLAR.coverage, GOLD);
     this.#yukseltme = sayi(SATIRLAR.upgrade, PARCHMENT);
     this.#iade = sayi(SATIRLAR.refund, GOLD);
@@ -230,6 +232,7 @@ export class TowerInfoPanel {
       this.#etiketler.setMaxTier(s.nextTier === undefined && s.branchChoice !== true);
       this.#etiketler.setBranchChoice(s.branchChoice === true);
       this.#etiketler.setEffect(`${s.def.id}:${s.tierIndex}`);
+      this.#etiketler.setSplash((s.tier.splashRadius ?? 0) > 0);
     }
   }
 
@@ -246,6 +249,12 @@ export class TowerInfoPanel {
     this.#hasar.setText(String(s.tier.damage));
     this.#atisHizi.setText(s.tier.fireRate.toFixed(1));
     this.#menzil.setText(String(s.tier.range));
+    // `M11-T02` — patlama yarıçapı. Yarıçapı olmayan kulede sayı boş
+    // kalıyor ve etiket tarafındaki gri `—` görünüyor (etki satırıyla
+    // aynı desen; `BitmapText` fontu `—` glifini taşımıyor).
+    const yaricap = s.tier.splashRadius ?? 0;
+    this.#patlama.setText(yaricap > 0 ? String(yaricap) : '');
+    this.#etiketler.setSplash(yaricap > 0);
     // Ham piksel oyuncuya hiçbir şey söylemiyordu ("294" neyin 294'ü?).
     // Yolun **payı** olarak yazılıyor: kıyas ölçüsü kendi içinde.
     this.#kapsama.setText(`${Math.round((s.coveredPx / this.#toplamYol) * 100)}%`);

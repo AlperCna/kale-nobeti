@@ -421,10 +421,10 @@ function olustur() {
   y(tablo(['Tehdit', 'Doğru cevap'], [
     ['Kalabalık goblin', 'Top (alan hasarı)'],
     ['Zırhlı Ork', 'Büyü (zırhı yok sayar)'],
-    ['Şaman', 'Keskin Nişancı (`last` ile arkadan seç) veya Yıldırım'],
-    ['Harpi sürüsü', 'Okçu + Büyü — **Top ve Havan vuramaz**'],
+    ['Şaman', 'Keskin Nişancı — **`first` ile ODAKLAN**, `last` değil (S83)'],
+    ['Harpi sürüsü', 'Okçu + Büyü tam hasar; Top T3 dalları %50 (T1/T2 vuramaz)'],
     ['Trol', 'Kışla ile tut + yoğun tek hedef'],
-    ['Kurt Binicisi', 'Buz / Barut Fıçısı yavaşlatma'],
+    ['Kurt Binicisi', 'Buz (yavaşlatmanın tek kaynağı) / Barut Fıçısı geniş patlama'],
     ['Ogre Şef', 'Büyü + Top, `strongest` hedefleme, Meteor'],
   ]), '');
 

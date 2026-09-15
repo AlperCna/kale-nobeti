@@ -19,12 +19,14 @@
  * altında kalsın" ölçütüyle ayarlandı ve harita 5 o bandın üst ucunda
  * (16/20). Üstüne çarpan koymak için önce haritaları gevşetmek gerekirdi.
  *
- * İkinci ölçüm daha da belirleyici oldu: **HP çarpanı boss'u hiç
- * etkilemiyordu.** `BOSS_HP_BY_MAP` mutlak bir sayı ve `bossFor` onu
- * `hpMultiplier`'a bölüyor; `MapDef.hpMultiplier`'ı çarpmak bölmeyi de
- * çarpıyor ve boss aynı kalıyor. Boss'u da ölçekleyen tek yol doğum
- * anındaki çarpan (sonsuz modun `endlessHpScale` yolu) — ve o yolla
- * ölçüldüğünde Kısıt A oranları şöyle çıkıyor:
+ * İkinci ölçüm daha da belirleyici oldu. **Dikkat — o ölçümün gerekçesi
+ * `M11`'de düzeltildi (S92):** "HP çarpanı boss'u hiç etkilemiyor"
+ * cümlesi **ölçüm aracını** anlatıyordu, oyunu değil. `MapDef.hpMultiplier`'ı
+ * çarpmak `bossFor`'un bölmesini de çarpıyor ve ikisi sadeleşiyor; ama
+ * canlı oyun tanımı **çarpansız** haritadan çözüp doğum çarpanını ayrı
+ * veriyor (`GameScene`), yani boss gerçekte `BOSS_HP × hpScale`. Artık
+ * `waveSim` de bu ayrımı taşıyor. Aşağıdaki Kısıt A oranları doğum
+ * çarpanı yoluyla ölçülmüştü, yani **onlar baştan doğruydu**:
  *
  * | Çarpan | En kötü Kısıt A oranı | Nerede |
  * |---|---|---|
@@ -42,14 +44,15 @@
  *
  * | Harita | 1 | 2 | 3 | 4 | 5 |
  * |---|---|---|---|---|---|
- * | Can kaybı | 0 | 6 | 10 | 13 | 16 |
+ * | Can kaybı (`M8`) | 0 | 6 | 10 | 13 | 16 |
+ * | Can kaybı (`M11-T02`) | 0 | 4 | 7 | 13 | 15 |
  *
  * **12 can** seçildi: 1-3 referans tahtayla hâlâ geçiliyor (öğrenme
  * yayı korunuyor), 4 ve 5 referans tahtadan **daha iyi** bir tahta
  * istiyor. Zor'un tanımı tam bu.
  *
  * Kolay ise HP çarpanı olarak kalıyor — orada tavan sorunu yok, tersine
- * pay artıyor (ölçülen can kayıpları 0 / 2 / 3 / 4 / 7).
+ * pay artıyor (`M11-T02` ölçümü, ×0,80: 0 / 0 / 1 / 3 / 7).
  */
 
 import { BALANCE } from './balance';
@@ -74,12 +77,18 @@ export interface DifficultyDef {
 
 export const DIFFICULTY: Readonly<Record<Difficulty, DifficultyDef>> = {
   /**
-   * **S84 GERİ ALINDI (S86).** `M10-T03` sırasında 0,85 → 0,75
+   * **S91 (`M11-T02`): 0,85 → 0,80.** Dal dengesi referans tahtayı
+   * zayıflattı; ×0,85'te harita 5 Kolay'da **11 can** kaybediyor
+   * (sınır 10). Ölçüm: ×0,85 → 0·1·2·7·11 ✗ · **×0,80 → 0·0·1·3·7 ✓**.
+   * Ölçütü karşılayan **en yüksek** adım seçildi — Kolay'ı gereğinden
+   * fazla boşaltmak da bir tasarım hatası (×0,70'te harita 4 bir can
+   * kaybediyor, yani tahta hiç sınanmıyor).
+   *
+   * Öncesi: **S84 GERİ ALINDI (S86).** `M10-T03` sırasında 0,85 → 0,75
    * yapılmıştı; o ölçüm `waveSim`'in süreli etki körlüğü kapatılmadan
-   * alınmıştı. Üç körlük de kapanınca 0,85 ile beş haritanın en kötüsü
-   * **6 can** kaybediyor (sınır 10) — orijinal sayı ölçütünü karşılıyor.
+   * alınmıştı. Üç körlük de kapanınca 0,85 ölçütü karşılıyordu.
    */
-  kolay: { hpScale: 0.85, startLives: BALANCE.startLives, recordStars: false },
+  kolay: { hpScale: 0.8, startLives: BALANCE.startLives, recordStars: false },
   normal: { hpScale: 1, startLives: BALANCE.startLives, recordStars: true },
   zor: { hpScale: 1, startLives: 12, recordStars: true },
 };

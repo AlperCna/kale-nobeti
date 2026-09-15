@@ -176,6 +176,35 @@ Rampa bozulursa değişiklik geri alınır.
 
 **Kabul:** üç ailede de "öteki" dal en az bir senaryoda **kazanıyor**.
 
+> **BİTTİ (S91 + S92 + S93).** Ölçülen sonuç, altı senaryo × üç aile:
+> Okçu 4-2 · Top 3-2 (+1 berabere) · Büyü 4-2 — **altı dalın hepsi
+> kazanıyor**, test `systems/dalKimligi.test.ts`.
+>
+> Planın tahmin ettiği üç yönün üçü de tuttu, ama **gerekçe tahmin
+> edilenden derindi**: yavaşlatma Kısıt A'da (`DPS × kapsananYol / hız`)
+> **hızı bölüyor**, yani yavaşlatan kule bütün tahtanın hasarını
+> çarpıyor. İki dalın biri yavaşlatıp öteki yavaşlatmıyorsa seçim
+> matematiksel olarak yoktur. Bu yüzden yavaşlatma Barut Fıçısı'ndan
+> **tamamen** alındı ve Buz'un tek kimliği oldu; Barut Fıçısı ile
+> Havan'ın DPS'i **eşitlendi** (21,6) ve takas tek eksene indi:
+> menzil ↔ patlama.
+>
+> **Üç yan sonuç, üçü de ölçümle:**
+> 1. Referans tahta zayıfladı → üç boss tavanı düştü, HP'ler aynı
+>    kuralla yeniden türetildi (1023/1933/2675 → 886/1709/2189) ve
+>    zorluk rampası yeniden tarandı (2,6/5,2/7,5 → 2,4/4,8/7,0).
+>    Rampa `0 · 4 · 7 · 13 · 15`, Kolay ×0,80 `0 · 0 · 1 · 3 · 7`.
+> 2. **S92 — dördüncü ölçüm körlüğü**, bu kez `waveSim`'de değil onu
+>    çağıranda: Kolay ölçümü boss'u hiç ölçeklemiyordu. `simulateWave`
+>    artık `hpScale`'i ayrı parametre alıyor, `GameScene`'in şekli.
+> 3. **S93 — takas görünmezdi.** Bilgi paneline patlama satırı,
+>    T3 menüsüne iki sabit dal özeti eklendi (`util/dalOzeti.ts`).
+>    Ölçümde gerçek olan bir seçim, ekranda görünmüyorsa seçim değil.
+>
+> Kışla dalları (Paladin / Haydutlar) bilerek dışarıda: kademe şekli
+> farklı ve Paladin'in kalkanı zaten Faz 3'ün konusu — özet satırı da
+> orada eklenecek.
+
 ### Faz 3 — Paladin kalkanı, S43'ü kapat *(≈0,5 gün · risk düşük)*
 
 `M10`'un kalkan makinesi hazır (`kalkandanGecir`, `shieldLeft`).

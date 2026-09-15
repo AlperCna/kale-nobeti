@@ -334,16 +334,28 @@ export function buildReferenceBoards(
       // Yani elle yazılı kural, formülün göremediği bilgiyi taşıyor.
       // `M11` Faz 2 dalları ayrıştırdıktan sonra türetme yeniden
       // denenebilir; bugün ölçüm hayır diyor.
-      let topT3Sayisi = 0;
+      //
+      // **`M11-T02` güncellemesi:** yavaşlatma Barut Fıçısı'ndan alınıp
+      // Buz'a verilince kural bir kez daha bayatladı — tahta artık
+      // **hiç** yavaşlatan kule kurmuyordu ve belirgin biçimde zayıftı
+      // (rampa `0·4·7·13·17` → `0·4·15·30·35`). Gerçek oyuncu bir tane
+      // yavaşlatıcı kurar: Büyü ailesinin ilk kulesi **Buz** alıyor,
+      // sonrakiler Yıldırım. Top'un ilkinin Barut Fıçısı alması ile
+      // **birebir aynı desen** ve aynı gerekçe: tahtada bir tane
+      // "farklı iş yapan" kule olmalı.
+      let ilkTop = true;
+      let ilkBuyu = true;
       for (let i = 0; i < kuleler.length; i++) {
         const k = kuleler[i];
         if (k === undefined || k.tier !== 1) continue;
         const def = getTower(k.towerId);
         if (def === undefined) continue;
-        const dal: TierIndex = def.id === 'top' && topT3Sayisi === 0 ? 3 : 2;
+        const dal: TierIndex =
+          (def.id === 'top' && ilkTop) || (def.id === 'buyu' && ilkBuyu) ? 3 : 2;
         const maliyet = tierAt(def, dal).cost;
         if (kullanilabilir < maliyet) continue;
-        if (def.id === 'top') topT3Sayisi++;
+        if (def.id === 'top') ilkTop = false;
+        if (def.id === 'buyu') ilkBuyu = false;
         kuleler[i] = { ...k, tier: dal };
         kullanilabilir -= maliyet;
         harcanan += maliyet;

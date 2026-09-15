@@ -15,14 +15,17 @@ import type { EnemyId } from '../types/enemy';
 import type { MapDef } from '../types/map';
 
 /**
- * Zorluğun HP çarpanı **doğum anında** uygulanıyor (`WaveManager`), yani
- * `MapDef.hpMultiplier`'ı çarpmakla aynı etkiyi ölçüm için burada
- * kurabiliriz — boss dahil, çünkü `bossFor` bölmeyi aynı çarpanla yapıyor
- * ve ikisi sadeleşmiyor: `spawn` çarpanı ayrı geliyor.
+ * Zorluğun HP çarpanı **doğum anında** uygulanıyor (`WaveManager`).
  *
- * Bu yüzden ölçümde **etkin HP'yi** ölçekliyoruz, `map.hpMultiplier`'ı
- * değil — `data/difficulty.ts`'in başlığındaki "boss hiç etkilenmiyordu"
- * bulgusunun sebebi tam olarak bu ayrım.
+ * **S92:** eskiden ölçüm bunu `MapDef.hpMultiplier`'ı çarparak kuruyordu
+ * ve o yol boss'u sessizce dışarıda bırakıyordu — `bossFor` mutlak boss
+ * HP'sini aynı çarpana **bölüyor**, ikisi sadeleşiyor. Canlı oyun
+ * (`GameScene`) tanımı çarpansız haritadan çözüyor ve doğum çarpanını
+ * ayrı veriyor, yani boss gerçekte ölçekleniyor. Artık `waveSim` de o
+ * ayrımı taşıyor: `simulateAllWaves(..., hpScale)`.
+ *
+ * Kısıt A tarafında (`enKotuKisitA`) ölçek **etkin HP'ye** uygulanıyor;
+ * orada zaten doğruydu.
  */
 function enKotuKisitA(m: MapDef, hpScale: number): { oran: number; kim: string } {
   const w = wavesFor(m.id);
@@ -45,14 +48,13 @@ function enKotuKisitA(m: MapDef, hpScale: number): { oran: number; kim: string }
 }
 
 function canKaybi(m: MapDef, hpScale: number): number {
-  const harita: MapDef = { ...m, hpMultiplier: m.hpMultiplier * hpScale };
   const w = wavesFor(m.id);
-  const k = measureCoverage(harita.paths, harita.buildSpots, COVERAGE_REFERENCE_RANGE);
-  const sim = simulateAllWaves(w, buildReferenceBoards(harita, w, k, true), harita);
+  const k = measureCoverage(m.paths, m.buildSpots, COVERAGE_REFERENCE_RANGE);
+  const sim = simulateAllWaves(w, buildReferenceBoards(m, w, k, true), m, undefined, hpScale);
   let can = 0;
   for (const r of sim) {
     for (const [id, n] of Object.entries(r.leakedByEnemy)) {
-      const e = getEnemyForMap(id as EnemyId, harita);
+      const e = getEnemyForMap(id as EnemyId, m);
       if (e !== undefined) can += e.leakDamage * (n ?? 0);
     }
   }

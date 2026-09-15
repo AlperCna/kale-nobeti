@@ -161,7 +161,7 @@ const TR = {
   howTo6: 'Hazırlık sayacını erken bitirmek altın kazandırır.',
   howTo7: 'ESC ya da boşluk duraklatır.',
   /** `M10` — sinerji oyuncuya başka hiçbir yerde görünmüyor. */
-  howTo8: 'Yavaşlatılmış düşman fiziksel hasardan daha çok etkilenir: Barut Fıçısı ya da Buz, Okçu-Top ile birlikte çalışır.',
+  howTo8: 'Yavaşlatılmış düşman fiziksel hasardan daha çok etkilenir: Buz kulesi, Okçu ve Top ile birlikte çalışır.',
   howTo9: 'Mavi halka buz kalkanı; erimeden cana hasar geçmez. Boss canı yarıya inince hızlanır.',
   lockedHint: 'Önce önceki haritayı bitir',
   endlessBestShort: 'Sonsuz',
@@ -222,8 +222,22 @@ const TR = {
   saveFailed: 'İlerleme kaydedilemiyor — tarayıcın depolamayı engelliyor',
   infoMaxTier: 'Son kademe',
   /** `M11-T01` — kule etkisi satırı. Oyuncu yanma/yavaşlatmayı hiç göremiyordu. */
+  /**
+   * `M11-T02` — **patlama yarıçapı.** Faz 2'de Top'un iki dalı arasındaki
+   * takas tek eksene indi (menzil ↔ yarıçap) ve oyuncu o iki sayıdan
+   * **yalnız birini** görüyordu: panelde patlama satırı yoktu. Görünmeyen
+   * bir takas seçim değil, zar atışıdır.
+   */
+  infoSplash: 'Patlama (px)',
   infoEffect: 'Etki',
   infoEffectNone: '—',
+  /**
+   * `M11-T02` (S93) — T3 dal menüsünün özet satırı. Kısa tutuluyor:
+   * iki dal, iki satır, menü genişliğine (468 px) sığmak zorunda.
+   */
+  sumDps: 'DPS',
+  sumRange: 'menzil',
+  sumSplash: 'patlama',
   infoEffectBurn: 'Yanma',
   infoEffectSlow: 'Yavaşlatma',
   infoEffectChain: 'Zincir',
@@ -300,7 +314,8 @@ const TR = {
    * Y09 altyapısıyla tek seferlik: hedefleme satırı ilk açıldığında ve
    * ilk uçan dalga yaklaşınca (kesikli rota görünürken).
    * "Yalnız Okçu ve Büyü tam hasar verir" — `towers.ts`: okçu ve büyü
-   * `airMultiplier` 1, Top 0 (yalnız Barut Fıçısı 0,5). Cümle doğru.
+   * `airMultiplier` 1, Top T1/T2 0 ve **iki T3 dalı da 0,5** (`M11`
+   * Faz 2, S91). Cümle hâlâ doğru: *tam* hasarı yalnız o ikisi veriyor.
    */
   /**
    * `Güçlü` eskiden "en çok canı olan" diyordu ve bu **yanlıştı**:
@@ -425,7 +440,7 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     howTo5: 'Meteor and Reinforcements are on cooldown; save them for a crowd.',
     howTo6: 'Starting a wave early earns gold.',
     howTo7: 'ESC or space pauses.',
-    howTo8: 'Slowed enemies take more physical damage: Powder Keg or Frost pairs with Archer and Cannon.',
+    howTo8: 'Slowed enemies take more physical damage: the Frost tower pairs with Archer and Cannon.',
     howTo9: 'A blue ring is a frost shield; nothing reaches health until it breaks. The boss speeds up at half health.',
     lockedHint: 'Finish the previous map first',
     endlessBestShort: 'Endless',
@@ -458,8 +473,12 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     infoUpgrade: 'Upgrade',
     saveFailed: 'Progress is not being saved — your browser is blocking storage',
     infoMaxTier: 'Max tier',
+    infoSplash: 'Splash (px)',
     infoEffect: 'Effect',
     infoEffectNone: '—',
+    sumDps: 'DPS',
+    sumRange: 'range',
+    sumSplash: 'splash',
     infoEffectBurn: 'Burn',
     infoEffectSlow: 'Slow',
     infoEffectChain: 'Chain',

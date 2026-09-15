@@ -1,17 +1,7 @@
 import Phaser from 'phaser';
 import { t } from '../util/i18n';
 import { TOWERS } from '../data/towers';
-import type { TowerEffect } from '../types/tower';
-
-/**
- * Etkinin bir satırlık okunur hâli. Sayılar `towers.ts`'ten geliyor,
- * burada elle yazılmıyor (TIER 1 kural 1).
- */
-function etkiMetni(e: TowerEffect): string {
-  if (e.kind === 'burn') return `${t('infoEffectBurn')} ${e.dps}/sn · ${e.seconds} sn`;
-  if (e.kind === 'slow') return `${t('infoEffectSlow')} %${Math.round(e.factor * 100)} · ${e.seconds} sn`;
-  return `${t('infoEffectChain')} ×${e.targets}`;
-}
+import { etkiMetni } from '../util/dalOzeti';
 
 /**
  * Kule bilgi panelinin **statik etiketleri** — `TowerInfoPanel`'den ayrı
@@ -41,16 +31,18 @@ export const SATIRLAR = {
   damage: 22,
   rate: 48,
   range: 74,
-  coverage: 100,
-  upgrade: 126,
-  refund: 152,
+  /** `M11-T02` — patlama yarıçapı. Gerekçe `strings.infoSplash`. */
+  splash: 100,
+  coverage: 126,
+  upgrade: 152,
+  refund: 178,
   /** `M11-T01` — kule etkisi. Etkiler yalnız T3 dallarında, ama satır
    *  kalıcı: etkisiz dalda `—` yazıyor, yani "bu dalın etkisi yok"
    *  bilgisi de görünür oluyor. */
-  effect: 178,
-  tip: 204,
-  dps: 230,
-  ikonlar: 262,
+  effect: 204,
+  tip: 230,
+  dps: 256,
+  ikonlar: 288,
 } as const;
 
 export class TowerInfoLabels {
@@ -64,6 +56,8 @@ export class TowerInfoLabels {
   /** `M11-T01` — etki açıklamaları, anahtar `<aileId>:<kademe>`. */
   readonly #etkiler = new Map<string, Phaser.GameObjects.Text>();
   readonly #etkiYok: Phaser.GameObjects.Text;
+  /** `M11-T02` — patlaması olmayan kulede sayının yerine geçen `—`. */
+  readonly #patlamaYok: Phaser.GameObjects.Text;
 
   constructor(scene: Phaser.Scene, solPay: number, tipSutunX: number) {
     const etiket = (y: number, metin: string, x = solPay, renk: string = PARCHMENT) => {
@@ -75,6 +69,7 @@ export class TowerInfoLabels {
     etiket(SATIRLAR.damage, t('infoDamage'));
     etiket(SATIRLAR.rate, t('infoRate'));
     etiket(SATIRLAR.range, t('infoRange'));
+    etiket(SATIRLAR.splash, t('infoSplash'));
     etiket(SATIRLAR.coverage, t('infoCoverage'));
     etiket(SATIRLAR.upgrade, t('infoUpgrade'));
     etiket(SATIRLAR.refund, t('infoRefund'));
@@ -129,6 +124,8 @@ export class TowerInfoLabels {
      * Hepsi baştan kuruluyor, geçiş `setVisible` ile: bu dosya `Text`
      * üretiyor ve bekçi k.4 burada `setText`i yasaklıyor.
      */
+    this.#patlamaYok = etiket(SATIRLAR.splash, t('infoEffectNone'), tipSutunX, '#9A948A');
+
     etiket(SATIRLAR.effect, t('infoEffect'));
     this.#etkiYok = etiket(SATIRLAR.effect, t('infoEffectNone'), tipSutunX, '#9A948A');
     for (const def of TOWERS) {
@@ -149,6 +146,11 @@ export class TowerInfoLabels {
   setEffect(anahtar: string | null): void {
     for (const [k, n] of this.#etkiler) n.setVisible(k === anahtar);
     this.#etkiYok.setVisible(anahtar === null || !this.#etkiler.has(anahtar));
+  }
+
+  /** Patlaması var mı? Yoksa sayının yerine gri `—` çıkıyor. */
+  setSplash(varMi: boolean): void {
+    this.#patlamaYok.setVisible(!varMi);
   }
 
   /** Son kademe mi? Öyleyse yükseltme sayısının yerine etiket çıkıyor. */
