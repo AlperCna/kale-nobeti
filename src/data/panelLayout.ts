@@ -39,7 +39,7 @@
  * (640) solunda kalıyor — `panelLayout.test.ts` ikisini de bekçiliyor.
  */
 export const PANEL_W = 300;
-export const PANEL_H = 268;
+export const PANEL_H = 294; // M11-T01 — etki satırı eklendi (+26)
 
 /**
  * İçerik ile panel kenarı arasındaki pay.

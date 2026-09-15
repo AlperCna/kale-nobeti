@@ -16,7 +16,7 @@ import { BALANCE } from '../data/balance';
 import { getEnemy, getEnemyForMap } from '../data/enemies';
 import { BUYU, OKCU, TOP, getTower, tierAt } from '../data/towers';
 import { KISLA, barracksTierAt } from '../data/barracks';
-import { applyDamage } from './combat';
+import { applyDamage, etkiDps } from './combat';
 import { measureCoverage } from '../util/coverage';
 
 // --------------------------------------------------------------- Kısıt A
@@ -33,7 +33,11 @@ export function effectiveDps(def: TowerDef, tier: TierIndex, enemy: EnemyDef): n
   const ucanCarpani = enemy.flying ? t.airMultiplier : 1;
   if (ucanCarpani === 0) return 0; // kule bu düşmana hiç vuramıyor
   const vurus = applyDamage(t.damage * ucanCarpani, def.damageType, enemy);
-  return vurus.dealt * t.fireRate;
+  // `M11-T01` — **yanma da hasar.** Buraya kadar sayılmıyordu ve sonucu
+  // ölçüldü: referans tahta altı T3 dalından üçünü hiç seçmiyordu.
+  // Yanma gerçek hasar, `applyDamage`'dan geçmiyor (§4.1). Gerekçenin
+  // tamamı `combat.etkiDps`'te; yavaşlatma ve zincir bilerek 0.
+  return vurus.dealt * t.fireRate + etkiDps(t.effect, t.fireRate);
 }
 
 /**
@@ -301,11 +305,35 @@ export function buildReferenceBoards(
       // tavanın %192'si (harita 2) ve %292'si (harita 3) çıkıyordu —
       // **ölçüm hatası**, denge hatası değil.
       //
-      // **Dal seçimi (§4.2 kısıtı):** Top ailesinin ilk kulesi **Barut
-      // Fıçısı** (T3b) alıyor, sonrakiler **Havan** (T3a). Havan uçana
-      // vuramıyor ve üç haritanın da kadrosunda Harpi var; hepsini Havan
-      // yapmak tahtanın Top kısmını harpi dalgasında tamamen ölü
-      // bırakırdı. Diğer aileler T3a alıyor (hasar dalı).
+      // **Dal seçimi ELLE yazılı — ve öyle kalması ÖLÇÜLDÜ (`M11-T01`).**
+      //
+      // Kural: Top ailesinin o dalgada yükselen ilk kulesi **Barut
+      // Fıçısı** (T3b), sonrakiler **Havan** (T3a); diğer aileler T3a.
+      // Havan uçana vuramıyor ve üç haritanın da kadrosunda Harpi var;
+      // hepsini Havan yapmak tahtanın Top kısmını harpi dalgasında
+      // tamamen ölü bırakırdı.
+      //
+      // ## Türetme denendi ve DAHA KÖTÜ çıktı
+      //
+      // `M11-T01`'de bu kural projenin kendi tavan formülünden
+      // (`DPS × kapsananYol`, Kısıt A) türetilmeye çalışıldı — gerekçe
+      // makuldü: elle yazılı kural, dal dengesi değişince tepki
+      // vermiyor. Ölçüm türetmeyi **reddetti**:
+      //
+      // | Kural | Zor rampası (can kaybı) |
+      // |---|---|
+      // | elle (bugünkü) | 0 · 4 · 7 · 13 · 17 |
+      // | `DPS × kapsama` | 0 · 4 · **14 · 28 · 26** |
+      //
+      // Türetilmiş tahta belirgin biçimde zayıf: formül **patlamayı,
+      // yavaşlatmayı ve `M10` sinerjisini göremiyor**, ve `airMultiplier: 0`
+      // gibi *kategorik* bir deliği kadro ortalamasına yayarak
+      // yumuşatıyor (harpi 10 düşmandan biri, ama harpi dalgasında
+      // tahtanın yarısı ölü).
+      //
+      // Yani elle yazılı kural, formülün göremediği bilgiyi taşıyor.
+      // `M11` Faz 2 dalları ayrıştırdıktan sonra türetme yeniden
+      // denenebilir; bugün ölçüm hayır diyor.
       let topT3Sayisi = 0;
       for (let i = 0; i < kuleler.length; i++) {
         const k = kuleler[i];

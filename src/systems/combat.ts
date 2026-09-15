@@ -10,6 +10,7 @@
  */
 
 import type { DamageType, EnemyDef } from '../types/enemy';
+import type { TowerEffect } from '../types/tower';
 import { BALANCE } from '../data/balance';
 
 /**
@@ -105,4 +106,43 @@ export function yavaslatmaSinerjisi(
 ): number {
   if (type !== 'physical') return 1;
   return hedef.effects.slowSeconds > 0 ? BALANCE.yavaslatmaFizikselBonus : 1;
+}
+
+/**
+ * Bir kule etkisinin **sürdürülebilir** ek DPS'i — `M11-T01`.
+ *
+ * ## Neden var
+ *
+ * `balanceChecks.effectiveDps` ve `fx/TowerInfoPanel` yalnız
+ * `damage × fireRate` hesaplıyordu, yani **yanma ve yavaşlatma
+ * görünmüyordu**. Sonuç ölçüldü: referans tahta altı T3 dalından
+ * üçünü hiç seçmiyor ve oyuncu panelde Kundakçı'nın neden iyi
+ * olabileceğini okuyamıyor.
+ *
+ * ## Yanma
+ *
+ * `applyEffect` süreyi **tazeliyor, DPS'i toplamıyor** (S34). Yani kule
+ * yanma bitmeden tekrar vurduğu sürece yanma kesintisiz: katkı tam
+ * `dps`. Atış aralığı yanma süresinden uzunsa aradaki boşluk kadar
+ * düşüyor — görev döngüsü `seconds × fireRate`, 1'de doyuyor.
+ *
+ * Yanma **gerçek hasar**: zırh/direnç uygulanmıyor (§4.1'de ayrı bir
+ * kanal). O yüzden `applyDamage`'dan geçmiyor ve zırhlı düşmana karşı
+ * oransal olarak daha değerli.
+ *
+ * ## Yavaşlatma ve zincir: bilerek **0**
+ *
+ * - **Yavaşlatma hasar değil.** Değeri "düşman menzilde daha uzun
+ *   kalıyor"; DPS'e katmak onu hasar gibi göstermek olurdu ve Kısıt
+ *   A'nın `DPS × kapsananYol / hız` formülünde iki kez sayılırdı.
+ *   Oyuncuya **ayrı bir satırda** gösteriliyor (`TowerInfoPanel`) —
+ *   araştırmanın "tam bilgi ver" kuralı.
+ * - **Zincir tek hedefte hiçbir şey eklemiyor.** Değeri kalabalığa
+ *   bağlı ve bu fonksiyon "şu düşmana karşı" sorusunu cevaplıyor.
+ */
+export function etkiDps(effect: TowerEffect | undefined, fireRate: number): number {
+  if (effect === undefined || effect.kind !== 'burn') return 0;
+  if (!(fireRate > 0) || !(effect.seconds > 0)) return 0;
+  const gorevDongusu = Math.min(1, effect.seconds * fireRate);
+  return effect.dps * gorevDongusu;
 }

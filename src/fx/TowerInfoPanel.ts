@@ -4,7 +4,7 @@ import { PANEL_W, PANEL_H, PANEL_IC_PAY, panelKonumu } from '../data/panelLayout
 import type { TargetMode, TowerDef, TowerTier } from '../types/tower';
 import { NUMBER_FONT_KEY } from './numberFont';
 import { effectiveDps } from '../systems/balanceChecks';
-import { applyDamage } from '../systems/combat';
+import { applyDamage, etkiDps } from '../systems/combat';
 import { enemyFrameKey } from '../data/spriteFrames';
 import { createParchmentFrame } from './ParchmentFrame';
 import { TowerInfoLabels, SATIRLAR } from './TowerInfoLabels';
@@ -229,6 +229,7 @@ export class TowerInfoPanel {
       this.#etiketler.setAir(s.tier.airMultiplier > 0);
       this.#etiketler.setMaxTier(s.nextTier === undefined && s.branchChoice !== true);
       this.#etiketler.setBranchChoice(s.branchChoice === true);
+      this.#etiketler.setEffect(`${s.def.id}:${s.tierIndex}`);
     }
   }
 
@@ -265,6 +266,9 @@ export class TowerInfoPanel {
 
     this.#etiketler.setType(s.def.damageType === 'magic');
     this.#etiketler.setAir(s.tier.airMultiplier > 0);
+    // `M11-T01` — dalın etkisi. Etkiler yalnız T3'te (`towers.ts`), ama
+    // satır kalıcı: etkisiz dalda `—` yazıyor.
+    this.#etiketler.setEffect(`${s.def.id}:${s.tierIndex}`);
 
     this.#dpsYaz();
   }
@@ -288,11 +292,23 @@ export class TowerInfoPanel {
    * `balanceChecks.effectiveDps` T1/T2 için yazılmıştı; T3 dallarını da
    * kapsaması gerektiği için burada kademe doğrudan veriliyor.
    */
+  /**
+   * `M11-T01` — **yanma da sayılıyor.**
+   *
+   * Buraya kadar yalnız `damage × fireRate` hesaplanıyordu, yani panel
+   * Kundakçı'yı 12,6 gösterip Keskin Nişancı'yı 15,6 gösteriyordu ve
+   * oyuncunun elinde yanmanın değerini görecek **hiçbir sayı yoktu**.
+   * `balanceChecks.effectiveDps` ile aynı saf fonksiyon kullanılıyor
+   * (`combat.etkiDps`) — model ve oyuncu aynı şeyi görmeli.
+   *
+   * Yavaşlatma burada **yok**, çünkü hasar değil; ayrı bir satırda
+   * gösteriliyor (`#etkiMetni`).
+   */
   #etkinDpsHesapla(s: TowerInfoState, e: EnemyDef): number {
     const ucanCarpani = e.flying ? s.tier.airMultiplier : 1;
     if (ucanCarpani === 0) return 0;
     const vurus = applyDamage(s.tier.damage * ucanCarpani, s.def.damageType, e);
-    return vurus.dealt * s.tier.fireRate;
+    return vurus.dealt * s.tier.fireRate + etkiDps(s.tier.effect, s.tier.fireRate);
   }
 
   /** Test kancası — panel açıkken bir düşmana karşı DPS. */
