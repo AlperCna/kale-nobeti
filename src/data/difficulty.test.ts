@@ -9,7 +9,7 @@ import {
   ceilingAPerBranch,
   effectiveHp,
 } from '../systems/balanceChecks';
-import { simulateAllWaves } from '../systems/waveSim';
+import { referansCanKaybi } from '../systems/referansOlcum';
 import { measureCoverage } from '../util/coverage';
 import type { EnemyId } from '../types/enemy';
 import type { MapDef } from '../types/map';
@@ -47,18 +47,17 @@ function enKotuKisitA(m: MapDef, hpScale: number): { oran: number; kim: string }
   return { oran: enKotu, kim };
 }
 
+/**
+ * **S109 — ölçüm `referansOlcum`'a taşındı.**
+ *
+ * Buradaki eski gövde tahtayı `withEarlyBonus = true` ile kuruyor ama
+ * simülasyona hiçbir politika vermiyordu; varsayılan `'temizken'` ise
+ * `M16`'dan sonra **hiç tetiklenmiyor** (hazırlık artık kuyruk bitince
+ * başlıyor, saha boşalınca değil). Yani tahta tam erken bonusuyla
+ * zenginleşiyor, oyuncu o bonusu hiç kazanmıyordu.
+ */
 function canKaybi(m: MapDef, hpScale: number): number {
-  const w = wavesFor(m.id);
-  const k = measureCoverage(m.paths, m.buildSpots, COVERAGE_REFERENCE_RANGE);
-  const sim = simulateAllWaves(w, buildReferenceBoards(m, w, k, true), m, undefined, hpScale);
-  let can = 0;
-  for (const r of sim) {
-    for (const [id, n] of Object.entries(r.leakedByEnemy)) {
-      const e = getEnemyForMap(id as EnemyId, m);
-      if (e !== undefined) can += e.leakDamage * (n ?? 0);
-    }
-  }
-  return can;
+  return referansCanKaybi(m, hpScale);
 }
 
 describe('DIFFICULTY — M8-T11 (S80)', () => {

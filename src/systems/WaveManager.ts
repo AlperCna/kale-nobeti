@@ -293,10 +293,28 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
     }
   }
 
+  /**
+   * **Dalga KUYRUK bitince kapanıyor, saha boşalınca değil** (`M16`, S102).
+   *
+   * Eskiden `pool.activeCount > 0` iken dönüyordu, yani hazırlık aşaması
+   * hiçbir zaman düşman varken başlamıyor ve **dalgalar üst üste
+   * binemiyordu**. Sonucu `M14` ölçtü: erken başlatmanın hiçbir bedeli
+   * yoktu — buton bir karar değil, bedava altındı. Artık sıradaki dalga
+   * bir öncekinin artıkları yoldayken geliyor ve "kalan süreyi altına
+   * çevir" gerçek bir takas oluyor.
+   *
+   * **Son dalga istisna ve zorunlu.** Zafer `wavePhase === 'done'` ile
+   * tetikleniyor (`HudScene.#oyunSonuKontrol`); kuralı körü körüne
+   * uygulamak oyuncuyu **boss hâlâ yürürken** kazandırırdı. Bu yüzden
+   * yalnız son dalgada saha bekleniyor: turun bitişi hep "saha temiz"
+   * anlamına geliyor, ki tur kaydının sözleşmesi de (`RunSave`) o
+   * varsayıma dayanıyor.
+   */
   #dalgaBittiMi(): void {
     if (this.#kuyruk.length > 0) return;
-    if (this.pool.activeCount > 0) return;
     if (this.#spawnedThisWave === 0) return;
+    const sonDalga = this.#index >= this.waves.length - 1 && this.endless === undefined;
+    if (sonDalga && this.pool.activeCount > 0) return;
 
     const no = this.waveNumber;
     this.eco.awardWaveEnd(no);

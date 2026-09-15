@@ -87,10 +87,20 @@ describe('3× hız — adım büyümesi sonucu değiştirmiyor', () => {
   const bir = simulateAllWaves(MAP1_WAVES, GERCEKCI, MAP_1, KARE);
   const uc = simulateAllWaves(MAP1_WAVES, GERCEKCI, MAP_1, KARE * 3);
 
-  it('öldürülen düşman sayısı dalga dalga AYNI', () => {
-    bir.forEach((r, i) => {
-      expect(uc[i]!.killedCount, `dalga ${i + 1}`).toBe(r.killedCount);
-    });
+  /**
+   * **`M16` — iddia dalga başınadan TOPLAMA taşındı.**
+   *
+   * Dalgalar üst üste binince bir düşmanın *hangi pencerede* öldüğü
+   * dalga sınırına milisaniye hassasiyetinde bağlı: 50 ms'lik adımda
+   * bir dalga 9'un artığı sınırın bir tarafına, 16,7 ms'lik adımda
+   * öbür tarafına düşebiliyor (ölçüldü: dalga 2'de 8 ↔ 9). **Toplam**
+   * değişmiyor — hiçbir düşman kaybolmuyor ya da iki kez sayılmıyor —
+   * ve asıl iddia da buydu: 3× hız dengeyi bozmuyor.
+   */
+  it('öldürülen düşman sayısı TOPLAMDA aynı', () => {
+    const a = bir.reduce((t, r) => t + r.killedCount, 0);
+    const b = uc.reduce((t, r) => t + r.killedCount, 0);
+    expect(b).toBe(a);
   });
 
   it('3×’te de hiçbir dalga sızdırmıyor', () => {
@@ -150,8 +160,10 @@ describe('Kısıt B — 10 dalga referans tahtaya karşı', () => {
   it('BOSS dalgası geçiliyor — boss ölüyor', () => {
     const boss = gercekci[9]!;
     expect(boss.leakedCount).toBe(0);
-    // 1 boss + 10 refakat.
-    expect(boss.killedCount).toBe(11);
+    // Kendi kadrosu 1 boss + 10 refakat. **`M16`'dan beri pencere
+    // yalnız kendi düşmanlarını içermiyor** — dalga 9'un artıkları da
+    // burada ölüyor (ölçülen 22). İddia bu yüzden alt sınır.
+    expect(boss.killedCount).toBeGreaterThanOrEqual(11);
   });
 
   it('TÜM düşmanlar ölüyor', () => {

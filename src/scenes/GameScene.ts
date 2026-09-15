@@ -926,6 +926,18 @@ export class GameScene extends Phaser.Scene {
     if (this.#endless || waves.isEndless) return;
     // Kaybedilmiş ya da bitmiş tur kaydedilmiyor.
     if (eco.lives <= 0 || waves.isComplete) return;
+    /**
+     * **Saha boş değilse kaydedilmiyor** (`M16` Faz 2).
+     *
+     * `RunSave`'in yazılı sözleşmesi "dalga sınırında saha boş" —
+     * sahadaki düşman/mermi/asker bilerek kaydedilmiyor. Dalgalar üst
+     * üste binebildiği için o varsayım artık kendiliğinden doğru değil:
+     * artıklar yoldayken kaydedip yeniden yüklemek onları **silerdi**,
+     * yani oyuncu lehine bir sömürü olurdu. Şema büyütmek yerine kayıt
+     * bir sonraki temiz sınıra bırakılıyor; kampanyada her dalganın
+     * artığı er geç tükeniyor.
+     */
+    if ((this.#enemyPool?.activeCount ?? 0) > 0) return;
 
     const spots: SpotKaydi[] = [];
     for (const [spotIndex, kule] of this.#towerBySpot) {
