@@ -439,11 +439,29 @@ can kaybı: `weakest` 4 · `last` 3 · `first` 3 · `closest` 1 kazandı;
 düzeltildi: tavan yetmiyorsa boss'a odaklanmak onu yine öldürmüyor ama
 çetenin sızmasına izin veriyor. Kilit: `systems/hedefModu.test.ts`.
 
-**İki yetenek de meşru (`M11` Faz 4).** `waveSim` artık oyuncunun
-yeteneklerini de simüle edebiliyor (varsayılan kapalı). Ölçülen can
-kaybı — Kar Geçidi: yok 13 · Meteor 8 · Takviye 11 · ikisi 5;
-Kadim Harabe: yok 15 · Meteor 12 · **Takviye 10** · ikisi 6. Yani
-Takviye Meteor'un gölgesinde değil, en zor haritada ondan **iyi**.
+**İki yetenek de meşru (`M11` Faz 4 · `M19`'da yeniden ölçüldü).**
+`waveSim` oyuncunun yeteneklerini de simüle edebiliyor (varsayılan
+kapalı). Güncel ölçüm (Zor, taban çift, can kaybı):
+
+| harita | yok | Meteor | Takviye | ikisi |
+|---|---|---|---|---|
+| Kar Geçidi     | 12 |  9 | 11 | 9 |
+| Kadim Harabe   | 13 | 11 | 10 | 9 |
+| Sisli Bataklık | 14 |  8 | 10 | 7 |
+
+Takviye Meteor'un gölgesinde değil ve ikisi birden harita 5-6'da
+**kesin** en iyisi.
+
+**Takviye bir dönem can kaybettirdi ve sebebi öğreticiydi (S111).**
+`M16` dalgaları üst üste bindirince askerlerin düşmanı *tutması*
+bedelli hâle geldi: tutulan düşman ölmüyorsa gecikme bir sonraki
+dalgaya taşınıyor ve birikiyordu (Kar Geçidi 13 → **17**). `M18`
+tahtayı düzeltince tablo tersine döndü. Ölçülen mekanik nettir:
+Takviye artık koşuyu **geciktirmiyor** (süre ±1 sn, tepe düşman aynı),
+yalnız **daha çok öldürüyor** — +1 · +3 · +4 düşman, kurtarılan canla
+(−1 · −3 · −4) birebir. Yani Takviye'nin değeri **tahtanın tuttuğu
+şeyi öldürebilmesine** bağlı: zayıf tahtada tutmak erteleme, güçlü
+tahtada öldürme.
 
 **Kule sinerjisi (M10):** yavaşlatılmış düşman **fiziksel** hasardan
 ×1,25 etkileniyor. Yani **Buz** ile Okçu-Top birlikte çalışıyor;
@@ -504,10 +522,12 @@ harita 5'te 11'i 10'a indiriyor — bonusun çoğunu alıp kalabalığın
 üstüne yeni dalga çağırmadan. Buton artık tempo becerisi değil **risk
 kararı**.
 
-İki yan etki ölçüldü ve kaydedildi: Takviye tek başına artık can
-kaybettiriyor, çünkü tutmak gecikmeyi bir sonraki dalgaya taşıyor
-(S111); ve denge ölçümünün tabanı erken bonusu **saymıyor**, o yüzden
-pahalı olan Büyü ailesi tabanda aç kalıyor (S110).
+İki yan etki ölçülmüştü; **ikisi de `M18`/`M19`'da kapandı.** Takviye
+tek başına can kaybettiriyordu (S111 — tutmak gecikmeyi sonraki dalgaya
+taşıyordu) ve pahalı olan Büyü ailesi tabanda aç kalıyordu (S110).
+İkisinin de sebebi yetenek ya da aile değil **referans tahtaydı**:
+`balanceChecks` dalga başına bir yavaşlatıcı kuruyordu (S112) ve tavan
+yavaşlatmayı hiç görmüyordu (S113).
 
 **Denge tabanı:** referans oyuncu erken **basmıyor**
 (`systems/referansOlcum.ts`). Referans tahta hangi ekonomiyi

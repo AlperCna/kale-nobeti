@@ -31,7 +31,7 @@
  * TIER 1 kural 11: Phaser'a dokunmaz.
  */
 import { describe, expect, it } from 'vitest';
-import { MAP_4, MAP_5, COVERAGE_REFERENCE_RANGE } from '../data/maps';
+import { MAP_4, MAP_5, MAP_6, COVERAGE_REFERENCE_RANGE } from '../data/maps';
 import { wavesFor } from '../data/waves';
 import { getEnemyForMap } from '../data/enemies';
 import { buildReferenceBoards } from './balanceChecks';
@@ -65,37 +65,75 @@ function canKaybi(m: MapDef, kullanim: YetenekKullanimi): number {
   return can;
 }
 
+/** `canKaybi`'nin ölçüm kardeşi — süre ve öldürülen sayısı da lazım (S111). */
+function kosu(m: MapDef, kullanim: YetenekKullanimi): { sure: number; oldurulen: number } {
+  const w = wavesFor(m.id);
+  const k = measureCoverage(m.paths, m.buildSpots, COVERAGE_REFERENCE_RANGE);
+  const sim = simulateAllWaves(
+    w,
+    buildReferenceBoards(m, w, k, REFERANS_ERKEN_BONUSU),
+    m,
+    undefined,
+    1,
+    kullanim,
+    REFERANS_POLITIKA,
+  );
+  return {
+    sure: sim.reduce((t, r) => t + r.durationSec, 0),
+    oldurulen: sim.reduce((t, r) => t + r.killedCount, 0),
+  };
+}
+
 describe('Yeteneklerin katkısı — M11 Faz 4', () => {
   it('Meteor can kurtarıyor', () => {
     expect(canKaybi(MAP_4, 'meteor')).toBeLessThan(canKaybi(MAP_4, 'yok'));
   });
 
   /**
-   * **S111 — Takviye TEK BAŞINA artık can kaybettiriyor** (`M16`).
+   * **S111 KAPANDI (`M19`) — Takviye yine can KURTARIYOR.**
    *
-   * Ölçülen (Zor, taban çift):
+   * `M16` dalgaları üst üste bindirince Takviye tek başına can
+   * *kaybettiriyordu* (Kar Geçidi 13 → 17, Kadim Harabe 15 → 16) ve bu
+   * test "felakete dönmedi" demeye indirgenmişti. Sebep şuydu:
+   * askerler düşmanı **tutuyor**, tutulan düşman ölmeyince gecikme bir
+   * sonraki dalgaya taşınıyor ve birikiyordu.
+   *
+   * `M18` tahtayı düzeltince (S112 yavaşlatıcı hatası, S110 Yıldırım,
+   * boss HP'lerinin simülasyondan türetilmesi) tablo tersine döndü:
    *
    * | harita | yok | meteor | takviye | ikisi |
    * |---|---|---|---|---|
-   * | kar-gecidi     | 13 | 12 | 17 | 10 |
-   * | kadim-harabe   | 15 | 11 | 16 | 10 |
-   * | sisli-bataklik | 18 | 15 | 18 | 18 |
+   * | kar-gecidi     | 12 |  9 | **11** |  9 |
+   * | kadim-harabe   | 13 | 11 | **10** |  9 |
+   * | sisli-bataklik | 14 |  8 | **10** |  7 |
    *
-   * Mekanik açık: Takviye'nin askerleri düşmanı **tutuyor**. Dalgalar
-   * üst üste binmediği sürece tutmak bedavaydı — dalga zaten saha
-   * boşalmadan bitmiyordu. `M16`'dan sonra geciktirilen düşman bir
-   * sonraki dalganın üstüne kalıyor ve gecikme **birikiyor**.
+   * **Mekanik ölçüldü ve sebep net:** Takviye artık koşuyu
+   * *geciktirmiyor* — toplam süre ±1 sn aynı, tepe düşman sayısı aynı
+   * ya da daha düşük. Değişen tek şey **öldürülen düşman sayısı**:
+   * +1 · +3 · +4, yani kurtarılan canla (−1 · −3 · −4) **birebir**.
    *
-   * Yalnız bu, Takviye'yi meşrusuz yapmıyor: Meteor'un yanında hâlâ
-   * katkı ekliyor (11 → 10), çünkü tutulan düşman Meteor'un altında
-   * ölüyor — tutmak tek başına erteleme, Meteor'la birlikte **öldürme**
-   * oluyor. Asıl meşruiyet sınavı bir sonraki test.
-   *
-   * Bozuk durumu iddia etmiyoruz; yalnız felakete dönmediğini bağlıyoruz.
+   * Yani Takviye'nin değeri tahtanın tuttuğu şeyi öldürebilmesine
+   * bağlı: tahta zayıfken tutmak *erteleme*, güçlüyken **öldürme**.
+   * `M16`'da kaybettirmesi Takviye'nin kusuru değil, tahtanınkiydi.
    */
-  it('Takviye tek başına FELAKET değil — 20 canın altında', () => {
-    expect(canKaybi(MAP_5, 'takviye')).toBeLessThan(20);
-    expect(canKaybi(MAP_4, 'takviye')).toBeLessThan(20);
+  it('**Takviye de** can kurtarıyor — gölgede değil', () => {
+    // Payı en geniş iki harita; Kar Geçidi'nin farkı 1 can (12 → 11).
+    expect(canKaybi(MAP_5, 'takviye')).toBeLessThan(canKaybi(MAP_5, 'yok'));
+    expect(canKaybi(MAP_6, 'takviye')).toBeLessThan(canKaybi(MAP_6, 'yok'));
+  });
+
+  /**
+   * S111'in **asıl** kilidi: kurtarılan can geciktirmeden değil
+   * öldürmeden geliyor. Takviye bir gün yine erteleyiciye dönerse
+   * (`M16`'da olduğu gibi) bu test kırılır, üstteki kırılmayabilir.
+   */
+  it('kurtarılan can ÖLDÜRMEDEN geliyor — erteleme değil', () => {
+    const yok = kosu(MAP_6, 'yok');
+    const takviye = kosu(MAP_6, 'takviye');
+    // Daha çok düşman ölüyor...
+    expect(takviye.oldurulen).toBeGreaterThan(yok.oldurulen);
+    // ...ve koşu uzamıyor (erteleme olsaydı süre belirgin artardı).
+    expect(Math.abs(takviye.sure - yok.sure)).toBeLessThan(yok.sure * 0.05);
   });
 
   it('**Takviye, Meteor varken bile katkı ekliyor** — asıl meşruiyet sınavı', () => {
@@ -115,11 +153,24 @@ describe('Yeteneklerin katkısı — M11 Faz 4', () => {
    * yeni dalgayla yarışıyor ve Meteor tek başına o işin çoğunu
    * yapabiliyor; aranan şey ikisinin birbirini **yememesi**.
    */
-  it('yetenekler birbirini YEMİYOR — ikisi birden en iyi sonucu paylaşıyor', () => {
-    const ikisi = canKaybi(MAP_4, 'ikisi');
-    expect(ikisi).toBeLessThanOrEqual(canKaybi(MAP_4, 'meteor'));
-    expect(ikisi).toBeLessThan(canKaybi(MAP_4, 'takviye'));
-    expect(ikisi).toBeLessThan(canKaybi(MAP_4, 'yok'));
+  /**
+   * **`M19` — iddia geri sıkılaştırıldı.** `M18` bunu Kar Geçidi'nde
+   * "ikisi ≤ meteor" diye gevşetmek zorunda kalmıştı (9'a 9 berabere).
+   * Harita 5 ve 6'da ikisi birden **kesin** en iyisi: 9 < 11 ve 7 < 8.
+   * Kar Geçidi'ndeki beraberlik duruyor ve anlamlı — orada Meteor tek
+   * başına işin tamamını yapabiliyor.
+   */
+  it('ikisi birden EN İYİSİ — yetenekler birbirini yemiyor', () => {
+    for (const m of [MAP_5, MAP_6]) {
+      const ikisi = canKaybi(m, 'ikisi');
+      expect(ikisi, m.id).toBeLessThan(canKaybi(m, 'meteor'));
+      expect(ikisi, m.id).toBeLessThan(canKaybi(m, 'takviye'));
+      expect(ikisi, m.id).toBeLessThan(canKaybi(m, 'yok'));
+    }
+    // Kar Geçidi: Meteor'la başa baş, ama ikisinden de kötü değil.
+    const ikisi4 = canKaybi(MAP_4, 'ikisi');
+    expect(ikisi4).toBeLessThanOrEqual(canKaybi(MAP_4, 'meteor'));
+    expect(ikisi4).toBeLessThan(canKaybi(MAP_4, 'yok'));
   });
 
   it('**varsayılan `yok`** — mevcut denge ölçümleri değişmedi', () => {
