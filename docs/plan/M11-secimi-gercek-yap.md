@@ -276,7 +276,41 @@ Bulunan her ölü seçenek ölçülerek düzeltilir; bulunmazsa kaydedilir.
 > ve boss HP'leri yeniden. Yarım modelde sayı türetmemek S82/S84'ün
 > dersi; bu yüzden Faz 4 burada durdu ve bulguyu kayda geçirdi.
 
-### Faz 5 — Yeni verb *(sanat gerekiyor — sahibin işi)*
+### Faz 5 — Aile dengesi *(plansız; Faz 4'ün bulgusu getirdi)*
+
+Faz 4 ölçtü, Faz 5 düzeltti: **Top baskındı, Okçu ölüydü** (S95).
+
+Kural gereği iki sayı **birlikte** türetildi — ikisi de aynı tabloyu
+hareket ettiriyor, tek tek türetmek S82/S84'ün hatası olurdu:
+
+1. **Patlamanın bedeli (S22 kapandı).** Merkezde %100, kenarda **%35**,
+   arası doğrusal. Alan hasarı buraya kadar bedava bir çarpandı.
+2. **Okçu'nun kademe çıktısı hizalandı.** T1 6→8, T2 10→14, Keskin
+   Nişancı 26→34, Kundakçı yanması 7→11. Yeni bir *çarpan*
+   verilmedi — bilerek: yeni çarpan yeni bir mekanik demekti ve bu
+   kilometre taşının dersi görünmeyen mekanik eklememek.
+
+**Sonuç** (can kaybı; maliyet dahil, her aile için tahta yeniden
+türetilerek):
+
+| Harita | karışık | Okçu | Top | Büyü |
+|---|---|---|---|---|
+| Taş Köprü | 4 | 6 | 8 | **2** |
+| Kül Ovası | **5** | 11 | 12 | 23 |
+| Kar Geçidi | **12** | 17 | 11 | 29 |
+| Kadim Harabe | **14** | 17 | 12 | 39 |
+
+Öncesi: karışık 4/7/13/15 · Okçu **14/23/28/33** · Top **6/7/7/8**.
+
+Karışık tahta artık dört haritanın üçünde en iyi, hiçbir aile hepsinde
+kazanmıyor, Okçu'nun en kötüsü 33'ten 17'ye indi. Bedeli: rampa ve boss
+HP'leri üçüncü kez türetildi — harita 2-3 çarpanları 1,3→1,5 ve
+2,4→2,6, boss HP'leri 859/979/1956/2492. Rampa `0 · 4 · 5 · 12 · 14`,
+Kolay ×0,80 `0 · 1 · 3 · 9 · 9`.
+
+Kilit: `systems/aileDengesi.test.ts`.
+
+### Faz 6 — Yeni verb *(sanat gerekiyor — sahibin işi)*
 
 Faz 1-4 var olanı çalışır hâle getiriyor. Yeni **tür** içerik (yeni
 düşman davranışı, yeni kule ailesi, harita 6) atlas karesi istiyor.

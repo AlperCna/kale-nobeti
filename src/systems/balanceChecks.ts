@@ -25,8 +25,9 @@ import { measureCoverage } from '../util/coverage';
  * Bir kulenin **belirli bir düşmana karşı etkin** DPS'i.
  *
  * Zırh/direnç `applyDamage` üzerinden uygulanıyor — ham `damage × fireRate`
- * değil. Okçu T2 (10 hasar) boss'a (zırh 10) saniyede 10 değil **1,95**
- * veriyor; farkı yaratan bu.
+ * değil. Okçu T2 (14 hasar) boss'a (zırh 10) saniyede 18,2 değil **5,2**
+ * veriyor; farkı yaratan bu. (`M11` Faz 5 öncesi sayı 10 hasar / 1,95
+ * DPS'ti — örnek aynı, kadro güçlendi.)
  */
 export function effectiveDps(def: TowerDef, tier: TierIndex, enemy: EnemyDef): number {
   const t = tierAt(def, tier);
@@ -137,7 +138,7 @@ function kuleSecimi(sira: number): TowerDef {
   // uçana Okçu.
   //
   // M3'te Büyü henüz yoktu ve döngü Top/Okçu ikilisiydi; boss (zırh 10)
-  // kadroya girince Kısıt A kırıldı — Okçu T2 boss'a 1,95 DPS veriyor ve
+  // kadroya girince Kısıt A kırıldı — Okçu T2 boss'a 5,2 DPS veriyor ve
   // Büyüsüz tahta 371 hasarda kalıyordu (gereken 805). Ölçüm, tahtanın
   // eksik olduğunu söyledi.
   const sirada = sira % 3;
@@ -154,7 +155,15 @@ function kuleSecimi(sira: number): TowerDef {
  * sızdığını gösterdi. Gerçek oyuncu elindeki parayla alabildiğini alır;
  * modelin onu yansıtmaması **modelin hatasıydı**, dengenin değil.
  */
-function karsilanabilirKule(sira: number, butce: number): TowerDef | undefined {
+function karsilanabilirKule(
+  sira: number,
+  butce: number,
+  tekAile?: TowerDef['id'],
+): TowerDef | undefined {
+  if (tekAile !== undefined) {
+    const d = getTower(tekAile);
+    return d !== undefined && butce >= d.tiers[0].cost ? d : undefined;
+  }
   const tercih = kuleSecimi(sira);
   if (butce >= tercih.tiers[0].cost) return tercih;
   // Ucuzdan pahalıya dene — gerçek oyuncu elindekiyle alabildiğini alır.
@@ -223,6 +232,17 @@ export function buildReferenceBoards(
    * seçip diğerini gizlemek dengeyi olduğundan iyi/kötü gösterirdi.
    */
   withEarlyBonus = false,
+  /**
+   * **Tek aileye zorla** — `M11` Faz 5 (S95) için eklendi, varsayılan
+   * yok (karışık tahta).
+   *
+   * Aile dengesini ölçmenin tek dürüst yolu **maliyeti de** hesaba
+   * katmak: aileler farklı fiyatta, yani "aynı noktalara aynı kademede
+   * kur" testi ucuz aileyi haksız yere cezalandırıyor. Burada tahta o
+   * ailenin fiyatıyla türetiliyor — ekonomi, kademe sırası, kışla
+   * kuralı aynen işliyor.
+   */
+  tekAile?: TowerDef['id'],
 ): ReferenceBoard[] {
   // Kapsaması yüksek nokta önce.
   const tumSirali = [...coverage].sort((a, b) => b.coveredPx - a.coveredPx).map((c) => c.spotIndex);
@@ -274,7 +294,7 @@ export function buildReferenceBoards(
     // 1) Boş nokta kaldıysa doldur.
     for (const spotIndex of sirali) {
       if (kuleler.some((k) => k.spotIndex === spotIndex)) continue;
-      const def = karsilanabilirKule(kuleler.length, kullanilabilir);
+      const def = karsilanabilirKule(kuleler.length, kullanilabilir, tekAile);
       if (def === undefined) break;
       const maliyet = def.tiers[0].cost;
       kuleler.push({ spotIndex, towerId: def.id, tier: 0 });

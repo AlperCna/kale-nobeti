@@ -25,7 +25,8 @@ import type { TowerEffect } from '../types/tower';
 import type { ProjectileState } from '../types/projectile';
 import type { Poolable } from '../util/pool';
 import type { Pool } from '../util/pool';
-import { distSq, moveToward, pointToSegmentDistSq } from '../util/math';
+import { distSq, merkezdenOran, moveToward, pointToSegmentDistSq } from '../util/math';
+import { BALANCE } from '../data/balance';
 import { applyDamage, yavaslatmaSinerjisi } from './combat';
 import type { DamageResult } from './combat';
 
@@ -222,10 +223,16 @@ export class ProjectileSystem<E extends Targetable, T extends ProjectileState<E>
    */
   #patlat(m: T, enemies: readonly E[]): void {
     const yaricapKare = m.splashRadius * m.splashRadius;
+    const kenar = BALANCE.patlamaKenarOrani;
     for (const e of enemies) {
       if (!e.alive || e.def === null) continue;
-      if (distSq(e, m) > yaricapKare) continue;
-      this.#vur(e, m);
+      const d2 = distSq(e, m);
+      if (d2 > yaricapKare) continue;
+      // **Merkezden uzaklaştıkça azalıyor (S22).** Kural 9'un ikinci
+      // istisnası `util/math.merkezdenOran`'da yazılı: yarıçap kontrolü
+      // (yukarıda) karesel kalıyor, azalma **oranı** gerçek mesafeden.
+      const oran = kenar + (1 - kenar) * merkezdenOran(d2, m.splashRadius);
+      this.#vur(e, m, m.damage * oran);
     }
   }
 

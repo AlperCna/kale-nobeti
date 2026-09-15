@@ -103,6 +103,19 @@ export const BALANCE = {
    * Sayı ölçülerek seçildi — kayıt `OPEN-QUESTIONS.md` S88.
    */
   yavaslatmaFizikselBonus: 1.25,
+  /**
+   * **Patlamanın kenarındaki hasar oranı** — merkez her zaman %100.
+   *
+   * `S22` (`M11` Faz 4): patlama bugüne kadar yarıçapın içindeki
+   * **herkese tam** hasar veriyordu ve doküman bunu hiç tanımlamamıştı.
+   * Ölçüm sonucunu gösterdi: Top ailesi, gerçek haritalarda ve gerçek
+   * dalgalarda diğer iki ailenin **hepsini** yeniyordu (ayrıntı
+   * `OPEN-QUESTIONS` S95). Alan hasarının bedeli yoktu.
+   *
+   * Sayı burada; uygulanışı `ProjectileSystem.#patlat`:
+   * `oran = kenar + (1 - kenar) × (1 - mesafe / yarıçap)`.
+   */
+  patlamaKenarOrani: 0.35,
   /** §6 — dalga bitiş bonusu. */
   waveEndBonus: (n: number): number => 30 + n * 5,
   /** §6 — hazırlık sayacı. Birim: saniye. */

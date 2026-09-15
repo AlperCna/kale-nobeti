@@ -144,7 +144,7 @@ describe('Harita 2 ve 3 — GAME-DESIGN.md §9 tablosu', () => {
     expect(MAP_2.paths).toHaveLength(2); // Y ayrımı
     // S87 — zorluk rampası ölçülerek yeniden türetildi; gerekçe ve
     // tarama `data/maps.ts`'in harita 2 üstündeki S87 notunda.
-    expect(MAP_2.hpMultiplier).toBe(1.3);
+    expect(MAP_2.hpMultiplier).toBe(1.5);
     expect(MAP_2.goldMultiplier).toBe(1.6);
     // S72 — §9 tablosu 340/400 diyor ama altın çarpanını izlemiyordu.
     // §9'un kendi gerekçesi ("altın/HP oranı düşmesin") başlangıç altınına
@@ -157,7 +157,7 @@ describe('Harita 2 ve 3 — GAME-DESIGN.md §9 tablosu', () => {
     expect(MAP_3.paths).toHaveLength(2); // iki giriş
     // S82 geri alındı (S86) → S87 ile 3,0 → S91 ile 2,6 (M11-T02 dal
     // dengesi rampayı yeniden türettirdi).
-    expect(MAP_3.hpMultiplier).toBe(2.4);
+    expect(MAP_3.hpMultiplier).toBe(2.6);
     expect(MAP_3.goldMultiplier).toBe(3.8); // S73 — HP çarpanından ayrıştı
     expect(MAP_3.startGold).toBe(1064); // 280 × 3,8
   });

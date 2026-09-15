@@ -94,8 +94,26 @@ describe('Borç 1 — tahta hedefleme modu taşıyor', () => {
    * Nişancı" (T3 patlayıcı vuruş) tavsiyesi doğru ve **zorunlu**;
    * (2) `last` artık **kötü** seçim, çünkü odağı dağıtmak iyileştirme
    * hızının altına düşüyor — odaklanmak (`first`) gerekiyor.
+   *
+   * ## `M11` Faz 5 (S95) — yeniden ölçüldü
+   *
+   * Okçu ailesi güçlenince (ölü aileydi) tablo değişti:
+   *
+   * | Tahta | `first` | `last` | `strongest` |
+   * |---|---|---|---|
+   * | 4 kule T2 | 1 ölü / 5 sızdı | 1 / 5 | 1 / 5 |
+   * | 8 kule T2 | 2 ölü / 4 sızdı | 2 / 4 | 2 / 4 |
+   * | 6 kule **T3a** | **6 ölü / 0** | 6 / 0 | 6 / 0 |
+   * | 6 kule **T3b** | 3 ölü / 3 | 2 / 4 | 3 / 3 |
+   *
+   * Bulguların **ikisi de ayakta, biri yer değiştirdi**: T2 hâlâ
+   * yetmiyor (sekiz kule altı şamanın dördünü kaçırıyor), T3 hâlâ
+   * zorunlu. Ama artık Keskin Nişancı altısını **hangi modda olursa
+   * olsun** öldürüyor — mod kararı yanma dalına (Kundakçı) taşındı,
+   * çünkü yanma iyileştirmeyle yarışan sürekli hasar ve odağı
+   * dağıtınca yarışı kaybediyor.
    */
-  const samanTahtasi = (n: number, tier: 1 | 2, mod: TargetMode): ReferenceBoard => ({
+  const samanTahtasi = (n: number, tier: 1 | 2 | 3, mod: TargetMode): ReferenceBoard => ({
     waveIndex: 10,
     cumulativeCost: 0,
     towers: KAPSAMA_SIRALI.slice(0, n).map((spotIndex) => ({
@@ -106,20 +124,29 @@ describe('Borç 1 — tahta hedefleme modu taşıyor', () => {
     })),
   });
 
-  it('karşılıklı iyileştirme T2 okçuyu YENİYOR — sekiz kule bile öldüremiyor', () => {
+  it('karşılıklı iyileştirme T2 okçuyu YENİYOR — sekiz kule altının 4’ünü kaçırıyor', () => {
     for (const mod of ['first', 'last', 'closest'] as const) {
       const r = simulateWave(dalga('saman', 6, 0.6), samanTahtasi(8, 1, mod), MAP_1);
-      expect(r.killedCount, mod).toBe(0);
+      // S95'ten önce **sıfır** öldürüyordu; Okçu güçlenince 2'ye çıktı
+      // ama iddia aynı: T2 bu senaryoyu çözmüyor, T3 gerekiyor.
+      expect(r.leakedCount, mod).toBeGreaterThanOrEqual(4);
     }
   });
 
-  it('T3’te hedefleme modu senaryoyu BELİRLİYOR — odaklanmak şart', () => {
-    const odak = simulateWave(dalga('saman', 6, 0.6), samanTahtasi(6, 2, 'first'), MAP_1);
-    const dagit = simulateWave(dalga('saman', 6, 0.6), samanTahtasi(6, 2, 'last'), MAP_1);
-    expect(odak.killedCount).toBe(6);
-    expect(odak.leakedCount).toBe(0);
+  it('Keskin Nişancı (T3a) şamanı çözüyor — mod fark etmiyor (S95)', () => {
+    for (const mod of ['first', 'last', 'strongest'] as const) {
+      const r = simulateWave(dalga('saman', 6, 0.6), samanTahtasi(6, 2, mod), MAP_1);
+      expect(r.killedCount, mod).toBe(6);
+      expect(r.leakedCount, mod).toBe(0);
+    }
+  });
+
+  it('Kundakçı (T3b) dalında odaklanmak ŞART — `last` kaybediyor', () => {
     // §5'in "`last` ile arkadan seç" tavsiyesi iyileştirme modellenince
-    // TERSİNE döndü: odağı dağıtmak iyileştirme hızının altına düşüyor.
+    // TERSİNE döndü (S83) ve S95'ten sonra karar yanma dalına taşındı:
+    // yanma sürekli hasar, odağı dağıtınca iyileştirme hızını geçemiyor.
+    const odak = simulateWave(dalga('saman', 6, 0.6), samanTahtasi(6, 3, 'first'), MAP_1);
+    const dagit = simulateWave(dalga('saman', 6, 0.6), samanTahtasi(6, 3, 'last'), MAP_1);
     expect(dagit.killedCount).toBeLessThan(odak.killedCount);
   });
 });

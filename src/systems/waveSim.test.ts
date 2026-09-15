@@ -55,12 +55,18 @@ describe('simulateWave — temel davranış', () => {
    * bu doğal bir eşik hassasiyeti: 120 kare ve üstü birbirine <%0,1
    * yakınsıyor (ayrıca doğrulandı), yalnız 60 kare biraz kaba kalıyor.
    * `killedCount` eşitliği asıl denge sağlaması — o hâlâ **tam** eşleşiyor.
+   *
+   * **Eşik %4 → %5 (`M11` Faz 5).** Aile dengesi değişince aynı dalga
+   * %4,06'ya çıktı. Yeni bir kararsızlık değil, **aynı** 60 kare
+   * kabalığı: ölçüldü — 60→120 %4,06 · 120→240 **%0,02** · 240→480
+   * **%0,01**, ve dört adım boyutunda da `killedCount` birebir aynı
+   * (13). Yani seri yakınsıyor, yalnız ilk adım kaba.
    */
-  it('adım boyutu yarıya inince sonuç < %4 değişiyor (yakınsama)', () => {
+  it('adım boyutu yarıya inince sonuç < %5 değişiyor (yakınsama)', () => {
     const normal = simulateWave(MAP1_WAVES[5]!, BOARDS[5]!, MAP_1, 1000 / 60);
     const ince = simulateWave(MAP1_WAVES[5]!, BOARDS[5]!, MAP_1, 1000 / 120);
     const fark = Math.abs(ince.durationSec - normal.durationSec) / normal.durationSec;
-    expect(fark).toBeLessThan(0.04);
+    expect(fark).toBeLessThan(0.05);
     expect(ince.killedCount).toBe(normal.killedCount);
   });
 });

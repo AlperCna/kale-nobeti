@@ -14,10 +14,10 @@ describe('applyDamage — fiziksel', () => {
     expect(applyDamage(6, 'physical', CIPLAK)).toEqual({ dealt: 6, floored: false });
   });
 
-  it('Okçu T1 (6) vs Ork Savaşçı (zırh 2) → 4', () => {
+  it('Okçu T1 (8) vs Ork Savaşçı (zırh 2) → 6 (S95)', () => {
     // Zırh kavramını tanıtan senaryo (§5). Gerçek veriyle, kurguyla değil.
     const r = applyDamage(OKCU.tiers[0].damage, OKCU.damageType, ORK_SAVASCI);
-    expect(r).toEqual({ dealt: 4, floored: false });
+    expect(r).toEqual({ dealt: 6, floored: false });
   });
 
   it('Top T1 (22) vs Goblin (zırh 0) → 22', () => {
@@ -25,11 +25,14 @@ describe('applyDamage — fiziksel', () => {
     expect(r).toEqual({ dealt: 22, floored: false });
   });
 
-  it('Okçu T2 (10) vs boss zırh 10 → 1.5, tabana düştü', () => {
-    // §3'ün "okçu boss'a tekrar tekrar 1 yazıyor" örneği.
+  it('Okçu T2 (14) vs boss zırh 10 → 4, taban DEĞİL (S95)', () => {
+    // §3'ün "okçu boss'a tekrar tekrar 1 yazıyor" örneğiydi. `M11` Faz 5
+    // Okçu'yu güçlendirince (ölü aileydi) 14 - 10 = 4 artık **tabanın
+    // üstünde** (taban %15 → 2,1). Yani örnek hâlâ doğru — okçu boss'a
+    // hasarının %71'ini kaybediyor — ama artık zemine yapışmıyor.
     const r = applyDamage(OKCU.tiers[1].damage, 'physical', BOSS);
-    expect(r.dealt).toBeCloseTo(1.5, 10);
-    expect(r.floored).toBe(true);
+    expect(r.dealt).toBeCloseTo(4, 10);
+    expect(r.floored).toBe(false);
   });
 
   it('zırh hasardan büyük → dmg × 0.15, floored', () => {

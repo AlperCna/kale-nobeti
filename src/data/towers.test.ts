@@ -22,20 +22,20 @@ import { COVERAGE_REFERENCE_RANGE, MAP_1 } from './maps';
  */
 
 describe('towers.ts — GAME-DESIGN §4.1 Okçu tablosu', () => {
-  it('T1: 70 / 6 / 1.1 / 150', () => {
+  it('T1: 70 / 8 / 1.1 / 150 (S95)', () => {
     expect(OKCU.tiers[0]).toEqual({
       cost: 70,
-      damage: 6,
+      damage: 8,
       fireRate: 1.1,
       range: 150,
       airMultiplier: 1,
     });
   });
 
-  it('T2: 110 / 10 / 1.3 / 165', () => {
+  it('T2: 110 / 14 / 1.3 / 165 (S95)', () => {
     expect(OKCU.tiers[1]).toEqual({
       cost: 110,
-      damage: 10,
+      damage: 14,
       fireRate: 1.3,
       range: 165,
       airMultiplier: 1,
@@ -102,8 +102,9 @@ describe('towers.ts — GAME-DESIGN §4.2 Top tablosu', () => {
 });
 
 describe('towers.ts — DPS türevleri', () => {
-  it('Okçu T1 DPS = 6.6, Top T1 DPS = 11', () => {
-    expect(OKCU.tiers[0].damage * OKCU.tiers[0].fireRate).toBeCloseTo(6.6, 10);
+  it('Okçu T1 DPS = 8.8, Top T1 DPS = 11 (S95)', () => {
+    // `M11` Faz 5: Okçu 6,6 → 8,8. Ölü aileydi; gerekçe `towers.ts`.
+    expect(OKCU.tiers[0].damage * OKCU.tiers[0].fireRate).toBeCloseTo(8.8, 10);
     expect(TOP.tiers[0].damage * TOP.tiers[0].fireRate).toBeCloseTo(11, 10);
   });
 
@@ -183,16 +184,16 @@ describe('towers.ts — T3 dalları (12 kademe)', () => {
     }
   });
 
-  it('Keskin Nişancı: 170 / 26 / 0.6 / 260, efekt yok', () => {
+  it('Keskin Nişancı: 170 / 34 / 0.6 / 260, efekt yok (S95)', () => {
     const k = OKCU.branches[0];
-    expect([k.cost, k.damage, k.fireRate, k.range]).toEqual([170, 26, 0.6, 260]);
+    expect([k.cost, k.damage, k.fireRate, k.range]).toEqual([170, 34, 0.6, 260]);
     expect(k.effect).toBeUndefined();
   });
 
-  it('Kundakçı: 170 / 9 / 1.4 / 195, yanma 7/sn 4 sn (M11-T02)', () => {
+  it('Kundakçı: 170 / 9 / 1.4 / 195, yanma 11/sn 4 sn (S95)', () => {
     const k = OKCU.branches[1];
     expect([k.cost, k.damage, k.fireRate, k.range]).toEqual([170, 9, 1.4, 195]);
-    expect(k.effect).toEqual({ kind: 'burn', dps: 7, seconds: 4 });
+    expect(k.effect).toEqual({ kind: 'burn', dps: 11, seconds: 4 });
   });
 
   it('Havan: 240 / 48 / 0.45 / 230, yarıçap 55, uçana %50 (M11-T02)', () => {

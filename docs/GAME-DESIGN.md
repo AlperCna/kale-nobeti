@@ -150,10 +150,20 @@ Fiziksel hasar. Uçanlara vurabilir. Zırha karşı zayıf.
 
 | Tier | Maliyet | Hasar | Atış/sn | Menzil |
 |---|---|---|---|---|
-| 1 | 70 | 6 | 1.1 | 150 |
-| 2 | 110 | 10 | 1.3 | 165 |
-| 3a Keskin Nişancı | 170 | 26 | 0.6 | 260 |
-| 3b Kundakçı | 170 | 9 + **7**/sn yanma (4 sn) | 1.4 | **195** |
+| 1 | 70 | **8** | 1.1 | 150 |
+| 2 | 110 | **14** | 1.3 | 165 |
+| 3a Keskin Nişancı | 170 | **34** | 0.6 | 260 |
+| 3b Kundakçı | 170 | 9 + **11**/sn yanma (4 sn) | 1.4 | **195** |
+
+**`M11` Faz 5 (S95): Okçu ÖLÜ AİLEYDİ.** Maliyet dahil ölçüldü — tahta
+her aile için yeniden türetilip ucuz aileye hak ettiği fazladan kule
+verildi. Okçu yine de dört haritada **14 / 23 / 28 / 33** can
+kaybettiriyordu (karışık tahta 4 / 7 / 13 / 15): oyuncunun Okçu kurması
+her zaman hataydı. Sebep yapısal — Okçu'nun **hiçbir çarpanı yok**
+(Top patlıyor, Büyü zırh yok sayıp zincirliyor), tek üstünlüğü menzil
+ve fiyat, ama bütün noktalar dolduğu için fiyat yalnız *erken*
+yükseltmeye dönüşüyor. Çözüm yeni bir mekanik değil **kademe çıktısını
+hizaya almak** oldu; ham DPS artık Okçu T2 18,2 · Büyü 18 · Top 18,7.
 
 **`M11` Faz 2 (S91):** Kundakçı yanması 4 → 7/sn, menzili 165 → 195.
 Öncesi hiçbir senaryoda kazanmıyordu: aynı menzilde, daha az vuruş
@@ -178,6 +188,15 @@ eksene indi: **menzil ↔ patlama yarıçapı.** Havan uzağı dar vuruyor
 kazandırıyor: Barut kalabalık ve hızlı sürülerde (kurt binicisi ×40:
 1260'a 2237), Havan zırhlı/uçan/tek sert hedefte (zırhlı ork ×30:
 1384'e 2272). Test: `systems/dalKimligi.test.ts`.
+
+**Patlamanın artık bir BEDELİ var (`M11` Faz 5, S22 kapandı).** Hasar
+merkezde %100, kenarda **%35**; arası doğrusal
+(`BALANCE.patlamaKenarOrani`, `ProjectileSystem.#patlat`). Buraya kadar
+yarıçapın içindeki **herkes tam** hasar alıyordu, yani alan hasarı
+bedava bir çarpandı ve ölçüm sonucunu gösterdi: yalnız Top kuran
+oyuncu, modelin "makul oyuncu" tahtasından her haritada iyiydi
+(13 → 7, 15 → 8). Azalma tek başına yetmedi — Okçu'nun düzeltmesiyle
+**birlikte** türetildi (S95).
 
 **Yavaşlatma Barut Fıçısı'ndan ALINDI** ve Buz'un tek kimliği oldu.
 Sebep yapısal: Kısıt A `DPS × kapsananYol / hız` ve yavaşlatma **hızı
@@ -598,13 +617,19 @@ düzeltildi:
   | Harita | HP çarpanı | Altın çarpanı | Zor | Kolay (×0,80) |
   |---|---|---|---|---|
   | 1 Değirmen Geçidi | 1,0 | 1,0 | 0 | 0 |
-  | 2 Taş Köprü | 1,3 | 1,6 | 4 | 0 |
-  | 3 Kül Ovası | **2,4** | 3,8 | 7 | 1 |
-  | 4 Kar Geçidi | **4,8** | 7,2 | 13 | 3 |
-  | 5 Kadim Harabe | **7,0** | 10,0 | 15 | 7 |
+  | 2 Taş Köprü | **1,5** | 1,6 | 4 | 1 |
+  | 3 Kül Ovası | **2,6** | 3,8 | 5 | 3 |
+  | 4 Kar Geçidi | **4,8** | 7,2 | 12 | 9 |
+  | 5 Kadim Harabe | **7,0** | 10,0 | 14 | 9 |
 
   Dört ölçüt: monoton · öğrenme yayı (2-3) Zor'da geçilebilir (< 12) ·
   harita 4-5 Zor'un tanımını karşılıyor (≥ 12) · Kolay'da hepsi ≤ 10.
+
+  **`M11` Faz 5 (S95): 2 ve 3 bir kez daha türetildi** — aile dengesi
+  düzeltilince (Okçu güçlendi, patlama bedel aldı) referans tahta
+  değişti ve rampa `0·2·4·12·14`'e düştü; harita 2-3 çarpanları
+  1,3 → **1,5** ve 2,4 → **2,6** ile geri getirildi. Boss HP'leri de
+  aynı kuralla yeniden türetildi (aşağıdaki tablo).
 
   **`M11` Faz 2 (S91): 3-4-5 yeniden türetildi.** Dal dengesi referans
   tahtayı zayıflattı (Buz'un hasarı 20 → 8; karşılığında yavaşlatma,
@@ -726,11 +751,15 @@ hiçbir tahta bunu indiremezdi (M7'de ölçüldü: Kısıt A oranı %165 ve %282
 
 | Harita | Zırh | Boss HP | Tavanın oranı |
 |---|---|---|---|
-| 1 Değirmen Geçidi | 10 | 700 | %92,0 |
-| 2 Taş Köprü | 5 | 712 | %80,0 |
-| 3 Kül Ovası | 2 | 886 | %80,0 |
-| 4 Kar Geçidi | 2 | 1709 | %80,0 |
-| 5 Kadim Harabe | 2 | 2189 | %80,0 |
+| 1 Değirmen Geçidi | 10 | 700 | %87,7 |
+| 2 Taş Köprü | 5 | 859 | %80,0 |
+| 3 Kül Ovası | 2 | 979 | %80,0 |
+| 4 Kar Geçidi | 2 | 1956 | %80,0 |
+| 5 Kadim Harabe | 2 | 2492 | %80,0 |
+
+**`M11` Faz 5 (S95): dördü de yeniden türetildi** (712/886/1709/2189 →
+859/979/1956/2492). Okçu ailesi güçlenince her haritanın tavanı
+yükseldi; kural aynı kaldı, sayıyı yine **test** söyledi.
 
 **`M11` Faz 2 (S91): 3-4-5 yeniden türetildi** (1023 / 1933 / 2675 →
 886 / 1709 / 2189). Dal dengesi referans tahtayı zayıflattı, üç tavan
@@ -784,7 +813,7 @@ geliyor ve ekran en kalabalık hâline ulaşıyordu. Kural sayıya değil
 |---|---|
 | Ham hasar + atış hızı | Temel |
 | **Hasar tipi rozeti** (fiziksel/büyü) | Zırh/direnç kararının tamamı buna bağlı |
-| **Seçili düşman tipine karşı etkin DPS** | Ham DPS yanıltıcı: okçu T2, boss'a 1.95 DPS |
+| **Seçili düşman tipine karşı etkin DPS** | Ham DPS yanıltıcı: okçu T2'nin ham DPS'i 18,2, boss'a (zırh 10) **5,2** |
 | Menzil dairesi + **kapsanan yol** | §4.5 |
 | Uçana vurur/vurmaz ikonu | §4.2 |
 | Yükseltme farkı (öncesi → sonrası) | Yükseltme kararı |

@@ -8,18 +8,25 @@
  * ölçüm oyunu olduğundan **zor** gösteriyordu, yani muhafazakârdı ve
  * denge sayılarını bozmadı. Varsayılanın `'yok'` kalması bunu koruyor.
  *
- * Ölçülen (referans tahta, Zor/Normal, can kaybı):
+ * Ölçülen (referans tahta, Zor/Normal, can kaybı — `M11` Faz 5'ten
+ * sonra yeniden):
  *
  * | Harita | yok | Meteor | Takviye | ikisi |
  * |---|---|---|---|---|
  * | Taş Köprü | 4 | 1 | 2 | 0 |
- * | Kül Ovası | 7 | 5 | 7 | 3 |
- * | Kar Geçidi | 13 | 8 | 11 | 5 |
- * | Kadim Harabe | 15 | 12 | **10** | 6 |
+ * | Kül Ovası | 5 | 5 | 5 | 5 |
+ * | Kar Geçidi | 12 | 8 | 11 | 6 |
+ * | Kadim Harabe | 14 | 11 | 13 | 10 |
  *
- * İkisi de can kurtarıyor ve **harita 5'te Takviye, Meteor'dan iyi** —
- * yani "Meteor'un gölgesinde" değil. Politika muhafazakâr (bekleme
- * dolar dolmaz en iyi hedefe), yani bunlar **alt sınır**.
+ * İkisi de can kurtarıyor ve **ikisi birden her zaman tek başına
+ * kullanmaktan iyi** — yani Takviye, Meteor varken bile katkı
+ * ekliyor. Ama Faz 5'in aile dengesi düzeltmesinden sonra Takviye
+ * **hiçbir haritada Meteor'u geçmiyor** (Faz 4 ölçümünde harita 5'te
+ * geçiyordu; Okçu güçlenince kuleler o boşluğu kapattı). Kayıt:
+ * `OPEN-QUESTIONS` S96.
+ *
+ * Politika muhafazakâr (bekleme dolar dolmaz en iyi hedefe), yani
+ * bunlar **alt sınır**.
  *
  * TIER 1 kural 11: Phaser'a dokunmaz.
  */
@@ -57,14 +64,17 @@ describe('Yeteneklerin katkısı — M11 Faz 4', () => {
     expect(canKaybi(MAP_5, 'takviye')).toBeLessThan(canKaybi(MAP_5, 'yok'));
   });
 
-  it('harita 5’te Takviye Meteor’dan İYİ — iki yetenek farklı işe yarıyor', () => {
-    expect(canKaybi(MAP_5, 'takviye')).toBeLessThan(canKaybi(MAP_5, 'meteor'));
+  it('**Takviye, Meteor varken bile katkı ekliyor** — asıl meşruiyet sınavı', () => {
+    // İki yetenek ayrı beklemelerde, yani oyuncu birini seçmiyor —
+    // ikisini de basıyor. Soru "hangisi daha iyi" değil, "ikincisi
+    // birincinin üstüne bir şey koyuyor mu".
+    expect(canKaybi(MAP_5, 'ikisi')).toBeLessThan(canKaybi(MAP_5, 'meteor'));
   });
 
   it('ikisi birden en iyisi — yetenekler birbirini yemiyor', () => {
-    const ikisi = canKaybi(MAP_5, 'ikisi');
-    expect(ikisi).toBeLessThan(canKaybi(MAP_5, 'meteor'));
-    expect(ikisi).toBeLessThan(canKaybi(MAP_5, 'takviye'));
+    const ikisi = canKaybi(MAP_4, 'ikisi');
+    expect(ikisi).toBeLessThan(canKaybi(MAP_4, 'meteor'));
+    expect(ikisi).toBeLessThan(canKaybi(MAP_4, 'takviye'));
   });
 
   it('**varsayılan `yok`** — mevcut denge ölçümleri değişmedi', () => {
