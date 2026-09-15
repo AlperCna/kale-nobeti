@@ -153,6 +153,8 @@ export type EnemyAbility =
   | { readonly kind: 'regen'; readonly hps: number }
   /** Örümcek Ana: ölünce 3× yavru. §5 */
   | { readonly kind: 'split'; readonly count: number; readonly childId: EnemyId }
+  // M10-T03 — harita 5: can eşiğinin altında hızlanma (boss ikinci evresi)
+  | { readonly kind: 'enrage'; readonly hpRatio: number; readonly speedMultiplier: number }
   /** Ogre Şef: kışla askerlerini tek vuruşta öldürür. §5, §4.4 kural 9 */
   | { readonly kind: 'oneShotSoldiers' };
 
@@ -175,6 +177,8 @@ export interface EnemyDef {
   /** Uçar mı — yolu takip etmez, engellenemez. §5 */
   readonly flying: boolean;
   readonly ability?: EnemyAbility;
+  /** M10-T03 — buz kalkanı: cana inmeden emilen TOPLAM hasar. Yalnız harita 4. */
+  readonly shield?: number;
 }
 ```
 

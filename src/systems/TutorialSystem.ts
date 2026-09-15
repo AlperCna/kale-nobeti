@@ -32,9 +32,15 @@ import type { EventBus } from './EventBus';
  * (kesikli yaylar) ne ifade ediyor net değil". Y09'un öngördüğü gibi her
  * biri bir anahtar + bir tetik.
  */
-export type HintId = 'earlyStart' | 'dragRally' | 'targetModes' | 'flyers';
+export type HintId = 'earlyStart' | 'dragRally' | 'targetModes' | 'flyers' | 'shield';
 
-const HINT_IDS: readonly HintId[] = ['earlyStart', 'dragRally', 'targetModes', 'flyers'];
+const HINT_IDS: readonly HintId[] = [
+  'earlyStart',
+  'dragRally',
+  'targetModes',
+  'flyers',
+  'shield',
+];
 
 function gecerliHint(deger: unknown): deger is HintId {
   return typeof deger === 'string' && (HINT_IDS as readonly string[]).includes(deger);
@@ -60,6 +66,16 @@ export class TutorialSystem {
     bus.on('barracks:placed', () => this.#tetikle('dragRally'));
     bus.on('targeting:opened', () => this.#tetikle('targetModes'));
     bus.on('wave:flyers', () => this.#tetikle('flyers'));
+    /**
+     * `M10` — buz kalkanı (harita 4). `wave:flyers` ile **birebir aynı
+     * desen**: sahne koşulu görüp olayı yayıyor, burası "ilk kez mi"
+     * kararını veriyor.
+     *
+     * Kalkan `Y09`'un ölçütünü karşılıyor: sonucu değiştiriyor (erimeden
+     * cana hiç hasar geçmiyor) ve **kendiliğinden keşfedilemiyor** —
+     * oyuncu yalnız "bu ork neden ölmüyor" diye düşünür.
+     */
+    bus.on('enemy:shielded', () => this.#tetikle('shield'));
   }
 
   /** `GameScene.create()`'in sonunda **bir kez** — ilk hazırlık aşaması için. */

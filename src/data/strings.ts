@@ -160,6 +160,9 @@ const TR = {
   howTo5: 'Meteor ve Takviye bekleme süreli; dalga arasında değil, kalabalıkta kullan.',
   howTo6: 'Hazırlık sayacını erken bitirmek altın kazandırır.',
   howTo7: 'ESC ya da boşluk duraklatır.',
+  /** `M10` — sinerji oyuncuya başka hiçbir yerde görünmüyor. */
+  howTo8: 'Yavaşlatılmış düşman fiziksel hasardan daha çok etkilenir: Barut Fıçısı ya da Buz, Okçu-Top ile birlikte çalışır.',
+  howTo9: 'Mavi halka buz kalkanı; erimeden cana hasar geçmez. Boss canı yarıya inince hızlanır.',
   lockedHint: 'Önce önceki haritayı bitir',
   endlessBestShort: 'Sonsuz',
   settingsTitle: 'Ayarlar',
@@ -305,6 +308,7 @@ const TR = {
   hintTargetModes:
     'Hedefleme — İlk: yolda en öndeki · Son: en gerideki · Güçlü: en dayanıklı tür (azami can) · Zayıf: en yaralı (anlık can) · Yakın: kuleye en yakın',
   hintFlyers: 'Kesikli hat uçanların rotası — yolu izlemezler. Yalnız Okçu ve Büyü onlara tam hasar verir.',
+  hintShield: 'Mavi halka buz kalkanı — erimeden cana hasar geçmiyor. Ağır vuruş kalkanı daha çabuk kırar.',
 } as const;
 
 export type StringKey = keyof typeof TR;
@@ -415,6 +419,8 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     howTo5: 'Meteor and Reinforcements are on cooldown; save them for a crowd.',
     howTo6: 'Starting a wave early earns gold.',
     howTo7: 'ESC or space pauses.',
+    howTo8: 'Slowed enemies take more physical damage: Powder Keg or Frost pairs with Archer and Cannon.',
+    howTo9: 'A blue ring is a frost shield; nothing reaches health until it breaks. The boss speeds up at half health.',
     lockedHint: 'Finish the previous map first',
     endlessBestShort: 'Endless',
     settingsTitle: 'Settings',
@@ -487,5 +493,6 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     hintTargetModes:
       'Targeting — First: furthest along the path · Last: furthest back · Strong: toughest type (max HP) · Weak: most wounded (current HP) · Near: closest to the tower',
     hintFlyers: 'The dashed line is the flyers’ route — they ignore the path. Only Archer and Magic deal full damage to them.',
+    hintShield: 'The blue ring is a frost shield — no damage reaches health until it breaks. Heavy hits break it faster.',
   },
 };

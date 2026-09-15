@@ -340,6 +340,47 @@ gelmeden `docs/plan/` kuralının ihlali olur.
 
 ---
 
+## M10 — İlk oturum ve devamlılık (plan: [`plan/M10-ilk-oturum-ve-devamlilik.md`](plan/M10-ilk-oturum-ve-devamlilik.md))
+
+**Bu da Faz 6 değil.** Matris "hangi içeriği ekleyelim" sorusuna cevap
+veriyor; M10 "eldeki beş harita oyuncuya **hiç ulaşıyor mu**" sorusuna
+baktı. Cevabı portalların kendi yayımladığı sayılarda, yani verisiz
+cevaplanabiliyordu.
+
+Tetikleyen bulgu: Poki'nin 2026 raporu web oyuncusunun oturumda
+**11–20 dakika** kaldığını ve o sürede **2–3 oyun** denediğini söylüyor.
+Bizim bir haritamız ~13 dakika ve tur ortası kayıt **yoktu**.
+
+| Faz | Ne | Durum |
+|---|---|---|
+| 1 | İlk oturumda menü + seviye seçimi atlanıyor | ✅ |
+| 2 | Tur ortası devamlılık — "Devam et" | ✅ |
+| 3a | Harita 4'e buz kalkanı | ✅ |
+| 3b | Harita 5'e boss ikinci evresi | ✅ |
+| 4 | Portre karesi | ✅ |
+| 5 | Kule sinerjisi | ✅ |
+
+### M10'un asıl bulduğu şey: simülasyon körlüğü
+
+Üç ayrı yerde **oyun ile denge simülasyonu farklı şey çalıştırıyordu**.
+Oyun hep doğruydu; yanlış olan ölçümdü.
+
+| # | Ne görülmüyordu | Etkisi |
+|---|---|---|
+| **S80** | Haritaya duyarlı boss | Harita 5'te oyuncu 4760 HP/zırh 10 boss'la dövüşüyordu, ölçüm 2675/2 sanıyordu |
+| **S81** | Düşman yetenekleri (iyileştirme, yenilenme, bölünme) | Her ölçüm sistematik iyimserdi |
+| **S86** | Süreli kule etkileri (yanma, yavaşlatma) | Kundakçı'nın vuruş başına 16 ek hasarı hiç sayılmıyordu |
+
+Üçü kapanınca ölçülen zorluk rampasının **monoton olmadığı** ortaya
+çıktı ve **S87** dört haritanın çarpanını ölçerek yeniden türetti:
+`0 · 4 · 7 · 13 · 17`.
+
+**Ders (S82/S84'e mal oldu):** ölçüm aracı düzeltilirken bütün körlükler
+kapanmadan sayı türetme — iki denge sayısı yarım simülasyonda türetilip
+üçüncü körlük kapanınca geri alındı.
+
+---
+
 ## Claude Code komut şablonu
 
 Her taşın başında:

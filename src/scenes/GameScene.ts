@@ -172,6 +172,7 @@ const HINT_TEXT_KEY: Readonly<Record<HintId, StringKey>> = {
   dragRally: 'hintDragRally',
   targetModes: 'hintTargetModes',
   flyers: 'hintFlyers',
+  shield: 'hintShield',
 };
 
 /**
@@ -1207,8 +1208,10 @@ export class GameScene extends Phaser.Scene {
     const g = this.#kalkanGfx;
     if (g === undefined) return;
     g.clear();
+    let kalkanliVar = false;
     for (const e of dusmanlar) {
       if (!e.alive || e.shieldLeft <= 0) continue;
+      kalkanliVar = true;
       const tam = e.def?.shield ?? 0;
       if (tam <= 0) continue;
       const oran = Math.min(1, e.shieldLeft / tam);
@@ -1218,6 +1221,12 @@ export class GameScene extends Phaser.Scene {
       g.arc(e.x, e.y, KALKAN_YARICAP, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * oran, false);
       g.strokePath();
     }
+    // `M10` — öğretici ilk seferinde kalkanın ne olduğunu anlatıyor.
+    // `wave:flyers`'ın birebir deseni: olay **her karede** yayılıyor ama
+    // `TutorialSystem` "ilk kez mi" kararını kendi veriyor ve ipucu bir
+    // kez görünüyor; burada ayrı bir bayrak tutmak kural 3'ün tuzağını
+    // açardı (havuza dönen sahne alanı).
+    if (kalkanliVar) this.bus.emit('enemy:shielded', {});
   }
 
   /** Yanma hasarı ve yavaşlatma çarpanı — `effects.ts` saf tarafı. */

@@ -378,6 +378,48 @@ Gizli sekmede `localStorage` erişimi istisna fırlatıyor. Sarılmazsa oyun
 
 ---
 
+### R17 · Simülasyon körlüğü — **oyun ile denge testi farklı şey çalıştırıyor**
+
+**Olasılık** Yüksek (üç kez gerçekleşti) · **Etki** Yüksek · **Kaynak** M10
+
+Bu projenin denge otoritesi `waveSim`. Ama `waveSim` oyunun **kopyası
+değil, ikinci bir uygulaması**: kendi düşman sınıfı (`SimEnemy`), kendi
+kurulum kodu. Bir mekanik oyuna eklenip simülasyona bağlanmazsa, denge
+testleri **var olmayan bir oyunu** ölçer ve **yeşil kalır**.
+
+M10'da üç kez birden ortaya çıktı:
+
+| # | Simülasyonun görmediği | Sonuç |
+|---|---|---|
+| **S80** | Haritaya duyarlı boss (`getEnemyForMap` yerine `getEnemy`) | Oyuncu harita 5'te 4760 HP/zırh 10 boss'la dövüşüyordu, ölçüm 2675/2 sanıyordu |
+| **S81** | Düşman yetenekleri (`EnemyAbilitySystem` hiç koşmuyordu) | İyileştirme, yenilenme, bölünme yok sayılıyordu |
+| **S86** | Süreli kule etkileri (`onEffect` geri çağrısı verilmiyordu) | Yanma ve yavaşlatma hiç uygulanmıyordu |
+
+Üçü kapanınca zorluk rampasının **hiç** monoton olmadığı görüldü (S87)
+ve dört haritanın çarpanı yeniden türetildi.
+
+**Erken uyarı yok — belirtisi "testler yeşil".** Tek görünür iz, oyunu
+oynayan birinin "bu boss çok sert" demesi olurdu.
+
+**Azaltma (M10'da uygulandı):**
+
+- Yeni bir mekanik eklerken **paylaşılan saf fonksiyon** yaz, iki yere
+  ayrı ayrı değil (`combat.kalkandanGecir`, `combat.yavaslatmaSinerjisi`).
+- Mekaniğin ihtiyaç duyduğu alanı **arayüze** koy, çağırana bırakma:
+  `Targetable.effects` böyle eklendi ve derleyici bütün uygulayıcıları
+  tek tek gösterdi. Kalkan da `EnemyState.shieldLeft` ile aynı yoldan
+  yakalandı.
+- Yeni bir sistem `GameScene.update`'e girdiyse, `waveSim`'in döngüsüne
+  de **aynı sırada** girmeli.
+
+**Ders (S82/S84'e mal oldu):** ölçüm aracı düzeltilirken **bütün**
+körlükler kapanmadan sayı türetme. Yarım düzeltilmiş simülasyonda iki
+denge sayısı türetildi ve üçüncü körlük kapanınca ikisi de geri alındı.
+
+**Taş:** M10.
+
+---
+
 ## Taş başına risk özeti
 
 | Taş | Azaltılması gereken riskler |
@@ -391,6 +433,7 @@ Gizli sekmede `localStorage` erişimi istisna fırlatıyor. Sarılmazsa oyun
 | **M6** | **R2 (sanat kararı)**, R7 (WebP), R13 (ölçüm), R14, R16 |
 | **M7** | R1 (yeniden hesap), R9 (türetme), R8 (yayın sırası), R15, R16, R13 |
 | **M9** | R8'in **mekanik yarısı** (SDK sözleşmesi) — öznel yarısı Faz 5'e kadar açık |
+| **M10** | **R17** (simülasyon körlüğü — üç kez gerçekleşti, azaltması uygulandı) |
 
 **En yüklü taşlar M6 ve M7.** İkisi de ROADMAP'te en uzun süreli taşlar
 (5-7 gün) — tesadüf değil.

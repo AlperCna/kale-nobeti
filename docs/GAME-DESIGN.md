@@ -289,7 +289,8 @@ kapandı.
 
 > **Sınır:** yukarıdaki oranlar **Harita 1 geometrisiyle** hesaplandı.
 > Trol, Şaman, Zırhlı Ork ve Örümcek Ana harita 2-3'te sahneye çıkıyor;
-> oradaki HP çarpanı (1,6 ve 2,6) ve yapı noktası sayısı (10 ve 12) farklı.
+> oradaki HP çarpanı (**1,3 ve 3,0** — S87'de yeniden türetildi) ve yapı
+> noktası sayısı (10 ve 12) farklı.
 > Gerçek sağlamaları o haritaların geometrisi çizilince (M7) yapılacak.
 > Buradaki hesap alt sınır sağlaması: harita 1'de bile rahat geçiliyorlar.
 > Sağlamalar `src/data/referenceBoards.test.ts` içinde koşuyor.
@@ -355,11 +356,18 @@ menzilinden geçmeli (8 noktalı haritada ≥ 3). `util/coverage.ts` ile ölçü
 |---|---|
 | Kalabalık goblin | Top |
 | Zırhlı Ork | Büyü |
-| Şaman | Keskin Nişancı (`last` ile arkadan seç) veya Yıldırım |
+| Şaman | Keskin Nişancı — **`first` ile ODAKLAN**, `last` değil (S83) |
 | Harpi sürüsü | Okçu + Büyü + Barut Fıçısı (Havan işe yaramaz) |
 | Trol | Kışla ile tut + yoğun tek hedef |
 | Kurt Binicisi | Buz / Barut Fıçısı yavaşlatma |
 | Ogre Şef | Büyü + Top, `strongest` hedefleme, Meteor |
+| **Buz kalkanı** (harita 4 Ork Savaşçı) | Patlama/ağır vuruş — kalkan **toplam** bir havuz, erimeden cana hasar geçmiyor |
+| **Ogre Şef 2. evre** (harita 5, can %50) | Hız ×1,6 — kaleye varmadan bitirmek gerekiyor |
+
+**Kule sinerjisi (M10):** yavaşlatılmış düşman **fiziksel** hasardan
+×1,25 etkileniyor. Yani Barut Fıçısı / Buz ile Okçu-Top birlikte
+çalışıyor; Büyü'ye uygulanmıyor (§3: büyü zaten zırhı yok sayıyor,
+ikisini birden güçlendirmek seçimi yok ederdi).
 
 ## 6. Ekonomi
 
@@ -745,6 +753,10 @@ matrisi karar verecek.
 | **3× hız** | M9 — küratörlük cilası | `GameClock.setScale` dokümanı |
 | **Sonsuz mod** | M8-T06 | `systems/endlessWaves.ts`, `EndlessRecords.ts` |
 | **Başarımlar (12 adet)** | M8-T07 | `data/achievements.ts`, `AchievementToast` |
+| **Tur ortası kayıt** | M10 — "Devam et" | `systems/RunSave.ts` |
+| **Buz kalkanı** (harita 4) | M10 | `data/enemies.ts`, `combat.kalkandanGecir` |
+| **Boss ikinci evresi** (harita 5) | M10 | `EnemyAbilitySystem` `enrage` |
+| **Kule sinerjisi** | M10 | `combat.yavaslatmaSinerjisi` |
 
 Üçü de listede "yok" yazarken kodda vardı; bu tabloyu okuyan biri artık
 ikisi arasında kalmıyor. Hız satırının M0'da kurulmasının gerekçesi
