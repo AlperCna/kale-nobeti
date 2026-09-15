@@ -10,7 +10,7 @@ import { TOWERS, TARGET_MODES, tierAt } from '../data/towers';
 import { KISLA, barracksTierAt } from '../data/barracks';
 import { FRAME_CARTOUCHE } from '../data/spriteFrames';
 import { measureCoverage } from '../util/coverage';
-import { dalOzeti } from '../util/dalOzeti';
+import { dalOzeti, kislaOzeti } from '../util/dalOzeti';
 import { t } from '../util/i18n';
 import type { StringKey } from '../data/strings';
 import { createParchmentButton, createParchmentFrame } from './ParchmentFrame';
@@ -585,6 +585,26 @@ export class BuildMenu {
       this.#satButonu(kap, IKILI_OFSET, iade, () => this.#actions.sellBarracks(spotIndex));
     } else if (k.tier === 1) {
       const [a, b] = KISLA.branches;
+      // Kule dallarıyla aynı desen (S93): iki sabit özet satırı,
+      // butonların üstünde. Kışlanın alanları farklı — `kislaOzeti`.
+      [a, b].forEach((dal, i) => {
+        kap.add(
+          this.#scene.add
+            .text(
+              0,
+              i === 0 ? -104 : -58,
+              kislaOzeti(dalAdi(dal.branchNameKey, i === 0 ? '3a' : '3b'), dal),
+              {
+                fontFamily: 'Spectral, serif',
+                fontSize: '16px', // bekçi k.13 — Platform alt sınırı
+                color: '#8A7250',
+                align: 'center',
+                wordWrap: { width: DAL_BUTON_ARA * 3 },
+              },
+            )
+            .setOrigin(0.5),
+        );
+      });
       this.#menuButonu(
         kap,
         -DAL_BUTON_ARA,

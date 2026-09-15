@@ -13,6 +13,7 @@
  * TIER 1 kural 11: Phaser'a dokunmaz.
  */
 
+import type { BarracksTier } from '../types/barracks';
 import type { TowerEffect, TowerTier } from '../types/tower';
 import { t } from './i18n';
 
@@ -50,5 +51,29 @@ export function dalOzeti(ad: string, tier: TowerTier): string {
   }
   if (tier.airMultiplier === 0) parcalar.push(t('infoNoAir'));
   if (tier.effect !== undefined) parcalar.push(etkiMetni(tier.effect));
+  return parcalar.join(' · ');
+}
+
+/**
+ * Kışla dalının özeti — aynı iş, farklı alanlar.
+ *
+ * Kışla hasar vermiyor (`barracks.ts` başlığı): menzili, atış hızı,
+ * patlaması yok. Seçimi belirleyen sayılar **asker sayısı, can,
+ * diriliş** ve Haydutlar'ın kaçınması. `M11` Faz 3'ün ölçümü bunu
+ * doğruluyor: Paladin kesintisiz baskıda ve zırhlıda, Haydutlar
+ * sürüde ve dalgalıda kazanıyor — yani oyuncunun okuması gereken şey
+ * "iki kalın gövde mi, üç ince gövde mi".
+ */
+export function kislaOzeti(ad: string, tier: BarracksTier): string {
+  const parcalar: string[] = [
+    ad,
+    `${tier.soldierCount} ${t('sumSoldiers')}`,
+    `${tier.soldierHp} ${t('sumHp')}`,
+    `${tier.soldierDps} ${t('sumDps')}`,
+    `${tier.respawnSeconds} ${t('sumRespawn')}`,
+  ];
+  if (tier.evasion !== undefined && tier.evasion > 0) {
+    parcalar.push(`${t('sumEvasion')} %${Math.round(tier.evasion * 100)}`);
+  }
   return parcalar.join(' · ');
 }

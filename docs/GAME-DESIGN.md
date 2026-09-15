@@ -219,8 +219,18 @@ diğer kulelerin menzilinde tutar. Uçanlar engellenemez.
 |---|---|---|---|---|---|
 | 1 | 90 | 2 | 45 | 5 | 8 sn |
 | 2 | 140 | 2 | 75 | 8 | 7 sn |
-| 3a Paladin | 210 | 2 | 140 | 11 + kalkan | 6 sn |
+| 3a Paladin | 210 | 2 | 140 | 11 | 6 sn |
 | 3b Haydutlar | 210 | 3 | 70 | 9 + kaçınma %25 | 5 sn |
+
+**Paladin'in "kalkan"ı KALDIRILDI (`M11` Faz 3, S43).** Bu satır uzun
+süre `11 + kalkan` yazıyordu ve kalkanın sayısı hiç verilmemişti.
+Ölçüm sayıyı seçmek yerine mekaniği reddetti: iki dal **kalkansız da**
+altı senaryoda 4-2 bölüşüyor (Paladin kesintisiz baskı / zırhlı / hızlı,
+Haydutlar sürü / dalgalı), hiçbir kalkan değeri (0-100) kazananı
+değiştirmiyor, ve HP ile kalkanın toplamı sabit tutulduğunda bütün
+ölçümler **birebir aynı** çıkıyor — yani kalkan, candan farklı bir şey
+değil. Gerekçenin tamamı `src/data/barracks.ts` başlığında; kilit
+`systems/kislaDali.test.ts`.
 
 #### Engelleme kuralları
 

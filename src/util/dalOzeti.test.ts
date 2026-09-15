@@ -3,8 +3,9 @@
  * üretimin doğru alanları seçtiğini bağlıyor, cümleyi ezberlemiyor.
  */
 import { describe, expect, it } from 'vitest';
-import { dalOzeti, etkiMetni } from './dalOzeti';
+import { dalOzeti, etkiMetni, kislaOzeti } from './dalOzeti';
 import { BUYU, OKCU, TOP } from '../data/towers';
+import { KISLA } from '../data/barracks';
 
 describe('dalOzeti — T3 seçimi satın almadan önce okunabilir', () => {
   it('Top: iki dalın DPS’i aynı, fark menzil ve patlamada', () => {
@@ -36,6 +37,20 @@ describe('dalOzeti — T3 seçimi satın almadan önce okunabilir', () => {
     const kapali = { ...TOP.branches[0], airMultiplier: 0 as const };
     expect(dalOzeti('Havan', kapali)).toContain('Uçana vurmaz');
     expect(dalOzeti('Havan', TOP.branches[0])).not.toContain('Uçana vurmaz');
+  });
+
+  it('kışla dalları: iki kalın gövde ↔ üç ince gövde', () => {
+    const p = kislaOzeti('Paladin', KISLA.branches[0]);
+    const h = kislaOzeti('Haydutlar', KISLA.branches[1]);
+    expect(p).toContain('2 asker');
+    expect(p).toContain('140 can');
+    expect(h).toContain('3 asker');
+    expect(h).toContain('70 can');
+    // Kaçınma yalnız Haydutlar'da — Paladin'de satır hiç çıkmıyor.
+    expect(h).toContain('kaçınma %25');
+    expect(p).not.toContain('kaçınma');
+    // S43: Paladin'in kalkanı yok, özet de kalkandan söz etmiyor.
+    expect(p).not.toContain('kalkan');
   });
 
   it('etkiMetni üç etki türünü de yazıyor', () => {
