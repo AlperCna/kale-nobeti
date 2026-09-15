@@ -6,7 +6,7 @@
  * kadrosu" tablosunda.
  */
 
-import type { EnemyDef } from '../types/enemy';
+import type { EnemyAbility, EnemyDef } from '../types/enemy';
 import { bossFor } from './bossScaling';
 
 export const GOBLIN: EnemyDef = {
@@ -350,15 +350,63 @@ const KADIM_HARABE_EVRE2 = {
   speedMultiplier: 1.6,
 } as const;
 
+/**
+ * **Harita 6'nın finali: çağıran boss** — `M13`.
+ *
+ * Boss canının her çeyreğini kaybettiğinde iki Ork Savaşçı doğuruyor
+ * (%75, %50, %25 → toplam altı).
+ *
+ * ## Neden Ork Savaşçı, neden iki
+ *
+ * Ölçüm (harita 6, referans tahta, Zor can kaybı): düz boss **16** ·
+ * ork ×2 / %25 **18** · ork ×2 / %33 21 ✗ · zırhlı ork ×4 / %20 32 ✗.
+ * Goblin ×3 de denendi (15) ama harita 6 ölçeğinde goblin bir **tehdit
+ * değil**: Top ailesinin patlaması onları tek atışta siliyor, yani
+ * ekranda olay var ama kararda yok. Ork Savaşçı cevap istiyor.
+ *
+ * `hpStep` 0,25: can çubuğundan okunabilen üç nokta. 0,33 iki büyük
+ * dalga demek ve ölçümde 20 sınırını aşıyor.
+ *
+ * ## Ölçülen yan sonuç — hipotez ÇÜRÜDÜ
+ *
+ * Çağıran boss'un Takviye'ye (S96: her haritada Meteor'un gölgesinde)
+ * bir senaryo kazandıracağı düşünülmüştü: yandaşlar engellenecek
+ * gövdeler. Ölçüm tersini söyledi — düz bossta harita 6'da Takviye
+ * zaten Meteor'u yeniyor (9'a 11, Tünelci'yi engellemek işe yarıyor),
+ * **çağırma ise Meteor'u öne geçiriyor** (10'a 12), çünkü öbeklenen
+ * yandaş meteorun tam istediği hedef. Yani S96'yı bu verb çözmüyor;
+ * harita 6'nın kendisi zaten çözmüş.
+ */
+const SISLI_BATAKLIK_CAGIRMA = {
+  kind: 'summon',
+  childId: 'orkSavasci',
+  count: 2,
+  hpStep: 0.25,
+} as const;
+
+/**
+ * Haritaya özel boss yeteneği — **her harita bir şey öğretir**
+ * (`M10-T03` dersi, `M13`'te boss'a uygulandı).
+ *
+ * `if` zinciri yerine tablo: yedinci harita eklendiğinde bu dosyada
+ * yalnız bir satır değişiyor, `getEnemyForMap`'in gövdesi değil.
+ * Tabloda olmayan haritanın boss'u düz — bu da bir tasarım kararı:
+ * ilk dört harita boss'u **tanıtıyor**, son ikisi ona bir verb
+ * ekliyor.
+ */
+const BOSS_YETENEGI: Readonly<Record<string, EnemyAbility>> = {
+  'kadim-harabe': KADIM_HARABE_EVRE2,
+  'sisli-bataklik': SISLI_BATAKLIK_CAGIRMA,
+};
+
 export function getEnemyForMap(
   id: EnemyDef['id'],
   map: { id: string; hpMultiplier: number },
 ): EnemyDef | undefined {
   if (id === 'ogreSef') {
     const boss = bossFor(map);
-    // `M10-T03` — harita 5'in ikinci evresi. Gerekçe ve ölçüm
-    // `KADIM_HARABE_EVRE2`'de.
-    return map.id === 'kadim-harabe' ? { ...boss, ability: KADIM_HARABE_EVRE2 } : boss;
+    const yetenek = BOSS_YETENEGI[map.id];
+    return yetenek === undefined ? boss : { ...boss, ability: yetenek };
   }
   const temel = getEnemy(id);
   if (temel === undefined) return undefined;

@@ -35,6 +35,7 @@ class SahteDusman implements AbilityEnemy, Poolable {
   speedFactor = 1;
   progress = { segmentIndex: 0, tInSegment: 0, remainingDistance: 0 };
   pathFraction = 0;
+  summonsDone = 0;
   blockedBy: object | null = null;
   alive = false;
   shieldLeft = 0;
@@ -392,13 +393,36 @@ describe('enrage — can eşiğinin altında hızlanma', () => {
   });
 });
 
-/** Evre YALNIZ harita 5'te — diğer haritaların bossu değişmiyor. */
-describe('ikinci evre kapsamı', () => {
-  it('yalnız kadim-harabe bossunda enrage var', () => {
+/**
+ * **Boss verb'lerinin kapsamı** — `M13`.
+ *
+ * İlk dört harita boss'u **tanıtıyor** (düz), son ikisi ona bir verb
+ * ekliyor: harita 5 ikinci evre (`M10-T03`), harita 6 çağırma (`M13`).
+ * Tablo `enemies.BOSS_YETENEGI`; bu test onun kapsamını bağlıyor,
+ * yani bir verb yanlışlıkla bütün haritalara yayılırsa kırılır.
+ */
+describe('boss verb kapsamı', () => {
+  it('her haritanın boss yeteneği yazılı olanla aynı', () => {
+    const BEKLENEN: Readonly<Record<string, string | undefined>> = {
+      'degirmen-gecidi': undefined,
+      'tas-kopru': undefined,
+      'kul-ovasi': undefined,
+      'kar-gecidi': undefined,
+      'kadim-harabe': 'enrage',
+      'sisli-bataklik': 'summon',
+    };
     for (const m of MAPS) {
       const boss = getEnemyForMap('ogreSef', m)!;
-      const beklenen = m.id === 'kadim-harabe' ? 'enrage' : undefined;
-      expect(boss.ability?.kind, m.id).toBe(beklenen);
+      expect(boss.ability?.kind, m.id).toBe(BEKLENEN[m.id]);
+    }
+  });
+
+  it('çağıran boss yandaşı kadrodan — harita 6 Ork Savaşçı çağırıyor', () => {
+    const boss = getEnemyForMap('ogreSef', MAPS[5]!)!;
+    expect(boss.ability?.kind).toBe('summon');
+    if (boss.ability?.kind === 'summon') {
+      expect(boss.ability.childId).toBe('orkSavasci');
+      expect(MAPS[5]!.enemyRoster).toContain(boss.ability.childId);
     }
   });
 });

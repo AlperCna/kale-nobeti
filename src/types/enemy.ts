@@ -90,6 +90,31 @@ export type EnemyAbility =
    * **türetiliyor**, yani havuza dönen düşmanda sıfırlanacak bir bayrak
    * doğmuyor (TIER 1 kural 3).
    */
+  /**
+   * **Çağırma** — `M13`, boss'un ikinci verb'ü.
+   *
+   * Boss canının her `hpStep` oranını kaybettiğinde `count` tane
+   * `childId` doğuruyor. `hpStep = 0,25` → %75, %50 ve %25'te üç kez.
+   *
+   * ## Neden cana bağlı, zamana değil
+   *
+   * Zamanlayıcı iki tuzak açardı: `GameClock` ölçeklemesi (TIER 1 kural
+   * 8) ve havuza dönen düşmanda sıfırlanmayan sayaç (kural 3 — bu
+   * projede beş kez yaşanmış hata sınıfı). Cana bağlı eşik `enrage`'in
+   * deseni: durum **türetiliyor**, yalnız "kaç kez çağırdım" bilgisi
+   * tek bir tam sayıda (`EnemyState.summonsDone`) duruyor ve sıfırlama
+   * tek satır.
+   *
+   * Yan fayda: oyuncu boss'u her dilimlediğinde ekrana yandaş geliyor —
+   * olay **hasarın kendisine** bağlı, yani okunur.
+   */
+  | {
+      readonly kind: 'summon';
+      readonly childId: EnemyId;
+      readonly count: number;
+      /** Canının bu oranı her düştüğünde çağırıyor. */
+      readonly hpStep: number;
+    }
   | {
       readonly kind: 'burrow';
       /** Yolun bu oranından itibaren gömülü. `0` = doğumdan itibaren. */
@@ -164,6 +189,14 @@ export interface EnemyState {
    */
   speedFactor: number;
   progress: PathProgress;
+  /**
+   * Kaç kez yandaş çağırdı (`M13` — `summon`).
+   *
+   * `enrage`/`burrow` gibi tamamen türetilemiyor: "eşiği geçtim mi"
+   * bilgisi geçmişe bağlı. Tek tam sayı ve `resetEnemyState` onu `0`'a
+   * çekiyor — havuz sözleşmesi (TIER 1 kural 3) tek satırda.
+   */
+  summonsDone: number;
   /**
    * Yolun **kat edilen** oranı, 0..1. Doğumda `0`, kalede `1`.
    *

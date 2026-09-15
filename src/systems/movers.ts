@@ -126,4 +126,5 @@ export function resetEnemyState(e: EnemyState): void {
   e.shieldLeft = 0; // M10-T03 — TIER 1 kural 3: kalkan da sıfırlanmalı
   e.progress = { segmentIndex: 0, tInSegment: 0, remainingDistance: 0 };
   e.pathFraction = 0;
+  e.summonsDone = 0;
 }
