@@ -48,6 +48,23 @@ ToplamHasar(düşman) = Σ_kule ( DPS_kule × kapsananYol_kule ) / hız_düşman
 yola dağılsa da, her biri kendi kapsadığı parçada ateş eder ve toplam aynıdır.
 Yerleşim yalnızca *ne zaman* hasar verildiğini değiştirir, *ne kadar* değil.
 
+> **`M18` (S113) — bu bağımsızlık YAVAŞLATMA VARKEN geçerli değil.**
+>
+> Formülün paydası `hız`. Yavaşlatan bir kule o paydayı düşürüyor, yani
+> kendi hasarını değil **bütün tahtanın** hasarını çarpıyor — ve bunu
+> yalnız *kendinden sonraki* yolda yapıyor. Yavaşlatıcıyı girişe koymak
+> arkadaki her kuleyi besler, kaleye koymak kimseyi beslemez. Sıra
+> önemlidir, yani yerleşim *ne kadar*'ı da değiştirir.
+>
+> `balanceChecks.etkinHiz` bunu **yaklaşık** alıyor: yolun yavaşlatılan
+> kesri `q` üzerinden zaman ağırlıklı bir etkin hız hesaplıyor, ama
+> yavaşlatıcının yol üzerindeki **sırasını** görmüyor. Yavaşlatıcısı
+> olmayan tahtalarda bağımsızlık aynen duruyor.
+>
+> Bu kör nokta ölçüldü: formül düzeltilmeden önce tahtanın gerçek
+> kapasitesi tavanın **1,6 katına** kadar çıkabiliyordu ve `0,80 × tavan`
+> ile türetilen boss HP'sinin güvenliği tesadüfe kalmıştı.
+
 Bu kısıt boss'ları, Trol'ü ve Zırhlı Ork'u yönetir.
 
 ### Kısıt B — Dalga verimi ("sürü sızar mı")
