@@ -19,15 +19,34 @@ import { MAP_1, MAP_2, MAP_3, MAP_4, MAP_5, COVERAGE_REFERENCE_RANGE } from '../
 import { MAP1_WAVES, MAP2_WAVES, MAP3_WAVES, MAP4_WAVES, MAP5_WAVES } from '../data/waves';
 import { buildReferenceBoards } from './balanceChecks';
 import { simulateAllWaves } from './waveSim';
+import { REFERANS_ERKEN_BONUSU, REFERANS_POLITIKA } from './referansOlcum';
 import { measureCoverage } from '../util/coverage';
 import { getEnemyForMap } from '../data/enemies';
 import type { EnemyId } from '../types/enemy';
 import type { MapDef } from '../types/map';
 import type { Wave } from '../types/wave';
 
+/**
+ * **S109 — tahta ile simülasyon aynı oyuncuyu varsayıyor.**
+ *
+ * Buradaki çift eskiden ayrışıktı: tahta `withEarlyBonus = true` ile
+ * kuruluyordu (yani her dalgada tam erken bonusu alınmış sayılıyordu)
+ * ama simülasyona politika verilmediği için o bonus hiç kazanılmıyordu.
+ * Dalgalar üst üste binmediği sürece zararsızdı; `M16` erken basmaya
+ * bedel koyunca ölçüm iyimserleşmeye başladı (harita 5: 12 yerine
+ * gerçekte 15). Çift artık `referansOlcum`'dan geliyor.
+ */
 function kosu(map: MapDef, waves: readonly Wave[]) {
   const k = measureCoverage(map.paths, map.buildSpots, COVERAGE_REFERENCE_RANGE);
-  const sim = simulateAllWaves(waves, buildReferenceBoards(map, waves, k, true), map);
+  const sim = simulateAllWaves(
+    waves,
+    buildReferenceBoards(map, waves, k, REFERANS_ERKEN_BONUSU),
+    map,
+    undefined,
+    1,
+    'yok',
+    REFERANS_POLITIKA,
+  );
   const toplam: Partial<Record<EnemyId, number>> = {};
   for (const r of sim) {
     for (const [id, n] of Object.entries(r.leakedByEnemy)) {
@@ -94,7 +113,26 @@ describe('Kısıt B — düşman kırılımı', () => {
    * böyleydi; simülasyon göremiyordu.
    *
    * S87'de dört harita çarpanı taranarak yeniden türetildi ve iddia
-   * **geri kondu**: rampa artık `0 · 4 · 7 · 12 · 14`.
+   * **geri kondu**: rampa `0 · 4 · 7 · 12 · 14`.
+   *
+   * ## S109 — iddia öğrenme yayında GEVŞETİLDİ (`M16`)
+   *
+   * Rampa beşinci kez türetildi ve `0 · 0 · 3 · 13 · 15` çıktı. Harita
+   * 2'nin **sıfır** olması tarama eksikliği değil, ölçülen bir gerçek:
+   * S73 altın çarpanını HP çarpanından aşağı bırakmıyor, yani harita 2'de
+   * HP'yi yükseltmek tahtayı da zorunlu olarak zenginleştiriyor ve ikisi
+   * sadeleşiyor. Altın HP ile birlikte tarandığında sonuç
+   * `1,8→0 · 2,0→0 · 2,2→0 · 2,4→0 · 2,6→13`: bir **uçurum**, dial değil.
+   * Altını HP'nin üstünde tutmak da düzeltmiyor — `2,6/2,8→0`,
+   * `2,6/3,0→3`, `2,6/3,2→0` gibi bıçak sırtı sıçramalar veriyor.
+   *
+   * Yani harita 2'nin tahtası ya yetiyor (0) ya çöküyor (13); arası yok.
+   * Bu sivri uçlardan birine oturtmak sayıyı **uydurmak** olurdu (S82/S84
+   * dersi). İddia bu yüzden ikiye ayrıldı: öğrenme yayı (1-2) azalmıyor,
+   * asıl rampa (3'ten sonra) **kesin** artıyor.
+   *
+   * Harita 2'nin zorluğu zaten çarpanda değil **kadroda**: Zırhlı Ork ve
+   * Şaman orada tanıtılıyor.
    */
   it('**zorluk MONOTON** — çarpan değil, ölçülen can kaybı (M8-T04, S87)', () => {
     const kayip = [
@@ -104,11 +142,21 @@ describe('Kısıt B — düşman kırılımı', () => {
       canKaybi(MAP_4, MAP4_WAVES),
       canKaybi(MAP_5, MAP5_WAVES),
     ];
+    // Hiçbir yerde AZALMIYOR.
     for (let i = 1; i < kayip.length; i++) {
+      expect(kayip[i]!, `harita ${i + 1}: ${kayip.join(' → ')}`).toBeGreaterThanOrEqual(
+        kayip[i - 1]!,
+      );
+    }
+    // Harita 3'ten sonra KESİN artıyor — asıl rampa burada.
+    for (let i = 3; i < kayip.length; i++) {
       expect(kayip[i]!, `harita ${i + 1}: ${kayip.join(' → ')}`).toBeGreaterThan(kayip[i - 1]!);
     }
     // Öğretici harita bedava kalmalı — rampanın alt ucu.
     expect(kayip[0]).toBe(0);
+    // Öğrenme yayı ucuz, asıl rampa pahalı — ikisi ayrı bantta.
+    expect(kayip[2]!).toBeLessThan(12);
+    expect(kayip[3]!).toBeGreaterThanOrEqual(12);
   });
 
   it('Ork Savaşçı debisi çözüldü — S73', () => {

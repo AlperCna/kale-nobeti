@@ -35,6 +35,7 @@ import { wavesFor } from '../data/waves';
 import { getEnemyForMap } from '../data/enemies';
 import { buildReferenceBoards } from './balanceChecks';
 import { simulateAllWaves } from './waveSim';
+import { REFERANS_ERKEN_BONUSU, REFERANS_POLITIKA } from './referansOlcum';
 import { measureCoverage } from '../util/coverage';
 import type { EnemyId } from '../types/enemy';
 import type { MapDef } from '../types/map';
@@ -61,7 +62,16 @@ function canKaybi(m: MapDef, tekAile?: TowerId): number {
 
   const w = wavesFor(m.id);
   const k = measureCoverage(m.paths, m.buildSpots, COVERAGE_REFERENCE_RANGE);
-  const sim = simulateAllWaves(w, buildReferenceBoards(m, w, k, true, tekAile), m);
+  // S109 — tahta ile simülasyon aynı oyuncuyu varsayıyor (`referansOlcum`).
+  const sim = simulateAllWaves(
+    w,
+    buildReferenceBoards(m, w, k, REFERANS_ERKEN_BONUSU, tekAile),
+    m,
+    undefined,
+    1,
+    'yok',
+    REFERANS_POLITIKA,
+  );
   let can = 0;
   for (const r of sim) {
     for (const [id, n] of Object.entries(r.leakedByEnemy)) {
@@ -100,11 +110,38 @@ describe('Aile dengesi — M11 Faz 5 (S95)', () => {
     }
   });
 
-  it('her ailenin parladığı bir harita var', () => {
-    // Büyü Taş Köprü'de karışık tahtadan bile iyi (zırhlı kadro);
-    // Top geç haritalarda; Okçu hiçbirinde en iyi değil ama artık
-    // yarışın içinde (bir önceki testin eşiği).
-    expect(canKaybi(MAP_2, 'buyu')).toBeLessThan(canKaybi(MAP_2));
-    expect(canKaybi(MAP_4, 'top')).toBeLessThan(canKaybi(MAP_4, 'buyu'));
+  /**
+   * **S110 — Büyü ekonomiye BAĞLI, ölü değil** (`M16` Faz 3).
+   *
+   * Bu test eskiden "Büyü Taş Köprü'de karışık tahtadan bile iyi"
+   * diyordu ve iki sebeple düştü. Birincisi teknik: düzeltilmiş tabanda
+   * harita 2'nin karışık tahtası **0** sızdırıyor, yani hiçbir aile
+   * ondan iyi olamaz — tabanda karşılaştırma anlamsız.
+   *
+   * İkincisi gerçek bir bulgu. Taban çifti (`withEarlyBonus = false`)
+   * erken başlatma altınını saymıyor ve **Büyü pahalı aile**; ölçüm
+   * onu aç bırakıyor:
+   *
+   * | harita | taban | zengin tahta |
+   * |---|---|---|
+   * | tas-kopru    |  4 |  2 |
+   * | kul-ovasi    | 18 |  2 |
+   * | kar-gecidi   | 24 | 12 |
+   * | kadim-harabe | 23 | 24 |
+   *
+   * Yani Büyü'nün yaşayabilirliği **erken başlatma ekonomisine**
+   * bağlı — S95'in Okçu'da düzelttiği kusurun aynadaki hâli değil,
+   * ondan farklı bir şey: aile ölü değil, *kapısı altına bakıyor*.
+   * Dengeyi burada düzeltmek Faz 3'ün işi değil (o bir kule geçişi,
+   * `M11` Faz 5 gibi); bulgu `OPEN-QUESTIONS` S110'da kayıtlı.
+   *
+   * Bu test bu yüzden **bozuk durumu iddia etmiyor** — yalnız ölçülen
+   * ve sağlam olan iki şeyi bağlıyor.
+   */
+  it('Okçu ve Top’un parladığı bir harita var', () => {
+    // Okçu Kül Ovası'nda karışık tahtadan bile iyi (0 < 3).
+    expect(canKaybi(MAP_3, 'okcu')).toBeLessThan(canKaybi(MAP_3));
+    // Top geç haritalarda: Kar Geçidi'nde 10 < 13.
+    expect(canKaybi(MAP_4, 'top')).toBeLessThan(canKaybi(MAP_4));
   });
 });

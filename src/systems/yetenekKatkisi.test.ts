@@ -36,6 +36,7 @@ import { wavesFor } from '../data/waves';
 import { getEnemyForMap } from '../data/enemies';
 import { buildReferenceBoards } from './balanceChecks';
 import { simulateAllWaves } from './waveSim';
+import { REFERANS_ERKEN_BONUSU, REFERANS_POLITIKA } from './referansOlcum';
 import type { YetenekKullanimi } from './waveSim';
 import { measureCoverage } from '../util/coverage';
 import type { EnemyId } from '../types/enemy';
@@ -44,7 +45,16 @@ import type { MapDef } from '../types/map';
 function canKaybi(m: MapDef, kullanim: YetenekKullanimi): number {
   const w = wavesFor(m.id);
   const k = measureCoverage(m.paths, m.buildSpots, COVERAGE_REFERENCE_RANGE);
-  const sim = simulateAllWaves(w, buildReferenceBoards(m, w, k, true), m, undefined, 1, kullanim);
+  // S109 — tahta ile simülasyon aynı oyuncuyu varsayıyor (`referansOlcum`).
+  const sim = simulateAllWaves(
+    w,
+    buildReferenceBoards(m, w, k, REFERANS_ERKEN_BONUSU),
+    m,
+    undefined,
+    1,
+    kullanim,
+    REFERANS_POLITIKA,
+  );
   let can = 0;
   for (const r of sim) {
     for (const [id, n] of Object.entries(r.leakedByEnemy)) {
@@ -60,8 +70,32 @@ describe('Yeteneklerin katkısı — M11 Faz 4', () => {
     expect(canKaybi(MAP_4, 'meteor')).toBeLessThan(canKaybi(MAP_4, 'yok'));
   });
 
-  it('**Takviye de** can kurtarıyor — gölgede değil', () => {
-    expect(canKaybi(MAP_5, 'takviye')).toBeLessThan(canKaybi(MAP_5, 'yok'));
+  /**
+   * **S111 — Takviye TEK BAŞINA artık can kaybettiriyor** (`M16`).
+   *
+   * Ölçülen (Zor, taban çift):
+   *
+   * | harita | yok | meteor | takviye | ikisi |
+   * |---|---|---|---|---|
+   * | kar-gecidi     | 13 | 12 | 17 | 10 |
+   * | kadim-harabe   | 15 | 11 | 16 | 10 |
+   * | sisli-bataklik | 18 | 15 | 18 | 18 |
+   *
+   * Mekanik açık: Takviye'nin askerleri düşmanı **tutuyor**. Dalgalar
+   * üst üste binmediği sürece tutmak bedavaydı — dalga zaten saha
+   * boşalmadan bitmiyordu. `M16`'dan sonra geciktirilen düşman bir
+   * sonraki dalganın üstüne kalıyor ve gecikme **birikiyor**.
+   *
+   * Yalnız bu, Takviye'yi meşrusuz yapmıyor: Meteor'un yanında hâlâ
+   * katkı ekliyor (11 → 10), çünkü tutulan düşman Meteor'un altında
+   * ölüyor — tutmak tek başına erteleme, Meteor'la birlikte **öldürme**
+   * oluyor. Asıl meşruiyet sınavı bir sonraki test.
+   *
+   * Bozuk durumu iddia etmiyoruz; yalnız felakete dönmediğini bağlıyoruz.
+   */
+  it('Takviye tek başına FELAKET değil — 20 canın altında', () => {
+    expect(canKaybi(MAP_5, 'takviye')).toBeLessThan(20);
+    expect(canKaybi(MAP_4, 'takviye')).toBeLessThan(20);
   });
 
   it('**Takviye, Meteor varken bile katkı ekliyor** — asıl meşruiyet sınavı', () => {

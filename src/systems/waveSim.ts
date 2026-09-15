@@ -66,6 +66,41 @@ import type { TowerEffect } from '../types/tower';
  */
 export type YetenekKullanimi = 'yok' | 'meteor' | 'takviye' | 'ikisi';
 
+/**
+ * **Erken başlatma politikası** — `M16` Faz 2 (S102).
+ *
+ * Dalgalar üst üste binebildiğinden bu artık gerçek bir karar ve
+ * modelin hangi oyuncuyu canlandırdığını **açıkça** seçmesi gerekiyor:
+ *
+ * - `'hemen'` — hazırlık görünür görünmez bas. Azami altın, azami
+ *   üst üste binme. Saldırgan uç.
+ * - `'sonBirkac'` — sahada `ERKEN_ESIK`'ten az düşman kalınca bas.
+ *   Ölçülen **en iyi** oyun: bonusun çoğunu alıyor, kalabalığın
+ *   üstüne yeni dalga çağırmıyor.
+ * - `'temizken'` — saha tamamen boşalınca bas.
+ * - `'hic'` — hiç basma. Muhafazakâr uç, bonus yok.
+ *
+ * Ölçülen fark (Zor, referans tahta, can kaybı):
+ *
+ * | politika | h1 | h2 | h3 | h4 | h5 | h6 |
+ * |---|---|---|---|---|---|---|
+ * | `hemen`     | 0 | 3 | 11 | 16 | 30 | 44 |
+ * | `sonBirkac` | 0 | 0 |  4 |  8 | 10 | 23 |
+ * | `hic`       | 0 | 0 |  3 |  6 | 11 | 25 |
+ *
+ * Karar **gerçek**: saldırgan oyun harita 5-6'yı 20 canla geçilemez
+ * yapıyor. `M14` bunu ölçtüğünde fark **sıfırdı**; bedeli `M16` koydu.
+ *
+ * **`'temizken'` artık neredeyse hiç tetiklenmiyor** ve bu bir kusur
+ * değil, kural değişikliğinin doğrudan sonucu: hazırlık aşaması `M16`'dan
+ * beri **kuyruk** bitince başlıyor, saha boşalınca değil. Yani hazırlık
+ * başladığında sahada hemen her zaman düşman var ve 20 sn'lik sayaç
+ * dolmadan temizlenmiyor. Seçenek, ne zaman tetiklendiğini gösterebilmek
+ * için duruyor; ölçüm tabanı olarak **kullanılmıyor** (bkz.
+ * `referansOlcum.REFERANS_POLITIKA`).
+ */
+export type ErkenPolitika = 'hemen' | 'sonBirkac' | 'temizken' | 'hic';
+
 export interface SimResult {
   /** Kaleye ulaşan düşmanların **kalan** HP toplamı. Birim: HP. */
   readonly leakedHp: number;
@@ -180,8 +215,26 @@ class SimProjectile implements ProjectileState<SimEnemy>, Poolable {
   }
 }
 
-/** Simülasyonun sonsuza gitmemesi için sert tavan. 300 sn'lik oyun süresi. */
-const MAX_STEPS = 20_000;
+/**
+ * Simülasyonun sonsuza gitmemesi için sert tavan — **dalga başına**
+ * 300 sn'lik oyun süresi.
+ *
+ * `M16` Faz 1'de dalga başına oldu: sürekli zaman çizgisinde on dalga
+ * tek koşuda ilerliyor ve sabit 20.000 adım (333 sn) ortada kesiyordu.
+ * İlk ölçüm bunu açıkça gösterdi — rampa `0·5·8·12·16·18` yerine
+ * `0·4·1·0·0·5` çıktı, yani geç dalgalar hiç koşmamıştı. Tavanın kendisi
+ * bir **güvenlik supabı**, ölçüm parametresi değil.
+ */
+const MAX_STEPS_PER_WAVE = 20_000;
+
+/**
+ * `'sonBirkac'` politikasının eşiği: sahada bu kadar ya da daha az
+ * düşman kalmışsa erken başlat.
+ *
+ * Bir **model parametresi**, oyun sayısı değil — "makul oyuncu"nun ne
+ * zaman bastığını tarif ediyor.
+ */
+const ERKEN_ESIK = 3;
 
 /**
  * Bir dalgayı referans tahtaya karşı çalıştırır.
@@ -189,9 +242,9 @@ const MAX_STEPS = 20_000;
  * **Deterministik:** rastgelelik yok, aynı girdi aynı sonucu verir.
  * `waveSim.test.ts` bunu ayrı bir testle bağlıyor.
  */
-export function simulateWave(
-  wave: Wave,
-  board: ReferenceBoard,
+function kosturDalgalar(
+  waves: readonly Wave[],
+  tahtaAl: (waveIndex: number) => ReferenceBoard,
   map: MapDef,
   stepMs = 1000 / 60,
   /**
@@ -217,7 +270,8 @@ export function simulateWave(
   hpScale = 1,
   /** Oyuncunun yetenekleri — varsayılan `'yok'`, bkz. `YetenekKullanimi`. */
   yetenekKullanimi: YetenekKullanimi = 'yok',
-): SimResult {
+  erken: ErkenPolitika = 'hic',
+): SimResult[] {
   const dogumCarpani = map.hpMultiplier * hpScale;
   const bus = new EventBus();
   const eco = new EconomySystem(map, bus);
@@ -234,10 +288,21 @@ export function simulateWave(
     return havuz[spawnPoint] ?? havuz[0] ?? groundMovers[0] ?? new PathMover(new PathSystem([]));
   };
 
+  /**
+   * **Sonuçlar dalga başına biriktiriliyor** (`M16` Faz 1).
+   *
+   * Üst üste binmede bir düşman, onu doğuran dalga kapandıktan sonra
+   * sızabiliyor. Sızıntı **o an koşan dalgaya** yazılıyor: doğuran
+   * dalgaya yazmak `EnemyState`'e bir alan daha eklemeyi gerektirirdi
+   * ve toplam (rampanın ölçtüğü şey) iki yöntemde de aynı. `kisitB`'nin
+   * "dalga 1 hiç sızdırmıyor" iddiası da bu yöntemle anlamlı kalıyor.
+   */
+  const sonuclar: SimResult[] = [];
   let leakedHp = 0;
   let leakedCount = 0;
-  const leakedByEnemy: Partial<Record<EnemyId, number>> = {};
+  let leakedByEnemy: Partial<Record<EnemyId, number>> = {};
   let killedCount = 0;
+  let dalgaAdimi = 0;
   let peakEnemies = 0;
 
   const enemyPool = new Pool<SimEnemy>(() => new SimEnemy(), POOL_PREALLOC.enemy);
@@ -290,28 +355,45 @@ export function simulateWave(
     });
   });
 
-  for (const bt of board.towers) {
-    const def = getTower(bt.towerId);
-    const spot = map.buildSpots[bt.spotIndex];
-    if (def === undefined || spot === undefined) continue;
-    towers.add({
-      spotIndex: bt.spotIndex,
-      x: spot.x,
-      y: spot.y,
-      def,
-      tierIndex: bt.tier,
-      targetMode: bt.targetMode ?? 'first',
-      cooldownLeft: 0,
-      target: null,
-    });
-  }
+  /**
+   * Tahtayı **fark olarak** uygular (`M16` Faz 1).
+   *
+   * Sürekli zaman çizgisinde tahta her dalgada sıfırdan kurulamaz: var
+   * olan kulenin bekleme süresi ve kışla askerlerinin canı dalgalar
+   * arasında **taşınmalı** — gerçek oyunda da öyle. Var olan noktanın
+   * yalnız kademesi güncelleniyor, yeni nokta ekleniyor. Referans
+   * tahtalar hiç kule kaldırmıyor, o yüzden silme dalı yok.
+   */
+  const kuleleriUygula = (board: ReferenceBoard): void => {
+    for (const bt of board.towers) {
+      const def = getTower(bt.towerId);
+      const spot = map.buildSpots[bt.spotIndex];
+      if (def === undefined || spot === undefined) continue;
+      const mevcut = towers.towers.find((t) => t.spotIndex === bt.spotIndex);
+      if (mevcut !== undefined) {
+        mevcut.tierIndex = bt.tier;
+        mevcut.targetMode = bt.targetMode ?? 'first';
+        continue;
+      }
+      towers.add({
+        spotIndex: bt.spotIndex,
+        x: spot.x,
+        y: spot.y,
+        def,
+        tierIndex: bt.tier,
+        targetMode: bt.targetMode ?? 'first',
+        cooldownLeft: 0,
+        target: null,
+      });
+    }
+  };
 
   const wm = new WaveManager(
     enemyPool,
     moverFor,
     bus,
     eco,
-    [wave],
+    waves,
     dogumCarpani,
     (id) => getEnemyForMap(id, map),
     (e) => {
@@ -332,9 +414,16 @@ export function simulateWave(
     readonly respawnSeconds: number;
   }
   const kislalar: SimKisla[] = [];
+  /** Hangi noktada kışla kuruldu — fark uygulaması için (`M16` Faz 1). */
+  const kislaNoktalari = new Set<number>();
+  const kislalariUygula = (board: ReferenceBoard): void => {
   for (const bb of board.barracks ?? []) {
     const spot = map.buildSpots[bb.spotIndex];
     if (spot === undefined) continue;
+    // Var olan kışla **yeniden kurulmuyor**: askerlerin canı ve diriliş
+    // sayacı dalgalar arasında taşınıyor (gerçek oyundaki gibi).
+    if (kislaNoktalari.has(bb.spotIndex)) continue;
+    kislaNoktalari.add(bb.spotIndex);
     const kademe = barracksTierAt(KISLA, bb.tier);
     // Toplanma noktası: yola en yakın nokta. Kışlanın üstü **olamaz** —
     // yapı noktaları yoldan `pathSnapMax`'ten uzak (M5-SONUC §5).
@@ -375,6 +464,39 @@ export function simulateWave(
     }
     kislalar.push({ soldiers: askerler, respawnSeconds: kademe.respawnSeconds });
   }
+  };
+
+  /**
+   * Tahtayı dalga için hazırlar — kule farkı + kışla farkı.
+   *
+   * `wave:started` her dalgada yayılıyor ve `index` **1 tabanlı**;
+   * tahta dizisi 0 tabanlı.
+   */
+  const tahtayiHazirla = (waveIndex: number): void => {
+    const b = tahtaAl(waveIndex);
+    kuleleriUygula(b);
+    kislalariUygula(b);
+  };
+  tahtayiHazirla(0);
+  bus.on('wave:started', ({ index }) => {
+    tahtayiHazirla(index - 1);
+  });
+  bus.on('wave:ended', () => {
+    sonuclar.push({
+      leakedHp,
+      leakedCount,
+      durationSec: (dalgaAdimi * stepMs) / 1000,
+      killedCount,
+      peakEnemies,
+      leakedByEnemy,
+    });
+    leakedHp = 0;
+    leakedCount = 0;
+    leakedByEnemy = {};
+    killedCount = 0;
+    peakEnemies = 0;
+    dalgaAdimi = 0;
+  });
 
   /**
    * Oyuncunun yetenekleri. `'yok'` ise hiç kurulmuyor — tek satır bile
@@ -423,8 +545,9 @@ export function simulateWave(
     getEnemyForMap(id, map),
   );
 
+  const maxAdim = MAX_STEPS_PER_WAVE * Math.max(1, waves.length);
   let adim = 0;
-  while (!wm.isComplete && adim < MAX_STEPS) {
+  while (!wm.isComplete && adim < maxAdim) {
     wm.update(stepMs);
     yetenekler.update(stepMs);
     const dusmanlar = enemyPool.activeItems();
@@ -520,16 +643,49 @@ export function simulateWave(
     towers.update(stepMs, dusmanlar);
     projectiles.update(stepMs, dusmanlar);
     adim++;
+    dalgaAdimi++;
+    // Erken başlatma politikası — `ErkenPolitika`. Taban `'hic'`;
+    // gerekçesi `referansOlcum.REFERANS_POLITIKA`'da.
+    if (wm.phase === 'prep' && erken !== 'hic') {
+      const kalan = enemyPool.activeCount;
+      const bas =
+        erken === 'hemen' ||
+        (erken === 'sonBirkac' && kalan <= ERKEN_ESIK) ||
+        (erken === 'temizken' && kalan === 0);
+      if (bas) wm.startWaveEarly();
+    }
   }
 
-  return {
-    leakedHp,
-    leakedCount,
-    durationSec: (adim * stepMs) / 1000,
-    killedCount,
-    peakEnemies,
-    leakedByEnemy,
-  };
+  return sonuclar;
+}
+
+/**
+ * Bir dalgayı referans tahtaya karşı çalıştırır — **yalıtılmış** koşu.
+ *
+ * Senaryo testleri (dal kimliği, hedefleme modu, ölçek) bunu kullanıyor:
+ * oradaki soru "bu dalga bu tahtaya karşı ne yapar", kampanyanın akışı
+ * değil.
+ */
+export function simulateWave(
+  wave: Wave,
+  board: ReferenceBoard,
+  map: MapDef,
+  stepMs = 1000 / 60,
+  hpScale = 1,
+  yetenekKullanimi: YetenekKullanimi = 'yok',
+): SimResult {
+  // Tek dalgada politika görünmüyor (hazırlık yok) — `'hemen'` yeterli.
+  const r = kosturDalgalar([wave], () => board, map, stepMs, hpScale, yetenekKullanimi, 'hemen');
+  return (
+    r[0] ?? {
+      leakedHp: 0,
+      leakedCount: 0,
+      durationSec: 0,
+      killedCount: 0,
+      peakEnemies: 0,
+      leakedByEnemy: {},
+    }
+  );
 }
 
 /** Bir haritanın tüm dalgalarını sırayla simüle eder. */
@@ -542,8 +698,24 @@ export function simulateAllWaves(
   hpScale = 1,
   /** Oyuncunun yetenekleri — varsayılan `'yok'`, bkz. `YetenekKullanimi`. */
   yetenekKullanimi: YetenekKullanimi = 'yok',
+  /**
+   * Erken başlatma politikası — varsayılan `'hic'`.
+   *
+   * **Varsayılan, `buildReferenceBoards`'un `withEarlyBonus = false`
+   * varsayılanıyla eşleşmek zorunda**: tahta bonusu saymıyorsa oyuncu da
+   * kazanmamalı. İkisi ayrışırsa tahta hak etmediği altınla kurulur ve
+   * bütün denge sayıları iyimserleşir — `M16` öncesi tam olarak bu oldu
+   * (S109). Çifti birlikte tutan adres: `referansOlcum`.
+   */
+  erken: ErkenPolitika = 'hic',
 ): SimResult[] {
-  return waves.map((w, i) =>
-    simulateWave(w, boards[i] ?? boards[boards.length - 1]!, map, stepMs, hpScale, yetenekKullanimi),
+  return kosturDalgalar(
+    waves,
+    (i) => boards[i] ?? boards[boards.length - 1]!,
+    map,
+    stepMs,
+    hpScale,
+    yetenekKullanimi,
+    erken,
   );
 }

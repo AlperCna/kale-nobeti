@@ -265,12 +265,20 @@ describe('WaveManager — dalga bitişi ve zincir', () => {
 
     expect(wm.phase).toBe('prep');
     expect(wm.waveNumber).toBe(2);
-    // Dalga ~10 sn sürdü (600 px / 60 px/sn), kalan ~5 sn hazırlığa gitti.
-    // Yani sayaç 20'den geri sayıyor ama 15 saniyelik koşunun sonunda 20
-    // OLMAZ — ilk yazımda `toBeCloseTo(20)` bekleyip kırdım.
+    /**
+     * **`M16` — sayaç 10 saniye ERKEN başlıyor.**
+     *
+     * Eski kural sahanın boşalmasını bekliyordu: tek goblin 600 px'i
+     * 60 px/sn ile 10 sn'de yürüyor, dalga t≈10'da kapanıyor, 15
+     * saniyelik koşunun kalan 5 sn'si hazırlığa gidiyordu (20 − 5 = 15).
+     *
+     * Artık dalga **kuyruk** bitince kapanıyor — tek goblin doğar doğmaz,
+     * yani t≈0. Hazırlık baştan işliyor ve koşunun sonunda 20 − 15 = 5
+     * kalıyor. Goblin bu sırada hâlâ yolda; üst üste binme tam olarak bu.
+     */
     expect(wm.prepRemainingSec).toBeGreaterThan(0);
     expect(wm.prepRemainingSec).toBeLessThan(BALANCE.prepSeconds);
-    expect(wm.prepRemainingSec).toBeCloseTo(BALANCE.prepSeconds - 5, 0);
+    expect(wm.prepRemainingSec).toBeCloseTo(BALANCE.prepSeconds - 15, 0);
   });
 
   it('sızan düşman can götürüyor', () => {

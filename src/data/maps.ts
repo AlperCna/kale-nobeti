@@ -494,8 +494,16 @@ export const MAP_4: MapDef = {
    * (monoton zorluk) ve 20 can sınırının %35 altında (Kısıt B payı).
    * Boss tavanı çarpandan bağımsız (tahta DPS'i ÷ boss zırhı), o yüzden
    * türetilen boss HP 1857 bu değişiklikte **aynı kaldı**.
+   *
+   * **S109 — `M16` beşinci türetme (4,4 → 5,6).** Dalgalar artık üst üste
+   * biniyor ve ölçümün *çifti* düzeldi: referans tahta ile simülasyon
+   * bundan böyle **aynı** oyuncuyu varsayıyor (bkz. `balanceChecks`
+   * `withEarlyBonus` — muhafazakâr taban, erken basmayan oyuncu).
+   * Eski çift tahtaya tam erken bonusu yazıp simülasyonda hiç
+   * bastırmıyordu, yani tahta hak etmediği altınla kuruluyordu.
+   * Düzeltilmiş tabanda tarama: 4,4→9 · 4,8→10 · 5,2→12 · **5,6→13**.
    */
-  hpMultiplier: 4.4, // S87 → S91 → S101
+  hpMultiplier: 5.6, // S87 → S91 → S101 → S109 (dalgalar üst üste binince)
   goldMultiplier: 7.2, // S87 — HP ile birlikte yükseldi (S73 değişmezi)
   startGold: Math.round(280 * 7.2), // S87
   // §5: kadro **tam** — dokuz tip, yeni tanıtım yok.
@@ -529,7 +537,8 @@ export const MAP_4: MapDef = {
  * monoton zorluk demek değil; ölçüt simülasyonun verdiği **can kaybı**).
  * Tarama gerekçesi `docs/plan/M8-genisleme.md` Faz 5 sonucunda.
  */
-const MAP5_HP_CARPANI = 7.2; // S87 → S91 → S101
+// S109 — düzeltilmiş tabanda tarama: 7,2→12 · **7,6→15** · 8,0→15 · 8,4→16.
+const MAP5_HP_CARPANI = 7.6; // S87 → S91 → S101 → S109
 const MAP5_ALTIN_CARPANI = 10.0; // S87 — HP ile birlikte (S73 değişmezi)
 
 const MAP5_KALE: Vec2 = { x: 1180, y: 600 };
@@ -767,7 +776,7 @@ export const MAP_6: MapDef = {
   /**
    * **Ölçülen değerler (`M12` Faz 3), tahmin değil.**
    *
-   * Harita 6'nın HP çarpanı harita 5'inkinden **düşük** (6,2 < 7,0) ve
+   * Harita 6'nın HP çarpanı harita 5'inkinden **düşük** (5,6 < 7,6) ve
    * bu bir kusur değil: zorluk artık kadronun kendisinden geliyor.
    * Tünelci yolun %15-%60'ında hedeflenemez, yani tahtanın kapsamasının
    * yarısından çoğu ona karşı ölü. Aynı çarpanla (7,0) ölçüm **24 can**
@@ -777,12 +786,19 @@ export const MAP_6: MapDef = {
    * 7,0 → 24. 6,2 seçildi: harita 5'in 14'ünün üstünde, 20 sınırının
    * dört altında, Kolay'da 5 (sınır 10).
    *
+   * **S109 — `M16` beşinci türetme (6,2 → 5,6).** Çarpan bu kez
+   * **düştü**: üst üste binme haritanın kendi zorluğunu artırdı, çünkü
+   * bir önceki dalganın artıkları hâlâ yoldayken yenisi başlıyor ve
+   * Tünelci'ye ayıracak kapsama daha da azalıyor. Düzeltilmiş tabanda
+   * tarama: 5,2→13 · **5,6→18** · 6,0→20 · 6,2→25. 5,6 seçildi: 20
+   * sınırının altında ve Kolay'da 0.
+   *
    * `M8-T04`'ün dersi tam burada somutlaştı: *monoton çarpan monoton
    * zorluk vermiyor, ölçüt **çıktı** olmalı.* `maps.test.ts`'in girdi
    * monotonluğu iddiası bu yüzden güncellendi; gerçek iddia
    * `kisitB.test.ts`'te (ölçülen can kaybı monoton).
    */
-  hpMultiplier: 6.2,
+  hpMultiplier: 5.6, // S109 — bkz. yukarıdaki beşinci türetme
   goldMultiplier: 11.0,
   startGold: Math.round(280 * 11.0),
   enemyRoster: [
