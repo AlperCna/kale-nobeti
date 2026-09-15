@@ -876,6 +876,8 @@ export class GameScene extends Phaser.Scene {
       // Ses efekti örnekleri `SoundManager`'da (oyun geneli) yaşıyor —
       // sahneyle birlikte gitmiyor, elle bırakılıyor.
       this.#soundSystem?.destroy();
+      // `M10` — bekleyen ipucu sayacı ölü sahneye ateşlemesin.
+      this.#tutorialHints?.destroy();
       const d = devHooks();
       if (d !== undefined) d.clearCount = (d.clearCount ?? 0) + 1;
     });
