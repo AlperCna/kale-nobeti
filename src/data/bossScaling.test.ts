@@ -101,7 +101,7 @@ describe('Boss ölçeklemesi — zırh düşer, HP türetilir', () => {
   it('yazılı HP’ler ÖLÇÜLEN değerler — regresyon kilidi', () => {
     expect(BOSS_HP_BY_MAP).toEqual({
       'degirmen-gecidi': 700, // §5'in belgelenmiş değeri (S65)
-      'tas-kopru': 862,
+      'tas-kopru': 993, // `M20` (S118) — altın çarpanı 2,2 olunca yeniden türetildi
       'kul-ovasi': 1322,
       'kar-gecidi': 3000,
       'kadim-harabe': 1962,

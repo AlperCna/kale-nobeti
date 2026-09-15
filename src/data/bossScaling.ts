@@ -104,7 +104,11 @@ export const BOSS_HP_BY_MAP: Readonly<Record<string, number>> = {
   // **`M11` Faz 5 (S95): 712 → 859.** Okçu ailesi güçlenince (ölü
   // aileydi) her haritanın tavanı yükseldi; boss HP'leri aynı kuralla
   // yeniden türetildi. Bu sayı M7'den beri ilk kez değişti.
-  'tas-kopru': 862,
+  // **`M20` (S118): 862 → 993.** Harita 2'nin altın çarpanı 1,6 → 2,2
+  // olunca tahta güçlendi; boss aynı kuralla yeniden türetildi (sürekli
+  // koşuda öldürülebilen eşik 1241 × 0,80). Boss yükselmeseydi harita 2
+  // zenginleşen tahtanın karşısında daha da kolaylaşırdı.
+  'tas-kopru': 993,
   // **`M11-T02` (S91): 1023 → 886.** Aynı sebep, aşağıdaki harita 5
   // notuna bakınız: dal dengesi referans tahtayı zayıflattı, tavan
   // 1278'den 1107'ye düştü. 0,80 × 1107 ≈ 886.
