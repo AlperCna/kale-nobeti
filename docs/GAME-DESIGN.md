@@ -484,6 +484,37 @@ zorunlu kılan kararla doğrudan çelişiyordu.
    göstermemeli. Dalgaların üst üste binmesi ayrı bir tasarım kolu;
    maliyeti `OPEN-QUESTIONS` S102'de yazılı.
 
+**`M16` — dalgalar artık üst üste biniyor, karar GERÇEK oldu (S102 kapandı).**
+
+Kural değişti: dalga **kuyruk bitince** kapanıyor, saha boşalınca değil.
+Hazırlık aşaması bir öncekinin artıkları hâlâ yoldayken başlıyor, yani
+erken basmak "kalan saniyeyi altına çevir" ile "yenisini artıkların
+üstüne çağır" arasında gerçek bir takas. Ölçülen can kaybı (Zor,
+referans tahta, altı harita):
+
+| politika | h1 | h2 | h3 | h4 | h5 | h6 |
+|---|---|---|---|---|---|---|
+| hep erken bas   | 0 | 3 | 11 | 16 | 30 | 44 |
+| son birkaç kala | 0 | 0 |  4 |  8 | 10 | 23 |
+| hiç basma       | 0 | 0 |  3 |  6 | 11 | 25 |
+
+Yani **hep erken basmak harita 5-6'yı 20 canla geçilemez yapıyor**, ama
+en iyi oyun "hiç basmama" da değil: sahada birkaç düşman kalınca basmak
+harita 5'te 11'i 10'a indiriyor — bonusun çoğunu alıp kalabalığın
+üstüne yeni dalga çağırmadan. Buton artık tempo becerisi değil **risk
+kararı**.
+
+İki yan etki ölçüldü ve kaydedildi: Takviye tek başına artık can
+kaybettiriyor, çünkü tutmak gecikmeyi bir sonraki dalgaya taşıyor
+(S111); ve denge ölçümünün tabanı erken bonusu **saymıyor**, o yüzden
+pahalı olan Büyü ailesi tabanda aç kalıyor (S110).
+
+**Denge tabanı:** referans oyuncu erken **basmıyor**
+(`systems/referansOlcum.ts`). Referans tahta hangi ekonomiyi
+varsayıyorsa simülasyon da onu oynamak zorunda — ikisi ayrışırsa tahta
+hak etmediği altınla kurulur ve bütün denge sayıları iyimserleşir
+(S109'da tam olarak bu bulundu).
+
 ### Yükseltme neden pahalı görünüyor
 
 Hiçbir yükseltme altın başına DPS olarak verimli değildir (T2, T1'in
