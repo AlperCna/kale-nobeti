@@ -455,14 +455,32 @@ dalını Buz yapan oyuncu, Okçu ve Top kulelerini de güçlendiriyor.
 - Başlangıç altını: **280** (harita başına değişir, bkz. §9), başlangıç canı: **20**.
 - Öldürme altını yukarıdaki tabloda (`3 × puan`).
 - Dalga bitiş bonusu: `30 + dalgaNo * 5`.
-- **Erken başlatma bonusu:** `kalanSaniye × ceil(dalgaNo / 2)`. Sayaç 20 sn.
-  **İlk 3 dalgada kapalıdır** — buton dalga 4'te açılır.
+- **Erken başlatma bonusu:** `kalanSaniye × ceil(dalgaNo / 2) × altınÇarpanı`.
+  Sayaç 20 sn. **İlk 3 dalgada kapalıdır** — buton dalga 4'te açılır.
 - Kule satışı %70 iade.
 
 Eski sabit `+1/saniye` bonusu dalga 1'de gelirin %28'iydi, dalga 10'da %10.
 Yani yeni oyuncuya "dalga telegrafını okuma, hemen bas" öğretiyordu — telegrafı
-zorunlu kılan kararla doğrudan çelişiyordu. Ölçekli formül erken oyunda
-öğrenmeyi cezalandırmıyor, geç oyunda gerçek bir karar oluyor.
+zorunlu kılan kararla doğrudan çelişiyordu.
+
+**`M14` — iki düzeltme, ikisi de ölçümden:**
+
+1. **Bonus artık altın çarpanını izliyor** (S101). İzlemiyordu ve sabit
+   520 altın ediyordu (dalga 4-10, hemen basınca): harita 1'de dalga
+   10'a kadarki gelirin **%32'si**, harita 6'da **%3'ü**. Yani buton geç
+   haritalarda gürültüye iniyordu — "geç oyunda gerçek bir karar"
+   iddiasının tam tersi. Öldürme altını, dalga bonusu (S70) ve başlangıç
+   altını (S72) çarpanı izliyordu; bu tek kalem atlanmıştı.
+
+2. **"Gerçek bir karar" ifadesi düzeltildi** (S102). Kod okundu: dalga
+   ancak saha **tamamen boşalınca** bitiyor (`WaveManager.#dalgaBittiMi`
+   `pool.activeCount > 0` iken dönmüyor), yani hazırlık aşaması hiçbir
+   zaman düşman varken başlamıyor ve **dalgalar üst üste binemiyor**.
+   Hazırlık süresi de altın getirmiyor. Sonuç: erken başlatmanın hiçbir
+   bedeli yok — bu bir **risk kararı değil, hazır olmanın ödülü**. Tempo
+   becerisi olarak değerli, ama doküman onu olduğundan fazla
+   göstermemeli. Dalgaların üst üste binmesi ayrı bir tasarım kolu;
+   maliyeti `OPEN-QUESTIONS` S102'de yazılı.
 
 ### Yükseltme neden pahalı görünüyor
 
@@ -626,10 +644,18 @@ düzeltildi:
   |---|---|---|---|---|
   | 1 Değirmen Geçidi | 1,0 | 1,0 | 0 | 0 |
   | 2 Taş Köprü | **1,5** | 1,6 | 4 | 1 |
-  | 3 Kül Ovası | **2,6** | 3,8 | 5 | 3 |
-  | 4 Kar Geçidi | **4,8** | 7,2 | 12 | 9 |
-  | 5 Kadim Harabe | **7,0** | 10,0 | 14 | 9 |
-  | 6 Sisli Bataklık | **6,2** | 11,0 | 16 | 5 |
+  | 3 Kül Ovası | **2,8** | 3,8 | 8 | 2 |
+  | 4 Kar Geçidi | **4,4** | 7,2 | 12 | 4 |
+  | 5 Kadim Harabe | **7,2** | 10,0 | 16 | 8 |
+  | 6 Sisli Bataklık | 6,2 | 11,0 | 18 | 5 |
+
+  **`M14` (S101): dört çarpan yeniden türetildi.** Erken başlatma bonusu
+  altın çarpanını izlemeye başlayınca geç haritaların referans tahtası
+  zenginleşti ve rampa `0·3·4·15·14·18`'e düştü — harita 5, harita 4'ün
+  altına inip monotonluğu kırdı. Tarama sonucu yeni rampa
+  **`0 · 5 · 8 · 12 · 16 · 18`**, Kolay ×0,80'de `0 · 2 · 2 · 4 · 8 · 5`.
+  Harita 2'nin HP çarpanı altın çarpanına (1,6) **dayandı**: S73'ün
+  "altın ≥ HP" değişmezi 1,7'yi reddetti.
 
   **Harita 6'nın çarpanı harita 5'inkinden DÜŞÜK** (`M12` Faz 3) ve bu
   bir kusur değil: zorluk artık kadronun kendisinden geliyor. Tünelci

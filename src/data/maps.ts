@@ -219,10 +219,10 @@ export const MAP_2: MapDef = {
    * | Harita | HP çarpanı | Altın çarpanı | Zor | Kolay (×0,80) |
    * |---|---|---|---|---|
    * | 1 | 1,0 | 1,0 | 0 | 0 |
-   * | 2 | **1,5** | 1,6 | 4 | 1 |
-   * | 3 | **2,6** | 3,8 | 5 | 3 |
-   * | 4 | 4,8 | 7,2 | 12 | 9 |
-   * | 5 | 7,0 | 10,0 | 14 | 9 |
+   * | 2 | **1,6** | 1,6 | 5 | 2 |
+   * | 3 | **2,8** | 3,8 | 8 | 2 |
+   * | 4 | **4,4** | 7,2 | 12 | 4 |
+   * | 5 | **7,2** | 10,0 | 16 | 8 |
    *
    * Altın çarpanları **düşmedi**: tahta kule başına zayıfladığı için
    * (Barut Fıçısı'nın yavaşlatması gitti) daha çok altın onu
@@ -249,7 +249,7 @@ export const MAP_2: MapDef = {
    * çarpana BÖLÜYOR, yani sonuç çarpandan bağımsız (S80'in düzelttiği
    * yol). Değişen yalnız sıradan düşmanların canı.
    */
-  hpMultiplier: 1.5, // S87 → S95 (aile dengesi rampayı yeniden türettirdi)
+  hpMultiplier: 1.6, // S87 → S95 → S101 (erken bonus ölçeklenince rampa yeniden)
   goldMultiplier: 1.6, // S87 — HP'den ayrıştı, gerekçe yukarıda
   // S72 — §9 tablosu 340 diyor; **280 × 1,6 = 448** kullanılıyor.
   // Gerekçe §9'un kendi cümlesi: altın çarpanı "altın/HP oranı düşmesin"
@@ -352,7 +352,7 @@ export const MAP_3: MapDef = {
    * körlükleri kapatmadan sayı türetmek, düzeltmeyi iki kez yapmak
    * demek.
    */
-  hpMultiplier: 2.6, // S87 → S91 → S95
+  hpMultiplier: 2.8, // S87 → S91 → S95 → S101
   /**
    * **S73 — altın çarpanı HP çarpanından AYRIŞTI (2,6 → 3,8).**
    *
@@ -495,7 +495,7 @@ export const MAP_4: MapDef = {
    * Boss tavanı çarpandan bağımsız (tahta DPS'i ÷ boss zırhı), o yüzden
    * türetilen boss HP 1857 bu değişiklikte **aynı kaldı**.
    */
-  hpMultiplier: 4.8, // S87 → S91
+  hpMultiplier: 4.4, // S87 → S91 → S101
   goldMultiplier: 7.2, // S87 — HP ile birlikte yükseldi (S73 değişmezi)
   startGold: Math.round(280 * 7.2), // S87
   // §5: kadro **tam** — dokuz tip, yeni tanıtım yok.
@@ -529,7 +529,7 @@ export const MAP_4: MapDef = {
  * monoton zorluk demek değil; ölçüt simülasyonun verdiği **can kaybı**).
  * Tarama gerekçesi `docs/plan/M8-genisleme.md` Faz 5 sonucunda.
  */
-const MAP5_HP_CARPANI = 7.0; // S87 → S91
+const MAP5_HP_CARPANI = 7.2; // S87 → S91 → S101
 const MAP5_ALTIN_CARPANI = 10.0; // S87 — HP ile birlikte (S73 değişmezi)
 
 const MAP5_KALE: Vec2 = { x: 1180, y: 600 };

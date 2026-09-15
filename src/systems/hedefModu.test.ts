@@ -6,11 +6,14 @@
  *
  * ## Ölçülen cevap: hayır, tam olarak değil
  *
- * Yedi senaryoda (metrik: **can kaybı**, oyuncunun umursadığı şey)
- * `weakest` 4, `last` 3, `first` 3, `closest` 1 kez kazandı;
- * **`strongest` hiçbir senaryoyu tek başına kazanmadı** — yalnız
- * herkesin berabere kaldığı tek tip dalgalarda paylaştı. Kayıt:
- * `OPEN-QUESTIONS` S94.
+ * `M11` Faz 4 ölçümü: yedi senaryoda `weakest` 4, `last` 3, `first` 3,
+ * `closest` 1 kez kazandı; **`strongest` hiçbirini tek başına
+ * kazanmadı**.
+ *
+ * **`M14`'te yeniden ölçüldü ve tablo değişti:** aile dengesi (`M11`
+ * Faz 5) ve ekonomi düzeltmesi (`M14`) sonrası `strongest` Örümcek
+ * Ana'lı dalgayı **açık ara** kazanıyor. S94 böylece kapandı — beş
+ * modun beşinin de bir senaryosu var.
  *
  * Bu test o ölçümün **kırılabilir** kısmını bağlıyor: üç modun
  * `first`'ü açık ara yendiği durumlar. Beşinin de kazandığını iddia
@@ -72,6 +75,10 @@ const ZIRHLI_VE_CETE: readonly Grup[] = [
   { enemy: 'goblin', count: 24, spawnDelay: 0.3 },
   { enemy: 'zirhliOrk', count: 10, spawnDelay: 0.8, startAt: 1 },
 ];
+const ORUMCEK_VE_ORK: readonly Grup[] = [
+  { enemy: 'orkSavasci', count: 12, spawnDelay: 0.5 },
+  { enemy: 'orumcekAna', count: 5, spawnDelay: 1.5, startAt: 1 },
+];
 const BOSS_VE_CETE: readonly Grup[] = [
   { enemy: 'goblin', count: 24, spawnDelay: 0.3 },
   { enemy: 'ogreSef', count: 1, spawnDelay: 1, startAt: 2 },
@@ -92,9 +99,19 @@ describe('Hedefleme modları — M11 Faz 4', () => {
     );
   });
 
-  it('`closest` boss+çete dalgasında `first`’ü yeniyor', () => {
-    expect(canKaybi('buyu', 'closest', BOSS_VE_CETE)).toBeLessThan(
-      canKaybi('buyu', 'first', BOSS_VE_CETE),
+  /**
+   * **S94 KAPANDI (`M14`): `strongest` artık bir senaryo kazanıyor.**
+   *
+   * `M11` Faz 4'te beş modun yedi senaryoda ölçümü `strongest`'ı tek
+   * başına hiç kazanamaz göstermişti. `M11` Faz 5'in aile dengesi ve
+   * `M14`'ün ekonomi düzeltmesi tabloyu oynattı: Örümcek Ana'lı
+   * dalgada en dayanıklı türe odaklanmak **açık ara** en iyisi
+   * (17'ye 19), çünkü anne ölmeden bölünme hiç durmuyor ve odağı
+   * dağıtmak her anneyi yarım bırakıyor.
+   */
+  it('`strongest` Örümcek Ana dalgasında `first`’ü yeniyor (S94 kapandı)', () => {
+    expect(canKaybi('okcu', 'strongest', ORUMCEK_VE_ORK)).toBeLessThan(
+      canKaybi('okcu', 'first', ORUMCEK_VE_ORK),
     );
   });
 
