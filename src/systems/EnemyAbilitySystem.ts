@@ -68,6 +68,31 @@ export class EnemyAbilitySystem<T extends AbilityEnemy & Poolable> {
         continue;
       }
 
+      if (y.kind === 'summon') {
+        /**
+         * **Çağırma** — `M13`, boss'un ikinci verb'ü.
+         *
+         * Hedef sayı candan **türetiliyor**: `floor((1 − hp/maxHp) / hpStep)`.
+         * `summonsDone` ondan küçükse aradaki fark kadar çağırıyor, yani
+         * tek karede iki eşik birden geçilse (Meteor) ikisi de işliyor.
+         *
+         * `enrage`'den farkı tek bir tam sayı taşıması: "eşiği geçtim mi"
+         * bilgisi geçmişe bağlı, candan okunamıyor. `resetEnemyState` onu
+         * sıfırlıyor (TIER 1 kural 3).
+         *
+         * **İyileşen boss geri saymıyor.** Şaman boss'u yukarı çekerse
+         * `summonsDone` düşmüyor — aksi hâlde iyileştirme + hasar
+         * döngüsü sonsuz yandaş üretirdi.
+         */
+        const kayip = e.maxHp > 0 ? 1 - e.hp / e.maxHp : 0;
+        const hedef = y.hpStep > 0 ? Math.floor(kayip / y.hpStep) : 0;
+        while (e.summonsDone < hedef) {
+          e.summonsDone++;
+          this.#cagir(e, y.childId, y.count);
+        }
+        continue;
+      }
+
       if (y.kind === 'regen') {
         // §5: Trol 6 HP/sn. **Harita çarpanıyla ölçeklenmiyor (S39)** —
         // §5 mutlak bir hız veriyor, oran değil. Sonuç: harita 3'te
@@ -90,6 +115,30 @@ export class EnemyAbilitySystem<T extends AbilityEnemy & Poolable> {
         }
       }
     }
+  }
+
+  /**
+   * Yandaşları havuzdan doğurur — `splitOnDeath`'in aynı üç satırı.
+   *
+   * Havuz doluysa **kısılıyor**, sessizce `new` çağrılmıyor (kural 3).
+   * Yandaş çağıranın yol ilerlemesini devralıyor: boss'un yanında
+   * beliriyorlar, girişte değil.
+   */
+  #cagir(cagiran: T, childId: EnemyDef['id'], adet: number): number {
+    const def = this.lookupEnemy(childId);
+    const mover = cagiran.mover;
+    if (def === undefined || mover === null) return 0;
+
+    const nerede = cagiran.progress;
+    let dogan = 0;
+    for (let i = 0; i < adet; i++) {
+      const yavru = this.pool.acquire();
+      if (yavru === null) break;
+      yavru.spawn(mover, def, this.hpMultiplier);
+      yavru.progress = nerede;
+      dogan++;
+    }
+    return dogan;
   }
 
   /** İyileştirme **maksimum HP'yi aşmıyor.** */

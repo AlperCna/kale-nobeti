@@ -356,7 +356,7 @@ tahta 3820'de takılıyor ve oyuncu 34 can kaybediyordu (20 canla kayıp).
 | 3 · Kül Ovası | ×2,6 | ×3,8 **←ayrıştı** | 4870 | 5 / 20 ✓ |
 | 4 · Kar Geçidi | ×4,8 | ×7,2 **←ayrıştı** | 5100 | 12 / 20 ✓ |
 | 5 · Kadim Harabe | ×7 | ×10 **←ayrıştı** | 6440 | 14 / 20 ✓ |
-| 6 · Sisli Bataklık | ×6,2 | ×11 **←ayrıştı** | 6440 | 16 / 20 ✓ |
+| 6 · Sisli Bataklık | ×6,2 | ×11 **←ayrıştı** | 6440 | 18 / 20 ✓ |
 
 Türetilebilir kural: **altın, haritanın noktalarını tam yükseltmeye
 yetmeli.** 3,8'de maliyet doyuyor (üstü fazladan kule almıyor), yani sayı
@@ -511,8 +511,8 @@ referans tahtaya, tavana ve boss türetmesine hiç girmiyor — hiçbir düşman
 | Seviye | HP çarpanı | Başlangıç canı | Yıldız | 1 | 2 | 3 | 4 | 5 | 6 |
 |---|---|---|---|---|---|---|---|---|---|
 | kolay | ×0,8 | 20 | **kaydedilmiyor** | 0 / 20 ✓ | 1 / 20 ✓ | 3 / 20 ✓ | 7 / 20 ✓ | 9 / 20 ✓ | 5 / 20 ✓ |
-| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 4 / 20 ✓ | 5 / 20 ✓ | 12 / 20 ✓ | 14 / 20 ✓ | 16 / 20 ✓ |
-| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 4 / 12 ✓ | 5 / 12 ✓ | 12 / 12 ✗ | 14 / 12 ✗ | 16 / 12 ✗ |
+| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 4 / 20 ✓ | 5 / 20 ✓ | 12 / 20 ✓ | 14 / 20 ✓ | 18 / 20 ✓ |
+| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 4 / 12 ✓ | 5 / 12 ✓ | 12 / 12 ✗ | 14 / 12 ✗ | 18 / 12 ✗ |
 
 Hücreler: referans tahtanın kaybettiği can / o seviyenin canı.
 
@@ -693,7 +693,7 @@ Simülasyon **canlı oyunla aynı kodu** kullanıyor: aynı
 | 3 · Kül Ovası | **4** | 651 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:1 d7:0 d8:0 d9:3 d10:0 |
 | 4 · Kar Geçidi | **8** | 6561 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:2 d9:2 d10:4 |
 | 5 · Kadim Harabe | **11** | 7254 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:2 d9:8 d10:1 |
-| 6 · Sisli Bataklık | **15** | 3040 | d1:0 d2:1 d3:2 d4:1 d5:0 d6:1 d7:2 d8:3 d9:4 d10:1 |
+| 6 · Sisli Bataklık | **17** | 3264 | d1:0 d2:1 d3:2 d4:1 d5:0 d6:1 d7:2 d8:3 d9:4 d10:3 |
 
 
 **Hangi düşman sızıyor** — toplam sayı *neyin* sızdığını söylemiyor ve
@@ -706,7 +706,7 @@ bu ikisi farklı düzeltmeler gerektiriyor:
 | 3 · Kül Ovası | Harpi ×3 · Trol ×1 |
 | 4 · Kar Geçidi | Trol ×4 · Zırhlı Ork ×3 · Şaman ×1 |
 | 5 · Kadim Harabe | Zırhlı Ork ×4 · Trol ×3 · Şaman ×2 · Harpi ×1 · Kurt Binicisi ×1 |
-| 6 · Sisli Bataklık | tunelci ×13 · Zırhlı Ork ×1 · Trol ×1 |
+| 6 · Sisli Bataklık | tunelci ×13 · Ork Savaşçı ×2 · Zırhlı Ork ×1 · Trol ×1 |
 
 **Kısıt A ile Kısıt B aynı şeyi ölçmüyor.** Kısıt A *tek* düşman için
 ("bir Ork Savaşçı öldürülebilir mi"), Kısıt B *dalga* için ("on bir tanesi

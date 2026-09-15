@@ -189,6 +189,12 @@ kazandırıyor: Barut kalabalık ve hızlı sürülerde (kurt binicisi ×40:
 1260'a 2237), Havan zırhlı/uçan/tek sert hedefte (zırhlı ork ×30:
 1384'e 2272). Test: `systems/dalKimligi.test.ts`.
 
+**Boss'un verb'ü haritaya göre (`M13`).** Altı haritanın altısında da
+aynı Ogre Şef vardı; değişen tek şey zırh ve HP'ydi. `M10-T03`'ün
+"her harita bir şey öğretir" kuralı boss'a da uygulandı: ilk dört
+harita boss'u **tanıtıyor** (düz), harita 5 ikinci evre, harita 6
+**çağırma**. Tablo `enemies.BOSS_YETENEGI`.
+
 **Patlamanın artık bir BEDELİ var (`M11` Faz 5, S22 kapandı).** Hasar
 merkezde %100, kenarda **%35**; arası doğrusal
 (`BALANCE.patlamaKenarOrani`, `ProjectileSystem.#patlat`). Buraya kadar
@@ -423,6 +429,7 @@ menzilinden geçmeli (8 noktalı haritada ≥ 3). `util/coverage.ts` ile ölçü
 | **Buz kalkanı** (harita 4 Ork Savaşçı) | Patlama/ağır vuruş — kalkan **toplam** bir havuz, erimeden cana hasar geçmiyor |
 | **Ogre Şef 2. evre** (harita 5, can %50) | Hız ×1,6 — kaleye varmadan bitirmek gerekiyor |
 | **Tünelci** (`M12`, yeraltı geçişi) | Yolun %15-%60'ında **hedeflenemez**: kuleleri aralığın DIŞINA kur. Patlama ve önceden tutuşmuş yanma hâlâ değer |
+| **Ogre Şef çağırma** (harita 6, `M13`) | Canının her çeyreğinde 2 Ork Savaşçı doğuruyor — boss'u dilimlemek ekrana gövde getiriyor; alan hasarı öbeği topluyor |
 
 **Hedefleme modları ölçüldü (`M11` Faz 4, S94).** Yedi senaryoda, metrik
 can kaybı: `weakest` 4 · `last` 3 · `first` 3 · `closest` 1 kazandı;
