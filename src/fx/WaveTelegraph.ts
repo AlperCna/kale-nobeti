@@ -1,10 +1,10 @@
 import Phaser from 'phaser';
 import type { Wave } from '../types/wave';
-import type { EnemyId } from '../types/enemy';
+import type { EnemyDef, EnemyId } from '../types/enemy';
 import { NUMBER_FONT_KEY } from './numberFont';
 import { enemyFrameKey } from '../data/spriteFrames';
 import { enemySummary } from './enemyLabel';
-import { getEnemy } from '../data/enemies';
+
 
 /**
  * Dalga telegrafı — `GAME-DESIGN.md` §7, **zorunlu özellik**.
@@ -28,7 +28,21 @@ export class WaveTelegraph {
   readonly #ozetler: Phaser.GameObjects.Text[] = [];
   #gosterilenDalga = -1;
 
-  constructor(scene: Phaser.Scene, x: number, y: number) {
+  /**
+   * @param cozumle Düşman kimliğini **haritaya göre** tanıma çeviren
+   * fonksiyon. Zorunlu parametre, çünkü bu tam olarak S80'in hata
+   * sınıfı: telgraf `getEnemy` (haritasız) kullanıyordu ve oyuncuya
+   * **dövüşmeyeceği** düşmanı gösteriyordu — harita 6'nın bossu zırh
+   * 2 ve çağırma yeteneğiyle geliyor, telgraf ise "zırh 10, yetenek
+   * yok" yazıyordu. Tipi zorunlu yapmak, yeni bir çağıran tarafın aynı
+   * hatayı sessizce tekrarlamasını engelliyor.
+   */
+  constructor(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    private readonly cozumle: (id: EnemyId) => EnemyDef | undefined,
+  ) {
     this.#scene = scene;
     this.#kap = scene.add.container(x, y).setVisible(false);
   }
@@ -79,7 +93,7 @@ export class WaveTelegraph {
       // `M8-T02` — ikonun üstüne gelince "Zırhlı Ork — zırh 8" satırı.
       // Her tip için ayrı statik `Text`, yalnız görünürlük değişiyor
       // (TIER 1 kural 7; bu dosya zaten `setText` çağırmıyor).
-      const def = getEnemy(enemy);
+      const def = this.cozumle(enemy);
       if (def !== undefined) {
         const ozet = this.#scene.add
           .text(0, ICON, enemySummary(def), {
