@@ -219,10 +219,10 @@ export const MAP_2: MapDef = {
    * | Harita | HP çarpanı | Altın çarpanı | Zor | Kolay (×0,80) |
    * |---|---|---|---|---|
    * | 1 | 1,0 | 1,0 | 0 | 0 |
-   * | 2 | **1,3** | 1,6 | 4 | 0 |
-   * | 3 | **2,4** | 3,8 | 7 | 1 |
-   * | 4 | **4,8** | 7,2 | 13 | 3 |
-   * | 5 | **7,0** | 10,0 | 15 | 7 |
+   * | 2 | **1,5** | 1,6 | 4 | 1 |
+   * | 3 | **2,6** | 3,8 | 5 | 3 |
+   * | 4 | 4,8 | 7,2 | 12 | 9 |
+   * | 5 | 7,0 | 10,0 | 14 | 9 |
    *
    * Altın çarpanları **düşmedi**: tahta kule başına zayıfladığı için
    * (Barut Fıçısı'nın yavaşlatması gitti) daha çok altın onu
@@ -249,7 +249,7 @@ export const MAP_2: MapDef = {
    * çarpana BÖLÜYOR, yani sonuç çarpandan bağımsız (S80'in düzelttiği
    * yol). Değişen yalnız sıradan düşmanların canı.
    */
-  hpMultiplier: 1.3,
+  hpMultiplier: 1.5, // S87 → S95 (aile dengesi rampayı yeniden türettirdi)
   goldMultiplier: 1.6, // S87 — HP'den ayrıştı, gerekçe yukarıda
   // S72 — §9 tablosu 340 diyor; **280 × 1,6 = 448** kullanılıyor.
   // Gerekçe §9'un kendi cümlesi: altın çarpanı "altın/HP oranı düşmesin"
@@ -352,7 +352,7 @@ export const MAP_3: MapDef = {
    * körlükleri kapatmadan sayı türetmek, düzeltmeyi iki kez yapmak
    * demek.
    */
-  hpMultiplier: 2.4, // S87 → S91 (M11-T02 dal dengesi rampayı yeniden türettirdi)
+  hpMultiplier: 2.6, // S87 → S91 → S95
   /**
    * **S73 — altın çarpanı HP çarpanından AYRIŞTI (2,6 → 3,8).**
    *

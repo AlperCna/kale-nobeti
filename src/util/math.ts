@@ -4,8 +4,10 @@ import type { Vec2 } from '../types/common';
  * Saf geometri. TIER 1 kural 11: Phaser'a dokunmaz.
  *
  * TIER 1 kural 9: menzil ve yakınlık karşılaştırmaları **karesel** yapılır,
- * `Math.sqrt` çağrılmaz. Tek istisna `segmentLength` — yol uzunluğu gerçek
- * uzunluk ister, karesi toplanamaz.
+ * `Math.sqrt` çağrılmaz. İki istisna, ikisi de *karşılaştırma değil*:
+ * `segmentLength` (yol uzunluğu gerçek uzunluk ister, karesi toplanamaz)
+ * ve `merkezdenOran` (bir **oran** üretiyor; oran karesel alınırsa eğri
+ * değişir, yani sadeleştirilemez).
  */
 
 /** İki nokta arası mesafenin **karesi**. Karşılaştırma için bunu kullan. */
@@ -13,6 +15,24 @@ export function distSq(a: Vec2, b: Vec2): number {
   const dx = a.x - b.x;
   const dy = a.y - b.y;
   return dx * dx + dy * dy;
+}
+
+/**
+ * Bir dairenin merkezinden uzaklaşırken **doğrusal** olarak 1'den 0'a
+ * inen oran. Merkezde `1`, kenarda `0`, dışarıda `0`.
+ *
+ * Kural 9'un ikinci istisnası: burada karşılaştırma değil **oran**
+ * üretiliyor. `1 - d²/r²` yazmak karekökten kaçınırdı ama eğriyi
+ * değiştirirdi (merkez bandı şişer, kenar dikleşir) — yani sadeleştirme
+ * değil, başka bir tasarım olurdu. Yarıçap kontrolünün kendisi çağıran
+ * tarafta hâlâ karesel.
+ *
+ * Kullanan: `ProjectileSystem` patlama hasarı (S22).
+ */
+export function merkezdenOran(mesafeKare: number, yaricap: number): number {
+  if (!(yaricap > 0)) return 0;
+  const oran = 1 - Math.sqrt(mesafeKare) / yaricap;
+  return oran > 0 ? oran : 0;
 }
 
 /** Doğrusal ara değer. `t` kırpılmaz — çağıran sorumlu. */

@@ -18,15 +18,40 @@ export const OKCU: TowerDef = {
   id: 'okcu',
   role: 'Tek hedef, hızlı, ucuz. Zırha karşı zayıf.',
   damageType: 'physical',
+  /**
+   * **`M11` Faz 5 (S95) — Okçu ÖLÜ AİLEYDİ, hasarı yükseldi.**
+   *
+   * T1 6 → **8**, T2 10 → **14**, Keskin Nişancı 26 → **34**,
+   * Kundakçı'nın yanması saniyede 7 → **11**.
+   *
+   * Ölçüm: tahta maliyet dahil tek aileye zorlandığında (yani ucuz
+   * aileye hak ettiği fazladan kule verildiğinde bile) Okçu dört
+   * haritada **14 / 23 / 28 / 33** can kaybettiriyordu; karışık tahta
+   * 4 / 7 / 13 / 15. Yani oyuncunun Okçu kurması her zaman hataydı.
+   *
+   * Sebep yapısaldı: Okçu'nun **hiçbir çarpanı yok**. Top patlıyor
+   * (bir atış N düşmana), Büyü zırhı yok sayıyor ve zincirliyor; Okçu
+   * tek hedefe tek vuruş. Tek üstünlüğü menzil ve fiyat, ama tahtanın
+   * bütün noktaları dolduğu için fiyat avantajı yalnız *erken*
+   * yükseltmeye dönüşüyor — geç oyunda hiçbir şey vermiyor.
+   *
+   * Düzeltme çarpan eklemek değil **kademe çıktısını** hizaya almak
+   * oldu: yeni çarpan yeni bir mekanik demekti ve `M11`'in dersi
+   * görünmeyen mekanik eklememek. Yeni tablo (ham DPS): Okçu T2
+   * **18,2** · Büyü T2 18 · Top T2 18,7 — yani artık aynı bantta.
+   * Sonuç: 6 / 11 / 17 / 17 (karışık 4 / 5 / 12 / 14).
+   *
+   * Kilit: `systems/aileDengesi.test.ts`.
+   */
   tiers: [
-    { cost: 70, damage: 6, fireRate: 1.1, range: 150, airMultiplier: 1 },
-    { cost: 110, damage: 10, fireRate: 1.3, range: 165, airMultiplier: 1 },
+    { cost: 70, damage: 8, fireRate: 1.1, range: 150, airMultiplier: 1 },
+    { cost: 110, damage: 14, fireRate: 1.3, range: 165, airMultiplier: 1 },
   ],
   branches: [
     // 3a Keskin Nişancı — uzun menzil, ağır vuruş.
     {
       cost: 170,
-      damage: 26,
+      damage: 34,
       fireRate: 0.6,
       range: 260,
       airMultiplier: 1,
@@ -40,7 +65,7 @@ export const OKCU: TowerDef = {
       range: 195, // M11-T02: 165 → 195
       airMultiplier: 1,
       branchNameKey: 'branchIncendiary',
-      effect: { kind: 'burn', dps: 7, seconds: 4 }, // M11-T02: dps 4 → 7
+      effect: { kind: 'burn', dps: 11, seconds: 4 }, // M11-T02: 4 → 7 → 11 (S95)
     },
   ],
 };

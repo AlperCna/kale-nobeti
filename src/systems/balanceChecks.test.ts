@@ -24,12 +24,12 @@ const GERCEKCI = buildReferenceBoards(MAP_1, MAP1_WAVES, KAPSAMA_150, true);
 
 describe('effectiveDps — zırh/direnç uygulanmış', () => {
   it('Okçu T1 goblin\'e (zırhsız) tam DPS', () => {
-    expect(effectiveDps(OKCU, 0, GOBLIN)).toBeCloseTo(6 * 1.1, 10);
+    expect(effectiveDps(OKCU, 0, GOBLIN)).toBeCloseTo(8 * 1.1, 10);
   });
 
   it('Okçu T1 Ork Savaşçı\'ya (zırh 2) düşük DPS', () => {
-    // (6 − 2) × 1.1 = 4.4, ham 6.6 değil.
-    expect(effectiveDps(OKCU, 0, ORK_SAVASCI)).toBeCloseTo(4.4, 10);
+    // (8 − 2) × 1.1 = 6.6, ham 8.8 değil.
+    expect(effectiveDps(OKCU, 0, ORK_SAVASCI)).toBeCloseTo(6.6, 10);
   });
 
   it('Top uçana vuramıyor → DPS 0', () => {
