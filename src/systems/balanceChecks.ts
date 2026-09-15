@@ -115,7 +115,8 @@ export function cumulativeGold(
     // S70 — bonus da harita çarpanıyla (EconomySystem.awardWaveEnd gerekçesi).
     toplam += Math.round(BALANCE.waveEndBonus(w.index) * map.goldMultiplier);
     if (withEarlyBonus && w.index >= BALANCE.earlyBonusFrom) {
-      toplam += BALANCE.prepSeconds * Math.ceil(w.index / 2);
+      // `M14` — bonus artık altın çarpanını izliyor (`EconomySystem`).
+      toplam += Math.round(BALANCE.prepSeconds * Math.ceil(w.index / 2) * map.goldMultiplier);
     }
   }
   return toplam;

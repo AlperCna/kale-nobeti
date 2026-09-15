@@ -9,6 +9,7 @@ import type { EnemyDef } from '../types/enemy';
 import type { MapDef } from '../types/map';
 import type { GoldChangeReason } from '../types/events';
 import { BALANCE } from '../data/balance';
+import { earlyStartBonus } from './WaveManager';
 import type { EventBus } from './EventBus';
 
 export class EconomySystem {
@@ -139,6 +140,26 @@ export class EconomySystem {
   awardWaveEnd(waveNo: number): number {
     const b = Math.round(BALANCE.waveEndBonus(waveNo) * this.map.goldMultiplier);
     this.earn(b, 'waveBonus');
+    return b;
+  }
+
+  /**
+   * **Erken başlatma bonusu — `M14`, S70'in kaçırdığı kardeş.**
+   *
+   * `awardWaveEnd` ile birebir aynı gerekçe: gelirin **her** kalemi
+   * haritanın altın çarpanını izlemeli. Ölçüm kaçağı gösterdi — bonus
+   * sabit 520 altın (dalga 4-10, hemen basınca) ve bu harita 1'de
+   * dalga 10'a kadarki gelirin **%32'si**, harita 6'da **%3'ü**. Yani
+   * §6'nın "geç oyunda gerçek bir karar" iddiasının tam tersi: buton
+   * geç haritalarda gürültüye iniyor.
+   *
+   * Öldürme altını (S70), dalga bitiş bonusu (S70) ve başlangıç altını
+   * (S72) çarpanı izliyordu; bu tek kalem atlanmıştı.
+   */
+  awardEarlyStart(remainingSec: number, waveNo: number): number {
+    const b = Math.round(earlyStartBonus(remainingSec, waveNo) * this.map.goldMultiplier);
+    if (b <= 0) return 0;
+    this.earn(b, 'earlyBonus'); // Y06 — dalga bonusuyla aynı "haber değerli" sınıf
     return b;
   }
 

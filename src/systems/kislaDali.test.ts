@@ -70,8 +70,9 @@ const SENARYO: Readonly<Record<string, readonly Grup[]>> = {
   'zırhlı (zırhlı ork ×8)': [{ enemy: 'zirhliOrk', count: 8, spawnDelay: 0.8 }],
   // Sürü: aynı anda çok gövde — üç asker üç şeridi birden tutuyor.
   'sürü (goblin ×20)': [{ enemy: 'goblin', count: 20, spawnDelay: 0.4 }],
-  // Hızlı: kurt binicisi menzilden çabuk çıkıyor, tutmak belirleyici.
-  'hızlı (kurt binicisi ×10)': [{ enemy: 'kurtBinicisi', count: 10, spawnDelay: 0.5 }],
+  // Sert: Trol yenileniyor; üç gövde onu daha uzun tutuyor ve iki
+  // kalın gövdenin canı buna yetmiyor.
+  'sert (trol ×6)': [{ enemy: 'trol', count: 6, spawnDelay: 1.0 }],
 };
 
 function dalga(ad: string): Wave {
@@ -97,7 +98,7 @@ const IDDIA: readonly { senaryo: string; kazanan: 2 | 3; ad: string }[] = [
   { senaryo: 'zırhlı (zırhlı ork ×8)', kazanan: 2, ad: 'Paladin' },
   // Haydutlar: üç gövde — aynı anda üç düşman tutuyor.
   { senaryo: 'sürü (goblin ×20)', kazanan: 3, ad: 'Haydutlar' },
-  { senaryo: 'hızlı (kurt binicisi ×10)', kazanan: 3, ad: 'Haydutlar' },
+  { senaryo: 'sert (trol ×6)', kazanan: 3, ad: 'Haydutlar' },
 ];
 
 describe('Kışla dalları — Paladin / Haydutlar (S43)', () => {

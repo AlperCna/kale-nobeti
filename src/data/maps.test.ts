@@ -145,7 +145,7 @@ describe('Harita 2 ve 3 — GAME-DESIGN.md §9 tablosu', () => {
     expect(MAP_2.paths).toHaveLength(2); // Y ayrımı
     // S87 — zorluk rampası ölçülerek yeniden türetildi; gerekçe ve
     // tarama `data/maps.ts`'in harita 2 üstündeki S87 notunda.
-    expect(MAP_2.hpMultiplier).toBe(1.5);
+    expect(MAP_2.hpMultiplier).toBe(1.6);
     expect(MAP_2.goldMultiplier).toBe(1.6);
     // S72 — §9 tablosu 340/400 diyor ama altın çarpanını izlemiyordu.
     // §9'un kendi gerekçesi ("altın/HP oranı düşmesin") başlangıç altınına
@@ -158,7 +158,7 @@ describe('Harita 2 ve 3 — GAME-DESIGN.md §9 tablosu', () => {
     expect(MAP_3.paths).toHaveLength(2); // iki giriş
     // S82 geri alındı (S86) → S87 ile 3,0 → S91 ile 2,6 (M11-T02 dal
     // dengesi rampayı yeniden türettirdi).
-    expect(MAP_3.hpMultiplier).toBe(2.6);
+    expect(MAP_3.hpMultiplier).toBe(2.8);
     expect(MAP_3.goldMultiplier).toBe(3.8); // S73 — HP çarpanından ayrıştı
     expect(MAP_3.startGold).toBe(1064); // 280 × 3,8
   });
@@ -238,7 +238,7 @@ describe('Harita 4 — M8-T04', () => {
     // can kaybı verdi — harita 3'ten kolay. Tarama 4,4'ü verdi (can 13,
     // harita 3'ün 10'unun üstünde, 20 sınırının altında).
     // S87 → S91: HP düştü, altın kaldı (tahta kule başına zayıfladı).
-    expect(MAP_4.hpMultiplier).toBe(4.8);
+    expect(MAP_4.hpMultiplier).toBe(4.4);
     expect(MAP_4.goldMultiplier).toBe(7.2);
     expect(MAP_4.startGold).toBe(2016);
   });
@@ -384,7 +384,7 @@ describe('Harita 5 - M8-T05', () => {
     // 6,8 seçildi: harita 4'ün 13'ünün üstünde, 20 sınırının %20 altında ve
     // dalga profili tek bir uçurum içermiyor ([0,2,1,1,0,1,0,2,4,2]).
     // S87 → S91.
-    expect(MAP_5.hpMultiplier).toBe(7.0);
+    expect(MAP_5.hpMultiplier).toBe(7.2);
     expect(MAP_5.goldMultiplier).toBe(10.0);
     expect(MAP_5.startGold).toBe(2800);
   });

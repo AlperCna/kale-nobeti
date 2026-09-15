@@ -190,8 +190,9 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
    */
   startWaveEarly(): number {
     if (this.#phase !== 'prep') return 0;
-    const bonus = earlyStartBonus(this.#prepLeftSec, this.waveNumber);
-    this.eco.earn(bonus, 'earlyBonus'); // Y06 — dalga bonusuyla aynı "haber değerli" sınıf
+    // `M14` — ölçekleme `EconomySystem`'de: altının **her** kalemi
+    // haritanın çarpanını tek bir yerden izliyor (S70'in dersi).
+    const bonus = this.eco.awardEarlyStart(this.#prepLeftSec, this.waveNumber);
     this.#dalgayiBaslat();
     return bonus;
   }
