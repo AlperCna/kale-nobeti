@@ -340,6 +340,7 @@ const TR = {
     'Hedefleme — İlk: yolda en öndeki · Son: en gerideki · Güçlü: en dayanıklı tür (azami can) · Zayıf: en yaralı (anlık can) · Yakın: kuleye en yakın',
   hintFlyers: 'Kesikli hat uçanların rotası — yolu izlemezler. Yalnız Okçu ve Büyü onlara tam hasar verir.',
   hintShield: 'Mavi halka buz kalkanı — erimeden cana hasar geçmiyor. Ağır vuruş kalkanı daha çabuk kırar.',
+  hintBurrow: 'Soluk düşman yeraltında — kuleler onu hedef alamaz. Patlama ve yanma yine değer; yolun ilerisini tutan kuleler onu bekler.',
 } as const;
 
 export type StringKey = keyof typeof TR;
@@ -543,5 +544,6 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
       'Targeting — First: furthest along the path · Last: furthest back · Strong: toughest type (max HP) · Weak: most wounded (current HP) · Near: closest to the tower',
     hintFlyers: 'The dashed line is the flyers’ route — they ignore the path. Only Archer and Magic deal full damage to them.',
     hintShield: 'The blue ring is a frost shield — no damage reaches health until it breaks. Heavy hits break it faster.',
+    hintBurrow: 'A faded enemy is underground — towers cannot target it. Splash and burn still land; towers further along the path will catch it.',
   },
 };

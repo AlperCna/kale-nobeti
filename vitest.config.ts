@@ -19,5 +19,23 @@ export default defineConfig({
     // M0-T10'daki guard'a 6. kontrol eklenecek: src/ altinda en az bir
     // *.test.ts olmali. Maske o zaman denetlenmis varsayima donusur.
     passWithNoTests: true,
+
+    /**
+     * **Denge ölçümü testleri birim testi degil** — her biri onlarca tam
+     * dalga simulasyonu kosuyor (`aileDengesi` 10 harita-aile kombinasyonu,
+     * `difficulty` alti haritayi uc zorlukta).
+     *
+     * Varsayilan 5 sn esigi paralel yukte yetmiyor: bu oturumda
+     * `aileDengesi` uc kez, `difficulty` bir kez **yalniz tam suite
+     * kosarken** dustu ve sebebi her seferinde `Test timed out in
+     * 5000ms`'ti — yani gercek bir denge bozulmasi degil, makinenin o
+     * anki yuku. Kararsiz bir test bozuk bir korumadir: dusen test
+     * inanilmaz hale gelir ve insan onu gormezden gelmeye baslar.
+     *
+     * Esik burada, tek yerde. `simulateWave`'in kendi hiz sartini
+     * (M3-T09: 10 dalga < 2 sn) bu ayar gevsetmiyor — o sart ayri bir
+     * testte ve kendi olcumunu yapiyor.
+     */
+    testTimeout: 30_000,
   },
 });

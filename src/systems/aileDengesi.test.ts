@@ -40,7 +40,25 @@ import type { EnemyId } from '../types/enemy';
 import type { MapDef } from '../types/map';
 import type { TowerId } from '../types/tower';
 
+/**
+ * **Bellekleme (`M15`).** Bu dosya aynı `(harita, aile)` ölçümünü
+ * birden çok testte ve tek bir testin içinde birden çok kez istiyor —
+ * karışık tahta örneğin her aile karşılaştırmasında yeniden
+ * hesaplanıyordu. Ölçüm **deterministik**, yani bellekleme sonucu
+ * değiştirmiyor; yalnız 24 tam simülasyonu 10'a indiriyor.
+ *
+ * Sebebi konfor değil **kararlılık**: test bu oturumda üç kez yalnız
+ * paralel yük altında düştü ve sebebi `Test timed out in 5000ms`'ti.
+ * Kararsız bir test bozuk bir korumadır — süreyi büyütmek yerine işi
+ * küçültmek doğru cevap (eşik yine de açıkça veriliyor, aşağıda).
+ */
+const bellek = new Map<string, number>();
+
 function canKaybi(m: MapDef, tekAile?: TowerId): number {
+  const anahtar = `${m.id}:${tekAile ?? 'karisik'}`;
+  const hazir = bellek.get(anahtar);
+  if (hazir !== undefined) return hazir;
+
   const w = wavesFor(m.id);
   const k = measureCoverage(m.paths, m.buildSpots, COVERAGE_REFERENCE_RANGE);
   const sim = simulateAllWaves(w, buildReferenceBoards(m, w, k, true, tekAile), m);
@@ -51,6 +69,7 @@ function canKaybi(m: MapDef, tekAile?: TowerId): number {
       if (e !== undefined) can += e.leakDamage * (n ?? 0);
     }
   }
+  bellek.set(anahtar, can);
   return can;
 }
 

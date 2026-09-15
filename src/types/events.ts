@@ -55,6 +55,12 @@ export interface GameEvents {
    * seferinde kalkanın ne olduğunu anlatıyor (`wave:flyers` deseni).
    */
   'enemy:shielded': Record<string, never>;
+  /**
+   * `M15` — sahada **gömülü** bir düşman var (`M12` yeraltı geçişi).
+   * `enemy:shielded` ile birebir aynı desen ve aynı gerekçe: oyuncu
+   * kulelerinin neden ateş etmediğini kendiliğinden çözemez.
+   */
+  'enemy:burrowed': Record<string, never>;
 
   /** S06 onaylandı. HUD hız butonu yayıyor. */
   'speed:changed': { readonly scale: Speed };

@@ -182,6 +182,7 @@ const HINT_TEXT_KEY: Readonly<Record<HintId, StringKey>> = {
   targetModes: 'hintTargetModes',
   flyers: 'hintFlyers',
   shield: 'hintShield',
+  burrow: 'hintBurrow',
 };
 
 /**
@@ -1251,10 +1252,18 @@ export class GameScene extends Phaser.Scene {
    * alanı ve havuza dönerken `resetForPool` zaten sıfırlıyor.
    */
   #gomululeriCiz(dusmanlar: readonly Enemy[]): void {
+    let gomuluVar = false;
     for (const e of dusmanlar) {
       if (!e.alive) continue;
-      e.setAlpha(gomuluMu(e) ? GOMULU_ALFA : 1);
+      const gomulu = gomuluMu(e);
+      if (gomulu) gomuluVar = true;
+      e.setAlpha(gomulu ? GOMULU_ALFA : 1);
     }
+    // `M15` — öğretici ilk seferinde "kuleler neden ateş etmiyor"u
+    // anlatıyor. `enemy:shielded`'ın birebir deseni: olay **her karede**
+    // yayılıyor ama "ilk kez mi" kararını `TutorialSystem` veriyor;
+    // burada ayrı bir bayrak tutmak kural 3'ün tuzağını açardı.
+    if (gomuluVar) this.bus.emit('enemy:burrowed', {});
   }
 
   /** Yanma hasarı ve yavaşlatma çarpanı — `effects.ts` saf tarafı. */

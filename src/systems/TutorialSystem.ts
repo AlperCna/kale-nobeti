@@ -32,7 +32,7 @@ import type { EventBus } from './EventBus';
  * (kesikli yaylar) ne ifade ediyor net değil". Y09'un öngördüğü gibi her
  * biri bir anahtar + bir tetik.
  */
-export type HintId = 'earlyStart' | 'dragRally' | 'targetModes' | 'flyers' | 'shield';
+export type HintId = 'earlyStart' | 'dragRally' | 'targetModes' | 'flyers' | 'shield' | 'burrow';
 
 const HINT_IDS: readonly HintId[] = [
   'earlyStart',
@@ -40,6 +40,7 @@ const HINT_IDS: readonly HintId[] = [
   'targetModes',
   'flyers',
   'shield',
+  'burrow',
 ];
 
 function gecerliHint(deger: unknown): deger is HintId {
@@ -76,6 +77,19 @@ export class TutorialSystem {
      * oyuncu yalnız "bu ork neden ölmüyor" diye düşünür.
      */
     bus.on('enemy:shielded', () => this.#tetikle('shield'));
+    /**
+     * `M15` — yeraltı geçişi (`M12`, harita 6). Kalkanla **aynı desen ve
+     * aynı ölçüt**: sonucu değiştiriyor (o aralıkta hiçbir kule onu
+     * hedef alamıyor) ve kendiliğinden keşfedilemiyor — oyuncu yalnız
+     * "kulelerim neden ateş etmiyor" diye düşünür.
+     *
+     * **Çağırma (`M13`) için ipucu YOK, bilerek.** `Y09`'un ölçütü iki
+     * şartlı ve çağırma ikincisini karşılamıyor: olay **görünür**
+     * (ekrana yandaş geliyor) ve dalga telgrafı zaten "yandaş çağırır"
+     * diyor (S106). Her mekaniğe bir balon açmak öğreticiyi gürültüye
+     * çevirirdi; bu sistemin yazılı hâli "yalnız gereken kadar".
+     */
+    bus.on('enemy:burrowed', () => this.#tetikle('burrow'));
   }
 
   /** `GameScene.create()`'in sonunda **bir kez** — ilk hazırlık aşaması için. */
