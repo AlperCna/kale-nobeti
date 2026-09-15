@@ -17,8 +17,31 @@ import type { EnemyDef } from '../types/enemy';
  * Kışla — hasar vermez, **zaman kazandırır** (§4.4).
  *
  * Paladin'in "kalkan"ı ve Haydutlar'ın "%25 kaçınma"sı §4.4'te sayısal
- * olarak tanımlı değil: `shield` **yazılmadı** (S43), `evasion` kaydedildi
- * ama anlamı seçildi (S44).
+ * olarak tanımlı değildi. `evasion` kaydedildi ama anlamı seçildi (S44);
+ * **kalkan ise `M11` Faz 3'te ölçüldü ve KONMADI (S43 kapandı).**
+ *
+ * ## Kalkan neden yok — ölçümün üç adımı
+ *
+ * Soru "kalkan kaç olmalı" değil, "hangi kalkan **gerçek bir seçim**
+ * doğurur"du. Üçü de hayır dedi:
+ *
+ * 1. **Zaten seçim var.** Kalkansız hâlde altı senaryo ölçüldü (kışlasız
+ *    tabana göre katkı): Paladin kesintisiz baskıda 328'e 174, zırhlıda
+ *    29'a 5, hızlıda 207'ye 133 · Haydutlar sürüde 254'e 186, dalgalıda
+ *    855'e 608. Yani 4-2'lik **gerçek** bir bölüşme.
+ * 2. **Hiçbir kalkan değeri bunu değiştirmiyor.** 0/20/40/60/100
+ *    tarandı: kazanan senaryolar **aynı** kaldı, yalnız Paladin'in payı
+ *    büyüdü. Yani kalkan seçim üretmiyor, var olan üstünlüğü artırıyor.
+ * 3. **Kalkan = can, başka bir adla.** HP + kalkan toplamı 140'ta
+ *    sabitlenip dağılım kaydırıldığında (140+0 … 60+80) **bütün
+ *    ölçümler birebir aynı** çıktı. Dövüşler arasında dolan bir kalkan
+ *    bile (uygulandı ve doğrulandı: 90 sn'lik koşuda 5 kez doldu,
+ *    Paladin seyrek akında hiç can kaybetmedi) engelleme süresini
+ *    yalnız %5-15 oynatıyor ve tek bir senaryoyu bile çevirmiyor.
+ *
+ * Yani kalkan, oyuncunun kararını değiştirmeyen görünmez bir mekanik
+ * olurdu — `M11`'in tam olarak temizlediği şey. §4.4'ün "11 + kalkan"
+ * satırı düzeltildi. Kilit: `systems/kislaDali.test.ts`.
  */
 export const KISLA: BarracksDef = {
   id: 'kisla',
@@ -28,7 +51,8 @@ export const KISLA: BarracksDef = {
     { cost: 140, soldierCount: 2, soldierHp: 75, soldierDps: 8, respawnSeconds: 7 },
   ],
   branches: [
-    // 3a Paladin — `11 + kalkan`. Kalkan sayısı YOK (S43): shield yazılmadı.
+    // 3a Paladin — `11`. **Kalkan yok**, ölçülerek karar verildi (S43,
+    // `M11` Faz 3): gerekçenin tamamı yukarıdaki başlıkta.
     {
       cost: 210,
       soldierCount: 2,

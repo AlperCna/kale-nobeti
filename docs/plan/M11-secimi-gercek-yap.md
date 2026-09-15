@@ -211,6 +211,31 @@ Rampa bozulursa değişiklik geri alınır.
 Askere uygulanması aynı desen. Sayı taranarak seçilir: Paladin ile
 Haydutlar arasında **gerçek bir seçim** doğuran en küçük değer.
 
+> **BİTTİ — OLUMSUZ sonuç: kalkan KONMADI (S43 kapandı).**
+>
+> Fazın varsayımı yanlış çıktı: "bugün gerçek bir seçim yok" diye
+> başlanmıştı, ölçüm **zaten var** dedi. Kalkansız hâlde altı senaryo,
+> kışlasız tabana göre katkı: Paladin kesintisiz baskı 328/174, zırhlı
+> 29/5, hızlı 207/133 · Haydutlar sürü 254/186, dalgalı 855/608 — 4-2.
+>
+> Kalkan yine de uygulandı ve tarandı, çünkü karar ölçümle verilecekti:
+> 1. 0/20/40/60/100 → **kazanan senaryolar değişmedi**, yalnız
+>    Paladin'in payı büyüdü. Kalkan seçim üretmiyor, üstünlük ekliyor.
+> 2. HP + kalkan toplamı 140'ta sabit tutulup dağılım kaydırıldığında
+>    (140+0 … 60+80) **bütün ölçümler birebir aynı** — kalkan, candan
+>    farklı bir şey değil.
+> 3. "Dövüşler arasında dolan kalkan" da yazıldı ve **çalıştığı
+>    doğrulandı** (90 sn'de 5 dolum, Paladin seyrek akında sıfır can
+>    kaybı) ama engelleme süresini yalnız %5-15 oynattı ve tek bir
+>    senaryoyu bile çevirmedi.
+>
+> Kod geri alındı. Fazın çıktısı üç şey: S43'ün **ölçülmüş** kapanışı,
+> iki dalın ayrıştığını kilitleyen `systems/kislaDali.test.ts`, ve
+> kışla menüsüne S93'ün desenini taşıyan `kislaOzeti` özet satırları.
+>
+> `GAME-DESIGN` §4.4'ün `11 + kalkan` satırı düzeltildi: doküman artık
+> oyunun yapmadığı bir şeyi vaat etmiyor.
+
 ### Faz 4 — Aynı soruyu diğer seçimlere sor *(≈0,5 gün · ölçüm ağırlıklı)*
 
 Dal seçimi tek "seçim" değil. Aynı domine-edilme testi:

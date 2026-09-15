@@ -45,7 +45,12 @@ describe('Kışla tablosu — GAME-DESIGN.md §4.4 birebir', () => {
     expect(t.evasion).toBe(0.25);
   });
 
-  it('S43 — Paladin kalkanı UYDURULMADI, undefined', () => {
+  it('S43 — Paladin kalkanı YOK (ölçüldü, konmadı)', () => {
+    // `M11` Faz 3'e kadar "sayı uydurulmadı" diyordu; artık **ölçülmüş
+    // bir karar**: kalkan hiçbir senaryoyu çevirmiyor ve HP ile
+    // birebir aynı işi yapıyor (`data/barracks.ts` başlığı).
+    // İki dalın gerçekten ayrıştığını `systems/kislaDali.test.ts`
+    // gösteriyor — kalkansız.
     expect(barracksTierAt(KISLA, 2).shield).toBeUndefined();
     // Diğer kademelerde de kalkan yok.
     for (const i of [0, 1, 3] as const) {
