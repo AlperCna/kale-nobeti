@@ -33,6 +33,9 @@ import { kalkandanGecir } from './combat';
 import { getEnemyForMap } from '../data/enemies';
 import { KISLA, barracksTierAt, SOLDIER_SPEED } from '../data/barracks';
 import { defaultRally, spawnSoldier, stepSoldiers } from './BarracksSystem';
+import { AbilitySystem } from './AbilitySystem';
+import { METEOR } from '../data/abilities';
+import { distSq } from '../util/math';
 import type { SoldierState } from '../types/barracks';
 import { EconomySystem } from './EconomySystem';
 import { EventBus } from './EventBus';
@@ -44,6 +47,24 @@ import { applyEffect, emptyEffects, resetEffects, speedMultiplier, stepEffects }
 import { TowerSystem } from './TowerSystem';
 import { WaveManager } from './WaveManager';
 import type { TowerEffect } from '../types/tower';
+
+/**
+ * **Oyuncunun iki yeteneği — `M11` Faz 4'te eklendi, varsayılan KAPALI.**
+ *
+ * `waveSim` bugüne kadar Meteor'u ve Takviye'yi hiç simüle etmiyordu:
+ * referans tahta yetenek kullanmıyor, yani ölçülen zorluk oyuncunun
+ * elindeki araçların bir kısmını **görmüyordu**. Bu, `M10`'un üç
+ * körlüğüyle (S80/S81/S86) aynı sınıf ama ters yönde: ölçüm oyunu
+ * **zor** gösteriyordu, kolay değil — yani muhafazakârdı ve denge
+ * sayılarını bozmuyordu. Bu yüzden varsayılan `'yok'`: bütün mevcut
+ * ölçümler aynen duruyor, yetenekler yalnız açıkça istendiğinde
+ * simüle ediliyor (Faz 4'ün "Takviye meşru mu" sorusu).
+ *
+ * **Politika bilerek basit ve muhafazakâr:** bekleme dolar dolmaz,
+ * en iyi hedefe. Gerçek oyuncu zamanlamayı daha iyi yapar, yani
+ * ölçülen katkı bir **alt sınır**.
+ */
+export type YetenekKullanimi = 'yok' | 'meteor' | 'takviye' | 'ikisi';
 
 export interface SimResult {
   /** Kaleye ulaşan düşmanların **kalan** HP toplamı. Birim: HP. */
@@ -192,6 +213,8 @@ export function simulateWave(
    * birebir şekli.
    */
   hpScale = 1,
+  /** Oyuncunun yetenekleri — varsayılan `'yok'`, bkz. `YetenekKullanimi`. */
+  yetenekKullanimi: YetenekKullanimi = 'yok',
 ): SimResult {
   const dogumCarpani = map.hpMultiplier * hpScale;
   const bus = new EventBus();
@@ -351,6 +374,33 @@ export function simulateWave(
     kislalar.push({ soldiers: askerler, respawnSeconds: kademe.respawnSeconds });
   }
 
+  /**
+   * Oyuncunun yetenekleri. `'yok'` ise hiç kurulmuyor — tek satır bile
+   * çalışmıyor, yani bugünkü bütün ölçümler birebir aynı kalıyor.
+   */
+  const oyuncuYetenekleri = yetenekKullanimi === 'yok' ? null : new AbilitySystem();
+  /** Takviye'nin geçici askerleri — kışla askerleriyle aynı kurallar (S47). */
+  const gecicAskerler: SoldierState[] = [];
+  const METEOR_YARICAP_KARE = METEOR.radius * METEOR.radius;
+  const yeniGeciciAsker = (): SoldierState => ({
+    x: 0,
+    y: 0,
+    hp: 0,
+    maxHp: 0,
+    dps: 0,
+    engagedWith: null,
+    home: { x: 0, y: 0 },
+    rally: { x: 0, y: 0 },
+    state: 'dead',
+    respawnLeft: 0,
+    shield: 0,
+    evasion: 0,
+    lifetimeLeft: Number.POSITIVE_INFINITY,
+    speed: SOLDIER_SPEED,
+    alive: false,
+    flipX: false,
+  });
+
   // Hazırlık aşamasını atla — ölçülen şey dalganın kendisi.
   wm.startWaveEarly();
 
@@ -386,6 +436,69 @@ export function simulateWave(
       if (yanma > 0) hasarVer(e, yanma);
     }
     if (dusmanlar.length > peakEnemies) peakEnemies = dusmanlar.length;
+
+    // --- Oyuncunun yetenekleri (`M11` Faz 4, varsayılan kapalı) ---------
+    if (oyuncuYetenekleri !== null) {
+      oyuncuYetenekleri.tick(stepMs);
+      const canlilar = dusmanlar.filter((e) => e.alive && e.hp > 0);
+      if (
+        (yetenekKullanimi === 'meteor' || yetenekKullanimi === 'ikisi') &&
+        oyuncuYetenekleri.ready('meteor') &&
+        canlilar.length > 0
+      ) {
+        // **En kalabalık nokta.** Adaylar düşmanların kendi konumları:
+        // en iyi daire merkezinin en az bir düşmanın üstünden geçtiği
+        // her zaman doğru değil ama fark küçük ve politika muhafazakâr.
+        let enIyi = canlilar[0]!;
+        let enCok = 0;
+        for (const aday of canlilar) {
+          let n = 0;
+          for (const e of canlilar) if (distSq(aday, e) <= METEOR_YARICAP_KARE) n++;
+          if (n > enCok) {
+            enCok = n;
+            enIyi = aday;
+          }
+        }
+        const sonuc = oyuncuYetenekleri.castMeteor({ x: enIyi.x, y: enIyi.y }, canlilar);
+        if (sonuc !== null) {
+          // Ölüm muhasebesi çağıranın işi — `castMeteor` yalnız `hp`
+          // düşürüyor (kışlayla aynı sözleşme).
+          for (const e of canlilar) {
+            if (e.alive && e.hp <= 0) {
+              e.alive = false;
+              killedCount++;
+              enemyPool.release(e);
+            }
+          }
+        }
+      }
+      if (
+        (yetenekKullanimi === 'takviye' || yetenekKullanimi === 'ikisi') &&
+        oyuncuYetenekleri.ready('takviye') &&
+        canlilar.length > 0
+      ) {
+        // **Öndeki düşmanın önü.** Takviye zaman kazandırma aracı; en
+        // ileri düşmanı tutmak kaleye en yakın tehdidi geciktiriyor.
+        let on = canlilar[0]!;
+        for (const e of canlilar) if (e.progress > on.progress) on = e;
+        oyuncuYetenekleri.castReinforcements({ x: on.x, y: on.y }, () => {
+          const s2 = yeniGeciciAsker();
+          gecicAskerler.push(s2);
+          return s2;
+        });
+      }
+    }
+    if (gecicAskerler.length > 0) {
+      stepSoldiers(gecicAskerler, dusmanlar, stepMs, Number.POSITIVE_INFINITY);
+      for (const e of dusmanlar) {
+        if (e.alive && e.hp <= 0) {
+          e.alive = false;
+          killedCount++;
+          enemyPool.release(e);
+        }
+      }
+    }
+
     // Kışla kulelerden **önce**: engellenen düşman aynı adımda duruyor,
     // yani kule ona ateş ederken doğru konumda oluyor (canlı oyunla
     // aynı sıra — `GameScene.update`).
@@ -425,8 +538,10 @@ export function simulateAllWaves(
   stepMs = 1000 / 60,
   /** Zorluk seviyesinin doğum çarpanı — bkz. `simulateWave` (S92). */
   hpScale = 1,
+  /** Oyuncunun yetenekleri — varsayılan `'yok'`, bkz. `YetenekKullanimi`. */
+  yetenekKullanimi: YetenekKullanimi = 'yok',
 ): SimResult[] {
   return waves.map((w, i) =>
-    simulateWave(w, boards[i] ?? boards[boards.length - 1]!, map, stepMs, hpScale),
+    simulateWave(w, boards[i] ?? boards[boards.length - 1]!, map, stepMs, hpScale, yetenekKullanimi),
   );
 }

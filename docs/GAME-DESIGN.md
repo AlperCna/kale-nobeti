@@ -400,9 +400,21 @@ menzilinden geçmeli (8 noktalı haritada ≥ 3). `util/coverage.ts` ile ölçü
 | Harpi sürüsü | Okçu + Büyü + Top (ikisi de %50 vuruyor; **Havan önde**, uzun menzili uçan hattını daha çok görüyor — S91) |
 | Trol | Kışla ile tut + yoğun tek hedef |
 | Kurt Binicisi | **Buz** (yavaşlatma artık yalnız onda) / Barut Fıçısı'nın geniş patlaması |
-| Ogre Şef | Büyü + Top, `strongest` hedefleme, Meteor |
+| Ogre Şef | Büyü + Top, **`weakest` ya da `closest`** hedefleme (S94: `strongest` ölçümde en kötü çıktı), Meteor |
 | **Buz kalkanı** (harita 4 Ork Savaşçı) | Patlama/ağır vuruş — kalkan **toplam** bir havuz, erimeden cana hasar geçmiyor |
 | **Ogre Şef 2. evre** (harita 5, can %50) | Hız ×1,6 — kaleye varmadan bitirmek gerekiyor |
+
+**Hedefleme modları ölçüldü (`M11` Faz 4, S94).** Yedi senaryoda, metrik
+can kaybı: `weakest` 4 · `last` 3 · `first` 3 · `closest` 1 kazandı;
+**`strongest` hiçbirini tek başına kazanmadı.** Boss tavsiyesi bu yüzden
+düzeltildi: tavan yetmiyorsa boss'a odaklanmak onu yine öldürmüyor ama
+çetenin sızmasına izin veriyor. Kilit: `systems/hedefModu.test.ts`.
+
+**İki yetenek de meşru (`M11` Faz 4).** `waveSim` artık oyuncunun
+yeteneklerini de simüle edebiliyor (varsayılan kapalı). Ölçülen can
+kaybı — Kar Geçidi: yok 13 · Meteor 8 · Takviye 11 · ikisi 5;
+Kadim Harabe: yok 15 · Meteor 12 · **Takviye 10** · ikisi 6. Yani
+Takviye Meteor'un gölgesinde değil, en zor haritada ondan **iyi**.
 
 **Kule sinerjisi (M10):** yavaşlatılmış düşman **fiziksel** hasardan
 ×1,25 etkileniyor. Yani **Buz** ile Okçu-Top birlikte çalışıyor;
