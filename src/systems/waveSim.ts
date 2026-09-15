@@ -40,6 +40,7 @@ import { PathSystem } from './PathSystem';
 import { LineMover, PathMover, resetEnemyState } from './movers';
 import { ProjectileSystem } from './ProjectileSystem';
 import { EnemyAbilitySystem } from './EnemyAbilitySystem';
+import { applyEffect, emptyEffects, resetEffects, speedMultiplier, stepEffects } from './effects';
 import { TowerSystem } from './TowerSystem';
 import { WaveManager } from './WaveManager';
 import type { TowerEffect } from '../types/tower';
@@ -77,6 +78,8 @@ class SimEnemy implements SpawnableEnemy, Poolable, Targetable {
   alive = false;
   /** `M10-T03` — oyunla aynı kalkan alanı; denge ölçümü onu da görsün. */
   shieldLeft = 0;
+  /** `M10-T05` — süreli kule etkileri (yanma, yavaşlatma). Oyunla aynı alan. */
+  readonly effects = emptyEffects();
   mover: Mover | null = null;
 
   get remainingDistance(): number {
@@ -109,6 +112,7 @@ class SimEnemy implements SpawnableEnemy, Poolable, Targetable {
 
   resetForPool(): void {
     resetEnemyState(this);
+    resetEffects(this.effects); // M10-T05 — TIER 1 kural 3
     this.mover = null;
     this.x = 0;
     this.y = 0;
@@ -192,14 +196,37 @@ export function simulateWave(
   const enemyPool = new Pool<SimEnemy>(() => new SimEnemy(), POOL_PREALLOC.enemy);
   const projPool = new Pool<SimProjectile>(() => new SimProjectile(), POOL_PREALLOC.projectile);
 
-  const projectiles = new ProjectileSystem<SimEnemy, SimProjectile>(projPool, (e, sonuc) => {
+  /**
+   * Tek hasar hunisi — `GameScene.#hasarUygula`'nın karşılığı.
+   *
+   * Mermi de yanma da buradan geçiyor; ayrı yazılsaydı kalkan ya da
+   * ölüm muhasebesi iki yerde ayrışırdı (S80/S81'in hata sınıfı).
+   */
+  const hasarVer = (e: SimEnemy, miktar: number): void => {
     if (!e.alive) return;
-    e.hp -= kalkandanGecir(sonuc.dealt, e); // M10-T03 — oyunla aynı sıra
+    e.hp -= kalkandanGecir(miktar, e); // M10-T03 — oyunla aynı sıra
     if (e.hp > 0) return;
     e.alive = false;
     killedCount++;
     enemyPool.release(e);
-  });
+  };
+
+  const projectiles = new ProjectileSystem<SimEnemy, SimProjectile>(
+    projPool,
+    (e, sonuc) => hasarVer(e, sonuc.dealt),
+    /**
+     * **Süreli etkiler — `M10-T05`'te eklendi (S86).**
+     *
+     * Buraya kadar `waveSim` `onEffect` geri çağrısını hiç vermiyordu,
+     * yani yanma ve yavaşlatma **hiç uygulanmıyordu**. Kundakçı'nın
+     * yanması (9 hasar + 4/sn × 4 sn = vuruş başına 16 ek hasar) ve
+     * Buz dalının yavaşlatması hiçbir denge ölçümünde yoktu.
+     *
+     * S80 (boss) ve S81 (düşman yetenekleri) ile aynı hata sınıfının
+     * üçüncüsü: oyun ile sim farklı şey çalıştırıyor.
+     */
+    (e, effect) => applyEffect(e.effects, effect),
+  );
 
   const towers = new TowerSystem((kule, tier, hedef) => {
     const ucanCarpani = hedef.def?.flying === true ? tier.airMultiplier : 1;
@@ -327,6 +354,15 @@ export function simulateWave(
     wm.update(stepMs);
     yetenekler.update(stepMs);
     const dusmanlar = enemyPool.activeItems();
+    // Etkiler yeteneklerden SONRA, kışla/kulelerden ÖNCE —
+    // `GameScene.update`'in birebir sırası.
+    for (const e of dusmanlar) {
+      if (!e.alive) continue;
+      const yanma = stepEffects(e.effects, stepMs);
+      e.speedFactor = speedMultiplier(e.effects);
+      // Yanma **gerçek hasar**: zırh/direnç uygulanmıyor (§4.1).
+      if (yanma > 0) hasarVer(e, yanma);
+    }
     if (dusmanlar.length > peakEnemies) peakEnemies = dusmanlar.length;
     // Kışla kulelerden **önce**: engellenen düşman aynı adımda duruyor,
     // yani kule ona ateş ederken doğru konumda oluyor (canlı oyunla

@@ -290,27 +290,20 @@ export const MAP_3: MapDef = {
   flyerPaths: [MAP3_FLYER_A, MAP3_FLYER_B],
   castle: MAP3_KALE,
   /**
-   * `M10-T03` (S82): **2,6 → 2,4.** Yetenekler simüle edilmeye
-   * başlayınca harita 3 Zor'da (can 12) **14 can** kaybediyordu, yani
-   * `difficulty.ts`'in "öğrenme yayı (harita 1-3) Zor'da hâlâ
-   * geçilebilir" ölçütü düşüyordu.
+   * **S82 GERİ ALINDI (S86).** `M10-T03` sırasında 2,6 → 2,5 yapılmıştı,
+   * çünkü `waveSim` düşman yeteneklerini simüle etmeye başlayınca harita
+   * 3 Zor'da geçilemez çıkmıştı (14 can, sınır 12).
    *
-   * İki ölçüt birden tutmak zorunda: Zor'da can kaybı **< 12** ve
-   * zorluk **monoton** (harita 2 < harita 3 < harita 4). Ölçülen ince
-   * tarama — can kaybı, gerçekçi referans tahta (h2 = 8, h4 = 15):
+   * O ölçüm **hâlâ eksikti**: simülasyon süreli etkileri (yanma,
+   * yavaşlatma) de uygulamıyordu. Üçü birden açılınca harita 3 Zor'da
+   * 2,6 ile **6 can** kaybediyor — yani orijinal sayı ölçütünü zaten
+   * karşılıyor ve 2,5 yarım simülasyonun artefaktıydı.
    *
-   * | hpMultiplier | Zor | Monoton + geçilebilir |
-   * |---|---|---|
-   * | 2,6 (eski) | 14 | ✗ geçilemiyor |
-   * | 2,55 | 12 | ✗ tam sınırda |
-   * | **2,5** | **11** | **✓** |
-   * | 2,45 | 10 | ✓ |
-   * | 2,4 | 8 | ✗ harita 2 ile eşit |
-   *
-   * 2,5 iki ölçütü de karşılayan **en küçük** değişiklik. Altın çarpanı
-   * etkilenmiyor: S73 onu zaten HP'den ayırmış (3,8).
+   * Ders yazılı dursun: bir ölçüm aracı düzeltilirken **bütün**
+   * körlükleri kapatmadan sayı türetmek, düzeltmeyi iki kez yapmak
+   * demek.
    */
-  hpMultiplier: 2.5,
+  hpMultiplier: 2.6,
   /**
    * **S73 — altın çarpanı HP çarpanından AYRIŞTI (2,6 → 3,8).**
    *
