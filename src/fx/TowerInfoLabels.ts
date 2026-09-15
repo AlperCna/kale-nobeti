@@ -1,5 +1,17 @@
 import Phaser from 'phaser';
 import { t } from '../util/i18n';
+import { TOWERS } from '../data/towers';
+import type { TowerEffect } from '../types/tower';
+
+/**
+ * Etkinin bir satırlık okunur hâli. Sayılar `towers.ts`'ten geliyor,
+ * burada elle yazılmıyor (TIER 1 kural 1).
+ */
+function etkiMetni(e: TowerEffect): string {
+  if (e.kind === 'burn') return `${t('infoEffectBurn')} ${e.dps}/sn · ${e.seconds} sn`;
+  if (e.kind === 'slow') return `${t('infoEffectSlow')} %${Math.round(e.factor * 100)} · ${e.seconds} sn`;
+  return `${t('infoEffectChain')} ×${e.targets}`;
+}
 
 /**
  * Kule bilgi panelinin **statik etiketleri** — `TowerInfoPanel`'den ayrı
@@ -32,9 +44,13 @@ export const SATIRLAR = {
   coverage: 100,
   upgrade: 126,
   refund: 152,
-  tip: 178,
-  dps: 204,
-  ikonlar: 236,
+  /** `M11-T01` — kule etkisi. Etkiler yalnız T3 dallarında, ama satır
+   *  kalıcı: etkisiz dalda `—` yazıyor, yani "bu dalın etkisi yok"
+   *  bilgisi de görünür oluyor. */
+  effect: 178,
+  tip: 204,
+  dps: 230,
+  ikonlar: 262,
 } as const;
 
 export class TowerInfoLabels {
@@ -45,6 +61,9 @@ export class TowerInfoLabels {
   readonly #ucanaVurmaz: Phaser.GameObjects.Text;
   readonly #sonKademe: Phaser.GameObjects.Text;
   readonly #dalSecimi: Phaser.GameObjects.Text;
+  /** `M11-T01` — etki açıklamaları, anahtar `<aileId>:<kademe>`. */
+  readonly #etkiler = new Map<string, Phaser.GameObjects.Text>();
+  readonly #etkiYok: Phaser.GameObjects.Text;
 
   constructor(scene: Phaser.Scene, solPay: number, tipSutunX: number) {
     const etiket = (y: number, metin: string, x = solPay, renk: string = PARCHMENT) => {
@@ -92,6 +111,44 @@ export class TowerInfoLabels {
      */
     this.#dalSecimi = etiket(SATIRLAR.upgrade, t('infoBranchChoice'), tipSutunX, PARCHMENT);
     this.#dalSecimi.setVisible(false);
+
+    /**
+     * `M11-T01` — **etki satırı.**
+     *
+     * Oyuncu buraya kadar yanma ve yavaşlatmayı hiçbir yerde
+     * göremiyordu: dal düğmesi yalnız adı yazıyor (`Kundakçı`), panel
+     * yalnız ham sayıları. Ölçüm altı T3 dalından üçünün ölü içerik
+     * olduğunu gösterdi; oyuncunun bunu fark edebilmesi için önce
+     * dalların ne yaptığını **görmesi** gerekiyor (araştırmanın "tam
+     * bilgi ver" kuralı).
+     *
+     * Metinler `TOWERS`'tan **üretiliyor**, elle yazılmıyor — sayı
+     * `towers.ts`'te değişirse panel kendiliğinden doğru kalıyor
+     * (TIER 1 kural 1).
+     *
+     * Hepsi baştan kuruluyor, geçiş `setVisible` ile: bu dosya `Text`
+     * üretiyor ve bekçi k.4 burada `setText`i yasaklıyor.
+     */
+    etiket(SATIRLAR.effect, t('infoEffect'));
+    this.#etkiYok = etiket(SATIRLAR.effect, t('infoEffectNone'), tipSutunX, '#9A948A');
+    for (const def of TOWERS) {
+      def.branches.forEach((tier, i) => {
+        const e = tier.effect;
+        if (e === undefined) return;
+        const kademe = 2 + i;
+        this.#etkiler.set(`${def.id}:${kademe}`, etiket(SATIRLAR.effect, etkiMetni(e), tipSutunX));
+      });
+    }
+    this.setEffect(null);
+  }
+
+  /**
+   * Hangi etki gösterilecek. `null` → `—`.
+   * @param anahtar `<aileId>:<kademe>` (ör. `okcu:3`).
+   */
+  setEffect(anahtar: string | null): void {
+    for (const [k, n] of this.#etkiler) n.setVisible(k === anahtar);
+    this.#etkiYok.setVisible(anahtar === null || !this.#etkiler.has(anahtar));
   }
 
   /** Son kademe mi? Öyleyse yükseltme sayısının yerine etiket çıkıyor. */
