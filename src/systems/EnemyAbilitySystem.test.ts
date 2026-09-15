@@ -7,7 +7,18 @@ import { Pool } from '../util/pool';
 import type { Poolable } from '../util/pool';
 import type { EnemyDef, Mover } from '../types/enemy';
 import type { Vec2 } from '../types/common';
-import { GOBLIN, SAMAN, TROL, ORUMCEK_ANA, ORUMCEK_YAVRUSU, HARPI, getEnemy } from '../data/enemies';
+import {
+  GOBLIN,
+  SAMAN,
+  TROL,
+  ORUMCEK_ANA,
+  ORUMCEK_YAVRUSU,
+  HARPI,
+  OGRE_SEF,
+  getEnemy,
+  getEnemyForMap,
+} from '../data/enemies';
+import { MAPS } from '../data/maps';
 
 const YOL: readonly Vec2[] = [
   { x: 0, y: 0 },
@@ -314,5 +325,79 @@ describe('LineMover — uçan hareketi (M4-T05)', () => {
     const oncesi = m.remainingDistance(e);
     m.step(e, 5000);
     expect(m.remainingDistance(e)).toBe(oncesi);
+  });
+});
+
+/**
+ * **İkinci evre** — `M10-T03`, harita 5'in yeni mekaniği.
+ *
+ * Hız her karede can oranından **türetiliyor**, saklanmıyor. Testler
+ * bunun iki sonucunu da bağlıyor: idempotentlik (üst üste çağrı hızı
+ * katlamıyor) ve geri dönebilirlik (iyileşen düşman normale dönüyor).
+ */
+describe('enrage — can eşiğinin altında hızlanma', () => {
+  const OFKELI: EnemyDef = {
+    ...OGRE_SEF,
+    ability: { kind: 'enrage', hpRatio: 0.5, speedMultiplier: 1.6 },
+  };
+
+  it('eşiğin ÜSTÜNDE hız taban hızda kalıyor', () => {
+    const { pool, mover, sys } = kur();
+    const e = dogur(pool, mover, OFKELI);
+    e.hp = e.maxHp * 0.8;
+    sys.update(1000 / 60);
+    expect(e.speed).toBeCloseTo(OGRE_SEF.speed, 6);
+  });
+
+  it('eşiğin ALTINDA hız çarpanla artıyor', () => {
+    const { pool, mover, sys } = kur();
+    const e = dogur(pool, mover, OFKELI);
+    e.hp = e.maxHp * 0.4;
+    sys.update(1000 / 60);
+    expect(e.speed).toBeCloseTo(OGRE_SEF.speed * 1.6, 6);
+  });
+
+  /**
+   * Bayrak tutulsaydı havuza dönen düşmanda sıfırlanması gerekirdi —
+   * bu projenin beş kez yaşadığı hata sınıfı (TIER 1 kural 3). Türetme
+   * o riski tümden kaldırıyor ve bu test onu bağlıyor.
+   */
+  it('üst üste kareler hızı KATLAMIYOR — idempotent', () => {
+    const { pool, mover, sys } = kur();
+    const e = dogur(pool, mover, OFKELI);
+    e.hp = e.maxHp * 0.4;
+    for (let i = 0; i < 50; i++) sys.update(1000 / 60);
+    expect(e.speed).toBeCloseTo(OGRE_SEF.speed * 1.6, 6);
+  });
+
+  /** Şaman boss'u eşiğin üstüne iyileştirirse hız da normale dönüyor. */
+  it('can eşiğin üstüne çıkarsa hız GERİ DÖNÜYOR', () => {
+    const { pool, mover, sys } = kur();
+    const e = dogur(pool, mover, OFKELI);
+    e.hp = e.maxHp * 0.4;
+    sys.update(1000 / 60);
+    expect(e.speed).toBeCloseTo(OGRE_SEF.speed * 1.6, 6);
+    e.hp = e.maxHp * 0.9;
+    sys.update(1000 / 60);
+    expect(e.speed).toBeCloseTo(OGRE_SEF.speed, 6);
+  });
+
+  it('yeteneksiz düşmanın hızına dokunulmuyor', () => {
+    const { pool, mover, sys } = kur();
+    const e = dogur(pool, mover, GOBLIN);
+    e.hp = e.maxHp * 0.1;
+    sys.update(1000 / 60);
+    expect(e.speed).toBeCloseTo(GOBLIN.speed, 6);
+  });
+});
+
+/** Evre YALNIZ harita 5'te — diğer haritaların bossu değişmiyor. */
+describe('ikinci evre kapsamı', () => {
+  it('yalnız kadim-harabe bossunda enrage var', () => {
+    for (const m of MAPS) {
+      const boss = getEnemyForMap('ogreSef', m)!;
+      const beklenen = m.id === 'kadim-harabe' ? 'enrage' : undefined;
+      expect(boss.ability?.kind, m.id).toBe(beklenen);
+    }
   });
 });

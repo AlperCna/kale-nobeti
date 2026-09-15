@@ -267,11 +267,70 @@ export function getEnemy(id: EnemyDef['id']): EnemyDef | undefined {
  */
 const KAR_GECIDI_KALKANI = 25;
 
+/**
+ * **Ogre Şef'in ikinci evresi** — `M10-T03`, yalnız harita 5.
+ *
+ * ## Neden var
+ *
+ * Kadro ölçümü harita 4 ve 5'in **sıfır** yeni mekanik tanıttığını
+ * gösterdi. Harita 4'ün cevabı buz kalkanı; harita 5 son harita, yani
+ * cevabının **finalin kendisi** olması doğru: boss dövüşü tek uzun bir
+ * HP çubuğu olmaktan çıkıp iki evreye ayrılıyor.
+ *
+ * ## Neden hız
+ *
+ * Yeni sanat gerektirmiyor ve **gözle görünüyor**: boss'un adımı bir
+ * anda açılıyor. Oyuncu bunu can çubuğuna bakmadan fark ediyor —
+ * TIER 1 kural 6, bilgi renge değil harekete bağlı.
+ *
+ * Alternatifler elendi: zırh artışı görünmez (hasar sayıları küçülür
+ * ama bunu okumak uzmanlık ister); refakat çağırmak havuz ve doğum
+ * yolu açardı ve Örümcek Ana'nın bölünmesinin tekrarı olurdu.
+ *
+ * ## Sayılar ölçüldü
+ *
+ * Harita 5, referans tahtaya karşı (taban = evre yok):
+ *
+ * | Çarpan | Zor can | Kolay can | dalga 10 sızan |
+ * |---|---|---|---|
+ * | — (taban) | 18 | 5 | 3 |
+ * | **1,6** | **16** | **5** | **2** |
+ * | 1,7–1,8 | 15 | 5 | 1 |
+ * | **1,9+** | **25** | **15** | 2 |
+ *
+ * **Uçurum 1,9'da:** orada Kolay'ın kendi ölçütü (can kaybı ≤ 10)
+ * düşüyor. 1,8 son güvenli değer ama tam kenarda; 1,6 iki adım içeride
+ * ve yine açıkça görünür bir fark (28 px/sn → 45 px/sn).
+ *
+ * Eşik 0,35 ile 0,5 arasında ölçülebilir fark çıkmadı; 0,5 seçildi
+ * çünkü "yarısında" oyuncunun can çubuğundan okuyabileceği tek nokta.
+ *
+ * **Dürüstlük notu:** ölçüm evrenin haritayı *zorlaştırmadığını*
+ * gösteriyor (18 → 16) — hızlanan boss kaleye daha erken varıyor ve
+ * kuleleri refakatçilere bırakıyor. Amaç zaten zorluk değil **his**:
+ * boss dövüşü tek uzun bir HP çubuğu olmaktan çıkıyor. Dengeyi
+ * bozmadığı ölçüldü, bozmadığı için de duruyor.
+ *
+ * **Ayrı bir görsel vurgu YOK.** Hızın kendisi sinyal; ek bir tint
+ * `Enemy`'nin vuruş flaşıyla (`#flashLeft`) aynı kanalı kullanıyor ve
+ * ikisi çakışırdı. Evre geçişine özel bir efekt, sanat turunun işi.
+ */
+const KADIM_HARABE_EVRE2 = {
+  kind: 'enrage',
+  hpRatio: 0.5,
+  speedMultiplier: 1.6,
+} as const;
+
 export function getEnemyForMap(
   id: EnemyDef['id'],
   map: { id: string; hpMultiplier: number },
 ): EnemyDef | undefined {
-  if (id === 'ogreSef') return bossFor(map);
+  if (id === 'ogreSef') {
+    const boss = bossFor(map);
+    // `M10-T03` — harita 5'in ikinci evresi. Gerekçe ve ölçüm
+    // `KADIM_HARABE_EVRE2`'de.
+    return map.id === 'kadim-harabe' ? { ...boss, ability: KADIM_HARABE_EVRE2 } : boss;
+  }
   const temel = getEnemy(id);
   if (temel === undefined) return undefined;
   if (map.id === 'kar-gecidi' && id === 'orkSavasci') {
