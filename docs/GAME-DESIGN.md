@@ -622,6 +622,15 @@ düzeltildi:
   | 3 Kül Ovası | **2,6** | 3,8 | 5 | 3 |
   | 4 Kar Geçidi | **4,8** | 7,2 | 12 | 9 |
   | 5 Kadim Harabe | **7,0** | 10,0 | 14 | 9 |
+  | 6 Sisli Bataklık | **6,2** | 11,0 | 16 | 5 |
+
+  **Harita 6'nın çarpanı harita 5'inkinden DÜŞÜK** (`M12` Faz 3) ve bu
+  bir kusur değil: zorluk artık kadronun kendisinden geliyor. Tünelci
+  yolun %15-%60'ında hedeflenemez, yani tahtanın kapsamasının yarısından
+  çoğu ona karşı ölü. Harita 5'in çarpanıyla (7,0) ölçüm **24 can**
+  verdi — 20 sınırının çok üstünde. Tarama: 5,8 → 10 · **6,2 → 16** ·
+  6,4 → 19 · 7,0 → 24. `M8-T04`'ün dersi burada somutlaştı: *monoton
+  çarpan monoton zorluk vermiyor, ölçüt çıktı olmalı.*
 
   Dört ölçüt: monoton · öğrenme yayı (2-3) Zor'da geçilebilir (< 12) ·
   harita 4-5 Zor'un tanımını karşılıyor (≥ 12) · Kolay'da hepsi ≤ 10.
@@ -757,6 +766,7 @@ hiçbir tahta bunu indiremezdi (M7'de ölçüldü: Kısıt A oranı %165 ve %282
 | 3 Kül Ovası | 2 | 979 | %80,0 |
 | 4 Kar Geçidi | 2 | 1956 | %80,0 |
 | 5 Kadim Harabe | 2 | 2492 | %80,0 |
+| 6 Sisli Bataklık | 2 | 2778 | %80,0 |
 
 **`M11` Faz 5 (S95): dördü de yeniden türetildi** (712/886/1709/2189 →
 859/979/1956/2492). Okçu ailesi güçlenince her haritanın tavanı

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { MAP_1, MAP_2, MAP_3, MAP_4, MAP_5, MAPS, COVERAGE_REFERENCE_RANGE } from './maps';
+import { MAP_1, MAP_2, MAP_3, MAP_4, MAP_5, MAP_6, MAPS, COVERAGE_REFERENCE_RANGE } from './maps';
 import { measureCoverage, pathLength, spotsCoveringFlyerPaths } from '../util/coverage';
 
 describe('MAP_1 — GAME-DESIGN §9 tablosuna uygunluk', () => {
@@ -116,16 +116,17 @@ describe('MAP_1 — denge hedefleri', () => {
 });
 
 describe('MAPS', () => {
-  it('M8 sonunda BEŞ harita var, zorluk sırasında', () => {
+  it('M12 sonunda ALTI harita var, zorluk sırasında', () => {
     // M1'de bu test "tek harita" diyordu, M7'de "üç" — ikisi de taş
     // durumuydu, kalıcı bir kural değil. `M8-T04` dördüncüyü ekliyor.
     // Sıra kilit sırası: `SaveSystem.isUnlocked` bu diziyi okuyor.
-    expect(MAPS).toHaveLength(5);
+    expect(MAPS).toHaveLength(6);
     expect(MAPS[0]).toBe(MAP_1);
     expect(MAPS[1]).toBe(MAP_2);
     expect(MAPS[2]).toBe(MAP_3);
     expect(MAPS[3]).toBe(MAP_4);
     expect(MAPS[4]).toBe(MAP_5);
+    expect(MAPS[5]).toBe(MAP_6);
   });
 
   it('kimlikler benzersiz — kayıt anahtarı bunlara dayanıyor', () => {
@@ -199,9 +200,24 @@ describe('Harita 2 ve 3 — GAME-DESIGN.md §9 tablosu', () => {
     for (let i = 1; i < MAPS.length; i++) {
       const onceki = MAPS[i - 1]!;
       const simdiki = MAPS[i]!;
-      expect(onceki.hpMultiplier, simdiki.id).toBeLessThan(simdiki.hpMultiplier);
       expect(onceki.startGold, simdiki.id).toBeLessThan(simdiki.startGold);
       expect(onceki.buildSpots.length, simdiki.id).toBeLessThanOrEqual(simdiki.buildSpots.length);
+    }
+
+    /**
+     * **HP çarpanının monotonluğu artık İDDİA EDİLMİYOR** (`M12` Faz 3).
+     *
+     * `M8-T04` dersi burada somutlaştı: *monoton çarpan monoton zorluk
+     * vermiyor, ölçüt **çıktı** olmalı.* Harita 6'nın çarpanı harita
+     * 5'inkinden düşük (6,2 < 7,0) ama ölçülen can kaybı **daha yüksek**
+     * (16 > 14), çünkü zorluk kadronun kendisinden geliyor: Tünelci
+     * yolun %15-%60'ında hedeflenemez.
+     *
+     * Gerçek iddia `kisitB.test.ts`'te — **ölçülen** can kaybı monoton.
+     * Burada yalnız ilk beş haritanın tarihsel sırası korunuyor.
+     */
+    for (let i = 1; i < 5; i++) {
+      expect(MAPS[i - 1]!.hpMultiplier, MAPS[i]!.id).toBeLessThan(MAPS[i]!.hpMultiplier);
     }
   });
 });

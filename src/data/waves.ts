@@ -469,11 +469,76 @@ export const MAP5_WAVES: readonly Wave[] = [
 
 ];
 
+/**
+ * **Harita 6 — Sisli Bataklık** (`M12` Faz 2).
+ *
+ * Tek yol, tek kapı. Kadro **Tünelci'nin etrafında** kuruluyor: dalga
+ * 2'de iki tane ile tanıtılıyor (oyuncu ilk kez bir düşmanın gözden
+ * kaybolduğunu görüyor), sonra her dalgada var ve boss dalgasında
+ * dört tane refakat ediyor.
+ *
+ * Her dalganın puan toplamı `budget(n)` ile birebir ya da ±%3 içinde —
+ * `waves.test.ts` bunu bağlıyor.
+ */
+export const MAP6_WAVES: readonly Wave[] = [
+  dalgaKur(1, [['goblin', 10]]), // 10 = bütçe 10
+  dalgaKur(2, [
+    ['goblin', 6],
+    ['tunelci', 2],
+  ]), // 12 = bütçe 12 — **Tünelci tanıtılıyor**
+  dalgaKur(3, [
+    ['goblin', 5],
+    ['tunelci', 3],
+  ]), // 14 = bütçe 14
+  dalgaKur(4, [
+    ['orkSavasci', 3],
+    ['tunelci', 3],
+  ]), // NEFES, 15 = bütçe 15
+  dalgaKur(5, [
+    ['tunelci', 3],
+    ['zirhliOrk', 3],
+  ]), // 21 = bütçe 21
+  dalgaKur(6, [
+    ['kurtBinicisi', 3],
+    ['tunelci', 2],
+    ['harpi', 2],
+    ['orkSavasci', 2],
+  ]), // 25 = bütçe 25
+  dalgaKur(7, [
+    ['goblin', 6],
+    ['tunelci', 3],
+    ['orkSavasci', 5],
+  ]), // NEFES, 25 = bütçe 25
+  dalgaKur(8, [
+    ['trol', 2],
+    ['tunelci', 4],
+    ['zirhliOrk', 2],
+  ]), // 36 = bütçe 36
+  dalgaKur(9, [
+    ['trol', 2],
+    ['saman', 1],
+    ['tunelci', 3],
+    ['harpi', 2],
+    ['zirhliOrk', 2],
+  ]), // 44 ≈ bütçe 43
+  dalgaKur(
+    10,
+    [
+      ['ogreSef', 1],
+      ['tunelci', 4],
+      ['trol', 1],
+      ['zirhliOrk', 2],
+    ],
+    BOSS_REFAKAT_GECIKMESI_SN,
+  ), // 53 ≈ bütçe 52
+];
+
 /** Harita kimliğinden dalga listesine. */
 export function wavesFor(mapId: string): readonly Wave[] {
   if (mapId === 'tas-kopru') return MAP2_WAVES;
   if (mapId === 'kul-ovasi') return MAP3_WAVES;
   if (mapId === 'kar-gecidi') return MAP4_WAVES;
   if (mapId === 'kadim-harabe') return MAP5_WAVES;
+  if (mapId === 'sisli-bataklik') return MAP6_WAVES;
   return MAP1_WAVES;
 }
