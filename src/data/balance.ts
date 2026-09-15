@@ -87,6 +87,22 @@ export const BALANCE = {
   sellRefund: 0.7,
   /** §3 — hiçbir vuruş tamamen emilmez. */
   damageFloor: 0.15,
+  /**
+   * **Kule sinerjisi** — `M10-T05`: yavaşlatılmış düşman fiziksel
+   * hasardan daha çok etkileniyor.
+   *
+   * GameAnalytics'in en iyi TD'leri ayıran dört kaldıracından
+   * dördüncüsü bizde yoktu: kuleler birbirini bilmiyordu. Üç kule
+   * etkisi (`burn`, `slow`, `chain`) ve üç düşman yeteneği vardı ama
+   * hiçbir **etkileşim** yoktu.
+   *
+   * Bu en küçük hâli ve bilerek var olan iki şeyi birleştiriyor:
+   * Büyü/Buz dalı yavaşlatıyor, Okçu/Top vuruyor. Yeni bir sistem
+   * değil, var olan iki sistemin birbirini görmesi.
+   *
+   * Sayı ölçülerek seçildi — kayıt `OPEN-QUESTIONS.md` S88.
+   */
+  yavaslatmaFizikselBonus: 1.25,
   /** §6 — dalga bitiş bonusu. */
   waveEndBonus: (n: number): number => 30 + n * 5,
   /** §6 — hazırlık sayacı. Birim: saniye. */

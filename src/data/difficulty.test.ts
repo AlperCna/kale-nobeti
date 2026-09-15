@@ -107,7 +107,9 @@ describe('DIFFICULTY — M8-T11 (S80)', () => {
    * Zor'un tanımı "harita 4 ve 5 referans tahtadan daha iyisini
    * istiyor" (can kaybı ≥ 12) idi. `M10`'da `waveSim`'in üç körlüğü
    * kapanınca (S80/S81/S86) ölçülen değerler **5** ve **10** çıktı,
-   * yani tanım karşılanmıyor.
+   * yani tanım karşılanmıyor. `M10-T05`'in kule sinerjisi ikisini
+   * ikişer can daha kolaylaştırdı (**3** ve **8**) — kilit bunu
+   * yakaladı ve sayı bilinçli olarak güncellendi.
    *
    * Bu yeni bir gevşeme değil: oyun hep böyleydi, simülasyon
    * yanmayı/yavaşlatmayı/yetenekleri görmediği için haritaları olduğundan
@@ -120,8 +122,8 @@ describe('DIFFICULTY — M8-T11 (S80)', () => {
    */
   it('Zor: harita 4 ve 5’in ölçülen can kaybı — hedef 12, S87’de açık', () => {
     expect(DIFFICULTY.zor.startLives).toBe(12);
-    expect(canKaybi(MAPS[3]!, 1), 'kar-gecidi').toBe(5);
-    expect(canKaybi(MAPS[4]!, 1), 'kadim-harabe').toBe(10);
+    expect(canKaybi(MAPS[3]!, 1), 'kar-gecidi').toBe(3);
+    expect(canKaybi(MAPS[4]!, 1), 'kadim-harabe').toBe(8);
   });
 
   it('Kolay: BEŞ harita da bol payla geçiliyor', () => {

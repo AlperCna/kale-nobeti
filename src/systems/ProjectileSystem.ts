@@ -26,7 +26,7 @@ import type { ProjectileState } from '../types/projectile';
 import type { Poolable } from '../util/pool';
 import type { Pool } from '../util/pool';
 import { distSq, moveToward, pointToSegmentDistSq } from '../util/math';
-import { applyDamage } from './combat';
+import { applyDamage, yavaslatmaSinerjisi } from './combat';
 import type { DamageResult } from './combat';
 
 const MS_TO_S = 1 / 1000;
@@ -231,7 +231,10 @@ export class ProjectileSystem<E extends Targetable, T extends ProjectileState<E>
 
   #vur(e: E, m: T, hasar = m.damage): void {
     if (e.def === null) return;
-    const sonuc = applyDamage(hasar, m.damageType, e.def);
+    // `M10-T05` — kule sinerjisi. Çarpan ham hasara, zırhtan ÖNCE;
+    // gerekçe `combat.yavaslatmaSinerjisi`'nde.
+    const sinerji = yavaslatmaSinerjisi(m.damageType, e);
+    const sonuc = applyDamage(hasar * sinerji, m.damageType, e.def);
     this.onDamage(e, sonuc, e.x, e.y, m.damageType);
     // Süreli etki isabet anında uygulanıyor; zincirleme anlık olduğu için
     // burada geçilmiyor.

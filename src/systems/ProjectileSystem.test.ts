@@ -48,6 +48,7 @@ function dusman(o: Partial<Targetable> = {}): MutTargetable {
     hp: 100,
     maxHp: 100,
     alive: true,
+    effects: { slowSeconds: 0 },
     remainingDistance: 500,
     def: GOBLIN,
     ...o,

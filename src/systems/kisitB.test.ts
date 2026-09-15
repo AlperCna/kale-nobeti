@@ -91,7 +91,11 @@ describe('Kısıt B — düşman kırılımı', () => {
    * körlüğü** kapandı (S80 haritaya duyarlı boss, S81 düşman
    * yetenekleri, S86 süreli kule etkileri) ve ölçülen rampa şu çıktı:
    *
-   *     harita 1..5 →  0 · 8 · 6 · 5 · 10
+   *     harita 1..5 →  0 · 8 · 6 · 3 · 8
+   *
+   * (`M10-T05` kule sinerjisi haritaland 4 ve 5'i ikişer can
+   * kolaylaştırdı: 5 → 3 ve 10 → 8. Kilit onu **yakaladı** — testin
+   * işi tam buydu.)
    *
    * Yani rampa **monoton değil**: harita 2, harita 3 ve 4'ten zor.
    * Bu yeni bir bozulma değil — oyun hep böyleydi, simülasyon
@@ -112,7 +116,7 @@ describe('Kısıt B — düşman kırılımı', () => {
       canKaybi(MAP_4, MAP4_WAVES),
       canKaybi(MAP_5, MAP5_WAVES),
     ];
-    expect(kayip, `ölçülen rampa: ${kayip.join(' → ')}`).toEqual([0, 8, 6, 5, 10]);
+    expect(kayip, `ölçülen rampa: ${kayip.join(' → ')}`).toEqual([0, 8, 6, 3, 8]);
     // Uçlar hâlâ doğru yönde: öğretici harita bedava, son harita en zor.
     expect(kayip[0]).toBe(0);
     expect(kayip[4]).toBe(Math.max(...kayip));
