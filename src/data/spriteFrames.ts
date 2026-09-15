@@ -47,6 +47,10 @@ const ENEMY_FRAME: Readonly<Record<EnemyId, string>> = {
   trol: 'trol',
   orumcekAna: 'orumcek_ana',
   orumcekYavrusu: 'orumcek_yavrusu',
+  // `M12` — **GEÇİCİ görsel**: kendi karesi yok, Örümcek Ana'nın karesini
+  // kullanıyor (yeraltı teması örümcekle okunuyor). Nihai çizim sanat
+  // brifine giriyor; `CLAUDE.md` greybox kuralı bunu zaten böyle istiyor.
+  tunelci: 'orumcek_ana',
   ogreSef: 'ogre_sef_boss',
 };
 

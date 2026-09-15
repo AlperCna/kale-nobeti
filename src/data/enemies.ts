@@ -171,6 +171,34 @@ export const ORUMCEK_YAVRUSU: EnemyDef = {
  * uyarısını çiğner. M7'de Harita 2-3 ile birlikte tek seferde bakılacak
  * (`docs/results/M4-SONUC.md` §4).
  */
+/**
+ * **Tünelci** — `M12` Faz 1, yeraltı geçişi.
+ *
+ * Yolun `%15`-`%60` aralığında **hedeflenemez**: kuleler onu göremez,
+ * ama patlama ve önceden tutuşmuş yanma hâlâ değer. Gerekçenin tamamı
+ * `types/enemy.ts`'teki `burrow` notunda; kısası: bugünkü bütün düşman
+ * yetenekleri dayanıklılık eksenindeydi, bu ilk kez oyuncunun **yer**
+ * kararına dokunuyor.
+ *
+ * `// GEÇİCİ — S97`: sayılar §5 tablosunda yok. Kadro içinde konumu
+ * "Kurt Binicisi'nden dayanıklı, Ork Savaşçı'dan zayıf" olarak seçildi;
+ * gömülü aralık `%15`'te başlıyor ki oyuncu **dalışı görsün** (0'dan
+ * başlasaydı düşman hiç görünmeden gelirdi ve mekanik öğretilemezdi).
+ * Nihai sayılar `M12` Faz 3'te rampa ölçütleriyle taranacak.
+ */
+export const TUNELCI: EnemyDef = {
+  id: 'tunelci',
+  hp: 90,
+  speed: 70,
+  armor: 1,
+  magicResist: 0,
+  gold: 9, // §5 oranı: altın = 3 × puan (test bunu kırdı, sayı düzeltildi)
+  points: 3,
+  leakDamage: 1,
+  flying: false,
+  ability: { kind: 'burrow', fromFraction: 0.15, toFraction: 0.6 },
+};
+
 export const OGRE_SEF: EnemyDef = {
   id: 'ogreSef',
   hp: 700,
@@ -193,6 +221,7 @@ export const ENEMIES: readonly EnemyDef[] = [
   SAMAN,
   TROL,
   ORUMCEK_ANA,
+  TUNELCI,
   OGRE_SEF,
   ORUMCEK_YAVRUSU,
 ];

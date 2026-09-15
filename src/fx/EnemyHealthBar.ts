@@ -35,15 +35,23 @@ export class EnemyHealthBar extends Phaser.GameObjects.Container implements Pool
     this.resetForPool();
   }
 
-  show(x: number, y: number, hp: number, maxHp: number): void {
+  /**
+   * @param alfa Düşmanın saydamlığı. **Çubuk düşmanla aynı saydamlıkta
+   * olmalı** — `M12` Faz 1'de canlı ekranda yakalandı: gömülü düşman
+   * %35 saydamken çubuğu tam opak kalıyordu ve hayaletin üstünde yüzen
+   * bir çubuk gibi okunuyordu. Bilgi doğruydu, *sunum* yalan söylüyordu.
+   */
+  show(x: number, y: number, hp: number, maxHp: number, alfa = 1): void {
     this.setPosition(x, y - OFFSET_Y);
     const oran = maxHp > 0 ? Phaser.Math.Clamp(hp / maxHp, 0, 1) : 0;
     this.#dolgu.setSize(Math.max(0, BAR_W * oran), BAR_H);
+    this.setAlpha(alfa);
     this.setActive(true).setVisible(true);
   }
 
   resetForPool(): void {
     this.setActive(false).setVisible(false);
+    this.setAlpha(1);
     this.setPosition(0, 0);
     this.#dolgu.setSize(BAR_W, BAR_H);
   }

@@ -23,11 +23,31 @@ export interface TargetingTower {
   readonly airMultiplier: 0 | 0.5 | 1;
 }
 
-/** Aday olabilir mi: canlı, menzilde, ve kule ona vurabiliyor mu. */
+/**
+ * **Yeraltı geçişi — hedeflenebilirliğin TEK adresi** (`M12` Faz 1).
+ *
+ * Düşman `burrow` yeteneğinin aralığındayken hiçbir kule onu hedef
+ * olarak **seçemiyor**. Dokunulmaz değil: patlama ve yanma hâlâ
+ * değiyor, çünkü onlar hedef seçiminden geçmiyor (`ProjectileSystem`
+ * yarıçapa bakıyor, `effects` zaten uygulanmış). Bu ayrım bilerek —
+ * gerekçesi `types/enemy.ts`'teki `burrow` notunda.
+ *
+ * Kural burada yaşıyor ve **`TowerSystem` üzerinden hem oyun hem
+ * `waveSim` aynı fonksiyonu çağırıyor.** S80/S81/S86/S92'nin dersi:
+ * aynı kuralın iki kopyası, er geç iki farklı oyun demek.
+ */
+export function gomuluMu(e: Targetable): boolean {
+  const y = e.def?.ability;
+  if (y === undefined || y.kind !== 'burrow') return false;
+  return e.pathFraction >= y.fromFraction && e.pathFraction < y.toFraction;
+}
+
+/** Aday olabilir mi: canlı, menzilde, hedeflenebilir, ve kule ona vurabiliyor mu. */
 function uygun(e: Targetable, t: TargetingTower): boolean {
   if (!e.alive) return false;
   if (e.def === null) return false;
   if (e.def.flying && t.airMultiplier === 0) return false;
+  if (gomuluMu(e)) return false;
   return distSq(e, t) <= t.rangeSq;
 }
 

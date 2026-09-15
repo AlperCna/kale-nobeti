@@ -5,6 +5,7 @@ import { PathSystem } from '../systems/PathSystem';
 import { LineMover, PathMover } from '../systems/movers';
 import { EnemyAbilitySystem } from '../systems/EnemyAbilitySystem';
 import { applyEffect, speedMultiplier, stepEffects } from '../systems/effects';
+import { gomuluMu } from '../systems/TargetingSystem';
 import { kalkandanGecir } from '../systems/combat';
 import { WaveManager } from '../systems/WaveManager';
 import { endlessHpScale, generateEndlessWave } from '../systems/endlessWaves';
@@ -125,6 +126,14 @@ const RALLY_COLOR = 0x3e6ca8;
 const KALKAN_RENGI = 0x9fd8ef;
 /** Düşman gösterim boyutunun (30 px) biraz dışı. */
 const KALKAN_YARICAP = 22;
+/**
+ * Gömülü düşmanın saydamlığı — `M12` Faz 1.
+ *
+ * Sıfır değil: tamamen görünmez bir düşman "oyun bozuk" gibi okunur ve
+ * oyuncu nereye kule koyacağını öğrenemez. Silüet kalıyor, "kuleler bunu
+ * göremiyor" bilgisi saydamlıktan çıkıyor.
+ */
+const GOMULU_ALFA = 0.35;
 
 /**
  * `M10-T02` — tahtayı geri kurarken kullanılan **geçici** bakiye.
@@ -1043,6 +1052,7 @@ export class GameScene extends Phaser.Scene {
     this.#projectiles?.update(sd, dusmanlar);
     this.#damageTexts?.update(sd);
     this.#altinUcusu?.update(sd);
+    this.#gomululeriCiz(dusmanlar);
     this.#enemyHealthBars?.update(dusmanlar);
     this.#kalkanlariCiz(dusmanlar);
     // `true` yalnız hattın GÖRÜNDÜĞÜ karede — öğretici bir kez tetiklensin.
@@ -1227,6 +1237,24 @@ export class GameScene extends Phaser.Scene {
     // kez görünüyor; burada ayrı bir bayrak tutmak kural 3'ün tuzağını
     // açardı (havuza dönen sahne alanı).
     if (kalkanliVar) this.bus.emit('enemy:shielded', {});
+  }
+
+  /**
+   * **Yeraltı geçişi görünürlüğü** — `M12` Faz 1.
+   *
+   * Gömülü düşman saydamlaşıyor. Kural `TargetingSystem.gomuluMu`'da,
+   * burada yalnız **gösterim** var: oyuncu "neden kuleler ateş etmiyor"
+   * sorusunu can çubuğuna bakmadan cevaplayabilmeli (TIER 1 kural 6 —
+   * bilgi yalnız renge değil, *saydamlığa ve harekete* bağlı).
+   *
+   * Her karede yazılıyor ve durum tutulmuyor: `alpha` düşmanın kendi
+   * alanı ve havuza dönerken `resetForPool` zaten sıfırlıyor.
+   */
+  #gomululeriCiz(dusmanlar: readonly Enemy[]): void {
+    for (const e of dusmanlar) {
+      if (!e.alive) continue;
+      e.setAlpha(gomuluMu(e) ? GOMULU_ALFA : 1);
+    }
   }
 
   /** Yanma hasarı ve yavaşlatma çarpanı — `effects.ts` saf tarafı. */

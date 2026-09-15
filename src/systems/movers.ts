@@ -18,6 +18,20 @@ import { PathSystem } from './PathSystem';
 /** ms → sn. `speed` px/sn, `scaledDelta` ms. */
 const MS_TO_S = 1 / 1000;
 
+/**
+ * Yolun **kat edilen** oranı, 0..1.
+ *
+ * Yalnız `Mover` hesaplayabilir, çünkü toplam uzunluğu yalnız o biliyor;
+ * `EnemyState` sayıyı taşıyor (`M12` yeraltı geçişi). Sıfır uzunluklu
+ * bozuk yolda `0` dönüyor — sıfıra bölme yerine zararsız değer.
+ */
+function katEdilenOran(path: PathSystem, e: EnemyState): number {
+  const toplam = path.totalLength;
+  if (!(toplam > 0)) return 0;
+  const oran = 1 - e.progress.remainingDistance / toplam;
+  return oran < 0 ? 0 : oran > 1 ? 1 : oran;
+}
+
 /** Yolu takip eden düşmanlar. Uçanlar M4'te `LineMover` alacak. */
 export class PathMover implements Mover {
   constructor(private readonly path: PathSystem) {}
@@ -27,6 +41,7 @@ export class PathMover implements Mover {
     // Engellenmiş düşman ilerlemez — DEPENDENCIES §7, kullanımı M5'te.
     if (e.blockedBy !== null) return;
     e.progress = this.path.advance(e.progress, e.speed * e.speedFactor * scaledDelta * MS_TO_S);
+    e.pathFraction = katEdilenOran(this.path, e);
   }
 
   remainingDistance(e: EnemyState): number {
@@ -71,6 +86,7 @@ export class LineMover implements Mover {
     if (!e.alive) return;
     // `blockedBy` KONTROL EDİLMİYOR: uçan engellenemez (§5).
     e.progress = this.path.advance(e.progress, e.speed * e.speedFactor * scaledDelta * MS_TO_S);
+    e.pathFraction = katEdilenOran(this.path, e);
   }
 
   remainingDistance(e: EnemyState): number {
@@ -109,4 +125,5 @@ export function resetEnemyState(e: EnemyState): void {
   e.alive = false;
   e.shieldLeft = 0; // M10-T03 — TIER 1 kural 3: kalkan da sıfırlanmalı
   e.progress = { segmentIndex: 0, tInSegment: 0, remainingDistance: 0 };
+  e.pathFraction = 0;
 }

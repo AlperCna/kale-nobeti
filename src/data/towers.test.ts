@@ -294,10 +294,10 @@ describe('enemies.ts — GAME-DESIGN §5 tablosu', () => {
     expect(ucanlar).toEqual(['harpi']);
   });
 
-  it('M4 kadrosu: dokuz düşman + örümcek yavrusu', () => {
-    expect(ENEMIES).toHaveLength(10);
+  it('kadro: on düşman + örümcek yavrusu (M12: Tünelci)', () => {
+    expect(ENEMIES).toHaveLength(11);
     const kadro = ENEMIES.filter((e) => e.id !== 'orumcekYavrusu');
-    expect(kadro).toHaveLength(9);
+    expect(kadro).toHaveLength(10);
     expect(getEnemy('goblin')).toBe(GOBLIN);
     expect(getEnemy('ogreSef')).toBe(OGRE_SEF);
   });

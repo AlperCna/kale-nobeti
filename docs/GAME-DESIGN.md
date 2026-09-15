@@ -422,6 +422,7 @@ menzilinden geçmeli (8 noktalı haritada ≥ 3). `util/coverage.ts` ile ölçü
 | Ogre Şef | Büyü + Top, **`weakest` ya da `closest`** hedefleme (S94: `strongest` ölçümde en kötü çıktı), Meteor |
 | **Buz kalkanı** (harita 4 Ork Savaşçı) | Patlama/ağır vuruş — kalkan **toplam** bir havuz, erimeden cana hasar geçmiyor |
 | **Ogre Şef 2. evre** (harita 5, can %50) | Hız ×1,6 — kaleye varmadan bitirmek gerekiyor |
+| **Tünelci** (`M12`, yeraltı geçişi) | Yolun %15-%60'ında **hedeflenemez**: kuleleri aralığın DIŞINA kur. Patlama ve önceden tutuşmuş yanma hâlâ değer |
 
 **Hedefleme modları ölçüldü (`M11` Faz 4, S94).** Yedi senaryoda, metrik
 can kaybı: `weakest` 4 · `last` 3 · `first` 3 · `closest` 1 kazandı;

@@ -286,6 +286,8 @@ const TR = {
    * ikon + adet gösteriyordu; ikonu tanımayan oyuncu için bilgi değil
    * süstü. Üstüne gelince ad + savunma özeti çıkıyor.
    */
+  enemyTunelci: 'Tünelci',
+  statBurrow: 'yeraltından geçer',
   enemyGoblin: 'Goblin',
   enemyOrkSavasci: 'Ork Savaşçı',
   enemyKurtBinicisi: 'Kurt Binicisi',
@@ -505,6 +507,8 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     roleBuyu: 'Pierces armor. Weak against magic-resistant enemies.',
     roleKisla: 'Spawns soldiers that block the path. Drag the flag to position them.',
     infoToggle: '?',
+    enemyTunelci: 'Tunneler',
+    statBurrow: 'burrows',
     enemyGoblin: 'Goblin',
     enemyOrkSavasci: 'Orc Warrior',
     enemyKurtBinicisi: 'Wolf Rider',

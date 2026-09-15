@@ -95,6 +95,7 @@ class SimEnemy implements SpawnableEnemy, Poolable, Targetable {
   speed = 0;
   speedFactor = 1;
   progress = { segmentIndex: 0, tInSegment: 0, remainingDistance: 0 };
+  pathFraction = 0;
   blockedBy: object | null = null;
   alive = false;
   /** `M10-T03` — oyunla aynı kalkan alanı; denge ölçümü onu da görsün. */
