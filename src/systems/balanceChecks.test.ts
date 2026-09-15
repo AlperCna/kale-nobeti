@@ -390,3 +390,42 @@ describe('etkinHiz — yavaşlatma tavanın paydasında (S113)', () => {
     );
   });
 });
+
+/**
+ * **S115 — zincir ve patlama tek düşmana KATKI VERMİYOR.**
+ *
+ * `effectiveDps` ikisini de 0 sayıyor ve bu bir eksiklik değil, Kısıt
+ * A'nın sorusunun doğru cevabı: tavan **tek** düşman için tanımlı,
+ * zincir ve patlama ise kalabalık çarpanları.
+ *
+ * Bu testin işi gelecekteki bir "düzeltmeyi" engellemek. Zincir buraya
+ * eklenirse tavan şişer, boss HP'si tavandan türetildiği için büyür ve
+ * referans tahta kendi bossunu öldüremez hâle gelir — `M17`'nin
+ * tosladığı duvar tam olarak buydu. Kalabalık değeri zaten Kısıt B'de
+ * (`waveSim`) ölçülüyor; orası zinciri de patlamayı da gerçekten
+ * simüle ediyor.
+ *
+ * Simülasyonla da doğrulandı (tek boss, tek kule, harita 1): Yıldırım'ın
+ * zinciri kaldırılınca boss'un kalan HP'si 484 → 484, Havan'ın patlaması
+ * kaldırılınca 472 → 472. Sebepleri `ProjectileSystem`'de yazılı — zincir
+ * aynı hedefe iki kez sıçramıyor (S36), patlama birincil hedefi
+ * `merkezdenOran(0) = 1` ile vuruyor.
+ */
+describe('effectiveDps — zincir ve patlama tek düşmana 0 (S115)', () => {
+  it('Yıldırım’ın DPS’i zincirsiz hesaplanıyor', () => {
+    const y = BUYU.branches[0]!;
+    // Goblin zırhsız ve büyü dirençsiz — `applyDamage` hasarı aynen geçiriyor.
+    expect(effectiveDps(BUYU, 2, GOBLIN)).toBeCloseTo(y.damage * y.fireRate, 6);
+  });
+
+  it('Havan’ın DPS’i patlamasız hesaplanıyor', () => {
+    const h = TOP.branches[0]!;
+    expect(effectiveDps(TOP, 2, GOBLIN)).toBeCloseTo(h.damage * h.fireRate, 6);
+  });
+
+  it('yanma İSE sayılıyor — tek hedefe gerçek hasar', () => {
+    // Kundakçı: 9 × 1,4 = 12,6 ham, üstüne yanma. Ayrımın kanıtı.
+    const k = OKCU.branches[1]!;
+    expect(effectiveDps(OKCU, 3, GOBLIN)).toBeGreaterThan(k.damage * k.fireRate);
+  });
+});
