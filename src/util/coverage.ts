@@ -49,6 +49,43 @@ export function coveredLength(path: readonly Vec2[], spot: Vec2, range: number):
 }
 
 /**
+ * **Bir noktanın en yakın olduğu yolun indeksi** — `M47`.
+ *
+ * Çok yollu haritalarda yapı noktaları iki şeritten birine bakıyor.
+ * Referans tahtanın sıralaması bunu üçüncü ölçüt olarak kullanıyor
+ * (`buildReferenceBoards`); gerekçe orada yazılı.
+ *
+ * Kapsama gibi **örneklemiyor**: nokta–doğru parçası uzaklığı kapalı
+ * formülle ve karesel karşılaştırmayla (TIER 1 kural 9 — karekök yok).
+ */
+export function nearestPathIndex(paths: readonly (readonly Vec2[])[], spot: Vec2): number {
+  let enIyi = Infinity;
+  let idx = 0;
+  paths.forEach((path, pi) => {
+    for (let i = 0; i < path.length - 1; i++) {
+      const a = path[i];
+      const b = path[i + 1];
+      if (a === undefined || b === undefined) continue;
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const boyKare = dx * dx + dy * dy;
+      const t =
+        boyKare === 0
+          ? 0
+          : Math.max(0, Math.min(1, ((spot.x - a.x) * dx + (spot.y - a.y) * dy) / boyKare));
+      const px = a.x + dx * t;
+      const py = a.y + dy * t;
+      const d = (px - spot.x) * (px - spot.x) + (py - spot.y) * (py - spot.y);
+      if (d < enIyi) {
+        enIyi = d;
+        idx = pi;
+      }
+    }
+  });
+  return idx;
+}
+
+/**
  * Tüm yapı noktaları için ölçüm. `MapDef.coverage` alanını **bu üretir**,
  * elle yazılmaz (`CLAUDE.md` Mimari kurallar).
  *

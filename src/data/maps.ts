@@ -530,9 +530,23 @@ export const MAP_4: MapDef = {
   // **`M22` (S119): 6,4 → 7,0.** Okçu'nun Keskin Nişancı'sı 34 → 41
   // olunca karışık tahta da güçlendi ve harita banda geri çekildi.
   // Tarama: 6,4→10 · 6,8→13 · **7,0→12** · 7,2→17.
-  hpMultiplier: 7.0, // S87 → S91 → S101 → S109 → S113 → S119
-  goldMultiplier: 7.2, // S87 — HP ile birlikte yükseldi (S73 değişmezi)
-  startGold: Math.round(280 * 7.2), // S87
+  // **`M47` (S95): 7,0·7,2 → 7,1·7,4.** Üç ölçütlü nokta sıralaması
+  // tahtayı güçlendirince harita 4'ün can kaybı 12 → 11'e düştü.
+  // **19 (hp × altın) kombinasyonu tarandı** ve yapısal bir çatışma
+  // çıktı: can kaybını 12'ye geri çıkaran **hiçbir** noktada Takviye can
+  // kurtarmıyor (`takviye ≥ yok`). Sebep `M19`'da yazılı — Takviye'nin
+  // değeri tahtanın tuttuğu şeyi **öldürebilmesine** bağlı; HP'yi
+  // yükseltmek tahtayı göreli zayıflatıp Takviye'yi erteleme rejimine
+  // düşürüyor ve `M16` örtüşmesinde erteleme can kaybettiriyor.
+  // Tam şart kümesiyle (rampa bandı · Zor eşiği · **üç** yetenek sağlaması ·
+  // aile eşiği) 40 kombinasyon tarandı; **yalnız üçü** hepsini geçti:
+  // `7,00·8,0 → 12/9/9/8` · **`7,35·7,8 → 12/11/11/9`** · `7,35·8,0 → 13/12/9/9`
+  // (yok/takviye/meteor/ikisi; en kötü aile üçünde de 19). Ortadaki alındı:
+  // iki çarpan da yukarı gidiyor ve komşu altın değeri de geçiyor, yani
+  // tek nokta adası değil.
+  hpMultiplier: 7.35, // S87 → S91 → S101 → S109 → S113 → S119 → S95/M47
+  goldMultiplier: 7.8, // S87 — HP ile birlikte yükseldi (S73 değişmezi)
+  startGold: Math.round(280 * 7.8), // S87
   // §5: kadro **tam** — dokuz tip, yeni tanıtım yok.
   enemyRoster: [
     'goblin',
@@ -570,8 +584,15 @@ export const MAP_4: MapDef = {
 // almak için yükseldi. Tarama: 8,5→10 · **9,2→13** · 9,9→14.
 // **`M22` (S119): 9,2 → 9,6.** Aynı sebep. Tarama: 9,2→8 · **9,6→13** ·
 // 10,0→10 (altın çarpanı 10,0 tavan, S73).
-const MAP5_HP_CARPANI = 9.6; // S87 → S91 → S101 → S109 → S113 → S119
-const MAP5_ALTIN_CARPANI = 10.0; // S87 — HP ile birlikte (S73 değişmezi)
+// **`M47` (S95): 9,6·10,0 → 10,2·10,4.** Harita 4 üç ölçütlü sıralamadan
+// sonra 13'e türetilince rampanın **kesin artan** şartı (harita 5 > harita 4)
+// harita 5'i de yukarı zorladı. Tarama (yok / takviye / meteor / en kötü aile):
+// İki boyutlu tarandı (hp × altın), çünkü altın da tahtayı değiştiriyor.
+// Bütün sağlamaları geçen dört nokta çıktı — `10,2·10,2` · `10,2·10,8` ·
+// `10,4·10,4` · `10,4·10,8` — ve en küçük hamle olan ilki alındı:
+// `yok 14 · takviye 12 · meteor 11 · ikisi 9 · en kötü aile 17`.
+const MAP5_HP_CARPANI = 10.2; // S87 → S91 → S101 → S109 → S113 → S119 → S95/M47
+const MAP5_ALTIN_CARPANI = 10.2; // S87 — HP ile birlikte (S73 değişmezi)
 
 const MAP5_KALE: Vec2 = { x: 1180, y: 600 };
 
@@ -837,7 +858,16 @@ export const MAP_6: MapDef = {
   // (ve Top) uçuruma düşüyor. 13-19 bandında değer yok, o yüzden 12'de
   // kalıyor — testler harita 6 için sıra şartı koymuyor ve zorluğu
   // zaten kadrodan geliyor (Tünelci + çağıran boss).
-  hpMultiplier: 7.2, // S109 → S113 → S119
+  // **`M47` (S95): 7,2 → 7,4.** Üç ölçütlü sıralama harita 6'yı da
+  // banda düşürdü (12 → 10) ve `difficulty` sağlaması kırıldı (Zor,
+  // referans tahtadan iyisini istiyor). İnce tarama (karışık / en
+  // kötü aile): `7,20 → 10/16` · `7,25 → 9/22` · `7,30 → 10/16` ·
+  // `7,35 → 10/16` · **`7,40 → 13/12`** · `7,45 → 12/22` ·
+  // `7,50 → 11/22` · `7,55 → 12/23`. Bandı sağlayan **tek nokta**
+  // 7,4; komşuları aile sağlamasını kırıyor. Harita 6'nın tepkisi
+  // bu bölgede bıçak sırtı — sayı ayarlanmadı, taranıp tek geçerli
+  // değer alındı.
+  hpMultiplier: 7.4, // S109 → S113 → S119 → S95/M47
   goldMultiplier: 11.0,
   startGold: Math.round(280 * 11.0),
   enemyRoster: [
