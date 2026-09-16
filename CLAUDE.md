@@ -2,7 +2,11 @@
 
 Fantastik ortaçağ temalı, tarayıcıda çalışan tower defense oyunu.
 Model: Kingdom Rush (sabit yol + belirli yapı noktaları).
-Hedef: 3 harita × 10 dalga, 4 kule ailesi, 2 aktif yetenek.
+v1 hedefi 3 harita × 10 dalga, 4 kule ailesi, 2 aktif yetenekti ve aşıldı.
+**Bugünkü kapsam:** 6 harita × 10 dalga, 4 kule ailesi (okçu, top, büyü,
+kışla), 2 aktif yetenek, 3 zorluk, 11 düşman türü, sonsuz mod.
+Bu satır bir sayı değiştiğinde güncellenir — eski hâli "3 harita" diyordu
+ve `M29`'a kadar öyle kaldı.
 
 ## TIER 1 — Pazarlıksız kurallar
 
@@ -63,6 +67,22 @@ Hedef: 3 harita × 10 dalga, 4 kule ailesi, 2 aktif yetenek.
 - Yeni bir sayı uydurma. Tasarım dokümanında yoksa sor.
 - Bir denge sayısı sorgulanıyorsa önce `docs/research/01-denge-matematigi.md`
   okunur — çoğu sayının gerekçesi orada.
+- **Yeni bir şey eklerken onu saymayan listeleri ve eski kuralı anlatan
+  metinleri ara.** Bu projenin en sık tekrarlayan kusur sınıfı bu; `M27`,
+  `M28` ve `M29`'da üst üste çıktı. Sistem doğru yazılıyor, onu *numaralayan*
+  eski yer güncellenmiyor. Üç yüzeyde birden aranır:
+  1. **Sayan listeler** — sağlama dizileri, `Record<...>` haritaları,
+     numaralı sabitler. Tarama: yeni kimliği geçmeyen ama eskisini geçen
+     dosyaları bul (ör. `grep -rln MAP_5 src/ | while read f; do
+     grep -q MAP_6 "$f" || echo "$f"; done`).
+  2. **Oyuncu metinleri** — `data/strings.ts` içindeki `howTo*`, `hint*`.
+     En tehlikelisi bu: kod doğru çalışırken oyuncuya **sessizce yanlış
+     kural öğretiyor**. `M16` erken başlatmayı bir riske çevirdiği hâlde
+     `howTo6` `M28`'e kadar "bedava altın" demeye devam etti.
+  3. **Bu dosya ve `docs/`** — kapsam cümleleri, klasör listeleri, kapı
+     komutu, elle yazılmış sayılar. `M29`'da beşi birden yanlıştı.
+  Kural: elle sayılan liste yerine mümkünse **türetilen** liste yaz; bir
+  sayı elle yazılacaksa yanına onu **hangi ölçümün** ürettiği not edilir.
 
 ## Teknoloji
 
@@ -81,7 +101,13 @@ Hedef: 3 harita × 10 dalga, 4 kule ailesi, 2 aktif yetenek.
   alan sayısı artardı (kural 3); ve `simulateWave` başsız kalabiliyor —
   fizik olsaydı test bir Phaser dünyası ayağa kaldırmak zorundaydı.
   **Eşik:** aynı anda düşman sayısı 200'ü aşarsa naif `O(n·m)` mesafe
-  taraması yetmez, uzamsal ızgara gerekir. Mevcut dalga bütçesi ~50 düşman.
+  taraması yetmez, uzamsal ızgara gerekir. **Ölçülen** pay (`M29`,
+  `SimResult.peakEnemies`, altı harita × on dalga): en kalabalık tek dalga
+  23 düşman, sahadaki eşzamanlı tepe **18** — ve bu 18, oyuncunun her
+  dalgayı mümkün olan en erken anda başlattığı (`ErkenPolitika 'hemen'`,
+  `M16` örtüşmesi sonuna kadar) en kötü hâl. Örtüşmesiz tepe 14.
+  Eşiğe 11 kat pay var; ızgara gerekmiyor. Bu satırdaki sayı el yordamıyla
+  yazılmaz, `peakEnemies` ile ölçülür.
 - Yalnızca yatay yönlendirme (mobilde çevirme uyarısı platform tarafından yapılır)
 - Ses: Phaser'ın kendi ses sistemi
 - Kayıt: `KeyValueStore` arayüzü arkasında `localStorage`,
@@ -89,11 +115,14 @@ Hedef: 3 harita × 10 dalga, 4 kule ailesi, 2 aktif yetenek.
 - **Oyuncuya görünen hiçbir metin kodun içinde yazılmaz.** Hepsi
   `src/data/strings.ts` içinde bir **dil haritası**nda durur:
   `{ tr: {...}, en: {...} }`, varsayılan `tr`. Kullanım `t('play')`
-  biçimindedir, `strings.play` değil. `en` anahtarları şimdilik boş —
-  yapı doğru olduktan sonra çeviri bir oturumluk iş; sonradan **yapı**
-  eklemek `scenes/`'in tamamına dokunmak demek. Gerekçe: Poki ve
-  CrazyGames global platformlar, Türkçe-only bir oyun oradaki erişimi
-  büyük ölçüde kesiyor.
+  biçimindedir, `strings.play` değil. **`en` tamamlandı** (202 anahtar) —
+  yapı önce kurulduğu için çeviri gerçekten bir oturumluk iş oldu.
+  Eşitlik derleyicide bağlı: `STRINGS` tipi
+  `Record<Locale, Record<StringKey, string>>` ve `StringKey = keyof typeof TR`,
+  yani `tr`'ye anahtar ekleyip `en`'e eklemeyen `npm run typecheck`'i kırar.
+  Yeni metin eklerken iki dili de yazmak zorunludur, hatırlamak değil.
+  İngilizcenin gerekçesi: Poki ve CrazyGames global platformlar, Türkçe-only
+  bir oyun oradaki erişimi büyük ölçüde kesiyor.
 - Fontlar `Boot` sahnesinde `FontFace` API ile yüklenir, `Preload`'dan önce
   `await` edilir. Sayı fontu web fontu değil, **bitmap font**tur.
 - Harici bağımlılık eklemeden önce sor
@@ -132,20 +161,36 @@ Ayrıntı: `docs/research/04-varlik-paket-boyut.md`
 
 ## Klasör yapısı
 
+Buradaki tablo **hangi dosyanın nereye ait olduğunu** söyler; dosyaları
+tek tek saymaz. Gerekçe: `M29`'da eski liste ölçüldü — `systems/`'in 30
+dosyasından 10'unu, `fx/`'in 25'inden 4'ünü, `data/`'nın 19'undan 6'sını
+sayıyordu ve `util/easing.ts` diye **var olmayan** bir dosya listeliyordu.
+Elle sayılan liste, sayılan şey büyüdükçe sessizce yalan söylüyor. Güncel
+içerik için klasörün kendisine bakılır.
+
 ```
 src/
-  main.ts                 Phaser config, sahne kaydı
-  scenes/                 Boot, Preload, Menu, LevelSelect, Game, Hud, GameOver
-  systems/                GameClock, PathSystem, WaveManager, TowerSystem,
-                          TargetingSystem, ProjectileSystem, BarracksSystem,
-                          EconomySystem, AbilitySystem, SaveSystem
-  entities/               Enemy, Tower, Soldier, Projectile
-  fx/                     ScreenShake, HitStop, Particles, DamageText
-  data/                   towers.ts, enemies.ts, waves.ts, maps.ts, balance.ts,
-                          referenceBoards.ts
-  types/                  ortak arayüzler
-  util/                   math, pool, easing, coverage
-public/assets/            atlas.png, atlas.json, bg/*.webp, audio/, fonts/
+  main.ts       Phaser config, sahne kaydı
+  scenes/       Phaser Scene'leri. İNCE: girdi alır, sistemi çağırır, çizer.
+                Boot · Preload · Menu · LevelSelect · Game · Hud · Overlay ·
+                HowTo · Achievements · GameOver
+  systems/      Oyun mantığı. Phaser'a YALNIZ `import type` ile bakar (k.11),
+                `node`'da test edilir. Omurga: GameClock · PathSystem ·
+                WaveManager · TowerSystem · TargetingSystem · ProjectileSystem ·
+                BarracksSystem · EconomySystem · AbilitySystem · SaveSystem ·
+                EventBus. Ölçüm/denge tarafı: waveSim · balanceChecks ·
+                referansOlcum (bu üçü oyunla aynı kuralları koşturur).
+  entities/     Sahnede yaşayan havuzlanmış nesne: Enemy · Tower · Soldier ·
+                Projectile. Phaser'a çalışma zamanında dokunabilir.
+  fx/           Görsel/işitsel katman ve HUD parçaları. Oyun durumunu SAHİPLENMEZ,
+                gösterir. ScreenShake · HitStop · Particles · DamageText · ...
+  data/         Tipli sabitler — TIER 1 kural 1'in adresi. Bir dengeyi
+                değiştirmek buraya dokunmaktır, başka hiçbir yere.
+                towers · enemies · waves · maps · balance · bossScaling ·
+                difficulty · achievements · strings · ...
+  types/        Ortak arayüzler. Çalışma zamanı kodu yok.
+  util/         Bağımsız saf yardımcılar: math · pool · coverage · storage · i18n
+public/assets/  atlas.png · atlas.json · bg/*.webp · audio/ · fonts/
 ```
 
 ## Mimari kurallar
@@ -185,7 +230,13 @@ public/assets/            atlas.png, atlas.json, bg/*.webp, audio/, fonts/
   Kısıt A (tek düşman), Kısıt B (dalga verimi), ekonomi karşılanabilirliği.
   Üçü de `docs/GAME-DESIGN.md` §6'daki formülleri kullanır ve %15 pay arar.
 - Görsel/sahne testi yazılmaz.
-- Bir kilometre taşı bitince: `npm run typecheck && npm run test && npm run build`
+- Bir kilometre taşı bitince **dört adım**, sırayla:
+  `npm run typecheck && npm run test && npm run guard && npm run build`
+  `guard` (`scripts/guard-rules.mjs`, bugün 17 kural) uzun süre bu satırda
+  yazmıyordu ama fiilen her kilometre taşında koşuyordu — TIER 1'in
+  otomatikleştirilebilen kısmını o bekliyor (k.5 `any`, k.7 `BitmapText`,
+  k.8 ham `delta`, k.9 `Math.sqrt`, k.11 `import type`). Kapıdan geçmeyen
+  iş commit edilmez.
 
 ## Görsel yön
 
