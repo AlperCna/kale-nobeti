@@ -1569,6 +1569,26 @@ export class GameScene extends Phaser.Scene {
     this.#eco.buyAt(spotIndex, kademe.cost);
     k.tier = hedef;
     k.govde.setFrame(towerFrameKey('kisla', hedef));
+    /**
+     * **`M33` — kışla yükseltmesi hiçbir olay yaymıyordu.**
+     *
+     * `M24` görsel kanalı birleştirmişti (aşağıdaki "kule yükseltmesiyle
+     * aynı sütun") ama olay kanalı birleştirilmemişti. İki sonucu vardı:
+     * yükseltme **sessizdi** (kule yükseltmesinin sesi var) ve
+     * `AchievementSystem`'in `tower:upgraded` dinleyicisi kışlayı hiç
+     * görmüyordu — yani `firstTier3` ve `bothBranches` kışla ailesiyle
+     * **kazanılamıyordu**.
+     *
+     * `tower:upgraded` doğru olay, uydurma değil: `CLAUDE.md` "4 kule
+     * ailesi (okçu, top, büyü, **kışla**)" diyor ve kademe indeksleri
+     * birebir aynı (0..3, 2 ve 3 = T3a/T3b).
+     *
+     * Kurulum tarafı bilerek **bu yoldan geçmiyor**: `barracks:placed`'i
+     * `tower:placed`'a bağlamak `firstTower` başarımını ve `RunStats`'ın
+     * kule sayacını da kaydırırdı. Oradaki eksik yalnız sesti, o yüzden
+     * `SoundSystem` `barracks:placed`'i kendi dinliyor.
+     */
+    this.bus.emit('tower:upgraded', { spotIndex, tier: hedef });
     // `M24` — kule yükseltmesiyle aynı sütun.
     this.#efektler?.patlat(k.govde.x, k.govde.y, 0, -1, 18, undefined, YUKSELTME_KONISI);
     // Yükseltme askerleri **tazeliyor**: yeni HP ile doğuyorlar. Kule
