@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { EventBus } from '../systems/EventBus';
+import type { Settings } from '../systems/Settings';
 import type { EconomySystem } from '../systems/EconomySystem';
 import type { Tower } from '../entities/Tower';
 import type { Soldier } from '../entities/Soldier';
@@ -77,6 +78,12 @@ const HUD_ALANI = { sag: 224 + 16, alt: 190 + 16 } as const;
  * butonu 84 px aralıkla diziyordu, yani komşu parşömenler 4 px üst üste
  * biniyordu.
  */
+/**
+ * Reddetme titremesinin genliği (px) — `M24`. 4 px, 44 px yüksekliğindeki
+ * butonda gözün yakaladığı ama okumayı bozmayan en küçük kayma.
+ */
+const REDDET_KAYMA = 4;
+
 const BUTON_W = 100;
 const BUTON_ARA = 104;
 const DAL_BUTON_W = 152;
@@ -308,6 +315,7 @@ export class BuildMenu {
   readonly #barracksBySpot: Map<number, BarracksKayit>;
   readonly #infoPanel: TowerInfoPanel;
   readonly #actions: BuildMenuActions;
+  readonly #settings: Settings;
 
   #menu?: Phaser.GameObjects.Container;
   /** Seçili kule/kışlanın üstündeki altın kartuş (P02) — yalnız menü açıkken. */
@@ -323,6 +331,8 @@ export class BuildMenu {
     barracksBySpot: Map<number, BarracksKayit>,
     infoPanel: TowerInfoPanel,
     actions: BuildMenuActions,
+    /** `M24` — reddetme titremesi hareket ayarına bağlı (TIER 1 kural 6). */
+    settings: Settings,
   ) {
     this.#scene = scene;
     this.#bus = bus;
@@ -332,6 +342,58 @@ export class BuildMenu {
     this.#barracksBySpot = barracksBySpot;
     this.#infoPanel = infoPanel;
     this.#actions = actions;
+    this.#settings = settings;
+  }
+
+  /**
+   * **Reddedilen satın alma — `M24`.**
+   *
+   * Buraya kadar tek geri bildirim **sesti** (`purchase:denied` →
+   * `SoundSystem`). Ses ayarlardan kapatılabiliyor (§12), yani sesi
+   * kapatan oyuncu devre dışı bir butona bastığında **hiçbir** cevap
+   * almıyordu: tıklıyor, hiçbir şey olmuyor, ve oyun ona sebebini
+   * söylemiyor. Butonun soluk olması bir *durum*; eksik olan **olaya**
+   * verilen cevap.
+   *
+   * İki kanal bilerek (TIER 1 kural 6): **parlaklık** darbesi ve
+   * yatayda "hayır" titremesi. Kural bilgiyi yalnız renge bağlamayı,
+   * `prefers-reduced-motion` ise hareketi yasaklıyor; ikisi birden
+   * verilince hiçbiri **tek** taşıyıcı olmuyor. Titreme hareket
+   * ayarına bağlı, parlama her zaman var.
+   *
+   * Üst üste tıklamada tween'ler **birikmiyor**: her çağrı öncekini
+   * öldürüp başlangıç değerlerine dönüyor, yoksa hızlı tıklayan oyuncu
+   * butonu kalıcı olarak kaydırabilirdi.
+   */
+  #reddetGeriBildirimi(cerceve: Phaser.GameObjects.Container, etiket: Phaser.GameObjects.Text): void {
+    const tw = this.#scene.tweens;
+    tw.killTweensOf(cerceve);
+    tw.killTweensOf(etiket);
+    cerceve.setAlpha(0.55);
+
+    tw.add({ targets: cerceve, alpha: 1, duration: 90, yoyo: true, ease: 'Quad.easeOut' });
+
+    if (!this.#settings.state.screenShake) return; // hareket kapalı
+    const x0 = cerceve.x;
+    const xe = etiket.x;
+    tw.add({
+      targets: cerceve,
+      x: x0 + REDDET_KAYMA,
+      duration: 45,
+      yoyo: true,
+      repeat: 1,
+      ease: 'Sine.easeInOut',
+      onComplete: () => cerceve.setX(x0),
+    });
+    tw.add({
+      targets: etiket,
+      x: xe + REDDET_KAYMA,
+      duration: 45,
+      yoyo: true,
+      repeat: 1,
+      ease: 'Sine.easeInOut',
+      onComplete: () => etiket.setX(xe),
+    });
   }
 
   /** `GameScene`'in rally sürükleme/işaretçi kontrolü bunu okuyor. */
@@ -751,6 +813,7 @@ export class BuildMenu {
         olay.stopPropagation();
         if (!etkin) {
           this.#bus.emit('purchase:denied', {});
+          this.#reddetGeriBildirimi(cerceve, etiket);
           return;
         }
         // Menüdeki başka bir butona basmak bekleyen satış onayını
