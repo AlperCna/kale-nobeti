@@ -101,6 +101,30 @@ export type YetenekKullanimi = 'yok' | 'meteor' | 'takviye' | 'ikisi';
  */
 export type ErkenPolitika = 'hemen' | 'sonBirkac' | 'temizken' | 'hic';
 
+/**
+ * **Ölçüm gözlemcisi** — her sızıntıyı **zamanıyla** bildirir (`M37`).
+ *
+ * `SimResult` sızıntıyı **dalga başına** topluyor ve sızıntı "o an koşan
+ * dalgaya" yazılıyor (gerekçe `kosturDalgalar`'ın başında). `M36`
+ * ölçümü bu atfın yanıltıcı olduğunu gösterdi: hazırlık süresi 20 sn,
+ * iki dalga arası 41-43 sn, ama bir Trol'ün yolu yürümesi 42-78 sn —
+ * yani hiçbir dalga kendi döngüsünde boşalamıyor ve biriken kuyruğun
+ * tamamı **son dalgaya** yazılıyor (yalnız o, sahanın boşalmasını
+ * bekliyor). "Orta oyun boş" sonucu büyük ölçüde bu artefakt.
+ *
+ * Gözlemci yalnız **ölçüm** için; oyun onu kullanmıyor ve simülasyonun
+ * davranışına hiç dokunmuyor. Ayrı bir ölçüm kopyası yazmak S80'in hata
+ * sınıfı olurdu ("oyun ile ölçüm farklı bir şeyi biliyor").
+ */
+export interface SimGozlemci {
+  /**
+   * @param enemyId Kaleye ulaşan düşman.
+   * @param saniye Koşunun **başından** itibaren geçen ölçekli süre.
+   * @param waveIndex O an koşan dalganın 0 tabanlı indeksi.
+   */
+  sizinti(enemyId: EnemyId, saniye: number, waveIndex: number): void;
+}
+
 export interface SimResult {
   /** Kaleye ulaşan düşmanların **kalan** HP toplamı. Birim: HP. */
   readonly leakedHp: number;
@@ -271,6 +295,8 @@ function kosturDalgalar(
   /** Oyuncunun yetenekleri — varsayılan `'yok'`, bkz. `YetenekKullanimi`. */
   yetenekKullanimi: YetenekKullanimi = 'yok',
   erken: ErkenPolitika = 'hic',
+  /** Yalnız ölçüm — bkz. `SimGozlemci`. Simülasyonun davranışına dokunmaz. */
+  gozlemci?: SimGozlemci,
 ): SimResult[] {
   const dogumCarpani = map.hpMultiplier * hpScale;
   const bus = new EventBus();
@@ -401,6 +427,11 @@ function kosturDalgalar(
       leakedCount++;
       const id = e.def?.id;
       if (id !== undefined) leakedByEnemy[id] = (leakedByEnemy[id] ?? 0) + 1;
+      // `M37` — aynı olay, bir de **zamanıyla**. `adim` aşağıda tanımlı
+      // ama bu geri çağrı yalnız döngü içinde koşuyor, yani güvenli.
+      // `sonuclar.length` o an koşan dalganın 0 tabanlı indeksi:
+      // sonuçlar dalga bitince ekleniyor.
+      if (id !== undefined) gozlemci?.sizinti(id, (adim * stepMs) / 1000, sonuclar.length);
     },
   );
   // --- Kışlalar (M5'ten taşınan borç) -------------------------------------
@@ -708,6 +739,8 @@ export function simulateAllWaves(
    * (S109). Çifti birlikte tutan adres: `referansOlcum`.
    */
   erken: ErkenPolitika = 'hic',
+  /** Yalnız ölçüm — bkz. `SimGozlemci`. */
+  gozlemci?: SimGozlemci,
 ): SimResult[] {
   return kosturDalgalar(
     waves,
@@ -717,5 +750,6 @@ export function simulateAllWaves(
     hpScale,
     yetenekKullanimi,
     erken,
+    gozlemci,
   );
 }
