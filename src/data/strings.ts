@@ -372,6 +372,12 @@ const TR = {
   hintFlyers: 'Kesikli hat uçanların rotası — yolu izlemezler. Yalnız Okçu ve Büyü onlara tam hasar verir.',
   hintShield: 'Mavi halka buz kalkanı — erimeden cana hasar geçmiyor. Ağır vuruş kalkanı daha çabuk kırar.',
   hintBurrow: 'Soluk düşman yeraltında — kuleler onu hedef alamaz. Patlama ve yanma yine değer; yolun ilerisini tutan kuleler onu bekler.',
+  /**
+   * `M30` — halka neyi gösterdiğini kendi başına anlatmıyor.
+   * Karşı hamle cümlenin **içinde**: oyuncu sırayı değiştirmeli.
+   */
+  hintHeal:
+    'Çemberli düşman Şaman — çemberin içindeki herkesin canını sürekli tazeliyor. Önce onu düşür, kalabalık çok daha çabuk erir.',
 } as const;
 
 export type StringKey = keyof typeof TR;
@@ -589,5 +595,7 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     hintFlyers: 'The dashed line is the flyers’ route — they ignore the path. Only Archer and Magic deal full damage to them.',
     hintShield: 'The blue ring is a frost shield — no damage reaches health until it breaks. Heavy hits break it faster.',
     hintBurrow: 'A faded enemy is underground — towers cannot target it. Splash and burn still land; towers further along the path will catch it.',
+    hintHeal:
+      'The ringed enemy is a Shaman — it keeps restoring health to everyone inside the ring. Drop it first and the crowd melts far faster.',
   },
 };

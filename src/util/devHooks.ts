@@ -29,6 +29,12 @@ export interface DevHooks {
   restartGame: () => void;
 
   // --- M1 ---
+  /**
+   * `M30` — tek düşman doğurur (görsel doğrulaması için; Şaman harita 2
+   * dalga 6'da çıkıyor ve oraya oynayarak varmak pratik değil).
+   * @returns Havuzdan alınabildiyse `true`.
+   */
+  spawnEnemy: (id: string, spawnPoint?: number) => boolean;
   /** Havuzdaki **kullanımdaki** düşman sayısı. Uzun koşuda sürekli artmamalı. */
   enemyActive: () => number;
   /** Havuz kapasitesi. **Sabit kalmalı** — sessiz büyüme TIER 1 kural 3 ihlali. */

@@ -32,7 +32,14 @@ import type { EventBus } from './EventBus';
  * (kesikli yaylar) ne ifade ediyor net değil". Y09'un öngördüğü gibi her
  * biri bir anahtar + bir tetik.
  */
-export type HintId = 'earlyStart' | 'dragRally' | 'targetModes' | 'flyers' | 'shield' | 'burrow';
+export type HintId =
+  | 'earlyStart'
+  | 'dragRally'
+  | 'targetModes'
+  | 'flyers'
+  | 'shield'
+  | 'burrow'
+  | 'heal';
 
 const HINT_IDS: readonly HintId[] = [
   'earlyStart',
@@ -41,6 +48,7 @@ const HINT_IDS: readonly HintId[] = [
   'flyers',
   'shield',
   'burrow',
+  'heal',
 ];
 
 function gecerliHint(deger: unknown): deger is HintId {
@@ -90,6 +98,19 @@ export class TutorialSystem {
      * çevirirdi; bu sistemin yazılı hâli "yalnız gereken kadar".
      */
     bus.on('enemy:burrowed', () => this.#tetikle('burrow'));
+    /**
+     * `M30` — Şaman iyileştirmesi. `Y09`'un iki şartı da tutuyor:
+     * **sonucu değiştiriyor** (halkadaki herkes saniyede 8 HP geri
+     * alıyor; karşı hamle "önce Şamanı düşür") ve **kendiliğinden
+     * keşfedilemiyor** — `M30`'un halkası soruyu *sorduruyor* ama
+     * cevabını vermiyor: oyuncu bir çember görüyor, onun iyileştirme
+     * olduğunu ve kaynağı öldürmenin durdurduğunu okuyamıyor.
+     *
+     * Kalkanla aynı yapı: önce görsel, sonra ilk görüşte bir cümle.
+     * Çağırmanın ipucu yok çünkü o **görünür** (yandaş ekrana geliyor);
+     * iyileştirme görünmüyordu, `M30`'a kadar hiçbir kanalı yoktu.
+     */
+    bus.on('enemy:healing', () => this.#tetikle('heal'));
   }
 
   /** `GameScene.create()`'in sonunda **bir kez** — ilk hazırlık aşaması için. */
