@@ -154,7 +154,24 @@ export class EnemyAbilitySystem<T extends AbilityEnemy & Poolable> {
       const yavru = this.pool.acquire();
       if (yavru === null) break;
       yavru.spawn(mover, def, this.hpMultiplier);
-      yavru.progress = nerede;
+      /**
+       * **Kopya, referans değil** (`M35`) — gizli bir bağımlılığı kesiyor.
+       *
+       * Eskiden `nerede` doğrudan atanıyordu, yani çağıran ve bütün
+       * yandaşlar **tek `PathProgress` nesnesini** paylaşıyordu. Bu bugün
+       * bir hata ÜRETMİYOR, çünkü `PathMover.step` ilerlemeyi yerinde
+       * değiştirmiyor: `e.progress = path.advance(e.progress, …)` ile
+       * **yeni nesne** atıyor, yani paylaşım ilk adımda kendiliğinden
+       * kopuyor. Ölçüldü: kopyalı ve kopyasız hâlde bir karelik ilerleme
+       * birebir aynı (1,44 px).
+       *
+       * Ama doğruluk, başka bir dosyanın saflığına bağlı kalıyordu.
+       * `advance`'i yerinde değiştirmek bu havuz disiplinli kod tabanında
+       * çok doğal bir "iyileştirme" ve o gün üç gövde tek gövde gibi
+       * yürümeye başlardı. Bölünme/çağırma elde birkaç kez olan bir olay,
+       * tahsis bedeli ölçülemez; bağımlılığı burada kesmek ucuz.
+       */
+      yavru.progress = { ...nerede };
       dogan++;
     }
     return dogan;
@@ -193,7 +210,8 @@ export class EnemyAbilitySystem<T extends AbilityEnemy & Poolable> {
 
       yavru.spawn(mover, yavruDef, this.hpMultiplier);
       // Annenin yol ilerlemesini devral — aynı noktadan devam ediyorlar.
-      yavru.progress = anneProgress;
+      // Kopya, referans değil — gerekçe `#cagir`'daki `M35` notu.
+      yavru.progress = { ...anneProgress };
       dogan++;
     }
     return dogan;
