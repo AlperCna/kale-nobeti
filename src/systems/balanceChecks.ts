@@ -501,7 +501,15 @@ export function buildReferenceBoards(
 
 /** 8 yapı noktasının **ilk kez** tamamen dolduğu dalga. Yoksa `-1`. */
 export function spotsFullAtWave(boards: readonly ReferenceBoard[], spotCount: number): number {
-  return boards.find((b) => b.towers.length >= spotCount)?.waveIndex ?? -1;
+  // `M38` — **kışlalar da yer kaplıyor.** Bu fonksiyon `M3`'te yazıldı ve
+  // o zaman referans tahtalarda kışla yoktu; `M5` kışlayı getirdiğinde
+  // sayım güncellenmedi. Sonuç sessizce yanlıştı: harita 3-6'nın referans
+  // tahtası 11 kule + 1 kışla ile 12 noktayı **dolduruyor** ama fonksiyon
+  // `towers.length >= 12` aradığı için "hiç dolmadı" (-1) diyordu.
+  // Harita 1'de kışla olmadığı için mevcut testler bunu göremiyordu.
+  return (
+    boards.find((b) => b.towers.length + (b.barracks?.length ?? 0) >= spotCount)?.waveIndex ?? -1
+  );
 }
 
 /**

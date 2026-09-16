@@ -728,10 +728,10 @@ kapsamalı** noktaya kuruluyor.
 |---|---|---|---|---|
 | 1 · Değirmen Geçidi | dalga 7 | 1602 | 2122 | 8 kule (1350 altın) |
 | 2 · Taş Köprü | dalga 3 | 3548 | 4692 | 10 kule (2940 altın) |
-| 3 · Kül Ovası | dalga -1 | 6217 | 8193 | 11 kule + 1 kışla (5100 altın) |
-| 4 · Kar Geçidi | dalga -1 | 11562 | 15306 | 11 kule + 1 kışla (5100 altın) |
-| 5 · Kadim Harabe | dalga -1 | 15960 | 21160 | 14 kule + 1 kışla (6440 altın) |
-| 6 · Sisli Bataklık | dalga -1 | 17655 | 23375 | 14 kule + 1 kışla (6440 altın) |
+| 3 · Kül Ovası | dalga 4 | 6217 | 8193 | 11 kule + 1 kışla (5100 altın) |
+| 4 · Kar Geçidi | dalga 4 | 11562 | 15306 | 11 kule + 1 kışla (5100 altın) |
+| 5 · Kadim Harabe | dalga 4 | 15960 | 21160 | 14 kule + 1 kışla (6440 altın) |
+| 6 · Sisli Bataklık | dalga 4 | 17655 | 23375 | 14 kule + 1 kışla (6440 altın) |
 
 ---
 
