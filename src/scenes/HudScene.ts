@@ -23,6 +23,8 @@ import { NUMBER_FONT_KEY } from '../fx/numberFont';
 const INK = 0x14203a;
 /** Altın varak — `M25` bonus sayısı (§2 paleti). */
 const ALTIN = 0xd4a032;
+/** Zincifre — `M25` risk sayısı; can göstergesiyle aynı ton (`HudReadout`). */
+const ZINCIFRE = 0xb03a2e;
 
 /** Dokunmatik hedef en az 44×44 px (CLAUDE.md Platform). */
 const BTN = 56;
@@ -106,6 +108,16 @@ export class HudScene extends Phaser.Scene {
    * kalıyor.
    */
   #earlyBonus?: Phaser.GameObjects.BitmapText;
+  /**
+   * Erken başlatmanın **risk** tarafı — `M25`: sahadaki düşman sayısı.
+   *
+   * Sayı `BitmapText` (değişiyor), yanındaki kelime `Text` (değişmiyor)
+   * — sayı fontunda harf yok, TIER 1 kural 7 de zaten bu ayrımı
+   * istiyor. Yalnız sayı **sıfırdan büyükken** görünüyor: ortaya
+   * çıkması uyarının kendisi, "0 sahada" ise gürültü olurdu.
+   */
+  #earlyRiskSayi?: Phaser.GameObjects.BitmapText;
+  #earlyRiskEtiket?: Phaser.GameObjects.Text;
   #earlyLabel?: Phaser.GameObjects.Text;
   #bitti = false;
 
@@ -303,6 +315,14 @@ export class HudScene extends Phaser.Scene {
     if (erkenAcik) {
       this.#earlyBonus?.setText(`+${game.earlyStartPreview}`);
     }
+    // Risk yalnız gerçekten varken görünüyor.
+    const sahada = game.enemiesOnField;
+    const riskVar = erkenAcik && sahada > 0;
+    this.#earlyRiskSayi?.setVisible(riskVar);
+    this.#earlyRiskEtiket?.setVisible(riskVar);
+    if (riskVar) {
+      this.#earlyRiskSayi?.setText(String(sahada));
+    }
 
     this.#geriSayimTiki(game.prepRemainingSec, game.soundSystem);
     this.#oyunSonuKontrol(game);
@@ -487,6 +507,23 @@ export class HudScene extends Phaser.Scene {
     // (ölçüldü: sayı 80-112, düğme 56-108). 20 px hem sığıyor hem
     // Platform'un 16 px alt sınırının üstünde kalıyor.
     this.#earlyBonus.setFontSize(20).setOrigin(0.5).setTint(ALTIN).setVisible(false);
+
+    // Risk satırı düğmenin **altında**, parşömenin dışında: kazanç
+    // (altın) düğmenin içinde, bedel dışında — ikisi karışmasın.
+    // Sayı sağa, kelime sola yaslı: rakam sayısı değiştikçe (1 → 2 → 3)
+    // kelime **yerinde kalıyor**, yalnız sayı sola doğru büyüyor.
+    // `x - 14` / `x - 6` ikilisi çifti düğme merkezine oturtuyor
+    // (ölçüldü: iki haneyle 598-683, merkez 640).
+    this.#earlyRiskSayi = this.add.bitmapText(x - 14, y + 46, NUMBER_FONT_KEY, '');
+    this.#earlyRiskSayi.setFontSize(18).setOrigin(1, 0.5).setTint(ZINCIFRE).setVisible(false);
+    this.#earlyRiskEtiket = this.add
+      .text(x - 6, y + 46, t('earlyRisk'), {
+        fontFamily: 'Spectral, serif',
+        fontSize: '16px', // Platform alt sınırı
+        color: '#B03A2E',
+      })
+      .setOrigin(0, 0.5)
+      .setVisible(false);
 
     this.#earlyBtn.on('pointerup', () => {
       this.#game().startWaveEarly();

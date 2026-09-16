@@ -128,6 +128,11 @@ const TR = {
   achMeteor5: 'Gökten Taş',
   achMeteor5Desc: 'Tek Meteor ile 5 düşmana vur.',
   // `M23` — oyunun `M8` sonrası katmanlarına işaret eden dört başarım.
+  /**
+   * `M25` — erken başlatmanın **risk** tarafı. Sayı ayrı (`BitmapText`,
+   * TIER 1 kural 7); bu kelime bir kez yazılıp değişmiyor.
+   */
+  earlyRisk: 'sahada',
   achBothBranches: 'İki Yol',
   achBothBranchesDesc: 'Aynı elde hem 3a hem 3b dalından kule kur.',
   achBothAbilities: 'Çifte El',
@@ -427,6 +432,7 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     achKill1000Desc: 'Defeat 1000 enemies in total.',
     achMeteor5: 'Stone from the Sky',
     achMeteor5Desc: 'Hit 5 enemies with a single Meteor.',
+    earlyRisk: 'on field',
     achBothBranches: 'Two Roads',
     achBothBranchesDesc: 'Build both a 3a and a 3b branch in one run.',
     achBothAbilities: 'Both Hands',
