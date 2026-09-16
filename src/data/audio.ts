@@ -81,9 +81,14 @@ export const MUSIC_BASE_VOLUME = 0.5;
 /**
  * Arayüz tıklama sesinin anahtarı — `M8-P03`.
  *
- * Dosya (`audio/sfx/ui_click.m4a`) **henüz üretilmedi**; çalan taraf
- * (`fx/ParchmentFrame.addPressFeedback`) anahtarı önbellekte bulamazsa
- * sessizce geçiyor. Üretilince yükleme kuyruğuna da eklenecek —
- * `PreloadScene.SFX_ERKEN`, çünkü ilk duyulduğu yer ana menü.
+ * Dosya (`audio/sfx/ui_click.m4a`) **üretildi ve yükleniyor** — bu not
+ * `M32`'ye kadar "henüz üretilmedi" diyordu ve yanlış kuyruğu işaret
+ * ediyordu. Doğrusu `PreloadScene.SFX_MENU`: `SFX_ERKEN` `queueGame`'de,
+ * yani harita açılırken iniyor, oysa ses ilk kez **ana menüde** duyuluyor;
+ * gerekçe `PreloadScene`'de yazılı.
+ *
+ * Çalan taraf (`fx/ParchmentFrame.addPressFeedback`) anahtarı önbellekte
+ * bulamazsa yine sessizce geçiyor — koruma duruyor, çünkü menü sesleri
+ * inmeden bir düğmeye basılabiliyor.
  */
 export const UI_CLICK = 'ui_click';
