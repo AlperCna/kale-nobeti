@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { BALANCE } from '../data/balance';
 import { AchievementSystem } from './AchievementSystem';
 import type { RunEndContext } from './AchievementSystem';
 import { EventBus } from './EventBus';
@@ -182,7 +183,7 @@ describe('AchievementSystem — kalıcılık', () => {
 
   it('**`progress` ve `endless` alanlarını BOZMUYOR**', () => {
     const store = new MemoryStore();
-    new SaveSystem(store).recordResult('degirmen-gecidi', 20, true);
+    new SaveSystem(store).recordResult('degirmen-gecidi', 20, true, BALANCE.startLives);
     new AchievementSystem(store).unlock('firstWin');
     expect(new SaveSystem(store).starsOf('degirmen-gecidi')).toBe(3);
 

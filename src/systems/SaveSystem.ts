@@ -13,19 +13,45 @@
 import type { KeyValueStore } from '../util/storage';
 import { SAVE_KEY } from '../util/storage';
 
-/** `GAME-DESIGN.md` §9 eşikleri. */
+/** `GAME-DESIGN.md` §9 eşikleri — **Normal'in** 20 canına göre. */
 export const STAR_THRESHOLDS = { three: 20, two: 15 } as const;
+
+/**
+ * ★★ eşiği, başlangıç canının **oranı** olarak — `M26`.
+ *
+ * Sayı uydurulmadı, §9'un kendi eşiklerinden türedi: `15 / 20 = 0,75`.
+ * Yani kural hep "canının dörtte üçünü koru"ydu; yalnız 20 cana gömülü
+ * yazılmıştı.
+ */
+export const STAR_TWO_RATIO = STAR_THRESHOLDS.two / STAR_THRESHOLDS.three;
 
 /**
  * Kalan cana göre yıldız.
  *
- * §9: 20 (hiç sızma yok) → ★★★, 15-19 → ★★, ≤14 → ★.
+ * §9: hiç can kaybetme → ★★★, dörtte üçünü koru → ★★, kazan → ★.
  * Kaybedilen oyun **0 yıldız** — kazanmadan yıldız yok.
+ *
+ * ## `startLives` neden ZORUNLU (`M26`)
+ *
+ * Eşikler `M1`'de mutlak yazılmıştı (20 ve 15) çünkü o gün tek bir can
+ * sayısı vardı. `M8-T11` zorluk seviyelerini ekledi ve **Zor'un
+ * başlangıç canı 12**; iki sistem hiç karşılaştırılmadı. Sonuç: Zor'da
+ * **hiç can kaybetmeden** bitiren oyuncu bile ★ alıyordu, çünkü ★★
+ * eşiği (15) başlangıç canının **üstündeydi** ve ★★★ (20) erişilemezdi.
+ * Zoru seçen oyuncu ilerleme ölçüsünde cezalandırılıyordu.
+ *
+ * Parametre bilerek **zorunlu**: asıl hata bir çağıranın "hangi koşudan
+ * söz ediyorum" bilgisini taşımamasıydı; zorunlu olunca derleyici
+ * bütün çağıranları sayıyor (S80/S109'un panzehiri).
+ *
+ * Normal'de davranış **birebir aynı**: `startLives = 20` ile eşikler
+ * yine 20 ve 15.
  */
-export function starsFor(lives: number, won = true): 0 | 1 | 2 | 3 {
+export function starsFor(lives: number, won: boolean, startLives: number): 0 | 1 | 2 | 3 {
   if (!won || lives <= 0) return 0;
-  if (lives >= STAR_THRESHOLDS.three) return 3;
-  if (lives >= STAR_THRESHOLDS.two) return 2;
+  if (!(startLives > 0)) return 0;
+  if (lives >= startLives) return 3;
+  if (lives >= Math.ceil(startLives * STAR_TWO_RATIO)) return 2;
   return 1;
 }
 
@@ -80,8 +106,8 @@ export class SaveSystem {
   }
 
   /** @returns Kayıt gerçekten değiştiyse `true`. */
-  recordResult(mapId: string, lives: number, won: boolean): boolean {
-    const yeni = starsFor(lives, won);
+  recordResult(mapId: string, lives: number, won: boolean, startLives: number): boolean {
+    const yeni = starsFor(lives, won, startLives);
     if (yeni <= this.starsOf(mapId)) return false; // yıldız düşmüyor
     this.#veri = { ...this.#veri, stars: { ...this.#veri.stars, [mapId]: yeni } };
     this.#yaz();

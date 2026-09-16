@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { BALANCE } from '../data/balance';
 import { EndlessRecords } from './EndlessRecords';
 import { SaveSystem } from './SaveSystem';
 import { MemoryStore, SAVE_KEY } from '../util/storage';
@@ -34,7 +35,7 @@ describe('EndlessRecords — M8-T06', () => {
     // Asıl risk bu: iki sistem tek `localStorage` anahtarını paylaşıyor.
     const store = new MemoryStore();
     const save = new SaveSystem(store);
-    save.recordResult('degirmen-gecidi', 20, true);
+    save.recordResult('degirmen-gecidi', 20, true, BALANCE.startLives);
 
     new EndlessRecords(store).record('degirmen-gecidi', 19);
 
@@ -45,14 +46,14 @@ describe('EndlessRecords — M8-T06', () => {
   it('ters sıra da bozmuyor — önce sonsuz, sonra yıldız', () => {
     const store = new MemoryStore();
     new EndlessRecords(store).record('tas-kopru', 22);
-    new SaveSystem(store).recordResult('tas-kopru', 20, true);
+    new SaveSystem(store).recordResult('tas-kopru', 20, true, BALANCE.startLives);
     expect(new EndlessRecords(store).bestOf('tas-kopru')).toBe(22);
     expect(new SaveSystem(store).starsOf('tas-kopru')).toBe(3);
   });
 
   it('`progress.version` DEĞİŞMİYOR — göç gerekmiyor', () => {
     const store = new MemoryStore();
-    new SaveSystem(store).recordResult('degirmen-gecidi', 20, true);
+    new SaveSystem(store).recordResult('degirmen-gecidi', 20, true, BALANCE.startLives);
     new EndlessRecords(store).record('degirmen-gecidi', 15);
     const ham = JSON.parse(store.get(SAVE_KEY)!) as { progress: { version: number } };
     expect(ham.progress.version).toBe(1);
