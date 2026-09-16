@@ -87,6 +87,14 @@ const NAMLU_YAYILIM = 22;
 const IZ_ARALIK_MS = 70;
 /** Yönsüz saçılım — ölüm, patlama ve iz için (yarı açı 180° = her yön). */
 const TAM_DAIRE = 180;
+/**
+ * Yükseltme sütununun saçılma yarı açısı (derece) — `M24`.
+ *
+ * Dar koni = yönlü sıçrama (`Particles.patlat` notu). 22°, toz
+ * halkasının 180°'siyle yan yana konunca "yayıldı" ile "yükseldi"
+ * arasındaki farkı tek bakışta okutuyor.
+ */
+const YUKSELTME_KONISI = 22;
 
 /**
  * İsabet parıltısı rengi — `M8-T08`. Fiziksel altın varak, büyü lapis;
@@ -789,6 +797,7 @@ export class GameScene extends Phaser.Scene {
         targetingShown: (spotIndex) => this.bus.emit('targeting:opened', { spotIndex }),
         redrawRally: () => this.#drawRally(),
       },
+      this.settings,
     );
 
     this.#setupInput();
@@ -1385,6 +1394,11 @@ export class GameScene extends Phaser.Scene {
     if (this.#occupancy?.occupy(spotIndex) !== true) return false;
     this.#eco.buyAt(spotIndex, kademe.cost);
 
+    // `M24` — kışla da kule ile **aynı** toz halkasını atıyor. §10'un
+    // "kule yerleşimi: toz halkası" kuralı `M6-T10`'da yalnız kuleye
+    // uygulanmıştı; iki yapı da aynı eylemse aynı dili konuşmalı.
+    this.#efektler?.patlat(spot.x, spot.y, 0, -1, 14, undefined, TAM_DAIRE);
+
     const marker = this.add.circle(0, 0, 7, RALLY_COLOR, 0.9).setStrokeStyle(2, INK_COLOR);
     // Kışla gövdesi — kule ile aynı görsel dil (`towerFrameKey`), ama
     // `TowerSystem`'e girmiyor, `Tower` sınıfını kullanmıyor.
@@ -1487,6 +1501,8 @@ export class GameScene extends Phaser.Scene {
     this.#eco.buyAt(spotIndex, kademe.cost);
     k.tier = hedef;
     k.govde.setFrame(towerFrameKey('kisla', hedef));
+    // `M24` — kule yükseltmesiyle aynı sütun.
+    this.#efektler?.patlat(k.govde.x, k.govde.y, 0, -1, 18, undefined, YUKSELTME_KONISI);
     // Yükseltme askerleri **tazeliyor**: yeni HP ile doğuyorlar. Kule
     // tarafında bekleme sıfırlanmıyordu (S40); burada karşılığı yok,
     // asker zaten sürekli bir varlık.
@@ -1693,6 +1709,17 @@ export class GameScene extends Phaser.Scene {
 
     kule.setTier(hedefKademe);
     kule.target = null;
+    /**
+     * `M24` — **yükseltmenin kendi dili.** Kurmak toz halkası olarak
+     * *yayılıyor*, yükseltmek dar bir sütun olarak **yükseliyor**; iki
+     * eylem ekranda karışmasın.
+     *
+     * Bu an `M6-T10`'da atlanmıştı ve atlanması pahalıydı: yapı
+     * noktaları 4. dalgada doluyor (harita 3-6, `M23` araştırması),
+     * yani geç oyunda oyuncunun elinde kalan **tek** eylem yükseltmek
+     * ve o eylemin hiçbir görsel karşılığı yoktu.
+     */
+    this.#efektler?.patlat(kule.x, kule.y, 0, -1, 18, undefined, YUKSELTME_KONISI);
     this.bus.emit('tower:upgraded', { spotIndex, tier: hedefKademe });
     this.#buildMenu?.closeMenu();
     return true;
