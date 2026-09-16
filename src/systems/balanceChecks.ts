@@ -17,7 +17,7 @@ import { getEnemy, getEnemyForMap } from '../data/enemies';
 import { BUYU, OKCU, TOP, getTower, tierAt } from '../data/towers';
 import { KISLA, barracksTierAt } from '../data/barracks';
 import { applyDamage, etkiDps } from './combat';
-import { measureCoverage, pathLength } from '../util/coverage';
+import { nearestPathIndex, measureCoverage, pathLength } from '../util/coverage';
 
 // --------------------------------------------------------------- Kısıt A
 
@@ -344,8 +344,61 @@ export function buildReferenceBoards(
    */
   tekAile?: TowerDef['id'],
 ): ReferenceBoard[] {
-  // Kapsaması yüksek nokta önce.
-  const tumSirali = [...coverage].sort((a, b) => b.coveredPx - a.coveredPx).map((c) => c.spotIndex);
+  /**
+   * **Nokta sırası — üç ölçüt** (`M47`, S95).
+   *
+   * Buraya kadar tek ölçüt vardı: kapsaması yüksek nokta önce. Sorun
+   * ölçüldü: kapsamalar büyük ölçüde **eşit** (Sisli Bataklık'ın 15
+   * noktasından 11'i aynı), `Array.sort` kararlı olduğu için eşitlerin
+   * sırasını `maps.ts`'teki **yazılış sırası** belirliyordu — tasarımsal
+   * hiçbir anlamı olmayan bir ayrıntı. Eşit noktalar başka sırada
+   * yazılsaydı Sisli Bataklık'ın can kaybı **8 ile 25 arasında** herhangi
+   * bir değer olurdu (25 = harita kaybedilir). Bütün dengenin demirlendiği
+   * tahta keyfî bir ayrıntıya bağlıydı.
+   *
+   * **2. ölçüt — kaleye yakınlık.** Kaleye yakın noktalar son savunma
+   * hattı; tahta sırayla yükseltildiği için listenin başındakiler en
+   * yüksek kademeyi alıyor, yani en güçlü savunma sızıntının gerçekten
+   * olduğu yere oturuyor. Ters yön ölçüldü ve her haritada daha kötü
+   * çıktı (Sisli Bataklık 10 → 19).
+   *
+   * **3. ölçüt — yolun taşıdığı tehdit.** Harita 2 ve 3'te ayna çiftleri
+   * kalıyordu: aynı kapsama, kaleye aynı uzaklık, **aynı yol oranı**.
+   * Geometri eşdeğer ama trafik değil — Kül Ovası'nda yol 0, 47 düşman
+   * **ve boss** taşıyor, yol 1 ise 34 düşman ama 7 Trol. Yoğun şeridin
+   * noktası önce kuruluyor.
+   *
+   * Üçü birlikte **altı haritayı da** girdi sırasından bağımsız kılıyor
+   * (ölçüldü: 25 karıştırmada tek değer).
+   */
+  const kaleKare = (i: number): number => {
+    const s = map.buildSpots[i];
+    if (s === undefined) return Number.POSITIVE_INFINITY;
+    const dx = s.x - map.castle.x;
+    const dy = s.y - map.castle.y;
+    return dx * dx + dy * dy;
+  };
+  const yolTehdidi = map.paths.map(() => 0);
+  for (const w of waves) {
+    for (const g of w.groups) {
+      const e = getEnemyForMap(g.enemy, map);
+      if (e === undefined) continue;
+      const li = Math.min(g.spawnPoint, yolTehdidi.length - 1);
+      if (li >= 0) yolTehdidi[li] = (yolTehdidi[li] ?? 0) + g.count * e.points;
+    }
+  }
+  const trafik = (i: number): number => {
+    const s = map.buildSpots[i];
+    return s === undefined ? 0 : (yolTehdidi[nearestPathIndex(map.paths, s)] ?? 0);
+  };
+  const tumSirali = [...coverage]
+    .sort(
+      (a, b) =>
+        b.coveredPx - a.coveredPx ||
+        kaleKare(a.spotIndex) - kaleKare(b.spotIndex) ||
+        trafik(b.spotIndex) - trafik(a.spotIndex),
+    )
+    .map((c) => c.spotIndex);
 
   /**
    * **Kışla, kadroda Trol varsa alınıyor.**
