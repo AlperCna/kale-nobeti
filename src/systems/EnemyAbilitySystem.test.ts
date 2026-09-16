@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { EnemyAbilitySystem } from './EnemyAbilitySystem';
+import { EnemyAbilitySystem, healKapsiyorMu } from './EnemyAbilitySystem';
 import type { AbilityEnemy } from './EnemyAbilitySystem';
 import { PathSystem } from './PathSystem';
 import { PathMover, LineMover, resetEnemyState } from './movers';
@@ -424,5 +424,72 @@ describe('boss verb kapsamı', () => {
       expect(boss.ability.childId).toBe('orkSavasci');
       expect(MAPS[5]!.enemyRoster).toContain(boss.ability.childId);
     }
+  });
+});
+
+/**
+ * `M30` — menzil kuralının **tek adresi**. Ekrandaki halka da bunu
+ * çağırıyor; burada bağlanan davranış aynı zamanda görselin sözleşmesi.
+ */
+describe('healKapsiyorMu — M30', () => {
+  const kur = (def: EnemyDef, x: number, y = 0): SahteDusman => {
+    const e = new SahteDusman();
+    e.spawn(new LineMover(YOL), def, 1);
+    e.x = x;
+    e.y = y;
+    return e;
+  };
+
+  it('yarıçap İÇİNDEKİ düşmanı kapsıyor, DIŞINDAKİNİ kapsamıyor', () => {
+    const y = SAMAN.ability;
+    if (y === undefined || y.kind !== 'heal') throw new Error('SAMAN heal olmalı');
+    const saman = kur(SAMAN, 0);
+    expect(healKapsiyorMu(saman, kur(GOBLIN, y.radius - 1))).toBe(true);
+    expect(healKapsiyorMu(saman, kur(GOBLIN, y.radius + 1))).toBe(false);
+  });
+
+  it('§5: Şaman KENDİNİ iyileştirmiyor', () => {
+    const saman = kur(SAMAN, 0);
+    expect(healKapsiyorMu(saman, saman)).toBe(false);
+  });
+
+  it('ölü kaynak ve ölü hedef kapsanmıyor — halka ölüyle birlikte kayboluyor', () => {
+    const saman = kur(SAMAN, 0);
+    const goblin = kur(GOBLIN, 10);
+    saman.alive = false;
+    expect(healKapsiyorMu(saman, goblin)).toBe(false);
+    saman.alive = true;
+    goblin.alive = false;
+    expect(healKapsiyorMu(saman, goblin)).toBe(false);
+  });
+
+  it('heal yeteneği OLMAYAN düşman kimseyi kapsamıyor', () => {
+    expect(healKapsiyorMu(kur(TROL, 0), kur(GOBLIN, 5))).toBe(false);
+    expect(healKapsiyorMu(kur(GOBLIN, 0), kur(GOBLIN, 5))).toBe(false);
+  });
+
+  it('OYUNUN uyguladığı iyileştirme ile birebir aynı kümeyi seçiyor', () => {
+    // Asıl sağlama bu: `update()` kimi iyileştiriyorsa halka tam onu
+    // göstermeli. Ayrışırlarsa oyuncu yanlış düşmanı öldürür (S80 sınıfı).
+    const y = SAMAN.ability;
+    if (y === undefined || y.kind !== 'heal') throw new Error('SAMAN heal olmalı');
+    const havuz = new Pool<SahteDusman>(() => new SahteDusman(), 8);
+    const saman = havuz.acquire()!;
+    saman.spawn(new LineMover(YOL), SAMAN, 1);
+    saman.x = 0;
+    const icerde = havuz.acquire()!;
+    icerde.spawn(new LineMover(YOL), GOBLIN, 1);
+    icerde.x = y.radius - 5;
+    const disarda = havuz.acquire()!;
+    disarda.spawn(new LineMover(YOL), GOBLIN, 1);
+    disarda.x = y.radius + 5;
+    for (const e of [icerde, disarda]) e.hp = 1;
+
+    new EnemyAbilitySystem<SahteDusman>(havuz, 1, getEnemy).update(1000);
+
+    expect(icerde.hp).toBeGreaterThan(1);
+    expect(disarda.hp).toBe(1);
+    expect(healKapsiyorMu(saman, icerde)).toBe(true);
+    expect(healKapsiyorMu(saman, disarda)).toBe(false);
   });
 });

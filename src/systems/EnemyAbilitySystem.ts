@@ -17,6 +17,26 @@ import { distSq } from '../util/math';
 
 const MS_TO_S = 1 / 1000;
 
+/**
+ * **Şamanın iyileştirmesi `hedef`'e ulaşıyor mu** — `M30`.
+ *
+ * `update()` ve **görsel katman** bu tek fonksiyonu çağırıyor. Ayrı
+ * yazılsalardı S80/S81/S86/S92/S106/S109'un sınıfı olurdu ("oyun ile X
+ * farklı bir şeyi biliyor"): ekranda halka bir yeri gösterirken
+ * iyileştirme başka bir yere giderdi ve oyuncu **yanlış** düşmanı
+ * öldürürdü. Kural burada, kopyası yok.
+ *
+ * §5: Şaman **kendini iyileştirmiyor**. Yarıçap karesel (TIER 1 k.9).
+ */
+export function healKapsiyorMu(kaynak: AbilityEnemy, hedef: AbilityEnemy): boolean {
+  if (kaynak === hedef) return false;
+  if (!kaynak.alive || kaynak.def === null) return false;
+  if (!hedef.alive || hedef.def === null) return false;
+  const y = kaynak.def.ability;
+  if (y === undefined || y.kind !== 'heal') return false;
+  return distSq(kaynak, hedef) <= y.radius * y.radius;
+}
+
 /** Yetenek sisteminin bir düşmandan gördüğü yüzey. */
 export interface AbilityEnemy extends SpawnableEnemy {
   readonly x: number;
@@ -106,11 +126,10 @@ export class EnemyAbilitySystem<T extends AbilityEnemy & Poolable> {
       if (y.kind === 'heal') {
         // §5: "Yakındaki **düşmanlara**" — Şaman kendini iyileştirmiyor.
         // Yarıçap dokümanda yok (`// GEÇİCİ — S37`, `enemies.ts`).
-        const yaricapKare = y.radius * y.radius;
+        // Menzil kuralı `healKapsiyorMu`'da; ekrandaki halka da onu
+        // çağırıyor, yani gösterilen yer ile iyileşen yer ayrışamıyor.
         for (const hedef of aktif) {
-          if (hedef === e) continue;
-          if (!hedef.alive || hedef.def === null) continue;
-          if (distSq(e, hedef) > yaricapKare) continue;
+          if (!healKapsiyorMu(e, hedef)) continue;
           this.#iyilestir(hedef, y.hps * dt);
         }
       }

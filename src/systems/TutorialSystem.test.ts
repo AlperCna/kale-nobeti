@@ -63,6 +63,19 @@ describe('TutorialSystem — Y09, iki ipucu (S65, S69)', () => {
     expect(gosterilen).toEqual(['burrow']);
   });
 
+  it('enemy:healing → heal ipucu, yalnız ilk kez (M30)', () => {
+    // Şaman iyileştirmesi `Y09`'un iki şartını da karşılıyor: sonucu
+    // değiştiriyor (çemberdeki herkes saniyede 8 HP geri alıyor) ve
+    // kendiliğinden keşfedilemiyor — `M30`'un çemberi soruyu sordurur
+    // ama "bu iyileştirmedir, kaynağı öldür" cevabını vermez.
+    const bus = new EventBus();
+    const gosterilen: string[] = [];
+    new TutorialSystem(new MemoryStore(), true, (h) => gosterilen.push(h), bus);
+    bus.emit('enemy:healing', {});
+    bus.emit('enemy:healing', {}); // olay her karede yayılıyor
+    expect(gosterilen).toEqual(['heal']);
+  });
+
   it('iki ipucu birbirinden bağımsız — biri görülse diğeri hâlâ tetiklenir', () => {
     const bus = new EventBus();
     const gosterilen: string[] = [];

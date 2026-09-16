@@ -56,6 +56,13 @@ export interface GameEvents {
    */
   'enemy:shielded': Record<string, never>;
   /**
+   * `M30` — sahada **şifacı** bir düşman var (Şaman). `enemy:shielded` ve
+   * `enemy:burrowed` ile birebir aynı desen: her karede yayılıyor, "ilk
+   * kez mi" kararını `TutorialSystem` veriyor, burada bayrak tutulmuyor
+   * (TIER 1 kural 3'ün tuzağı).
+   */
+  'enemy:healing': Record<string, never>;
+  /**
    * `M15` — sahada **gömülü** bir düşman var (`M12` yeraltı geçişi).
    * `enemy:shielded` ile birebir aynı desen ve aynı gerekçe: oyuncu
    * kulelerinin neden ateş etmediğini kendiliğinden çözemez.

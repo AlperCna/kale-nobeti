@@ -42,6 +42,7 @@ import { EnemyHealthBar } from '../fx/EnemyHealthBar';
 import { EnemyHealthBarSystem } from '../fx/EnemyHealthBarSystem';
 import { Particles } from '../fx/Particles';
 import { MapRenderer } from '../fx/MapRenderer';
+import { HealAura } from '../fx/HealAura';
 import { BuildMenu } from '../fx/BuildMenu';
 import type { BarracksKayit } from '../fx/BuildMenu';
 import { TowerInfoPanel } from '../fx/TowerInfoPanel';
@@ -191,6 +192,7 @@ const HINT_TEXT_KEY: Readonly<Record<HintId, StringKey>> = {
   flyers: 'hintFlyers',
   shield: 'hintShield',
   burrow: 'hintBurrow',
+  heal: 'hintHeal',
 };
 
 /**
@@ -216,6 +218,8 @@ export class GameScene extends Phaser.Scene {
   #enemyHealthBars?: EnemyHealthBarSystem;
   #enemyPool?: Pool<Enemy>;
   #abilities?: EnemyAbilitySystem<Enemy>;
+  /** `M30` — Şaman halkası + iyileşme işareti. */
+  #healAura?: HealAura;
 
   #occupancy?: SpotOccupancy;
   /** `Y01` adım 2 — harita çizimi, hover, uçan ipucu. */
@@ -568,6 +572,13 @@ export class GameScene extends Phaser.Scene {
       (k) => this.#havuzDoldu('düşman', k),
     );
     this.#enemyPool = enemyPool;
+
+    // `M30` — düşman havuzundan **sonra** kuruluyor: havuz bütün
+    // düşmanları kurucuda üretiyor (`util/pool.ts` prealloc), yani
+    // sonra eklenen bu katman görüntü listesinde onların üstünde
+    // kalıyor. Can çubukları daha da sonra kuruluyor, işaret onların
+    // altında kalmıyor — zaten çubuğun yanına düşüyor.
+    this.#healAura = new HealAura(this, this.#mapRenderer);
 
     const mermiHavuzu = new Pool<Projectile>(
       () => {
@@ -939,7 +950,15 @@ export class GameScene extends Phaser.Scene {
       if (d !== undefined) d.clearCount = (d.clearCount ?? 0) + 1;
     });
 
-    this.#devKancalari(path, enemyPool, mermiHavuzu, sayiHavuzu, altinHavuzu, canCubuguHavuzu);
+    this.#devKancalari(
+      path,
+      enemyPool,
+      mermiHavuzu,
+      sayiHavuzu,
+      altinHavuzu,
+      canCubuguHavuzu,
+      moverFor,
+    );
 
     // `M10-T02` — sıra ÖNEMLİ: her şey kurulduktan sonra, ama ilk
     // `update()`'ten önce. Kule kurulumu `#placeTower`/`#upgradeTower`
@@ -1102,6 +1121,11 @@ export class GameScene extends Phaser.Scene {
     this.#waves?.update(sd);
     const dusmanlar = this.#enemyPool?.activeItems() ?? [];
     this.#abilities?.update(sd);
+    // Yeteneklerden **sonra**: halka ve işaret o karede uygulanan
+    // iyileştirmeyi gösteriyor, bir kare öncekini değil.
+    // `M15`'in `enemy:burrowed` deseni: olay her karede yayılıyor,
+    // "ilk kez mi" kararı `TutorialSystem`'in.
+    if (this.#healAura?.update(dusmanlar) === true) this.bus.emit('enemy:healing', {});
     this.#etkileriIsle(sd, dusmanlar);
     // Kışla, kulelerden **önce**: engellenen düşman aynı karede duruyor,
     // yani kule ona ateş ederken doğru konumda oluyor.
@@ -1838,6 +1862,8 @@ export class GameScene extends Phaser.Scene {
     sayiHavuzu: Pool<DamageText>,
     altinHavuzu: Pool<GoldCoin>,
     canCubuguHavuzu: Pool<EnemyHealthBar>,
+    /** `M30` — `spawnEnemy` uçanı havaya, yürüyeni yola koysun diye. */
+    moverFor: (def: { flying: boolean }, spawnPoint: number) => Mover,
   ): void {
     const dev = devHooks();
     if (dev === undefined) return;
@@ -1854,6 +1880,27 @@ export class GameScene extends Phaser.Scene {
       const hedefler = enemyPool.activeItems();
       for (const e of hedefler) this.#hasarUygula(e, e.hp + 1);
       return hedefler.length;
+    };
+    /**
+     * **Tek düşman doğur** — `M30`.
+     *
+     * `killAllEnemies` ile aynı aile ve aynı gerekçe: dalga 6'ya elle
+     * oynayarak varmak pratik değil. Şaman/Trol gibi geç gelen türlerin
+     * **görselini** doğrulamak (halka, iyileşme işareti) tam olarak bunu
+     * gerektiriyor. Normal doğum yolundan geçiyor: aynı havuz, aynı
+     * `Mover`, aynı harita çarpanı — yani ekranda görülen şey gerçek.
+     */
+    dev.spawnEnemy = (id: string, spawnPoint = 0): boolean => {
+      const def = getEnemyForMap(id as EnemyId, this.#map);
+      if (def === undefined) return false;
+      const e = enemyPool.acquire();
+      if (e === null) return false;
+      e.spawn(
+        moverFor(def, spawnPoint),
+        def,
+        this.#map.hpMultiplier * this.settings.difficulty.hpScale,
+      );
+      return true;
     };
     dev.isEndlessWave = () => this.isEndlessWave;
     dev.isEndlessRun = () => this.isEndlessRun;
