@@ -31,6 +31,10 @@ const SATIRLAR: readonly StringKey[] = [
   // olduklarını söylemiyor.
   'howTo8',
   'howTo9',
+  // `M28` — `M12` (yeraltı geçişi) ve `M13` (çağıran boss) bu sayfaya
+  // hiç girmemişti; `M10`'un iki mekaniği `howTo8/9` ile eklenip
+  // sonrakiler atlanmıştı.
+  'howTo10',
 ];
 
 export class HowToScene extends Phaser.Scene {
