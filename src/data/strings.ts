@@ -173,11 +173,26 @@ const TR = {
   howTo3: 'Düşman kaleye varırsa can gider. Can biterse harita kaybedilir.',
   howTo4: 'Kule menüsünde hedefleme seç: ilk, son, güçlü, zayıf, yakın.',
   howTo5: 'Meteor ve Takviye bekleme süreli; dalga arasında değil, kalabalıkta kullan.',
-  howTo6: 'Hazırlık sayacını erken bitirmek altın kazandırır.',
+  /**
+   * **`M28` — eski kuralı öğretiyordu.** `M16`'dan önce erken basmak
+   * bedelsizdi ve bu satır doğruydu; `M16` dalgaları üst üste bindirdi
+   * ve ölçüm hep basmanın harita 5-6'yı geçilemez yaptığını söylüyor.
+   * Satır yalnız ödülü anlatınca oyun yanlış ders veriyordu.
+   */
+  howTo6:
+    'Hazırlık sayacını erken bitirmek altın kazandırır — ama yeni dalga sahada kalanların üstüne biner. Düğmede iki sayı da yazıyor.',
   howTo7: 'ESC ya da boşluk duraklatır.',
   /** `M10` — sinerji oyuncuya başka hiçbir yerde görünmüyor. */
   howTo8: 'Yavaşlatılmış düşman fiziksel hasardan daha çok etkilenir: Buz kulesi, Okçu ve Top ile birlikte çalışır.',
   howTo9: 'Mavi halka buz kalkanı; erimeden cana hasar geçmez. Boss canı yarıya inince hızlanır.',
+  /**
+   * **`M28` — `M12` ve `M13`'ün verb'leri buraya hiç girmemişti.**
+   * `M10`'un kalkanı ve boss evresi `howTo8/9` ile eklenmişti; sonraki
+   * iki mekanik atlandı. Oyun içi ipucu yeraltı geçişini gösteriyor
+   * ama bu sayfa "bir şeyi kaçırdım" diyenin baktığı yer.
+   */
+  howTo10:
+    'Bazı düşmanların kendi numarası var: Tünelci yolun ortasında yeraltına iner ve hedeflenemez; son haritanın bossu canı düştükçe yandaş çağırır.',
   lockedHint: 'Önce önceki haritayı bitir',
   endlessBestShort: 'Sonsuz',
   settingsTitle: 'Ayarlar',
@@ -191,7 +206,9 @@ const TR = {
   /** `Y09` — ayarlardaki ipucu açma/kapama anahtarı. */
   hints: 'İpuçları',
   /** `Y09` — S65'in dayandığı mekanik: erken başlatma bonusu. */
-  hintEarlyStart: 'Erken başlat, kalan süre altın olur',
+  /** `M28` — `howTo6` ile aynı sebep: takasın iki yakası da yazıyor. */
+  hintEarlyStart:
+    'Erken başlat: kalan süre altına döner. Ama yeni dalga, sahada kalanların üstüne gelir.',
   /** `Y09` — S69'un ölçtüğü mekanik: toplanma noktası sürükleme. */
   hintDragRally: 'Bayrağı sürükle',
 
@@ -473,10 +490,13 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     howTo3: 'Enemies reaching the keep cost lives. Run out and the map is lost.',
     howTo4: 'Pick a targeting mode in the tower menu: first, last, strong, weak, near.',
     howTo5: 'Meteor and Reinforcements are on cooldown; save them for a crowd.',
-    howTo6: 'Starting a wave early earns gold.',
+    howTo6:
+      'Ending the prep timer early earns gold — but the new wave arrives on top of whoever is still on the field. The button shows both numbers.',
     howTo7: 'ESC or space pauses.',
     howTo8: 'Slowed enemies take more physical damage: the Frost tower pairs with Archer and Cannon.',
     howTo9: 'A blue ring is a frost shield; nothing reaches health until it breaks. The boss speeds up at half health.',
+    howTo10:
+      'Some enemies have a trick of their own: the Tunneler burrows mid-path and cannot be targeted; the final map’s boss summons help as its health drops',
     lockedHint: 'Finish the previous map first',
     endlessBestShort: 'Endless',
     settingsTitle: 'Settings',
@@ -488,7 +508,8 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     effectLow: 'Low',
     effectFull: 'Full',
     hints: 'Hints',
-    hintEarlyStart: 'Start early — leftover time turns to gold',
+    hintEarlyStart:
+      'Start early: leftover time turns to gold. But the next wave arrives on top of whoever is still on the field.',
     hintDragRally: 'Drag the flag',
     language: 'Language',
     langTr: 'Türkçe',
