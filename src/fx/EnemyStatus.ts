@@ -58,6 +58,7 @@ import Phaser from 'phaser';
 import type { AbilityEnemy } from '../systems/EnemyAbilitySystem';
 import { healKapsiyorMu } from '../systems/EnemyAbilitySystem';
 import type { ActiveEffects } from '../systems/effects';
+import { gomuluMu } from '../systems/TargetingSystem';
 import type { MapRenderer } from './MapRenderer';
 
 /**
@@ -67,6 +68,8 @@ import type { MapRenderer } from './MapRenderer';
  */
 export interface DurumDusman extends AbilityEnemy {
   readonly effects: ActiveEffects;
+  /** `gomuluMu` `Targetable` istiyor; `Enemy` zaten taşıyor. */
+  readonly remainingDistance: number;
 }
 
 const INK = 0x14203a;
@@ -76,6 +79,8 @@ const SIFA = 0x6f9e5c;
 const KOR = 0xc8622a;
 /** Soluk buz mavisi — kalkanın doygun mavisinden ayrı bir ton. */
 const BUZ = 0x7fb6c8;
+/** Parşömen — rozet her arka planda okunsun diye en açık ton. */
+const ROZET = 0xe4d3a8;
 
 /**
  * Can çubuğu `y - 30`'da ve 40 px geniş (`EnemyHealthBar`); işaret onun
@@ -108,6 +113,11 @@ const YUVA = {
   yanma: { dx: -30, dy: -30 },
   /** Hıza etki eden — çubukla gövde arasında, ortada. */
   yavaslama: { dx: 0, dy: -21 },
+  /**
+   * **Tür rozeti** — çubuğun *üstünde*, geçici durumların hepsinin dışında.
+   * Yeri bilerek ayrı: ötekiler "şu an başına gelen", bu "bu ne".
+   */
+  rozet: { dx: 0, dy: -44 },
 } as const;
 
 export class EnemyStatus {
@@ -168,6 +178,14 @@ export class EnemyStatus {
       // gibi başka çarpanlarla karışabiliyor.
       if (e.effects.slowSeconds > 0) {
         this.#yavas(g, e.x + YUVA.yavaslama.dx, e.y + YUVA.yavaslama.dy);
+      }
+
+      // **Kazıcı rozeti** (`M32`). Yalnız yerüstündeyken: gömülüyken
+      // solukluk zaten "nereye gitti"yi söylüyor, rozet "bu ne"yi.
+      // `gomuluMu` `TargetingSystem`'den — oyun kimi hedefleyemiyorsa
+      // rozet tam o anda kalkıyor, ayrı bir eşik yazılmıyor (S80 sınıfı).
+      if (e.def.ability?.kind === 'burrow' && !gomuluMu(e)) {
+        this.#kazici(g, e.x + YUVA.rozet.dx, e.y + YUVA.rozet.dy);
       }
     }
 
@@ -238,6 +256,36 @@ export class EnemyStatus {
         p.lineTo(cx, cy + kayma + 4);
         p.lineTo(cx + ISARET_KOL, cy + kayma);
       }
+    });
+  }
+
+  /**
+   * **Kazıcı rozeti: yatay zemin çizgisi + onu delip inen bir çizgi.**
+   *
+   * Neden var (`M32`): Tünelci'nin kendi karesi yok, **Örümcek Ana'nın
+   * karesini** kullanıyor (`data/spriteFrames.ts`, `M12`'den beri geçici).
+   * Ölçüldü: Örümcek Ana harita 3-4-5'te, Tünelci **yalnız harita 6'da
+   * ama on dalganın dokuzunda**. Yani ikisi hiç karşılaşmıyor — sorun
+   * karışıklık değil, **yanlış öğrenme**: oyuncu üç harita boyunca "bu
+   * silüet ölünce üç yavru verir" diye öğreniyor, son haritada aynı
+   * silüet yeraltına iniyor. Sahada düşman adı hiçbir yerde yazmıyor
+   * (`enemySummary` yalnız dalga telgrafında), yani ayırt edecek başka
+   * kanal yoktu.
+   *
+   * Şekil seçildi, renk değil: k.6 bilginin yalnız renge dayanmasını
+   * yasaklıyor ve zaten iki silüet **aynı**, ayrımı renge yıkmak onu
+   * göremeyen oyuncuda hiç çalışmazdı.
+   */
+  #kazici(g: Phaser.GameObjects.Graphics, cx: number, cy: number): void {
+    this.#ciz(g, ROZET, (p) => {
+      // Zemin çizgisi ve **yalnız altına** inen bir gövde — "⊥".
+      // İlk çizimde gövde çizginin üstüne de taşıyordu ve şekil artıya
+      // benziyordu; tarayıcıda yan yana görülünce fark edildi. Şekil
+      // dilinde iki işaret aynı şekli kullanamaz — artı **iyileşme**.
+      p.moveTo(cx - ISARET_KOL, cy);
+      p.lineTo(cx + ISARET_KOL, cy);
+      p.moveTo(cx, cy);
+      p.lineTo(cx, cy + ISARET_KOL);
     });
   }
 

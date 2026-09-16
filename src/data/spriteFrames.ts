@@ -50,6 +50,16 @@ const ENEMY_FRAME: Readonly<Record<EnemyId, string>> = {
   // `M12` — **GEÇİCİ görsel**: kendi karesi yok, Örümcek Ana'nın karesini
   // kullanıyor (yeraltı teması örümcekle okunuyor). Nihai çizim sanat
   // brifine giriyor; `CLAUDE.md` greybox kuralı bunu zaten böyle istiyor.
+  //
+  // **`M32` — paylaşımın bedeli ölçüldü ve sanılandan başkaydı.** İkisi
+  // hiç karşılaşmıyor (Örümcek Ana harita 3-4-5, Tünelci yalnız harita
+  // 6 — ama on dalganın dokuzunda), yani sorun aynı anda karıştırmak
+  // değil: oyuncu üç harita boyunca "bu silüet ölünce üç yavru verir"
+  // diye **öğreniyor**, son haritada aynı silüet yeraltına iniyor.
+  // Sahada düşman adı hiçbir yerde yazmıyor (`enemySummary` yalnız dalga
+  // telgrafında). Ayrım şimdilik `fx/EnemyStatus`'ün kazıcı rozetinde;
+  // Tünelci kendi karesini aldığında rozet gereksizleşmez — o zaman da
+  // "yerüstünde mi" bilgisini taşımaya devam eder.
   tunelci: 'orumcek_ana',
   ogreSef: 'ogre_sef_boss',
 };
