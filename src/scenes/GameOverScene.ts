@@ -4,7 +4,6 @@ import { SaveSystem, starsFor } from '../systems/SaveSystem';
 import { getSettings } from '../systems/Settings';
 import { DIFFICULTY } from '../data/difficulty';
 import { LocalStore } from '../util/storage';
-import { BALANCE } from '../data/balance';
 import { devHooks } from '../util/devHooks';
 import { createParchmentButton } from '../fx/ParchmentFrame';
 import { MAPS } from '../data/maps';
@@ -96,7 +95,7 @@ export class GameOverScene extends Phaser.Scene {
       // `M26` — eşikler o **koşunun** başlangıç canına göre. Zor 12 canla
       // başlıyor; mutlak 20/15 eşikleriyle kusursuz bir Zor koşusu bile
       // ★ alıyordu.
-      const baslangicCan = DIFFICULTY[zorluk].startLives;
+      const baslangicCan = this.#baslangicCan();
       if (DIFFICULTY[zorluk].recordStars) {
         save.recordResult(this.#data.mapId, this.#data.lives, this.#data.won, baslangicCan);
       } else if (this.#data.won) {
@@ -125,7 +124,10 @@ export class GameOverScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.add
-      .text(width / 2, UST + 60, `${lives} / ${BALANCE.startLives} ${t('livesLeft')}`, {
+      // `M34` — payda **bu turun** başlangıç canı. Sabit 20 ile Zor'da
+      // kusursuz bir koşu "12 / 20 can kaldı" yazıyor, hemen altında
+      // üç yıldız duruyordu; metin kendi ekranıyla çelişiyordu.
+      .text(width / 2, UST + 60, `${lives} / ${this.#baslangicCan()} ${t('livesLeft')}`, {
         fontFamily: 'Spectral, serif',
         fontSize: '24px',
         color: '#E4D3A8',
@@ -282,7 +284,12 @@ export class GameOverScene extends Phaser.Scene {
     return {
       won: this.#data.won,
       lives: this.#data.lives,
-      startLives: BALANCE.startLives,
+      // `M34` — sabit 20 geçiliyordu ve `flawless` başarımı
+      // `lives >= startLives` istiyor: Zor 12 canla başladığı için
+      // kusursuz bir Zor koşusunda bile 12 >= 20 yanlıştı, yani
+      // **"Kusursuz" Zor'da imkânsızdı**. `M26`'nın kusurunun,
+      // `M26`'nın ulaşamadığı ikinci kopyası.
+      startLives: this.#baslangicCan(),
       sold: this.#data.stats?.soldAny ?? false,
       mapsCompleted: ids.filter((id) => save.isCompleted(id)).length,
       mapCount: ids.length,
@@ -293,9 +300,27 @@ export class GameOverScene extends Phaser.Scene {
   }
 
   /** `GAME-DESIGN.md` §9 yıldız tablosu. */
+  /**
+   * **Bu turun başlangıç canı — tek adres (`M34`).**
+   *
+   * `M26` yıldız eşiklerini mutlak 20/15'ten oranlara çevirmiş ve
+   * `starsFor`/`recordResult`'a **zorunlu** `startLives` parametresi
+   * koymuştu ki derleyici bütün çağıranları saysın. Bu sahnede dört yer
+   * bu sayıya ihtiyaç duyuyordu; ikisi doğru değeri kullanıyordu,
+   * **ikisi `BALANCE.startLives` sabitini** (20) kullanmaya devam etti.
+   *
+   * Zorunlu parametrenin sınırı tam burada: derleyici çağıranı bir şey
+   * geçmeye zorluyor, **doğru** şeyi geçmeye zorlayamıyor. `RunEndContext`
+   * `startLives` alanını şart koşuyordu ve yanlış sabit sorunsuzca
+   * geçiyordu. Çare alanı zorunlu yapmak değil, **kaynağı tekleştirmek**.
+   */
+  #baslangicCan(): number {
+    return DIFFICULTY[getSettings(this).state.difficulty].startLives;
+  }
+
   #yildiz(lives: number): number {
     // Eşikler tek adreste: `SaveSystem.starsFor` (§9). Burada kopya yok.
-    return starsFor(lives, this.#data.won, DIFFICULTY[getSettings(this).state.difficulty].startLives);
+    return starsFor(lives, this.#data.won, this.#baslangicCan());
   }
 
   /**
