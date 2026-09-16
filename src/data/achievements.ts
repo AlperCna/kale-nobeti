@@ -35,7 +35,7 @@ export interface AchievementDef {
 }
 
 /**
- * On iki başarım.
+ * On altı başarım (`M8-T07`'de on iki, `M23`'te dört eklendi).
  *
  * Seçim ölçütü ROADMAP'in "ucuz dönüş sebebi" notu: her biri **oyuncunun
  * zaten yapacağı** bir şeyi işaretliyor ya da bir kere denemeye değer bir
@@ -56,6 +56,27 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'flawless', kind: 'runEnd', threshold: 0, title: 'achFlawless', desc: 'achFlawlessDesc' },
   { id: 'noSell', kind: 'runEnd', threshold: 0, title: 'achNoSell', desc: 'achNoSellDesc' },
   { id: 'endless20', kind: 'runEnd', threshold: 20, title: 'achEndless20', desc: 'achEndless20Desc' },
+  /**
+   * **`M23` — dört başarım oyunun `M8` sonrası katmanlarına işaret ediyor.**
+   *
+   * Liste `M8-T07`'de yazıldı ve hiç büyümedi; aradan hedefleme modları
+   * (`M10-T02`), T3 dallarının ayrıştırılması (`M11` Faz 2), yeraltı
+   * geçişi (`M12`) ve ikinci yeteneğin meşrulaşması (`M11` Faz 4) geçti.
+   * Hiçbiri başarım listesinde görünmüyordu — yani oyunun en zengin
+   * katmanları, oyuncuya *"burada bir şey var, dene"* diyen tek
+   * mekanizmada yoktu.
+   *
+   * Dördü de **mevcut** olayları kullanıyor; olay şeması değişmedi.
+   * İlk üçü oyuncunun kararını, dördüncüsü bir keşfi işaretliyor —
+   * yukarıdaki seçim ölçütü ikisine de izin veriyor.
+   *
+   * **Neden tam dört:** `AchievementsScene` iki sütuna diziyor ve alt
+   * bilgiyle çakışmadan 8 satır sığıyor, yani 16 tavan. 12 + 4 = 16.
+   */
+  { id: 'bothBranches', kind: 'flag', threshold: 1, title: 'achBothBranches', desc: 'achBothBranchesDesc' },
+  { id: 'bothAbilities', kind: 'flag', threshold: 1, title: 'achBothAbilities', desc: 'achBothAbilitiesDesc' },
+  { id: 'targetingUsed', kind: 'flag', threshold: 1, title: 'achTargeting', desc: 'achTargetingDesc' },
+  { id: 'sawBurrow', kind: 'flag', threshold: 1, title: 'achSawBurrow', desc: 'achSawBurrowDesc' },
 ];
 
 export function getAchievement(id: string): AchievementDef | undefined {

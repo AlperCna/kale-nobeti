@@ -30,8 +30,10 @@ describe('AchievementSystem — tanımlar', () => {
     expect(new Set(ACHIEVEMENTS.map((a) => a.id)).size).toBe(ACHIEVEMENTS.length);
   });
 
-  it('on iki başarım var', () => {
-    expect(ACHIEVEMENTS).toHaveLength(12);
+  it('on altı başarım var (`M8-T07` on iki, `M23` dört ekledi)', () => {
+    // 16, `AchievementsScene`'in iki sütuna sığdırabildiği tavan:
+    // 8 satır × 58 px, üst 190, alt bilgi ~640. 17+ çakışır.
+    expect(ACHIEVEMENTS).toHaveLength(16);
   });
 
   it('tanımsız kimlik YAZILMIYOR — kurcalanmış kayıt sızmasın', () => {
@@ -200,5 +202,77 @@ describe('AchievementSystem — kalıcılık', () => {
     const sys = new AchievementSystem(store);
     expect(sys.unlocked).toEqual(['firstTower']);
     expect(sys.kills).toBe(0);
+  });
+});
+
+/**
+ * **`M23` — `M8` sonrası katmanlara işaret eden dört başarım.**
+ *
+ * Üçü oyuncunun kararını, biri bir keşfi işaretliyor. Hepsi **mevcut**
+ * olayları kullanıyor; olay şeması değişmedi.
+ */
+describe('M23 başarımları — oyunun derinliğine işaret', () => {
+  it('İki Yol: tek dal YETMİYOR, iki yaka da gerekiyor', () => {
+    const { bus, sys } = kur();
+    bus.emit('tower:upgraded', { spotIndex: 0, tier: 2 });
+    bus.emit('tower:upgraded', { spotIndex: 1, tier: 2 }); // aynı yaka, tekrar
+    expect(sys.has('bothBranches')).toBe(false);
+
+    bus.emit('tower:upgraded', { spotIndex: 2, tier: 3 }); // öteki yaka
+    expect(sys.has('bothBranches')).toBe(true);
+  });
+
+  it('İki Yol: T2 yükseltmesi dal SAYILMIYOR', () => {
+    const { bus, sys } = kur();
+    bus.emit('tower:upgraded', { spotIndex: 0, tier: 1 });
+    bus.emit('tower:upgraded', { spotIndex: 1, tier: 1 });
+    expect(sys.has('bothBranches')).toBe(false);
+    expect(sys.has('firstTier3')).toBe(false);
+  });
+
+  it('Çifte El: aynı yeteneği iki kez basmak yetmiyor', () => {
+    const { bus, sys } = kur();
+    bus.emit('ability:cast', { id: 'meteor', hits: 1 });
+    bus.emit('ability:cast', { id: 'meteor', hits: 2 });
+    expect(sys.has('bothAbilities')).toBe(false);
+
+    bus.emit('ability:cast', { id: 'takviye', hits: 0 });
+    expect(sys.has('bothAbilities')).toBe(true);
+  });
+
+  it('Nişan Al ve Yeraltından tek olayla açılıyor', () => {
+    const { bus, sys } = kur();
+    expect(sys.has('targetingUsed')).toBe(false);
+    bus.emit('targeting:opened', { spotIndex: 3 });
+    expect(sys.has('targetingUsed')).toBe(true);
+
+    bus.emit('enemy:burrowed', {});
+    expect(sys.has('sawBurrow')).toBe(true);
+  });
+
+  /**
+   * **El içi durum eller arası SIZMAMALI.** Sızsaydı iki ayrı elde
+   * birer dal alan oyuncu "İki Yol"u kendiliğinden açardı ve başarımın
+   * işaret ettiği **karar** anlamını yitirirdi.
+   */
+  it('İki Yol ve Çifte El durumu ELLER ARASI taşınmıyor', () => {
+    const store = new MemoryStore();
+
+    const bus1 = new EventBus();
+    new AchievementSystem(store, bus1);
+    bus1.emit('tower:upgraded', { spotIndex: 0, tier: 2 });
+    bus1.emit('ability:cast', { id: 'meteor', hits: 1 });
+
+    // Yeni el: öteki yaka ve öteki yetenek — tek başlarına açmamalı.
+    const bus2 = new EventBus();
+    const sys2 = new AchievementSystem(store, bus2);
+    bus2.emit('tower:upgraded', { spotIndex: 1, tier: 3 });
+    bus2.emit('ability:cast', { id: 'takviye', hits: 0 });
+    expect(sys2.has('bothBranches')).toBe(false);
+    expect(sys2.has('bothAbilities')).toBe(false);
+  });
+
+  it('kimlikler benzersiz', () => {
+    expect(new Set(ACHIEVEMENTS.map((a) => a.id)).size).toBe(ACHIEVEMENTS.length);
   });
 });

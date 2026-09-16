@@ -49,6 +49,15 @@ export class AchievementSystem {
   #kayit: Kayit;
   readonly #store: KeyValueStore;
   readonly #onUnlock?: (id: string) => void;
+  /**
+   * **El içi** durum — `M23`. Diske yazılmıyor ve eller arası
+   * birikmiyor: `AchievementSystem` her elde yeniden kuruluyor
+   * (`GameScene`), yani iki farklı elde birer dal almak "iki yol"
+   * saymıyor. Kalıcı olsalardı başarım kendiliğinden dolardı ve
+   * işaret ettiği **karar** anlamını yitirirdi.
+   */
+  readonly #dallar = new Set<number>();
+  readonly #yetenekler = new Set<string>();
 
   /**
    * @param bus Verilirse el içi tetikleyiciler dinlenir. `GameOverScene`
@@ -118,10 +127,22 @@ export class AchievementSystem {
     bus.on('tower:upgraded', ({ tier }) => {
       // Kademe indeksi 0 tabanlı: 2 ve 3 = T3a/T3b.
       if (tier >= 2) this.unlock('firstTier3');
+      // `M23` — T3 takasının **iki yakası da** aynı elde görüldü mü.
+      if (tier === 2 || tier === 3) {
+        this.#dallar.add(tier);
+        if (this.#dallar.size === 2) this.unlock('bothBranches');
+      }
     });
     bus.on('ability:cast', ({ id, hits }) => {
       if (id === 'meteor' && hits >= 5) this.unlock('meteor5');
+      // `M23` — iki yetenek de aynı elde kullanıldı mı. Ölçüm ikisinin
+      // birlikte en iyi sonucu verdiğini söylüyor (`yetenekKatkisi`);
+      // başarım oyuncuya o denemeyi öneriyor.
+      this.#yetenekler.add(id);
+      if (this.#yetenekler.size === 2) this.unlock('bothAbilities');
     });
+    bus.on('targeting:opened', () => this.unlock('targetingUsed'));
+    bus.on('enemy:burrowed', () => this.unlock('sawBurrow'));
     bus.on('enemy:killed', () => this.#oldurmeSay());
   }
 
