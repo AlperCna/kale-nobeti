@@ -12,8 +12,8 @@ import {
   BOSS_HP_TOLERANCE,
   bossFor,
 } from './bossScaling';
-import { MAP_1, MAP_2, MAP_3, MAP_4, MAP_5, MAPS, COVERAGE_REFERENCE_RANGE } from './maps';
-import { MAP1_WAVES, MAP2_WAVES, MAP3_WAVES, MAP4_WAVES, MAP5_WAVES } from './waves';
+import { MAP_1, MAP_2, MAP_3, MAP_4, MAP_5, MAP_6, MAPS, COVERAGE_REFERENCE_RANGE } from './maps';
+import { MAP1_WAVES, MAP2_WAVES, MAP3_WAVES, MAP4_WAVES, MAP5_WAVES, MAP6_WAVES } from './waves';
 import { OGRE_SEF, getEnemyForMap } from './enemies';
 import {
   BOSS_CEILING_RATIO,
@@ -25,12 +25,21 @@ import {
 } from '../systems/balanceChecks';
 import { measureCoverage } from '../util/coverage';
 
+/**
+ * **`M27`: harita 6 listeye EKLENDİ.**
+ *
+ * Liste `M7`'de yazıldı, harita 6 `M12`'de geldi. Sonuç: **çağıran
+ * boss** (`M13`) hiçbir boss sağlamasından geçmiyordu — zırh tablosu,
+ * HP kilidi, tavan akıl sağlığı, karşılanabilirlik, "boss dışındaki
+ * düşmanlar değişmedi". S114/S119 ile aynı sınıf.
+ */
 const H = [
   { map: MAP_1, waves: MAP1_WAVES },
   { map: MAP_2, waves: MAP2_WAVES },
   { map: MAP_3, waves: MAP3_WAVES },
   { map: MAP_4, waves: MAP4_WAVES },
   { map: MAP_5, waves: MAP5_WAVES },
+  { map: MAP_6, waves: MAP6_WAVES },
 ];
 
 const tahta = (m: (typeof H)[number]) => {

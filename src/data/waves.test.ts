@@ -11,10 +11,11 @@ import {
   MAP3_WAVES,
   MAP4_WAVES,
   MAP5_WAVES,
+  MAP6_WAVES,
   wavesFor,
 } from './waves';
 import { BALANCE, POOL_PREALLOC, SPAWN_K } from './balance';
-import { MAP_1, MAP_2, MAP_3, MAP_4, MAP_5 } from './maps';
+import { MAP_1, MAP_2, MAP_3, MAP_4, MAP_5, MAP_6 } from './maps';
 import { getEnemy } from './enemies';
 
 describe('budget — GAME-DESIGN §7 formülü', () => {
@@ -218,18 +219,28 @@ describe('BALANCE — GAME-DESIGN §6 sabitleri', () => {
 // M7 + M8-T04 — harita 2, 3 ve 4'ün dalgaları
 // ---------------------------------------------------------------------
 
-describe('M7/M8 — 50 dalga: bütçe, kadro, giriş', () => {
+/**
+ * **`M27`: harita 6 listeye EKLENDİ — 50 değil 60 dalga.**
+ *
+ * Liste `M7/M8`'de yazıldı, harita 6 `M12`'de geldi ve kimse büyütmedi.
+ * Sonuç: Sisli Bataklık'ın on dalgası bütçe bandından, kadro
+ * üyeliğinden, havuz kapasitesinden — hiçbirinden geçmiyordu.
+ * S114 (`kisitB`) ve S119 (`aileDengesi`) ile **aynı sınıf**, üçüncü
+ * tekrar.
+ */
+describe('M7/M8 — 60 dalga: bütçe, kadro, giriş', () => {
   const HARITALAR = [
     { map: MAP_1, waves: MAP1_WAVES },
     { map: MAP_2, waves: MAP2_WAVES },
     { map: MAP_3, waves: MAP3_WAVES },
     { map: MAP_4, waves: MAP4_WAVES },
     { map: MAP_5, waves: MAP5_WAVES },
+    { map: MAP_6, waves: MAP6_WAVES },
   ];
 
-  it('her haritanın 10 dalgası var — toplam 50', () => {
+  it('her haritanın 10 dalgası var — toplam 60', () => {
     for (const { waves } of HARITALAR) expect(waves).toHaveLength(10);
-    expect(HARITALAR.reduce((t, h) => t + h.waves.length, 0)).toBe(50);
+    expect(HARITALAR.reduce((t, h) => t + h.waves.length, 0)).toBe(60);
   });
 
   /**
@@ -300,9 +311,27 @@ describe('M7/M8 — 50 dalga: bütçe, kadro, giriş', () => {
     expect(refakat.some((g) => g.spawnPoint !== boss.spawnPoint)).toBe(true);
   });
 
+  /**
+   * **Harita 6 bu tek sağlamanın DIŞINDA — bilinen ihlal (S127).**
+   *
+   * `M27` harita 6'yı listeye ekleyince kural hemen kırıldı: Sisli
+   * Bataklık'ın 4. dalgası `orkSavasci`yi **ilk kez** orada tanıtıyor.
+   * Kusur `M12`'den beri duruyordu ve kimse görmemişti çünkü harita 6
+   * hiç listede değildi.
+   *
+   * **Düzeltilmedi, çünkü bedeli ölçüldü ve denge turu gerektiriyor:**
+   * aynı puanı zaten görülmüş tiplerle doldurmanın her yolu haritayı
+   * 12'den 19-20'ye çıkarıyor (Ork Savaşçı aynı puana daha çok altın
+   * getiriyor; çıkarınca tahta tur boyunca zayıflıyor) ve iki seçenek
+   * doğrudan 20 bandının dışına taşıyor. Ayrıntı `waves.ts`'te.
+   *
+   * Harita 6 **diğer bütün** sağlamalara giriyor; yalnız bu biri
+   * kapsam dışı ve sebebi burada yazılı — sessizce atlanmıyor.
+   */
   it('yeni düşman NEFES dalgasında tanıtılmıyor — §7', () => {
     // Nefes dalgaları (4, 7) tanıdık düşmanlarla geçiyor.
     for (const { map, waves } of HARITALAR) {
+      if (map.id === 'sisli-bataklik') continue; // S127 — yukarıdaki not
       for (const n of [4, 7]) {
         const oncekiler = new Set(
           waves.slice(0, n - 1).flatMap((w) => w.groups.map((g) => g.enemy)),

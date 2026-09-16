@@ -534,10 +534,34 @@ export const MAP6_WAVES: readonly Wave[] = [
     ['goblin', 5],
     ['tunelci', 3],
   ]), // 14 = bütçe 14
+  /**
+   * **§7 İHLALİ — biliniyor, ölçüldü, bilerek düzeltilmedi (S127).**
+   *
+   * Nefes dalgası (4) harita 6'da `orkSavasci`yi **ilk kez** tanıtıyor;
+   * §7 ise *"nefes dalgalarında yeni tip tanıtılmaz — nefes almak yeni
+   * şey öğrenmemek demek"* diyor. Kusur `M12`'den beri duruyordu çünkü
+   * harita 6 `waves.test`'in harita listesine hiç girmemişti (`M27`
+   * ekledi, S114/S119 ile aynı sınıf).
+   *
+   * **Düzeltmenin bedeli ölçüldü ve dengeyi kaydırıyor.** Aynı puanı
+   * zaten görülmüş tiplerle doldurmanın her yolu haritayı
+   * zorlaştırıyor, çünkü Ork Savaşçı aynı puana daha çok **altın**
+   * getiriyor ve onu çıkarmak tahtayı tur boyunca zayıflatıyor:
+   *
+   * | dalga 4 | puan | harita 6 can kaybı |
+   * |---|---|---|
+   * | ork3 + tünelci3 (bugünkü) | 15 | **12** |
+   * | goblin6 + tünelci3 | 15 | 19 |
+   * | tünelci5 | 15 | **20** (bandın dışı) |
+   * | goblin3 + tünelci4 | 15 | **20** (bandın dışı) |
+   *
+   * Yani kuralı düzeltmek denge turu demek. Sahip "dengeye dokunma"
+   * dediği için kusur **kayda geçirildi**, düzeltilmedi.
+   */
   dalgaKur(4, [
     ['orkSavasci', 3],
     ['tunelci', 3],
-  ]), // NEFES, 15 = bütçe 15
+  ]), // NEFES, 15 = bütçe 15 — §7 ihlali, bkz. yukarısı
   dalgaKur(5, [
     ['tunelci', 3],
     ['zirhliOrk', 3],
