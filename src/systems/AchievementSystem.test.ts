@@ -134,6 +134,23 @@ describe('AchievementSystem — el sonu', () => {
     expect(sys.has('flawless')).toBe(true);
   });
 
+  it('kusursuz ZOR’da da kazanılabiliyor — eşik mutlak değil, turun kendi canı (M34)', () => {
+    const { sys } = kur();
+    // Zor 12 canla başlıyor. Kusursuz bir Zor koşusu: 12/12.
+    sys.checkRunEnd({ ...BOS_EL, won: true, lives: 12, startLives: 12 });
+    expect(sys.has('flawless')).toBe(true);
+  });
+
+  it('M34 HATASININ ŞEKLİ: startLives sabit 20 geçilirse Zor kusursuzu YOK sayılıyor', () => {
+    // `GameOverScene` tam bunu yapıyordu — `RunEndContext.startLives`
+    // alanına `BALANCE.startLives` (20) koyuyordu. Alan **zorunluydu**
+    // ama zorunluluk yalnız "bir şey geç" diyor, "doğrusunu geç" demiyor.
+    // Bu test o başarısızlığın adını koyuyor: aşağıdaki hâl bir hatadır.
+    const { sys } = kur();
+    sys.checkRunEnd({ ...BOS_EL, won: true, lives: 12, startLives: 20 });
+    expect(sys.has('flawless')).toBe(false);
+  });
+
   it('kaybedilen el kusursuz SAYILMIYOR — 0 can 20’den küçük ama şart `won`', () => {
     const { sys } = kur();
     sys.checkRunEnd({ ...BOS_EL, won: false, lives: 20, startLives: 20 });
