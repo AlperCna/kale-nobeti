@@ -58,8 +58,36 @@ indirildi — Platform'un 16 px alt sınırının üstünde. Son ölçüm:
 Taşma yok, etiketle 6 px boşluk. Tarayıcıda canlı görüldü: dalga 4'te
 "+32" yazıyor ve sayaçla birlikte eriyor.
 
+## İkinci tur — risk de yazıyor
+
+Kazancı gösterip bedeli göstermemek takasın yarısını saklamak demekti.
+Eklendi, ama **slogan olarak değil**: riskin ölçülebilir karşılığı
+sahadaki düşman sayısı. `M16`'dan beri dalga **kuyruk** bitince
+kapanıyor, yani düğmeye basmak sıradaki dalgayı o düşmanların
+**üstüne** çağırmak demek.
+
+Düğmenin altında, düğmenin **dışında**: kazanç (altın) parşömenin
+içinde, bedel dışında — ikisi karışmasın.
+
+**Yalnız sıfırdan büyükken görünüyor.** Ortaya çıkması uyarının
+kendisi; "0 sahada" gürültü olurdu ve saha boşken zaten risk yok.
+
+**Kelime `Text`, sayı `BitmapText`** — ve bu sefer teknik bir zorunluluk
+da var: sayı fontunda **harf yok** (rakamlar + `+ - . , / % × ›`), yani
+değişen bir kelimeyi oraya yazmak zaten imkânsız. TIER 1 kural 7'nin
+istediği ayrım ile fontun verdiği imkân aynı yere çıkıyor.
+
+Sayı sağa, kelime sola yaslı: rakam sayısı 1 → 2 → 3 olurken kelime
+**yerinde kalıyor**, yalnız sayı sola büyüyor.
+
+> **Ölçüldü.** Dalga 5 hazırlığında `erkenAcik: true · bonus: 12 ·
+> sahada: 9`; ekranda düğmede "+3" (sayaç eridiği için) ve altında
+> kırmızı risk satırı. Geometri: bonus **84-104** (düğme 56-108
+> içinde), risk **119-137** (altında), çift düğme merkezine oturuyor.
+
 ## Bu planın YAPMADIĞI şeyler
 
-- **Riski de yazmak** — "sıradaki dalga üstüne binecek" uyarısı ayrı
-  bir tasarım kararı; bu taş yalnız **ölçülebilir** kazancı gösteriyor.
 - **Dengeye dokunmak** — sahibin açık talebi.
+- **Riski metinle anlatmak** — "dalga üstüne binecek" gibi bir cümle
+  yerine **sayı** gösteriliyor; oyuncu sahayı zaten görüyor, eksik olan
+  o sahanın karara **bağlandığını** söylemekti.

@@ -405,6 +405,19 @@ export class GameScene extends Phaser.Scene {
   }
 
   /**
+   * Sahada **şu an** kaç düşman var — `M25`.
+   *
+   * Erken başlatmanın **risk** tarafı bu sayı. `M16`'dan beri dalga
+   * kuyruk bitince kapanıyor, yani düğmeye basmak sıradaki dalgayı bu
+   * düşmanların **üstüne** çağırmak demek. Ölçüm riskin gerçek
+   * olduğunu söylüyor: hep basmak harita 5-6'yı 20 canla geçilemez
+   * yapıyor (S102).
+   */
+  get enemiesOnField(): number {
+    return this.#enemyPool?.activeCount ?? 0;
+  }
+
+  /**
    * Erken başlatma bonusunun **şu anki** değeri — `M25`.
    *
    * HUD bunu düğmenin üstünde gösteriyor. Sayı `EconomySystem`'den
