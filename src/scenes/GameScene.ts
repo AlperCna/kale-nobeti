@@ -404,6 +404,19 @@ export class GameScene extends Phaser.Scene {
     return this.#waves?.earlyStartAvailable ?? false;
   }
 
+  /**
+   * Erken başlatma bonusunun **şu anki** değeri — `M25`.
+   *
+   * HUD bunu düğmenin üstünde gösteriyor. Sayı `EconomySystem`'den
+   * geliyor, burada yeniden hesaplanmıyor: ödülü veren fonksiyonla
+   * **aynı** kaynak (bkz. `earlyStartPreview`).
+   */
+  get earlyStartPreview(): number {
+    const w = this.#waves;
+    if (w === undefined || w.phase !== 'prep') return 0;
+    return this.#eco?.earlyStartPreview(w.prepRemainingSec, w.waveNumber) ?? 0;
+  }
+
   /** `Y09` — `HudScene`'in ayarlar paneli "İpuçları" değişince çağırıyor. */
   setHintsEnabled(enabled: boolean): void {
     this.#tutorial?.setEnabled(enabled);

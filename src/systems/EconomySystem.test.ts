@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { EconomySystem } from './EconomySystem';
 import { EventBus } from './EventBus';
-import { MAP_1 } from '../data/maps';
+import { MAP_1, MAP_6 } from '../data/maps';
 import { GOBLIN, ORK_SAVASCI } from '../data/enemies';
 import { OKCU, TOP } from '../data/towers';
 import { BALANCE } from '../data/balance';
@@ -229,5 +229,50 @@ describe('EconomySystem — can', () => {
 
   it('başlangıç canı BALANCE\'tan geliyor', () => {
     expect(kur().eco.lives).toBe(BALANCE.startLives);
+  });
+});
+
+/**
+ * **`M25` — arayüzün gösterdiği sayı ile oyunun verdiği sayı AYNI.**
+ *
+ * Erken başlatma bonusu `M16`'dan beri gerçek bir risk kararı ve HUD
+ * artık düğmenin üstünde "ne kazanacağım"ı yazıyor. O sayı ayrı bir
+ * yerde hesaplansaydı S80'in hata sınıfına düşerdi — *"oyun ile arayüz
+ * farklı bir şeyi biliyor"* — ve en sinsi hâliyle: formül haritanın
+ * **altın çarpanını** da içeriyor (S101), çarpanı unutan bir arayüz
+ * harita 6'da gerçeğin onda birini gösterirdi.
+ */
+describe('earlyStartPreview — önizleme ile ödül tek kaynak (S80 panzehiri)', () => {
+  it('önizleme, verilen altınla BİREBİR aynı', () => {
+    const { eco } = kur();
+    const oncesi = eco.gold;
+    const onizleme = eco.earlyStartPreview(12, 6);
+    const verilen = eco.awardEarlyStart(12, 6);
+    expect(verilen).toBe(onizleme);
+    expect(eco.gold - oncesi).toBe(onizleme);
+  });
+
+  it('önizleme altın ÇARPANINI izliyor — harita 6 ile harita 1 farklı', () => {
+    const h1 = kur(MAP_1).eco;
+    const h6 = kur(MAP_6).eco;
+    expect(h6.earlyStartPreview(12, 6)).toBeGreaterThan(h1.earlyStartPreview(12, 6));
+    // Çarpan unutulsaydı ikisi eşit çıkardı — testin yakaladığı şey bu.
+    expect(h6.earlyStartPreview(12, 6)).toBe(
+      Math.round(h1.earlyStartPreview(12, 6) * MAP_6.goldMultiplier),
+    );
+  });
+
+  it('önizleme ALTIN VERMİYOR — yalnız okuyor', () => {
+    const { eco } = kur();
+    const oncesi = eco.gold;
+    eco.earlyStartPreview(20, 10);
+    eco.earlyStartPreview(20, 10);
+    expect(eco.gold).toBe(oncesi);
+  });
+
+  it('dalga 4’ten önce ve süre bitince sıfır', () => {
+    const { eco } = kur();
+    expect(eco.earlyStartPreview(20, 3)).toBe(0); // BALANCE.earlyBonusFrom
+    expect(eco.earlyStartPreview(0, 10)).toBe(0);
   });
 });
