@@ -406,7 +406,9 @@ export class HudScene extends Phaser.Scene {
      * (`complete`) burada; kaybedişte ayrıca **hangi dalgada** bırakıldığı.
      */
     if (kazandi) {
-      haritaKazanildi(portal, game.map.id, starsFor(game.lives));
+      // `M26` — yıldız o koşunun başlangıç canına göre; portal olayı da
+      // kayıtla **aynı** sayıyı göndermeli.
+      haritaKazanildi(portal, game.map.id, starsFor(game.lives, true, game.startLives));
     } else {
       haritaKaybedildi(portal, game.map.id, game.waveNumber);
     }

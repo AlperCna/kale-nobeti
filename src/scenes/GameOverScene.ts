@@ -93,12 +93,17 @@ export class GameOverScene extends Phaser.Scene {
       // `isUnlocked` bitirmeye bakıyor ve Kolay da bir bitirme.
       const zorluk = getSettings(this).state.difficulty;
       const save = new SaveSystem(new LocalStore());
+      // `M26` — eşikler o **koşunun** başlangıç canına göre. Zor 12 canla
+      // başlıyor; mutlak 20/15 eşikleriyle kusursuz bir Zor koşusu bile
+      // ★ alıyordu.
+      const baslangicCan = DIFFICULTY[zorluk].startLives;
       if (DIFFICULTY[zorluk].recordStars) {
-        save.recordResult(this.#data.mapId, this.#data.lives, this.#data.won);
+        save.recordResult(this.#data.mapId, this.#data.lives, this.#data.won, baslangicCan);
       } else if (this.#data.won) {
         // Yıldızsız "bitirdi" kaydı: 1 can ile bitmiş gibi — §9 tablosunda
         // ★ eşiği. Kilit zincirinin kopmaması için gerekli en küçük kayıt.
-        save.recordResult(this.#data.mapId, 1, true);
+        // Yıldızsız "bitirdi" kaydı — ★ eşiği her başlangıç canında 1.
+        save.recordResult(this.#data.mapId, 1, true, baslangicCan);
       }
     }
   }
@@ -290,7 +295,7 @@ export class GameOverScene extends Phaser.Scene {
   /** `GAME-DESIGN.md` §9 yıldız tablosu. */
   #yildiz(lives: number): number {
     // Eşikler tek adreste: `SaveSystem.starsFor` (§9). Burada kopya yok.
-    return starsFor(lives, this.#data.won);
+    return starsFor(lives, this.#data.won, DIFFICULTY[getSettings(this).state.difficulty].startLives);
   }
 
   /**

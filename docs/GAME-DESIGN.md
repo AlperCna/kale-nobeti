@@ -754,12 +754,25 @@ Harita bitince kalan cana göre:
 
 | Kalan can | Yıldız |
 |---|---|
-| 20 (hiç sızma yok) | ★★★ |
-| 15-19 | ★★ |
-| 14 ve altı | ★ |
+| hepsi (hiç sızma yok) | ★★★ |
+| başlangıcın **dörtte üçü** ve üstü | ★★ |
+| altı | ★ |
 
-Başlangıç canı 20 (§6). Boss sızması tek başına 10 can götürüyor (§5), yani
-boss'u kaçırmak doğrudan tek yıldıza düşürüyor — bilinçli.
+Boss sızması tek başına 10 can götürüyor (§5), yani boss'u kaçırmak
+doğrudan tek yıldıza düşürüyor — bilinçli.
+
+**`M26` — eşikler orana çevrildi.** Tablo eskiden mutlak sayı yazıyordu
+(20 / 15-19 / ≤14) çünkü `M1`'de tek bir başlangıç canı vardı. `M8-T11`
+zorluk seviyelerini ekledi ve **Zor 12 canla başlıyor**; iki sistem hiç
+karşılaştırılmamıştı. Sonuç: Zor'da **hiç can kaybetmeden** bitiren
+oyuncu bile ★ alıyordu (12 < 15 olduğu için ★★ bile erişilemezdi) —
+yani zoru seçmek ilerleme ölçüsünde **cezaydı** ve `allStars` başarımı
+yalnız Zor oynayan için imkânsızdı.
+
+Yeni sayı uydurulmadı; oran tablonun kendi eşiklerinden türedi:
+`15 / 20 = 0,75`. Kural hep *"canının dörtte üçünü koru"*ydu, yalnız
+20 cana gömülü yazılmıştı. Normal'in davranışı **birebir aynı**
+(20 → ★★★, 15 → ★★); değişen yalnız Zor: 12 → ★★★, ≥9 → ★★.
 
 ### Kapsanan yol — asıl denge kolu
 

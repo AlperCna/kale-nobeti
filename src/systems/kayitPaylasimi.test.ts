@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { BALANCE } from '../data/balance';
 import { SaveSystem } from './SaveSystem';
 import { EndlessRecords } from './EndlessRecords';
 import { AchievementSystem } from './AchievementSystem';
@@ -47,7 +48,7 @@ describe('paylaşılan kayıt anahtarı — beş sistem', () => {
     const store = new MemoryStore();
 
     new Settings(store).set('effects', 'low');
-    new SaveSystem(store).recordResult('degirmen-gecidi', 20, true);
+    new SaveSystem(store).recordResult('degirmen-gecidi', 20, true, BALANCE.startLives);
     ogreticiIsaretle(store, 'dragRally');
     new EndlessRecords(store).record('kar-gecidi', 23);
     new AchievementSystem(store).unlock('firstWin');
@@ -65,7 +66,7 @@ describe('paylaşılan kayıt anahtarı — beş sistem', () => {
     new AchievementSystem(store).unlock('firstTower');
     new EndlessRecords(store).record('kul-ovasi', 14);
     ogreticiIsaretle(store, 'targetModes');
-    new SaveSystem(store).recordResult('tas-kopru', 17, true);
+    new SaveSystem(store).recordResult('tas-kopru', 17, true, BALANCE.startLives);
     new Settings(store).set('difficulty', 'zor');
 
     expect(new AchievementSystem(store).has('firstTower')).toBe(true);
@@ -86,7 +87,7 @@ describe('paylaşılan kayıt anahtarı — beş sistem', () => {
 
     ayarlar.set('musicLevel', 'low');
     basarim.unlock('firstTower');
-    kayit.recordResult('degirmen-gecidi', 20, true);
+    kayit.recordResult('degirmen-gecidi', 20, true, BALANCE.startLives);
     ayarlar.set('sfxLevel', 'off');
     basarim.unlock('firstWin');
 
@@ -102,7 +103,7 @@ describe('paylaşılan kayıt anahtarı — beş sistem', () => {
     // `M8`'in iki yeni alanı da sürüm yükseltmeden eklendi; bu testin
     // kırılması "göç gerekiyor" demek.
     const store = new MemoryStore();
-    new SaveSystem(store).recordResult('degirmen-gecidi', 20, true);
+    new SaveSystem(store).recordResult('degirmen-gecidi', 20, true, BALANCE.startLives);
     new EndlessRecords(store).record('degirmen-gecidi', 30);
     new AchievementSystem(store).unlock('allMaps');
     new Settings(store).set('difficulty', 'kolay');
@@ -123,7 +124,7 @@ describe('paylaşılan kayıt anahtarı — beş sistem', () => {
 
     // Bozuk kaydın üstüne yazan ilk sistem onu düzeltmeli, diğerlerini
     // silmeye hakkı yok (zaten okunamıyordu).
-    new SaveSystem(store).recordResult('degirmen-gecidi', 20, true);
+    new SaveSystem(store).recordResult('degirmen-gecidi', 20, true, BALANCE.startLives);
     expect(new SaveSystem(store).starsOf('degirmen-gecidi')).toBe(3);
   });
 });

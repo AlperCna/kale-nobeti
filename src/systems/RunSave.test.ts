@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { BALANCE } from '../data/balance';
 import { RunSave, RUN_VERSION } from './RunSave';
 import type { RunData } from './RunSave';
 import { MemoryStore, SAVE_KEY } from '../util/storage';
@@ -63,7 +64,7 @@ describe('RunSave — paylaşılan anahtarda diğer alanlar korunuyor', () => {
   it('yıldızlar tur yazınca bozulmuyor', () => {
     const m = new MemoryStore();
     const save = new SaveSystem(m);
-    save.recordResult('degirmen-gecidi', 20, true);
+    save.recordResult('degirmen-gecidi', 20, true, BALANCE.startLives);
     const oncekiYildiz = save.starsOf('degirmen-gecidi');
     expect(oncekiYildiz).toBeGreaterThan(0);
 
@@ -75,7 +76,7 @@ describe('RunSave — paylaşılan anahtarda diğer alanlar korunuyor', () => {
   it('tur silinince yıldızlar yerinde kalıyor', () => {
     const m = new MemoryStore();
     const save = new SaveSystem(m);
-    save.recordResult('degirmen-gecidi', 20, true);
+    save.recordResult('degirmen-gecidi', 20, true, BALANCE.startLives);
     const d = new RunSave(m);
     d.yaz(ornekTur());
     d.sil();
@@ -94,7 +95,7 @@ describe('RunSave — paylaşılan anahtarda diğer alanlar korunuyor', () => {
     const m = new MemoryStore();
     const d = new RunSave(m);
     d.yaz(ornekTur());
-    new SaveSystem(m).recordResult('tas-kopru', 15, true);
+    new SaveSystem(m).recordResult('tas-kopru', 15, true, BALANCE.startLives);
     expect(d.oku()?.waveIndex).toBe(4);
   });
 });
