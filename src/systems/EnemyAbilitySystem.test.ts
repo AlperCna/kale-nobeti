@@ -244,6 +244,29 @@ describe('Örümcek Ana bölünmesi — §5, 3× yavru', () => {
     }
   });
 
+  it('her yavru KENDİ progress nesnesini alıyor — anneyle ve birbiriyle paylaşmıyor (M35)', () => {
+    // Bugün paylaşım zararsız olurdu, çünkü `PathMover.step` ilerlemeyi
+    // yerinde değiştirmiyor (`e.progress = path.advance(...)`, yeni nesne).
+    // Bu test o **saflığa bağımlı kalmamayı** bağlıyor: `advance` bir gün
+    // yerinde değiştirmeye çevrilirse üç gövde tek gövde gibi yürürdü ve
+    // burası önce kırılır.
+    const { pool, mover, sys } = kur();
+    const anne = dogur(pool, mover, ORUMCEK_ANA);
+    sys.splitOnDeath(anne);
+    const yavrular = pool.activeItems().filter((e) => e.def === ORUMCEK_YAVRUSU);
+
+    expect(yavrular).toHaveLength(3);
+    for (const y of yavrular) expect(y.progress).not.toBe(anne.progress);
+    expect(yavrular[0]!.progress).not.toBe(yavrular[1]!.progress);
+    expect(yavrular[1]!.progress).not.toBe(yavrular[2]!.progress);
+    expect(yavrular[0]!.progress).not.toBe(yavrular[2]!.progress);
+
+    // Değerler yine annenin — kopyalanan şey nesne, bilgi değil.
+    for (const y of yavrular) {
+      expect(y.progress.remainingDistance).toBeCloseTo(anne.progress.remainingDistance, 6);
+    }
+  });
+
   it('yavru §5 değerleriyle doğuyor', () => {
     const { pool, mover, sys } = kur();
     sys.splitOnDeath(dogur(pool, mover, ORUMCEK_ANA));

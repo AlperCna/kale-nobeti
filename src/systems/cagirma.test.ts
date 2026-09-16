@@ -126,6 +126,23 @@ describe('Çağırma — M13 Faz 1', () => {
     expect(yandas(havuz, boss)).toBe(2);
   });
 
+  it('yandaş BOSS’UN progress nesnesini paylaşmıyor (M35)', () => {
+    // Bölünmedeki ikizin aynısı — burada daha kritiği: paylaşılan nesne
+    // **bossu da** içine alırdı, yani boss kendi yandaşlarıyla birlikte
+    // hızlanırdı. Bugün zararsız (`PathMover.step` yeni nesne atıyor),
+    // ama bu test o saflığa bağımlı kalmamayı bağlıyor.
+    const { havuz, sistem, boss } = kur();
+    boss.hp = boss.maxHp * 0.7;
+    sistem.update(16);
+    const yandaslar = havuz.activeItems().filter((e) => e !== boss && e.alive);
+
+    expect(yandaslar.length).toBeGreaterThan(0);
+    for (const y of yandaslar) expect(y.progress).not.toBe(boss.progress);
+    if (yandaslar.length >= 2) {
+      expect(yandaslar[0]!.progress).not.toBe(yandaslar[1]!.progress);
+    }
+  });
+
   it('havuz doluysa çağırma KISILIYOR, `new` çağrılmıyor', () => {
     const { havuz, sistem, boss } = kur(2); // boss + 1 yer
     boss.hp = boss.maxHp * 0.2; // üç eşik birden
