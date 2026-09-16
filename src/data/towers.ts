@@ -78,7 +78,9 @@ export const OKCU: TowerDef = {
       airMultiplier: 1,
       branchNameKey: 'branchSharpshooter',
     },
-    // 3b Kundakçı — 9 hasar + 4/sn yanma (4 sn).
+    // 3b Kundakçı — 9 hasar + 11/sn yanma (4 sn).
+    // (`M31`: başlık "4/sn" diyordu; değer M11-T02'de 4 → 7 → 11 oldu,
+    //  değişim aşağıdaki satıra yazıldı ama başlık güncellenmedi.)
     {
       cost: 170,
       damage: 9,
@@ -125,7 +127,10 @@ export const TOP: TowerDef = {
       airMultiplier: 0.5,
       branchNameKey: 'branchMortar',
     },
-    // 3b Barut Fıçısı — esnek: uçana %50, ve %40 yavaşlatma (2 sn).
+    // 3b Barut Fıçısı — esnek: uçana %50, geniş ve hızlı patlama.
+    // (`M31`: başlık "%40 yavaşlatma" diyordu; oysa yavaşlatma M11-T02'de
+    //  KALDIRILDI ve gerekçesi sekiz satır aşağıda yazılı. Başlık kendi
+    //  gövdesiyle çelişiyordu.)
     {
       cost: 240,
       damage: 24, // M11-T02: 30 → 24 (DPS 21,6 = Havan ile eşit; takas menzil↔patlama)
@@ -197,7 +202,10 @@ export const BUYU: TowerDef = {
       branchNameKey: 'branchLightning',
       effect: { kind: 'chain', targets: 3, falloff: 0.7 },
     },
-    // 3b Buz — %50 yavaşlatma (2,5 sn).
+    // 3b Buz — %30 yavaşlatma (2 sn).
+    // (`M31`: başlık "%50 · 2,5 sn" diyordu; iki sayı da yanlıştı.
+    //  Oyuncuya gösterilen metin veriden türediği için doğruydu
+    //  (`util/dalOzeti.etkiMetni`) — yanlış olan yalnız bu başlıktı.)
     {
       cost: 230,
       damage: 8,
