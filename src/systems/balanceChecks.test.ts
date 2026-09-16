@@ -17,6 +17,7 @@ import { BUYU, OKCU, TOP } from '../data/towers';
 import { BALANCE } from '../data/balance';
 import { measureCoverage, pathLength } from '../util/coverage';
 import type { BoardTower, ReferenceBoard } from '../types/board';
+import type { EnemyDef } from '../types/enemy';
 
 const KAPSAMA_150 = measureCoverage(MAP_1.paths, MAP_1.buildSpots, 150);
 const cov = (range: number) => measureCoverage(MAP_1.paths, MAP_1.buildSpots, range);
@@ -46,9 +47,19 @@ describe('effectiveDps — zırh/direnç uygulanmış', () => {
 describe('Kısıt A — GAME-DESIGN §6', () => {
   const son = BOARDS[BOARDS.length - 1]!;
 
-  it('boss DIŞINDAKİ sekiz düşman %15 payla geçiyor', () => {
-    for (const e of ENEMIES) {
-      if (e.id === 'ogreSef' || e.id === 'orumcekYavrusu') continue;
+  /** Tavan sağlaması dışında tutulanlar ve **neden** — sayı elle tutulmaz. */
+  const MUAF = new Set<EnemyDef['id']>([
+    'ogreSef', // boss: tam sınırda, kendi testi var (aşağıda)
+    'orumcekYavrusu', // yavru: tek başına doğmuyor, Örümcek Ana'dan çıkıyor
+  ]);
+
+  it('boss ve yavru DIŞINDAKİ her düşman %15 payla geçiyor', () => {
+    const bakilan = ENEMIES.filter((e) => !MUAF.has(e.id));
+    // Döngünün sessizce boşalmadığının sağlaması: düşman eklendikçe bu sayı
+    // kendiliğinden büyür, başlıktaki gibi eskimez.
+    expect(bakilan.length).toBe(ENEMIES.length - MUAF.size);
+    expect(bakilan.length).toBeGreaterThan(0);
+    for (const e of bakilan) {
       const tavan = ceilingA(son, cov, e, MAP_1, YOL_1);
       const hp = effectiveHp(e, MAP_1);
       expect(tavan, `${e.id}`).toBeGreaterThan(hp * BALANCE.safetyMargin);
