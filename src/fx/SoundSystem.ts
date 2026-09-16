@@ -62,6 +62,14 @@ export class SoundSystem {
 
     bus.on('enemy:killed', () => this.#olumSesiCal());
     bus.on('tower:placed', () => this.#cal('tower_place'));
+    /**
+     * `M33` — **kışla kurmak sessizdi**, kule kurmak ses çıkarıyordu.
+     * Aynı eylem, aynı ses: yeni varlık üretilmedi, `tower_place`
+     * paylaşılıyor. `tower:placed`'ı kışla için de yaymak daha kısa
+     * olurdu ama `firstTower` başarımını ve `RunStats` kule sayacını da
+     * kaydırırdı — eksik olan yalnız sesti, düzeltme de yalnız seste.
+     */
+    bus.on('barracks:placed', () => this.#cal('tower_place'));
     bus.on('tower:upgraded', () => this.#cal('tower_upgrade'));
     bus.on('purchase:denied', () => this.#cal('error'));
 
