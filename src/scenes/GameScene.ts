@@ -1479,6 +1479,7 @@ export class GameScene extends Phaser.Scene {
     if (k === undefined) return 0;
 
     const iade = this.#eco?.sellAt(spotIndex) ?? 0;
+    this.#sokumGeriBildirimi(k.govde.x, k.govde.y, iade);
     // **S46:** kışla satılınca askerler anında havuza döner. `release`
     // `resetSoldierState`'i çağırıyor, o da kilidi **iki taraflı** kırıyor —
     // yani engellenen düşmanlar aynı karede serbest kalıyor.
@@ -1553,6 +1554,19 @@ export class GameScene extends Phaser.Scene {
       }
       return s;
     });
+    /**
+     * `M25` — **Takviye'nin de bir varış anı var.**
+     *
+     * Meteor `meteorEfekti` ile ekranı dolduruyordu, Takviye ise
+     * hiçbir şey göstermiyordu: oyuncu tıklıyor, askerler bir sonraki
+     * karede öylece beliriyordu. İki yeteneğin ölçülen değeri birbirine
+     * yakın (`yetenekKatkisi`), ekrandaki ağırlıkları ise değildi.
+     *
+     * Kurulumun yukarı halkası, çünkü olan şey bir **varış**.
+     */
+    if (asker !== null && asker.length > 0) {
+      this.#efektler?.patlat(at.x, at.y, 0, -1, 12, undefined, TAM_DAIRE);
+    }
     this.bus.emit('ability:cast', { id: 'takviye', hits: asker?.length ?? 0 });
     return true;
   }
@@ -1750,11 +1764,28 @@ export class GameScene extends Phaser.Scene {
   }
 
   /** Kule satışı — harcanan **toplamın** %70'i (`GAME-DESIGN.md` §4.5). */
+  /**
+   * **Söküm geri bildirimi — `M25`.**
+   *
+   * Satış iki şey yapıyor: yapı gidiyor ve **altın geliyor**. İkisinin
+   * de ekranda karşılığı yoktu; `GoldFlightSystem.spawn` yalnız düşman
+   * ölümünde çağrılıyordu (`M6`), yani kesene giren aynı altın öldürmede
+   * uçuyor, satışta sessizce beliriyordu.
+   *
+   * Toz **aşağı** çöküyor (kurulum yukarı yayılıyordu) — iki eylem
+   * birbirinin tersi, ekranda da öyle okunsun.
+   */
+  #sokumGeriBildirimi(x: number, y: number, iade: number): void {
+    this.#efektler?.patlat(x, y, 0, 1, 12, undefined, TAM_DAIRE);
+    if (iade > 0) this.#altinUcusu?.spawn(x, y);
+  }
+
   #sellTower(spotIndex: number): number {
     const kule = this.#towerBySpot.get(spotIndex);
     if (kule === undefined) return 0;
 
     const iade = this.#eco?.sellAt(spotIndex) ?? 0;
+    this.#sokumGeriBildirimi(kule.x, kule.y, iade);
     this.#towers?.remove(spotIndex);
     this.#occupancy?.free(spotIndex);
     this.#towerBySpot.delete(spotIndex);

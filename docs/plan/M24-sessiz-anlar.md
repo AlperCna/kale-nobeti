@@ -106,6 +106,34 @@ görülecek.
 
 ---
 
+## İkinci tur — kalan iki sessiz eylem
+
+Aynı yöntem (oyuncunun **bütün** eylemlerini listele, geri bildirimi
+olmayanı ara) ilk turdan sonra iki tane daha buldu:
+
+| eylem | önceki durum |
+|---|---|
+| **kule/kışla satışı** | yapı sessizce yok oluyordu **ve** kesene giren altın ekranda hiç uçmuyordu |
+| **Takviye** | Meteor `meteorEfekti` ile ekranı dolduruyor, Takviye hiçbir şey göstermiyordu |
+
+Satıştaki altın ayrıntısı öğretici: `GoldFlightSystem.spawn` `M6`'dan
+beri **yalnız düşman ölümünde** çağrılıyordu. Yani aynı altın, öldürünce
+uçuyor, satınca sessizce beliriyordu — sistem zaten oradaydı, ikinci
+çağıran hiç eklenmemişti.
+
+Takviye'ninki de ölçümle tutarsızdı: iki yeteneğin **ölçülen** değeri
+birbirine yakın (`yetenekKatkisi`), ekrandaki ağırlıkları değildi.
+
+**Uygulanan dil:** kurmak yukarı yayılır (180°), **sökmek aşağı çöker**
+(180°, `dirY = +1`), yükseltmek yukarı **dar sütun** (22°), Takviye ise
+bir **varış** halkası (180°). Dört eylem, dört okunuş.
+
+> **Ölçüldü (çalışma zamanı):** satışta **19 toz + 1 uçan altın**,
+> Takviye'de **12 toz + 2 asker** (verilen `adet` ile birebir).
+> Konsol temiz.
+
+---
+
 ## Bu planın YAPMADIĞI şeyler
 
 - **Dengeye dokunmak** — sahibin açık talebi.
