@@ -144,6 +144,21 @@ export class EconomySystem {
   }
 
   /**
+   * **Şu an basılsa kaç altın gelir** — ödül vermeden (`M25`).
+   *
+   * Arayüz bu sayıyı düğmenin üstünde gösterebilsin diye var. Ayrı bir
+   * yerde yeniden hesaplanması S80'in hata sınıfı olurdu ("oyun ile
+   * arayüz farklı bir şeyi biliyor"): değer `earlyStartBonus`'a **ve**
+   * haritanın altın çarpanına bağlı (S101), ve çarpanı unutan bir
+   * arayüz oyuncuya geç haritalarda gerçeğin onda birini gösterirdi.
+   *
+   * `awardEarlyStart` de bunu çağırıyor; tek kaynak.
+   */
+  earlyStartPreview(remainingSec: number, waveNo: number): number {
+    return Math.round(earlyStartBonus(remainingSec, waveNo) * this.map.goldMultiplier);
+  }
+
+  /**
    * **Erken başlatma bonusu — `M14`, S70'in kaçırdığı kardeş.**
    *
    * `awardWaveEnd` ile birebir aynı gerekçe: gelirin **her** kalemi
@@ -157,7 +172,7 @@ export class EconomySystem {
    * (S72) çarpanı izliyordu; bu tek kalem atlanmıştı.
    */
   awardEarlyStart(remainingSec: number, waveNo: number): number {
-    const b = Math.round(earlyStartBonus(remainingSec, waveNo) * this.map.goldMultiplier);
+    const b = this.earlyStartPreview(remainingSec, waveNo);
     if (b <= 0) return 0;
     this.earn(b, 'earlyBonus'); // Y06 — dalga bonusuyla aynı "haber değerli" sınıf
     return b;

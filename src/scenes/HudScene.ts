@@ -21,6 +21,8 @@ import { PreloadScene } from './PreloadScene';
 import { NUMBER_FONT_KEY } from '../fx/numberFont';
 
 const INK = 0x14203a;
+/** Altın varak — `M25` bonus sayısı (§2 paleti). */
+const ALTIN = 0xd4a032;
 
 /** Dokunmatik hedef en az 44×44 px (CLAUDE.md Platform). */
 const BTN = 56;
@@ -96,6 +98,14 @@ export class HudScene extends Phaser.Scene {
   #readout?: HudReadout;
   #telegraph?: WaveTelegraph;
   #earlyBtn?: Phaser.GameObjects.Container;
+  /**
+   * Erken başlatma bonusunun **canlı** değeri — `M25`.
+   *
+   * `BitmapText`, çünkü her karede değişiyor (TIER 1 kural 7). Etiketin
+   * kendisi (`#earlyLabel`) bir kez yazılıp değişmediği için `Text`
+   * kalıyor.
+   */
+  #earlyBonus?: Phaser.GameObjects.BitmapText;
   #earlyLabel?: Phaser.GameObjects.Text;
   #bitti = false;
 
@@ -287,6 +297,12 @@ export class HudScene extends Phaser.Scene {
     const erkenAcik = game.earlyStartAvailable;
     this.#earlyBtn?.setVisible(erkenAcik);
     this.#earlyLabel?.setVisible(erkenAcik);
+    this.#earlyBonus?.setVisible(erkenAcik);
+    // `setText` **kendi satırında**: `k.7` bekçisi alıcıyı satır başından
+    // çıkarıyor, `if (...)` öneki onu izlenemez yapıyor.
+    if (erkenAcik) {
+      this.#earlyBonus?.setText(`+${game.earlyStartPreview}`);
+    }
 
     this.#geriSayimTiki(game.prepRemainingSec, game.soundSystem);
     this.#oyunSonuKontrol(game);
@@ -442,13 +458,35 @@ export class HudScene extends Phaser.Scene {
 
     this.#earlyBtn = createParchmentButton(this, x, y, 180, 52, 14).setVisible(false);
     this.#earlyLabel = this.add
-      .text(x, y, t('startWave'), {
+      .text(x, y - 14, t('startWave'), {
         fontFamily: 'Spectral, serif',
         fontSize: '18px',
         color: '#14203A',
       })
       .setOrigin(0.5)
       .setVisible(false);
+    /**
+     * **`M25` — bonus artık düğmenin üstünde yazıyor.**
+     *
+     * `M16` erken basmayı gerçek bir risk kararı yaptı (kalan süre altına
+     * dönüyor ama sıradaki dalga artıkların üstüne biniyor; ölçüm hep
+     * basmanın harita 5-6'yı geçilemez yaptığını söylüyor). Oyuncu o
+     * kararın **kazanç** tarafını hiçbir yerde göremiyordu: düğmede yalnız
+     * "Dalgayı başlat" yazıyordu.
+     *
+     * S93'ün kuralı burada da geçerli — *"görünmeyen takas seçim değil,
+     * zar atışıdır."* Sayı sayaç düştükçe eriyor, yani "erken basmak daha
+     * çok altın" kuralını kendi kendine öğretiyor.
+     */
+    // Atama ve `bitmapText` **aynı satırda**: `k.7` bekçisi alıcıyı ancak
+    // böyle izleyebiliyor (çok satırlı zincirde `setText` çağrısını
+    // `Text` sanıp ihlal sayıyor — ölçüldü).
+    this.#earlyBonus = this.add.bitmapText(x, y + 12, NUMBER_FONT_KEY, '');
+    // Sayı fontunun doğal boyu 32 px ve düğme 52 px yüksekliğinde:
+    // doğal boyda bırakılınca parşömenin **altından 4 px taşıyordu**
+    // (ölçüldü: sayı 80-112, düğme 56-108). 20 px hem sığıyor hem
+    // Platform'un 16 px alt sınırının üstünde kalıyor.
+    this.#earlyBonus.setFontSize(20).setOrigin(0.5).setTint(ALTIN).setVisible(false);
 
     this.#earlyBtn.on('pointerup', () => {
       this.#game().startWaveEarly();
