@@ -42,7 +42,7 @@ import { EnemyHealthBar } from '../fx/EnemyHealthBar';
 import { EnemyHealthBarSystem } from '../fx/EnemyHealthBarSystem';
 import { Particles } from '../fx/Particles';
 import { MapRenderer } from '../fx/MapRenderer';
-import { HealAura } from '../fx/HealAura';
+import { EnemyStatus } from '../fx/EnemyStatus';
 import { BuildMenu } from '../fx/BuildMenu';
 import type { BarracksKayit } from '../fx/BuildMenu';
 import { TowerInfoPanel } from '../fx/TowerInfoPanel';
@@ -218,8 +218,8 @@ export class GameScene extends Phaser.Scene {
   #enemyHealthBars?: EnemyHealthBarSystem;
   #enemyPool?: Pool<Enemy>;
   #abilities?: EnemyAbilitySystem<Enemy>;
-  /** `M30` — Şaman halkası + iyileşme işareti. */
-  #healAura?: HealAura;
+  /** `M30`/`M31` — Şaman çemberi, iyileşme/yanma/yavaşlatma işaretleri. */
+  #durumKatmani?: EnemyStatus;
 
   #occupancy?: SpotOccupancy;
   /** `Y01` adım 2 — harita çizimi, hover, uçan ipucu. */
@@ -578,7 +578,7 @@ export class GameScene extends Phaser.Scene {
     // sonra eklenen bu katman görüntü listesinde onların üstünde
     // kalıyor. Can çubukları daha da sonra kuruluyor, işaret onların
     // altında kalmıyor — zaten çubuğun yanına düşüyor.
-    this.#healAura = new HealAura(this, this.#mapRenderer);
+    this.#durumKatmani = new EnemyStatus(this, this.#mapRenderer);
 
     const mermiHavuzu = new Pool<Projectile>(
       () => {
@@ -1125,7 +1125,7 @@ export class GameScene extends Phaser.Scene {
     // iyileştirmeyi gösteriyor, bir kare öncekini değil.
     // `M15`'in `enemy:burrowed` deseni: olay her karede yayılıyor,
     // "ilk kez mi" kararı `TutorialSystem`'in.
-    if (this.#healAura?.update(dusmanlar) === true) this.bus.emit('enemy:healing', {});
+    if (this.#durumKatmani?.update(dusmanlar) === true) this.bus.emit('enemy:healing', {});
     this.#etkileriIsle(sd, dusmanlar);
     // Kışla, kulelerden **önce**: engellenen düşman aynı karede duruyor,
     // yani kule ona ateş ederken doğru konumda oluyor.
@@ -1360,8 +1360,14 @@ export class GameScene extends Phaser.Scene {
         //
         // **Hasar sayısı ÇIKMIYOR.** Yanma her karede tik atıyor; saniyede
         // 60 sayı üretmek 60'lık havuzu tek yanan düşmanla doldururdu ve
-        // gerçek vuruşların sayısı görünmez olurdu. M6'da yanan düşmana
-        // turuncu bir tint verilecek — bilgi kaybolmuyor, kanal değişiyor.
+        // gerçek vuruşların sayısı görünmez olurdu.
+        //
+        // Bu satır M6'dan beri *"turuncu bir tint verilecek — bilgi
+        // kaybolmuyor, kanal değişiyor"* diyordu ve **kanal hiç
+        // açılmamıştı**: sayı kaldırılmış, yerine bir şey konmamıştı.
+        // `M31` sözü tuttu — `fx/EnemyStatus` yanan düşmana kor rengi bir
+        // üçgen koyuyor. Söz verilen tint değil bir **şekil**, çünkü k.6
+        // bilginin yalnız renge dayanmasını yasaklıyor.
         this.#hasarUygula(e, yanma);
       }
     }
