@@ -184,9 +184,9 @@ describe('towers.ts — T3 dalları (12 kademe)', () => {
     }
   });
 
-  it('Keskin Nişancı: 170 / 34 / 0.6 / 260, efekt yok (S95)', () => {
+  it('Keskin Nişancı: 170 / 41 / 0.6 / 260, efekt yok (S95 → S119)', () => {
     const k = OKCU.branches[0];
-    expect([k.cost, k.damage, k.fireRate, k.range]).toEqual([170, 34, 0.6, 260]);
+    expect([k.cost, k.damage, k.fireRate, k.range]).toEqual([170, 41, 0.6, 260]);
     expect(k.effect).toBeUndefined();
   });
 

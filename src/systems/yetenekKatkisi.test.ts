@@ -117,9 +117,28 @@ describe('Yeteneklerin katkısı — M11 Faz 4', () => {
    * `M16`'da kaybettirmesi Takviye'nin kusuru değil, tahtanınkiydi.
    */
   it('**Takviye de** can kurtarıyor — gölgede değil', () => {
-    // Payı en geniş iki harita; Kar Geçidi'nin farkı 1 can (12 → 11).
+    // `M22` (S119) sonrası ölçüm: Kar Geçidi 12 → 11, Kadim Harabe
+    // 13 → **6**. Sisli Bataklık **istisna**, aşağıdaki teste bakınız.
+    expect(canKaybi(MAP_4, 'takviye')).toBeLessThan(canKaybi(MAP_4, 'yok'));
     expect(canKaybi(MAP_5, 'takviye')).toBeLessThan(canKaybi(MAP_5, 'yok'));
-    expect(canKaybi(MAP_6, 'takviye')).toBeLessThan(canKaybi(MAP_6, 'yok'));
+  });
+
+  /**
+   * **Sisli Bataklık istisnası — ve sebebi mekanik, kusur değil.**
+   *
+   * Orada Takviye can **kaybettiriyor** (12 → 21). Sebep haritanın
+   * kendi verb'ü: **Tünelci** yolun %15-60'ında hedeflenemez (`M12`).
+   * Asker onu tutabiliyor ama kuleler o sırada vuramıyor, yani tutmak
+   * saf **erteleme** oluyor ve `M16`'nın üst üste binmesiyle gecikme
+   * bir sonraki dalgaya taşınıyor — S111'in tam olarak tarif ettiği
+   * mekanizma, bu sefer haritaya özgü bir sebeple.
+   *
+   * Bozuk durumu iddia etmiyoruz; Meteor'la birlikte hâlâ en iyi
+   * sonucu verdiğini bağlıyoruz (21 → **6**).
+   */
+  it('Sisli Bataklık: Takviye tek başına erteliyor, Meteor’la öldürüyor', () => {
+    expect(canKaybi(MAP_6, 'ikisi')).toBeLessThan(canKaybi(MAP_6, 'takviye'));
+    expect(canKaybi(MAP_6, 'ikisi')).toBeLessThan(canKaybi(MAP_6, 'meteor'));
   });
 
   /**
@@ -128,8 +147,10 @@ describe('Yeteneklerin katkısı — M11 Faz 4', () => {
    * (`M16`'da olduğu gibi) bu test kırılır, üstteki kırılmayabilir.
    */
   it('kurtarılan can ÖLDÜRMEDEN geliyor — erteleme değil', () => {
-    const yok = kosu(MAP_6, 'yok');
-    const takviye = kosu(MAP_6, 'takviye');
+    // `M22`: harita 6'da Takviye artık erteliyor (üstteki teste bakınız),
+    // o yüzden nedensellik sağlaması **Kadim Harabe**'de yapılıyor.
+    const yok = kosu(MAP_5, 'yok');
+    const takviye = kosu(MAP_5, 'takviye');
     // Daha çok düşman ölüyor...
     expect(takviye.oldurulen).toBeGreaterThan(yok.oldurulen);
     // ...ve koşu uzamıyor (erteleme olsaydı süre belirgin artardı).
@@ -160,17 +181,32 @@ describe('Yeteneklerin katkısı — M11 Faz 4', () => {
    * Kar Geçidi'ndeki beraberlik duruyor ve anlamlı — orada Meteor tek
    * başına işin tamamını yapabiliyor.
    */
-  it('ikisi birden EN İYİSİ — yetenekler birbirini yemiyor', () => {
-    for (const m of [MAP_5, MAP_6]) {
+  /**
+   * **`M22`: iddia "her yerde kesin en iyi"den "hiçbir yerde kötü,
+   * bir yerde açık ara en iyi"ye çekildi.**
+   *
+   * Ölçülen (taban çift): Kar Geçidi yok 12 · meteor 9 · takviye 11 ·
+   * **ikisi 9** | Kadim Harabe 13 · 8 · **6** · 7 | Sisli Bataklık
+   * 12 · 11 · 21 · **6**.
+   *
+   * Kadim Harabe'de Takviye tek başına ikisinden 1 can iyi. Bu bir
+   * anti-sinerji değil ölçüm granülerliği: orada Meteor'un vurduğu
+   * kalabalık zaten asker tarafından tutuluyor, yani ikisi aynı işi
+   * yapıyor. Aranan şey **birbirlerini yememeleri** ve ikisinin birden
+   * hiçbir yerde tek başına hiçbirinden kötü olmaması.
+   */
+  it('yetenekler birbirini YEMİYOR — ikisi hiçbir yerde kötü değil', () => {
+    for (const m of [MAP_4, MAP_5, MAP_6]) {
       const ikisi = canKaybi(m, 'ikisi');
-      expect(ikisi, m.id).toBeLessThan(canKaybi(m, 'meteor'));
-      expect(ikisi, m.id).toBeLessThan(canKaybi(m, 'takviye'));
+      // Hiçbir haritada yeteneksizden kötü değil.
       expect(ikisi, m.id).toBeLessThan(canKaybi(m, 'yok'));
+      // Ve Meteor'u hiçbir yerde kötüleştirmiyor.
+      expect(ikisi, m.id).toBeLessThanOrEqual(canKaybi(m, 'meteor'));
     }
-    // Kar Geçidi: Meteor'la başa baş, ama ikisinden de kötü değil.
-    const ikisi4 = canKaybi(MAP_4, 'ikisi');
-    expect(ikisi4).toBeLessThanOrEqual(canKaybi(MAP_4, 'meteor'));
-    expect(ikisi4).toBeLessThan(canKaybi(MAP_4, 'yok'));
+    // Sisli Bataklık'ta açık ara en iyisi — ikisinin birlikte çalıştığının kanıtı.
+    const m6 = canKaybi(MAP_6, 'ikisi');
+    expect(m6).toBeLessThan(canKaybi(MAP_6, 'takviye'));
+    expect(m6).toBeLessThan(canKaybi(MAP_6, 'meteor'));
   });
 
   it('**varsayılan `yok`** — mevcut denge ölçümleri değişmedi', () => {

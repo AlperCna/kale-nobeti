@@ -30,7 +30,7 @@
  * TIER 1 kural 11: Phaser'a dokunmaz.
  */
 import { describe, expect, it } from 'vitest';
-import { MAP_2, MAP_3, MAP_4, MAP_5, COVERAGE_REFERENCE_RANGE } from '../data/maps';
+import { MAP_2, MAP_3, MAP_4, MAP_5, MAP_6, COVERAGE_REFERENCE_RANGE } from '../data/maps';
 import { wavesFor } from '../data/waves';
 import { getEnemyForMap } from '../data/enemies';
 import { buildReferenceBoards } from './balanceChecks';
@@ -83,7 +83,15 @@ function canKaybi(m: MapDef, tekAile?: TowerId): number {
   return can;
 }
 
-const HARITALAR = [MAP_2, MAP_3, MAP_4, MAP_5];
+/**
+ * **`M22` (S119): harita 6 listeye EKLENDİ.**
+ *
+ * Liste `M11` Faz 5'te yazıldığında harita 6 yoktu (`M12`'de geldi) ve
+ * kimse büyütmedi — S114'ün birebir ikizi. Sonuç: Okçu Sisli
+ * Bataklık'ta **29 can** kaybettiriyordu (sınır 20, Top 6, Büyü 5) ve
+ * tahtası bossu bile sızdırıyordu, ama hiçbir test bakmıyordu.
+ */
+const HARITALAR = [MAP_2, MAP_3, MAP_4, MAP_5, MAP_6];
 const AILELER: readonly TowerId[] = ['okcu', 'top', 'buyu'];
 
 describe('Aile dengesi — M11 Faz 5 (S95)', () => {
@@ -160,8 +168,12 @@ describe('Aile dengesi — M11 Faz 5 (S95)', () => {
     expect(canKaybi(MAP_3, 'okcu')).toBeLessThan(canKaybi(MAP_3));
     // Büyü — Kadim Harabe'de karışık tahtadan iyi (S110'un kapanışı).
     expect(canKaybi(MAP_5, 'buyu')).toBeLessThan(canKaybi(MAP_5));
-    // Top — Kar Geçidi'nde en iyi TEK aile.
+    // Top — Kar Geçidi'nde en iyi tek ailelerden biri. **`M22`'de
+    // "kesin birinci"den "berabere birinci"ye indi:** Okçu'nun Keskin
+    // Nişancı'sı 34 → 41 olunca (S119) makas kapandı ve ikisi de 14.
+    // Top ölü değil (14 · 16 · 7, hepsi 20'nin altında) ama artık tek
+    // başına bir haritanın sahibi değil. Kaydedildi: S120.
     expect(canKaybi(MAP_4, 'top')).toBeLessThan(canKaybi(MAP_4, 'buyu'));
-    expect(canKaybi(MAP_4, 'top')).toBeLessThan(canKaybi(MAP_4, 'okcu'));
+    expect(canKaybi(MAP_4, 'top')).toBeLessThanOrEqual(canKaybi(MAP_4, 'okcu'));
   });
 });

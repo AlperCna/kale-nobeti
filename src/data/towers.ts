@@ -51,7 +51,28 @@ export const OKCU: TowerDef = {
     // 3a Keskin Nişancı — uzun menzil, ağır vuruş.
     {
       cost: 170,
-      damage: 34,
+      /**
+       * **`M22` (S119): 34 → 41.** Okçu harita 6'da ÖLÜ aileydi ve
+       * hiçbir test bakmıyordu.
+       *
+       * Ölçüm (tek aile, taban tahta, can kaybı): Kar Geçidi 19 ·
+       * Kadim Harabe 19 · Sisli Bataklık **29** — 20 can sınırının çok
+       * üstünde, üstelik Okçu tahtası bossu bile sızdırıyordu. Top ve
+       * Büyü aynı haritada 6 ve 5.
+       *
+       * Sebep haritaya özgü ve yapısal: Sisli Bataklık'ın **Tünelci**si
+       * yolun %15-60'ında hedeflenemez (`M12`), yani vuruş penceresi
+       * kısa. Kısa pencerede patlama (Top) ve zincir (Büyü) kayıplarını
+       * çarpanla kapatıyor; Okçu'nun **hiçbir çarpanı yok** (`M11` Faz
+       * 5'in teşhisi) ve tek hedefe tek vuruşla geride kalıyor.
+       *
+       * Düzeltme `M11` Faz 5 ve `M18`'in (Büyü) aynısı: yeni çarpan
+       * eklenmedi, kademe çıktısı hizaya alındı. Tarama (Okçu, harita
+       * 4/5/6): 34 → 19/19/29 · 40 → 13/14/20 · **41 → 13/9/9** ·
+       * 43 → 9/9/6. 41, üç haritayı da sınırın altına indiren **en
+       * küçük** adım.
+       */
+      damage: 41,
       fireRate: 0.6,
       range: 260,
       airMultiplier: 1,

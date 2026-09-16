@@ -527,7 +527,10 @@ export const MAP_4: MapDef = {
    * (S112) ve boss HP'leri simülasyondan türetildi; üçü birden rampayı
    * kaydırdı. Tarama: 6,2→9 · **6,4→12** · 6,6→16 · 7,0→16.
    */
-  hpMultiplier: 6.4, // S87 → S91 → S101 → S109 → S113
+  // **`M22` (S119): 6,4 → 7,0.** Okçu'nun Keskin Nişancı'sı 34 → 41
+  // olunca karışık tahta da güçlendi ve harita banda geri çekildi.
+  // Tarama: 6,4→10 · 6,8→13 · **7,0→12** · 7,2→17.
+  hpMultiplier: 7.0, // S87 → S91 → S101 → S109 → S113 → S119
   goldMultiplier: 7.2, // S87 — HP ile birlikte yükseldi (S73 değişmezi)
   startGold: Math.round(280 * 7.2), // S87
   // §5: kadro **tam** — dokuz tip, yeni tanıtım yok.
@@ -565,7 +568,9 @@ export const MAP_4: MapDef = {
 // **`M18` (S113): 7,6 → 9,2.** Boss HP'si simülasyondan türetilince
 // (2492 → 1962) harita belirgin biçimde kolaylaştı ve çarpan onu geri
 // almak için yükseldi. Tarama: 8,5→10 · **9,2→13** · 9,9→14.
-const MAP5_HP_CARPANI = 9.2; // S87 → S91 → S101 → S109 → S113
+// **`M22` (S119): 9,2 → 9,6.** Aynı sebep. Tarama: 9,2→8 · **9,6→13** ·
+// 10,0→10 (altın çarpanı 10,0 tavan, S73).
+const MAP5_HP_CARPANI = 9.6; // S87 → S91 → S101 → S109 → S113 → S119
 const MAP5_ALTIN_CARPANI = 10.0; // S87 — HP ile birlikte (S73 değişmezi)
 
 const MAP5_KALE: Vec2 = { x: 1180, y: 600 };
@@ -825,7 +830,14 @@ export const MAP_6: MapDef = {
    * monotonluğu iddiası bu yüzden güncellendi; gerçek iddia
    * `kisitB.test.ts`'te (ölçülen can kaybı monoton).
    */
-  hpMultiplier: 6.8, // S109 → S113 — bkz. yukarıdaki türetmeler
+  // **`M22` (S119): 6,8 → 7,2.** İki kısıt birlikte tarandı — karışık
+  // tahta banda girsin (≥ 12) **ve** Okçu 20 eşiğinin altında kalsın:
+  // 6,8 → 10/Okçu 9 · 7,0 → 10/11 · **7,2 → 12/12** · 7,4 → 12/**22** ·
+  // 7,5 → 12/22. 7,2 ikisini birden sağlayan tek değer; 7,4'te Okçu
+  // (ve Top) uçuruma düşüyor. 13-19 bandında değer yok, o yüzden 12'de
+  // kalıyor — testler harita 6 için sıra şartı koymuyor ve zorluğu
+  // zaten kadrodan geliyor (Tünelci + çağıran boss).
+  hpMultiplier: 7.2, // S109 → S113 → S119
   goldMultiplier: 11.0,
   startGold: Math.round(280 * 11.0),
   enemyRoster: [
