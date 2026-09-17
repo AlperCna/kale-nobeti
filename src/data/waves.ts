@@ -535,33 +535,28 @@ export const MAP6_WAVES: readonly Wave[] = [
     ['tunelci', 3],
   ]), // 14 = bütçe 14
   /**
-   * **§7 İHLALİ — biliniyor, ölçüldü, bilerek düzeltilmedi (S127).**
+   * **S127 KAPANDI (`M62`) — §7 ihlali düzeltildi.**
    *
-   * Nefes dalgası (4) harita 6'da `orkSavasci`yi **ilk kez** tanıtıyor;
+   * Nefes dalgası (4) harita 6'da `orkSavasci`yi **ilk kez** tanıtıyordu;
    * §7 ise *"nefes dalgalarında yeni tip tanıtılmaz — nefes almak yeni
    * şey öğrenmemek demek"* diyor. Kusur `M12`'den beri duruyordu çünkü
    * harita 6 `waves.test`'in harita listesine hiç girmemişti (`M27`
-   * ekledi, S114/S119 ile aynı sınıf).
+   * ekledi, S114/S119 ile aynı sınıf), ve `M27`-`M61` arasında
+   * "düzeltmesi denge turu ister" diye kayda geçirilip bırakılmıştı.
    *
-   * **Düzeltmenin bedeli ölçüldü ve dengeyi kaydırıyor.** Aynı puanı
-   * zaten görülmüş tiplerle doldurmanın her yolu haritayı
-   * zorlaştırıyor, çünkü Ork Savaşçı aynı puana daha çok **altın**
-   * getiriyor ve onu çıkarmak tahtayı tur boyunca zayıflatıyor:
+   * **Denge turu `M62`'de sahibi tarafından istendi** (*"harita 6'yı
+   * kadrodan zorlaştır"*), ve düzeltme o turun bir parçası oldu: dalga
+   * 4 artık **yalnız görülmüş tiplerle** doluyor — goblin (dalga 1) ve
+   * Tünelci (dalga 2). Puan aynı: `3×3 + 6×1 = 15`.
    *
-   * | dalga 4 | puan | harita 6 can kaybı |
-   * |---|---|---|
-   * | ork3 + tünelci3 (bugünkü) | 15 | **12** |
-   * | goblin6 + tünelci3 | 15 | 19 |
-   * | tünelci5 | 15 | **20** (bandın dışı) |
-   * | goblin3 + tünelci4 | 15 | **20** (bandın dışı) |
-   *
-   * Yani kuralı düzeltmek denge turu demek. Sahip "dengeye dokunma"
-   * dediği için kusur **kayda geçirildi**, düzeltilmedi.
+   * `M27`'nin ölçtüğü tablo (goblin6+tünelci3 → 19) bugün geçerli değil;
+   * o ölçüm `M61` öncesinin zayıf tahtasıyla alınmıştı. Güncel değeri
+   * dalga 9'un değişikliğiyle birlikte `maps.ts`'in S131 notunda.
    */
   dalgaKur(4, [
-    ['orkSavasci', 3],
     ['tunelci', 3],
-  ]), // NEFES, 15 = bütçe 15 — §7 ihlali, bkz. yukarısı
+    ['goblin', 6],
+  ]), // NEFES, 15 = bütçe 15 — yalnız görülmüş tipler (§7)
   dalgaKur(5, [
     ['tunelci', 3],
     ['zirhliOrk', 3],
@@ -582,12 +577,26 @@ export const MAP6_WAVES: readonly Wave[] = [
     ['tunelci', 4],
     ['zirhliOrk', 2],
   ]), // 36 = bütçe 36
+  /**
+   * **`M62` (S131): Zırhlı Ork ×2 → Trol ×1.** Puan aynı (8), baskı
+   * değil. Sahibin isteği haritayı **kadrodan** zorlaştırmaktı ve
+   * tarama şunu gösterdi: sabit puan bütçesinde tip değiştirmek karışık
+   * tahtayı zor kıpırdatıyor (bütün denenen kompozisyonlar 9-12
+   * arasında kaldı), çünkü hangi tipi getirirsen bir aile ona cevap
+   * veriyor. Kıpırdatan tek şey **sızıntı başına bedel**: Trol'ün
+   * `leakDamage` değeri 2, Zırhlı Ork'unki 1. Yani aynı puan, aynı
+   * sayıda sızıntı, iki katı can.
+   *
+   * Zırhlı Ork haritadan çıkmıyor (dalga 5, 8 ve 10'da duruyor), Trol
+   * de zaten dalga 8'den beri sahada — kadroya yeni tip girmiyor,
+   * ağırlık kayıyor. §5'in "uç örneği geç" kuralıyla uyumlu: haritanın
+   * en ağır tipi son dalgalarda yoğunlaşıyor.
+   */
   dalgaKur(9, [
-    ['trol', 2],
+    ['trol', 3],
     ['saman', 1],
     ['tunelci', 3],
     ['harpi', 2],
-    ['zirhliOrk', 2],
   ]), // 44 ≈ bütçe 43
   dalgaKur(
     10,

@@ -312,26 +312,26 @@ describe('M7/M8 — 60 dalga: bütçe, kadro, giriş', () => {
   });
 
   /**
-   * **Harita 6 bu tek sağlamanın DIŞINDA — bilinen ihlal (S127).**
+   * **S127 KAPANDI (`M62`) — harita 6 artık MUAF DEĞİL.**
    *
    * `M27` harita 6'yı listeye ekleyince kural hemen kırıldı: Sisli
-   * Bataklık'ın 4. dalgası `orkSavasci`yi **ilk kez** orada tanıtıyor.
+   * Bataklık'ın 4. dalgası `orkSavasci`yi **ilk kez** orada tanıtıyordu.
    * Kusur `M12`'den beri duruyordu ve kimse görmemişti çünkü harita 6
-   * hiç listede değildi.
+   * hiç listede değildi (S114/S119 ile aynı sınıf).
    *
-   * **Düzeltilmedi, çünkü bedeli ölçüldü ve denge turu gerektiriyor:**
-   * aynı puanı zaten görülmüş tiplerle doldurmanın her yolu haritayı
-   * 12'den 19-20'ye çıkarıyor (Ork Savaşçı aynı puana daha çok altın
-   * getiriyor; çıkarınca tahta tur boyunca zayıflıyor) ve iki seçenek
-   * doğrudan 20 bandının dışına taşıyor. Ayrıntı `waves.ts`'te.
+   * Otuz beş kilometre taşı boyunca düzeltilmedi, çünkü bedeli bir
+   * **denge turuydu** ve sahip dengeye dokunulmasını istemiyordu. Tur
+   * `M62`'de sahibi tarafından istendi (*"harita 6'yı kadrodan
+   * zorlaştır"*) ve ihlal onun içinde kapandı: dalga 4 artık goblin ve
+   * Tünelci ile doluyor, ikisi de dalga 1-2'de görülmüş.
    *
-   * Harita 6 **diğer bütün** sağlamalara giriyor; yalnız bu biri
-   * kapsam dışı ve sebebi burada yazılı — sessizce atlanmıyor.
+   * Muafiyet satırı (`if (map.id === 'sisli-bataklik') continue;`)
+   * kaldırıldı — bir muafiyet, gerekçesi ortadan kalktığı gün
+   * silinmezse kuralı sessizce küçültür.
    */
   it('yeni düşman NEFES dalgasında tanıtılmıyor — §7', () => {
     // Nefes dalgaları (4, 7) tanıdık düşmanlarla geçiyor.
     for (const { map, waves } of HARITALAR) {
-      if (map.id === 'sisli-bataklik') continue; // S127 — yukarıdaki not
       for (const n of [4, 7]) {
         const oncekiler = new Set(
           waves.slice(0, n - 1).flatMap((w) => w.groups.map((g) => g.enemy)),
