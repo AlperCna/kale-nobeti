@@ -103,7 +103,6 @@ const MAP1_BUILD_SPOTS: readonly Vec2[] = [
 
 export const MAP_1: MapDef = {
   id: 'degirmen-gecidi',
-  background: 'bg/map1.webp',
   paths: [MAP1_PATH],
   buildSpots: MAP1_BUILD_SPOTS,
   flyerPaths: [MAP1_FLYER_PATH],
@@ -195,7 +194,6 @@ const MAP2_FLYER: readonly Vec2[] = [
 
 export const MAP_2: MapDef = {
   id: 'tas-kopru',
-  background: 'bg/map2.webp',
   paths: [MAP2_UST, MAP2_ALT],
   buildSpots: MAP2_BUILD_SPOTS,
   flyerPaths: [MAP2_FLYER],
@@ -352,7 +350,6 @@ const MAP3_FLYER_B: readonly Vec2[] = [
 
 export const MAP_3: MapDef = {
   id: 'kul-ovasi',
-  background: 'bg/map3.webp',
   paths: [MAP3_KOL_A, MAP3_KOL_B],
   buildSpots: MAP3_BUILD_SPOTS,
   flyerPaths: [MAP3_FLYER_A, MAP3_FLYER_B],
@@ -488,7 +485,6 @@ export const MAP_4: MapDef = {
   // ile türetildi (`prep-assets.mjs`). Gerçek sanat brifi
   // `docs/plan/M8-sanat-brifi.md`'de; üretilince yalnız bu dosya değişmez,
   // yalnız PNG değişir.
-  background: 'lazy/kar-gecidi.webp',
   paths: [MAP4_PATH],
   buildSpots: MAP4_BUILD_SPOTS,
   flyerPaths: [MAP4_FLYER],
@@ -701,7 +697,6 @@ const MAP5_FLYER_B: readonly Vec2[] = [
 export const MAP_5: MapDef = {
   id: 'kadim-harabe',
   // `M8-P02` — **GEÇİCİ görsel**, brif `docs/plan/M8-sanat-brifi.md`.
-  background: 'lazy/kadim-harabe.webp',
   paths: [MAP5_KOL_A, MAP5_KOL_B],
   buildSpots: MAP5_BUILD_SPOTS,
   flyerPaths: [MAP5_FLYER_A, MAP5_FLYER_B],
@@ -822,7 +817,6 @@ const MAP6_FLYER: readonly Vec2[] = [
  */
 export const MAP_6: MapDef = {
   id: 'sisli-bataklik',
-  background: 'lazy/sisli-bataklik.webp',
   paths: [MAP6_PATH],
   buildSpots: MAP6_BUILD_SPOTS,
   flyerPaths: [MAP6_FLYER],
