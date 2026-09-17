@@ -319,19 +319,39 @@ ayrık yollu haritalarda ilerleme yüzdesi karşılaştırılabilir değildir.
 `hp` ve `altın` değerleri **temel** değerlerdir; harita çarpanlarıyla
 ölçeklenir (bkz. §7, §9).
 
-| Düşman | HP | Hız | Zırh | B.Direnç | Altın | Puan | Özellik |
-|---|---|---|---|---|---|---|---|
-| Goblin | 45 | 60 | 0 | 0 | 3 | 1 | — |
-| Ork Savaşçı | 110 | 45 | 2 | 0 | 6 | 2 | Zırh kavramını tanıtır |
-| Zırhlı Ork | 160 | 38 | 8 | 0 | 12 | 4 | Fiziksele dirençli |
-| Harpi | 70 | 75 | 0 | 0 | 9 | 3 | **Uçar** — yolu takip etmez, engellenemez |
-| Kurt Binicisi | 60 | 110 | 1 | 0 | 9 | 3 | Çok hızlı |
-| Şaman | 130 | 42 | 0 | 0.40 | 15 | 5 | Yakındaki düşmanlara 8 HP/sn iyileştirme |
-| Trol | **400** | 30 | 4 | 0 | 24 | 8 | 6 HP/sn yenilenme |
-| Örümcek Ana | 150 | 50 | 0 | 0.20 | 18 | 6 | Ölünce 3× yavru |
-| Örümcek Yavrusu | 30 | 90 | 0 | 0 | 0 | 0 | Yalnız bölünmeden doğar; altın/puan **vermez** |
-| Tünelci | 90 | 70 | 1 | 0 | 9 | 3 | **Yeraltı geçişi** — yolun %15-%60'ında hedeflenemez (`M12`) |
-| **Ogre Şef** (boss) | **700**\* | 28 | 10 | 0.25 | 60 | 25 | Kışla askerlerini tek vuruşta öldürür |
+<!-- ÜRETİLEN:dusman -->
+| Düşman | HP | Hız | Zırh | B.Direnç | Altın | Puan | Sızma | Özellik |
+|---|---|---|---|---|---|---|---|---|
+| Goblin | 45 | 60 | 0 | 0 | 3 | 1 | 1 | — |
+| Ork Savaşçı | 110 | 45 | 2 | 0 | 6 | 2 | 1 | — |
+| Kurt Binicisi | 60 | 110 | 1 | 0 | 9 | 3 | 1 | — |
+| Harpi | 70 | 75 | 0 | 0 | 9 | 3 | 1 | **Uçar** — yolu takip etmez, engellenemez |
+| Zırhlı Ork | 160 | 38 | 8 | 0 | 12 | 4 | 1 | — |
+| Şaman | 130 | 42 | 0 | 0,4 | 15 | 5 | 1 | Yakındakilere 8 HP/sn iyileştirme (yarıçap 90) |
+| Trol | 400 | 30 | 4 | 0 | 24 | 8 | 2 | 6 HP/sn yenilenme |
+| Örümcek Ana | 150 | 50 | 0 | 0,2 | 18 | 6 | 2 | Ölünce 3× yavru |
+| Tünelci | 90 | 70 | 1 | 0 | 9 | 3 | 1 | **Yeraltı geçişi** — yolun %15-%60 arasında hedeflenemez |
+| **Ogre Şef** (boss) | 700 | 28 | 10 | 0,25 | 60 | 25 | 10 | — |
+| Örümcek Yavrusu | 30 | 90 | 0 | 0 | 0 | 0 | 1 | — |
+<!-- /ÜRETİLEN:dusman -->
+
+> **Yukarıdaki tablo ÜRETİLİYOR** (`node scripts/kurallar.mjs`) — sayılar
+> `data/enemies.ts`'ten okunuyor, elle düzenlenmiyor. `M48`'de bu tablonun
+> iki satırı eksikti (Tünelci `M12`'den beri, Örümcek Yavrusu hiç);
+> `M49`'da üreticiye devredildi ki bir daha eskimesin.
+
+**Kadronun tasarım rolleri** (bunlar veri değil, o yüzden elle yazılıyor):
+
+- **Ork Savaşçı** — zırh kavramını tanıtır; oyuncunun ilk "hasar tipi
+  önemli" anı.
+- **Zırhlı Ork** — fiziksele dirençli; Büyü ailesinin varlık sebebi.
+- **Kurt Binicisi** — çok hızlı; yavaşlatmanın ve yol boyu kapsamanın
+  değerini gösterir.
+- **Ogre Şef** — kışla askerlerini tek vuruşta öldürür, yani "tut ve
+  erit" stratejisini bozar. HP'si **harita başına türetiliyor**
+  (`data/bossScaling.BOSS_HP_BY_MAP`, §12); tablodaki değer harita 1'in.
+- **Örümcek Yavrusu** — altın ve puan **vermez**: yavrudan altın gelseydi
+  "altın = 3 × puan" oranı bozulurdu.
 
 \* Boss HP'si **harita başına türetiliyor**, bu sütundaki 700 yalnız harita
 1'in değeri — tablo `data/bossScaling.BOSS_HP_BY_MAP` içinde ve §12'de
@@ -678,19 +698,20 @@ kenar bir kez parlar.
 > **`M48` — bu tablo iki türlü eskimişti.** (1) **Üç harita eksikti:** M8
 > ile 4-6 geldi, tablo üçte kaldı. (2) **Listelediği sayıların yarısı
 > yanlıştı:** harita 2 HP `1,3` (gerçek 1,6) ve altın `1,6` (gerçek 2,2,
-> `M20`/S118), harita 3 HP `3,0` (gerçek 2,8). Aşağıdaki değerlerin hepsi
-> `src/data/maps.ts`'ten okundu. **Elle güncellenen bir kopya olduğunu
-> unutma** — çarpan değiştiren her tur buraya da uğramalı; tek doğru kaynak
-> `maps.ts`, üretilen özet `docs/KURALLAR.md`.
+> `M20`/S118), harita 3 HP `3,0` (gerçek 2,8). **`M49`'da üreticiye
+> devredildi** — tablo artık `node scripts/kurallar.mjs` ile `maps.ts`'ten
+> üretiliyor, elle düzenlenmiyor ve bir daha eskiyemez.
 
+<!-- ÜRETİLEN:harita -->
 | # | Ad | Yapı noktası | Giriş | HP çarpanı | Altın çarpanı | Başlangıç altını |
 |---|---|---|---|---|---|---|
-| 1 | Değirmen Geçidi | 8 | 1 | 1,0 | 1,0 | 280 |
+| 1 | Değirmen Geçidi | 8 | 1 | 1 | 1 | 280 |
 | 2 | Taş Köprü | 10 | 2 | 1,6 | 2,2 | 616 |
 | 3 | Kül Ovası | 12 | 2 | 2,8 | 3,8 | 1064 |
 | 4 | Kar Geçidi | 12 | 1 | 7,35 | 7,8 | 2184 |
 | 5 | Kadim Harabe | 15 | 2 | 10,2 | 10,2 | 2856 |
-| 6 | Sisli Bataklık | 15 | 1 | 7,4 | 11,0 | 3080 |
+| 6 | Sisli Bataklık | 15 | 1 | 7,4 | 11 | 3080 |
+<!-- /ÜRETİLEN:harita -->
 
 Tema ve yol geometrisi tablodan **çıkarıldı**: ikisi de `maps.ts` içinde
 waypoint dizisi ve arka plan olarak yaşıyor, burada ikinci bir kopya
@@ -718,21 +739,24 @@ düzeltildi:
 
 - **S87 → S91 — ölçülen zorluk rampası (Zor'da can kaybı):**
 
-  > **`M47` — bu tablo M14'ten beri eskiydi ve altı satırın beşi yanlıştı.**
+  > **`M47` — bu tablo M14'ten beri eskiydi ve altı satırın beşi yanlıştı;
+> `M49`'da ÜRETİCİYE devredildi.**
   > Aradan M14 (S101), M18 (S113), M20 (S118), M22 (S119) ve M47 (S95)
   > geçti; her biri çarpanları yeniden türetti, tablo hiç güncellenmedi.
   > Aşağıdaki değerler ölçülerek yenilendi. **Zor sütunu kaldırıldı:** Zor
   > yalnız başlangıç canını değiştiriyor (`hpScale` 1,0), yani can kaybı
   > Normal ile **birebir aynı** — ayrı sütun olması yanıltıcıydı.
 
-  | Harita | HP çarpanı | Altın çarpanı | Normal = Zor | Kolay (×0,80) |
-  |---|---|---|---|---|
-  | 1 Değirmen Geçidi | 1,0 | 1,0 | 0 | 0 |
-  | 2 Taş Köprü | 1,6 | 2,2 | 0 | 0 |
-  | 3 Kül Ovası | 2,8 | 3,8 | 5 | 5 |
-  | 4 Kar Geçidi | **7,35** | **7,8** | 12 | 4 |
-  | 5 Kadim Harabe | **10,2** | **10,2** | 14 | 4 |
-  | 6 Sisli Bataklık | **7,4** | 11,0 | 13 | 1 |
+<!-- ÜRETİLEN:rampa -->
+| Harita | HP çarpanı | Altın çarpanı | Normal = Zor | Kolay (×0,80) |
+|---|---|---|---|---|
+| 1 · Değirmen Geçidi | 1 | 1 | 0 | 0 |
+| 2 · Taş Köprü | 1,6 | 2,2 | 0 | 0 |
+| 3 · Kül Ovası | 2,8 | 3,8 | 5 | 5 |
+| 4 · Kar Geçidi | 7,35 | 7,8 | 12 | 6 |
+| 5 · Kadim Harabe | 10,2 | 10,2 | 14 | 4 |
+| 6 · Sisli Bataklık | 7,4 | 11 | 13 | 1 |
+<!-- /ÜRETİLEN:rampa -->
 
   **`M14` (S101): dört çarpan yeniden türetildi.** Erken başlatma bonusu
   altın çarpanını izlemeye başlayınca geç haritaların referans tahtası
@@ -899,14 +923,16 @@ hiçbir tahta bunu indiremezdi (M7'de ölçüldü: Kısıt A oranı %165 ve %282
 > `bossScaling.test` yalnız `0,3 < oran < 1` bandını arıyor (tavanı aşan
 > boss öldürülemez, üçte birin altındaki dövüş değil).
 
+<!-- ÜRETİLEN:boss -->
 | Harita | Zırh | Boss HP | Tavanın oranı (ölçülen) |
 |---|---|---|---|
-| 1 Değirmen Geçidi | 10 | 700 | %87,7 |
-| 2 Taş Köprü | 5 | 993 | %77,0 |
-| 3 Kül Ovası | 2 | 1322 | %58,7 |
-| 4 Kar Geçidi | 2 | 3000 | %75,7 |
-| 5 Kadim Harabe | 2 | 1962 | %39,2 |
-| 6 Sisli Bataklık | 2 | 2100 | %35,6 |
+| 1 · Değirmen Geçidi | 10 | 700 | %87,7 |
+| 2 · Taş Köprü | 5 | 993 | %77 |
+| 3 · Kül Ovası | 2 | 1322 | %58,7 |
+| 4 · Kar Geçidi | 2 | 3000 | %75,7 |
+| 5 · Kadim Harabe | 2 | 1962 | %39,2 |
+| 6 · Sisli Bataklık | 2 | 2100 | %35,6 |
+<!-- /ÜRETİLEN:boss -->
 
 **`M11` Faz 5 (S95): dördü de yeniden türetildi** (712/886/1709/2189 →
 859/979/1956/2492). Okçu ailesi güçlenince her haritanın tavanı

@@ -239,6 +239,33 @@ const HARITA_GOSTERIM_ADI = {
   'sisli-bataklik': 'Sisli Bataklık',
 };
 /** Zorluk adını olduğu gibi yazan küçük yardımcı (harita adı tablosuyla karışmasın). */
+/**
+ * Düşman gösterim adları. `HARITA_GOSTERIM_ADI` ile aynı disiplin: eksik ad
+ * derlemeyi **durduruyor**, çünkü ham kimlik (`orkSavasci`) tasarım
+ * dokümanında okunmuyor ve sessizce oraya sızmıştı (`M49`).
+ */
+const DUSMAN_GOSTERIM_ADI = {
+  goblin: 'Goblin',
+  orkSavasci: 'Ork Savaşçı',
+  kurtBinicisi: 'Kurt Binicisi',
+  harpi: 'Harpi',
+  zirhliOrk: 'Zırhlı Ork',
+  saman: 'Şaman',
+  trol: 'Trol',
+  orumcekAna: 'Örümcek Ana',
+  orumcekYavrusu: 'Örümcek Yavrusu',
+  tunelci: 'Tünelci',
+  ogreSef: '**Ogre Şef** (boss)',
+};
+
+const dusmanAdi = (id) => {
+  const ad = DUSMAN_GOSTERIM_ADI[id];
+  if (ad === undefined) {
+    throw new Error(`kurallar.mjs: '${id}' için gösterim adı yok — DUSMAN_GOSTERIM_ADI'ya ekle.`);
+  }
+  return ad;
+};
+
 const HARITA_ADI_YOK = (x) => String(x);
 
 const HARITA_ADI = Object.fromEntries(
@@ -264,6 +291,127 @@ const y = (...s) => b.push(...s);
 
 writeFileSync('docs/KURALLAR.md', olustur(), 'utf8');
 process.stdout.write('docs/KURALLAR.md yazıldı\n');
+
+gameDesignGuncelle();
+
+/**
+ * **`GAME-DESIGN.md`'nin SAYISAL tabloları da buradan üretiliyor** — `M49`.
+ *
+ * Neden gerekti: `KURALLAR.md` bu betikten üretildiği için hiç ayrışmıyor,
+ * ama `GAME-DESIGN.md` elle yazılıyordu ve `M48`'de **dört tablosu birden**
+ * bozuk çıktı — harita tablosu üç haritayı hiç listelemiyordu (M8'den beri)
+ * ve boss tablosunun altı satırından beşi yanlıştı. Aradan M14, M18, M20,
+ * M22, M47 geçmiş, her biri çarpanları yeniden türetmiş, tablolar hiç
+ * güncellenmemişti.
+ *
+ * Doküman **elle yazılmaya devam ediyor** — üretilen yalnız işaretli
+ * bloklar. Sınır şu: **bir sayı `src/data`'dan okunabiliyorsa üretilir,
+ * okunamıyorsa (tema, yol geometrisi, tasarım gerekçesi) elle kalır.**
+ * Tasarım dokümanının değeri düzyazısında; sayıları da ele geçirmek onu
+ * ikinci bir `KURALLAR.md` yapardı.
+ *
+ * Eksik işaretçi **sessizce geçilmiyor**: blok bulunamazsa derleme durur,
+ * yoksa tablo yeniden elle düzenlenmeye başlar ve `M48` tekrarlanır.
+ */
+function gameDesignGuncelle() {
+  const yol = 'docs/GAME-DESIGN.md';
+  let metin = readFileSync(yol, 'utf8');
+  const bloklar = {
+    harita: haritaTablosu(),
+    dusman: dusmanTablosu(),
+    boss: bossTablosu(),
+    rampa: rampaTablosu(),
+  };
+  for (const [ad, icerik] of Object.entries(bloklar)) {
+    const bas = `<!-- ÜRETİLEN:${ad} -->`;
+    const son = `<!-- /ÜRETİLEN:${ad} -->`;
+    const i = metin.indexOf(bas);
+    const j = metin.indexOf(son);
+    if (i < 0 || j < 0 || j < i) {
+      throw new Error(
+        `GAME-DESIGN.md: "${ad}" işaretçisi yok ya da bozuk — tablo elle düzenlenmiş olabilir`,
+      );
+    }
+    metin = metin.slice(0, i + bas.length) + '\n' + icerik + '\n' + metin.slice(j);
+  }
+  writeFileSync(yol, metin, 'utf8');
+  process.stdout.write('docs/GAME-DESIGN.md tabloları güncellendi\n');
+}
+
+function haritaTablosu() {
+  return tablo(
+    ['#', 'Ad', 'Yapı noktası', 'Giriş', 'HP çarpanı', 'Altın çarpanı', 'Başlangıç altını'],
+    D.haritalar.map((m, i) => [
+      String(i + 1),
+      HARITA_GOSTERIM_ADI[m.id],
+      String(m.spots),
+      String(m.kollar),
+      n(m.hpMultiplier),
+      n(m.goldMultiplier),
+      String(m.startGold),
+    ]),
+  );
+}
+
+function dusmanTablosu() {
+  const ozellik = (e) => {
+    if (e.flying) return '**Uçar** — yolu takip etmez, engellenemez';
+    const a = e.ability;
+    if (!a) return '—';
+    if (a.kind === 'heal') return `Yakındakilere ${a.hps} HP/sn iyileştirme (yarıçap ${a.radius})`;
+    if (a.kind === 'regen') return `${a.hps} HP/sn yenilenme`;
+    if (a.kind === 'split') return `Ölünce ${a.count}× yavru`;
+    if (a.kind === 'burrow')
+      return `**Yeraltı geçişi** — yolun %${a.fromFraction * 100}-%${a.toFraction * 100} arasında hedeflenemez`;
+    if (a.kind === 'summon') return `Canı düştükçe ${a.count} yandaş çağırır`;
+    return a.kind;
+  };
+  return tablo(
+    ['Düşman', 'HP', 'Hız', 'Zırh', 'B.Direnç', 'Altın', 'Puan', 'Sızma', 'Özellik'],
+    D.dusmanlar.map((e) => [
+      dusmanAdi(e.id),
+      String(e.hp),
+      String(e.speed),
+      String(e.armor),
+      n(e.magicResist),
+      String(e.gold),
+      String(e.points),
+      String(e.leakDamage),
+      ozellik(e),
+    ]),
+  );
+}
+
+function bossTablosu() {
+  return tablo(
+    ['Harita', 'Zırh', 'Boss HP', 'Tavanın oranı (ölçülen)'],
+    D.haritalar.map((m, i) => {
+      const k = m.kisitA.find((x) => x.id === 'ogreSef');
+      return [
+        HARITA_ADI[m.id],
+        String(m.bossZirh),
+        String(m.bossHp),
+        k ? yuzde(k.oran) : '—',
+      ];
+    }),
+  );
+}
+
+function rampaTablosu() {
+  const seviye = (ad) => D.zorluk.seviyeler.find((z) => z.ad === ad);
+  const normal = seviye('normal');
+  const kolay = seviye('kolay');
+  return tablo(
+    ['Harita', 'HP çarpanı', 'Altın çarpanı', 'Normal = Zor', 'Kolay (×0,80)'],
+    D.haritalar.map((m, i) => [
+      HARITA_ADI[m.id],
+      n(m.hpMultiplier),
+      n(m.goldMultiplier),
+      String(normal?.canKaybi?.[i] ?? '—'),
+      String(kolay?.canKaybi?.[i] ?? '—'),
+    ]),
+  );
+}
 
 function olustur() {
   y(`# Kale Nöbeti — Kural ve Sayı Referansı`, '');
