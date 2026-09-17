@@ -68,6 +68,17 @@ export class GameClock {
    *   dalga 1: 1×'te ve 2×'te ikisi de sızıntısız bitti (can 12 → 12),
    *   2× yalnız yarı gerçek zamanda vardı. `scaledDelta` her yerde
    *   tutarlı kullanılıyor demek.
+   *
+   *   **`M63` (S132) — bu madde YETERSİZ, yanlış değil.** Ölçüm dalga
+   *   1'de, üç kuleyle yapılmış; orada saha her dalga sonunda
+   *   boşalıyor. Geç haritalarda öyle değil: `M16`'nın örtüşen
+   *   dalgaları yüzünden harita 4-5-6'da yolda sürekli 5-13 düşmanlık
+   *   bir **kuyruk** duruyor, ve `TowerSystem` kare başına en fazla bir
+   *   atış yaptığı için her atışın 0-dt gecikmesi o kuyruk boyunca
+   *   birikiyor. 2× etkin adımı ikiye katladığı için birikimi de
+   *   ikiye katlıyor: Kar Geçidi 1×'te 60-144 Hz arası sabit **12**
+   *   can, 2×'te aynı bantta **10 ile 17** arasında geziniyor.
+   *   Ayrıntı ve düzeltme yönü `OPEN-QUESTIONS.md` S132.
    * - **Kare hızı düşmüyor:** 1× ve 2×'te 59 FPS.
    * - **Mermi hedefi atlamıyor.** 2×'te kare başına adım iki katına
    *   çıkıyor ama `ProjectileSystem` nokta-mesafe değil **süpürülmüş**
