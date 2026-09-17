@@ -888,11 +888,30 @@ export const MAP_6: MapDef = {
   // adımda 10 can zıplıyor. Harita 6 bir kadran değil uçurum — tahta
   // bossu ya öldürüyor (≤15) ya öldürmüyor (≥21).
   //
-  // S109'un harita 2 için vardığı yerin aynısı (*"ya yetiyor ya çöküyor;
-  // arası yok"*) ve çözüm de aynı: sayıyı sivri uca oturtmak yerine
-  // iddianın kapsamı ölçüye göre yazıldı (`difficulty.test`, S131).
-  // Harita 6'nın zorluğu çarpanda değil **kadroda**: Tünelci ve çağıran
-  // boss.
+  // S109'un harita 2 için vardığı yerin aynısı: *"ya yetiyor ya çöküyor;
+  // arası yok"*. Yani harita 6 çarpandan ayarlanamaz.
+  //
+  // **`M62` — zorluk KADRODAN geldi, sahibin isteğiyle.** Çarpan yine
+  // ellenmedi; değişen iki şey `waves.ts`'te:
+  //   · dalga 4  `orkSavasci3+tünelci3` → `tünelci3+goblin6` (S127, §7)
+  //   · dalga 9  `zirhliOrk2` → `trol1` (aynı puan, iki katı sızıntı bedeli)
+  //
+  // Tarama öğreticiydi: sabit puan bütçesinde **tip değiştirmek** karışık
+  // tahtayı zor kıpırdatıyor. Örümcek Ana (kadroya eklenerek), Şaman,
+  // fazladan Tünelci, Trol — hepsi denendi ve karışık tahta 9-12
+  // arasında kaldı, çünkü hangi tipi getirirsen bir aile ona cevap
+  // veriyor. Denenenlerin çoğu tek bir aileyi uçuruma atıyordu
+  // (Örümcek → Okçu 21, yalnız-Tünelci dalga 5 → Top 21), yani bir ölü
+  // aileyi başkasıyla takas etmek olurdu.
+  //
+  // Kıpırdatan tek şey **sızıntı başına bedel** oldu: Trol'ün
+  // `leakDamage` değeri 2, Zırhlı Ork'unki 1. Sonuç 9 → **12**, ve
+  // bandın kendisi de daraldı — 56-64 fps arasında `12·12·12·14·12`,
+  // yani harita 6 artık zor haritaların **en kararlısı** (harita 5
+  // hâlâ bir noktada 10'a düşüyor).
+  //
+  // Harita 6'nın zorluğu bundan sonra da çarpanda değil **kadroda**:
+  // Tünelci, çağıran boss, ve son dalgalarda yoğunlaşan Trol.
   hpMultiplier: 7.4, // S109 → S113 → S119 → S95/M47 → S130/S131 (değişmedi)
   goldMultiplier: 11.0,
   startGold: Math.round(280 * 11.0),

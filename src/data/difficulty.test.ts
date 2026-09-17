@@ -9,7 +9,7 @@ import {
   ceilingAPerBranch,
   effectiveHp,
 } from '../systems/balanceChecks';
-import { referansCanKaybi } from '../systems/referansOlcum';
+import { referansCanKaybiOrtanca } from '../systems/referansOlcum';
 import { measureCoverage } from '../util/coverage';
 import type { EnemyId } from '../types/enemy';
 import type { MapDef } from '../types/map';
@@ -56,8 +56,25 @@ function enKotuKisitA(m: MapDef, hpScale: number): { oran: number; kim: string }
  * başlıyor, saha boşalınca değil). Yani tahta tam erken bonusuyla
  * zenginleşiyor, oyuncu o bonusu hiç kazanmıyordu.
  */
+const bellek = new Map<string, number>();
+
+/**
+ * **Ölçüt BANT ORTANCASI — S130 (`M60`), buraya `M62`'de taşındı.**
+ *
+ * Buradaki eşiklerin hepsi tek canlık farklara bakıyor (≥ 12, ≤ 10) ve
+ * `M59`-`M60` ölçümün o mertebede kare süresine bağlı olduğunu
+ * gösterdi: harita 6 aynı dengede 55-65 fps arasında 10 ile 13 arası
+ * değerler veriyor. Tek koşu, iddiayı dengeye değil şansa bağlıyordu.
+ * `kisitB` ve `yetenekKatkisi` `M60`/`M61`'de taşınmıştı; bu dosya da
+ * `M62`'nin denge turunda taşındı.
+ */
 function canKaybi(m: MapDef, hpScale: number): number {
-  return referansCanKaybi(m, hpScale);
+  const anahtar = `${m.id}|${hpScale}`;
+  const hazir = bellek.get(anahtar);
+  if (hazir !== undefined) return hazir;
+  const deger = referansCanKaybiOrtanca(m, hpScale);
+  bellek.set(anahtar, deger);
+  return deger;
 }
 
 describe('DIFFICULTY — M8-T11 (S80)', () => {
@@ -129,47 +146,31 @@ describe('DIFFICULTY — M8-T11 (S80)', () => {
    * 8 çıkmıştı. S87'de harita çarpanları yeniden türetildi ve iddia
    * **geri kondu**.
    *
-   * ## S131 — harita 6 buraya KARAR'la değil `slice`'la girmişti (`M61`)
+   * ## S131 — harita 6 ÇARPANDAN değil KADRODAN zorlaştırıldı (`M62`)
    *
-   * Liste `MAPS.slice(3)` idi ve harita 6'yı da kapsıyordu. Bu bir
-   * tasarım kararı değil: `slice(3)` `M8-T11`'de yazıldı, harita 6
-   * `M12`'de geldi (git ile doğrulandı — `3dfd852`, `b3b7bc8`'in
-   * atası). Başlık o günden beri "harita 4 ve 5" diyor; harita 6
-   * listeye **süpürüldü**, konmadı. CLAUDE.md TIER 2'nin saydığı kusur
-   * sınıfının tersten hâli: liste kendiliğinden büyüdü, iddia
-   * büyümedi.
+   * `M61`'de Okçu'nun dal kuralı düzelince harita 6'nın referans
+   * tahtası güçlendi ve can kaybı 13 → 9'a indi, yani bu eşiğin altına.
+   * O turda eşik geçici olarak harita 6'yı kapsamaz yapılmıştı
+   * (`slice(3, 5)`); sahibi **geri aldırdı** ve haritanın kadrodan
+   * zorlaştırılmasını istedi. Doğru karar çıktı — eşik bugün yerinde.
    *
-   * Şart harita 6 için **ölçülerek reddedildi.** `M61`'de Okçu'nun dal
-   * kuralı düzelince (S131) harita 6'nın referans tahtası güçlendi ve
-   * can kaybı 13 → 9'a indi. Çarpan yeniden tarandı, 7,40-10,0 arası,
-   * hem üretim adımında hem bant ortancasında (`M60`) — **hiçbir değer
-   * 12-20 bandına oturmuyor:**
+   * Çarpanla düzeltmek zaten mümkün değildi: 7,40-10,0 arası iki
+   * tabanda birden tarandı, hiçbir değer 12-20 bandına oturmuyor çünkü
+   * sebep gürültü değil **boss eşiği** (7,70'te `ogreSef` sızıyor,
+   * toplam tek adımda 10 can zıplıyor).
    *
-   * ```
-   * çarpan   7,40  7,45  7,50  7,55  7,60  7,65  7,70   (üretim/ortanca)
-   * karışık  9/11 12/13 20/20 10/12 11/12 11/15 24/14
-   * ```
-   *
-   * Sebep gürültü değil **boss eşiği**: 7,70'te sızanların arasına
-   * `ogreSef` giriyor ve toplam tek adımda 10 can zıplıyor. Yani harita
-   * 6 bir kadran değil bir **uçurum** — tahta bossu ya öldürüyor (≤15)
-   * ya öldürmüyor (≥21), arası yok. S109'un harita 2 için yazdığı
-   * cümlenin birebir aynısı: *"ya yetiyor ya çöküyor; arası yok"*, ve
-   * oradaki çözüm de aynı olmuştu — iddiayı sivri uca oturtmak yerine
-   * **kapsamını ölçüye göre yazmak**.
-   *
-   * Harita 6'nın zorluğu zaten çarpanda değil **kadroda**: Tünelci
-   * (hedeflenemez pencere) ve çağıran boss. Bugünkü hâliyle Zor'da
-   * referans tahta harita 6'yı **bir can payla** geçiyor (11/12).
-   *
-   * **Sahibine sorulacak:** bu, şartın gevşemesi demek. Alternatifi
-   * çarpanı iki kırık komşunun arasındaki bir noktaya oturtmaktı ve
-   * S82/S84 bunu bir kez reddetti.
+   * Kadro tarafında ise tek bir şey işe yaradı ve gerekçesi öğretici:
+   * sabit puan bütçesinde **tip değiştirmek** karışık tahtayı zor
+   * kıpırdatıyor — Örümcek Ana, Şaman, fazladan Tünelci, hepsi denendi,
+   * karışık tahta 9-12 arasında kaldı, çünkü hangi tipi getirirsen bir
+   * aile ona cevap veriyor. Kıpırdatan şey **sızıntı başına bedel**
+   * oldu (`waves.ts` dalga 9: Zırhlı Ork ×2 → Trol ×1, aynı puan, iki
+   * katı `leakDamage`), ve dalga 4'ün §7 düzeltmesi (S127) onun üstüne
+   * bindi. Ölçüm: **9 → 12** (üretim adımı ve ortanca aynı).
    */
   it('Zor: harita 4 ve 5 referans tahtadan DAHA İYİSİNİ istiyor (S87)', () => {
     expect(DIFFICULTY.zor.startLives).toBe(12);
-    // `slice(3, 5)` — harita 6 hariç, gerekçesi üstte (S131).
-    for (const m of MAPS.slice(3, 5)) {
+    for (const m of MAPS.slice(3)) {
       expect(canKaybi(m, 1), m.id).toBeGreaterThanOrEqual(DIFFICULTY.zor.startLives);
     }
   });
