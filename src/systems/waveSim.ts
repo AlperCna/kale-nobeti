@@ -44,6 +44,7 @@ import { LineMover, PathMover, resetEnemyState } from './movers';
 import { ProjectileSystem } from './ProjectileSystem';
 import { EnemyAbilitySystem } from './EnemyAbilitySystem';
 import { applyEffect, emptyEffects, resetEffects, speedMultiplier, stepEffects } from './effects';
+import { SABIT_ADIM_MS } from './GameClock';
 import { TowerSystem } from './TowerSystem';
 import { WaveManager } from './WaveManager';
 import type { TowerEffect } from '../types/tower';
@@ -266,7 +267,7 @@ const MAX_STEPS_PER_WAVE = 20_000;
  * süresini koruyor. Varsayılan adımda davranış **birebir aynı**
  * (20.000 × 16,667 ms = 333,3 sn).
  */
-const MAX_SECONDS_PER_WAVE = (MAX_STEPS_PER_WAVE * (1000 / 60)) / 1000;
+const MAX_SECONDS_PER_WAVE = (MAX_STEPS_PER_WAVE * SABIT_ADIM_MS) / 1000;
 
 /**
  * `'sonBirkac'` politikasının eşiği: sahada bu kadar ya da daha az
@@ -287,7 +288,7 @@ function kosturDalgalar(
   waves: readonly Wave[],
   tahtaAl: (waveIndex: number) => ReferenceBoard,
   map: MapDef,
-  stepMs = 1000 / 60,
+  stepMs = SABIT_ADIM_MS,
   /**
    * Zorluk seviyesinin **doğum anındaki** ek HP çarpanı
    * (`DIFFICULTY[x].hpScale`). Varsayılan 1 — Normal ve Zor.
@@ -718,7 +719,7 @@ export function simulateWave(
   wave: Wave,
   board: ReferenceBoard,
   map: MapDef,
-  stepMs = 1000 / 60,
+  stepMs = SABIT_ADIM_MS,
   hpScale = 1,
   yetenekKullanimi: YetenekKullanimi = 'yok',
 ): SimResult {
@@ -741,7 +742,7 @@ export function simulateAllWaves(
   waves: readonly Wave[],
   boards: readonly ReferenceBoard[],
   map: MapDef,
-  stepMs = 1000 / 60,
+  stepMs = SABIT_ADIM_MS,
   /** Zorluk seviyesinin doğum çarpanı — bkz. `simulateWave` (S92). */
   hpScale = 1,
   /** Oyuncunun yetenekleri — varsayılan `'yok'`, bkz. `YetenekKullanimi`. */

@@ -26,11 +26,7 @@ import {
 } from '../data/waves';
 import { buildReferenceBoards } from './balanceChecks';
 import { simulateAllWaves } from './waveSim';
-import {
-  REFERANS_ERKEN_BONUSU,
-  REFERANS_POLITIKA,
-  referansCanKaybiOrtanca,
-} from './referansOlcum';
+import { REFERANS_ERKEN_BONUSU, REFERANS_POLITIKA, referansCanKaybi } from './referansOlcum';
 import { measureCoverage } from '../util/coverage';
 import { getEnemyForMap } from '../data/enemies';
 import type { EnemyId } from '../types/enemy';
@@ -174,8 +170,9 @@ describe('Kısıt B — düşman kırılımı', () => {
    * değişiyor.
    */
   it('**zorluk MONOTON** — çarpan değil, ölçülen can kaybı (M8-T04, S87, S130)', () => {
-    // Tek koşu değil, bant ortancası — S130.
-    const kayip = [MAP_1, MAP_2, MAP_3, MAP_4, MAP_5].map((m) => referansCanKaybiOrtanca(m));
+    // `M64` (S132): adım sabitlendi, bant ortancası söküldü — tek koşu
+    // artık oyunun kendisi. Rampa değişmedi: `0 · 0 · 5 · 12 · 14`.
+    const kayip = [MAP_1, MAP_2, MAP_3, MAP_4, MAP_5].map((m) => referansCanKaybi(m));
     // Hiçbir yerde AZALMIYOR.
     for (let i = 1; i < kayip.length; i++) {
       expect(kayip[i]!, `harita ${i + 1}: ${kayip.join(' → ')}`).toBeGreaterThanOrEqual(

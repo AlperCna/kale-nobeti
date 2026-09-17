@@ -36,13 +36,22 @@ import { wavesFor } from '../data/waves';
 import { getEnemyForMap } from '../data/enemies';
 import { buildReferenceBoards } from './balanceChecks';
 import { simulateAllWaves } from './waveSim';
-import { REFERANS_ERKEN_BONUSU, REFERANS_POLITIKA, REFERANS_FPS_BANDI } from './referansOlcum';
+import { REFERANS_ERKEN_BONUSU, REFERANS_POLITIKA } from './referansOlcum';
 import type { YetenekKullanimi } from './waveSim';
 import { measureCoverage } from '../util/coverage';
 import type { EnemyId } from '../types/enemy';
 import type { MapDef } from '../types/map';
 
-function tekKosu(m: MapDef, kullanim: YetenekKullanimi, adimMs: number): number {
+/**
+ * **`M64` (S132) — ölçüt yine TEK KOŞU, ama bu kez hak edilmiş.**
+ *
+ * `M60` bunu bant ortancasına taşımıştı çünkü ölçüm kare süresine
+ * bağlıydı ve tek koşu iddiayı şansa bağlıyordu. `M64` sebebi düzeltti:
+ * `GameClock` sabit adımlı biriktirici, oyunun adımı her ekranda
+ * `SABIT_ADIM_MS` ve `waveSim` de onu aynı sabitten alıyor. Ortalanacak
+ * bir bant kalmadı — tek koşu artık oyunun kendisi.
+ */
+function canKaybi(m: MapDef, kullanim: YetenekKullanimi): number {
   const w = wavesFor(m.id);
   const k = measureCoverage(m.paths, m.buildSpots, COVERAGE_REFERENCE_RANGE);
   // S109 — tahta ile simülasyon aynı oyuncuyu varsayıyor (`referansOlcum`).
@@ -50,7 +59,7 @@ function tekKosu(m: MapDef, kullanim: YetenekKullanimi, adimMs: number): number 
     w,
     buildReferenceBoards(m, w, k, REFERANS_ERKEN_BONUSU),
     m,
-    adimMs,
+    undefined,
     1,
     kullanim,
     REFERANS_POLITIKA,
@@ -63,33 +72,6 @@ function tekKosu(m: MapDef, kullanim: YetenekKullanimi, adimMs: number): number 
     }
   }
   return can;
-}
-
-const bellek = new Map<string, number>();
-
-/**
- * **Ölçüt BANT ORTANCASI — S130 (`M60`).**
- *
- * Buradaki iddialar bir yeteneğin diğerinden 1-2 can iyi olmasına
- * dayanıyor, yani ölçümün gürültüsü iddianın büyüklüğüyle aynı
- * mertebede. Tek kare süresiyle ölçüldüğünde `M61` bunu somut olarak
- * kırdı: Sisli Bataklık'ta 1/60 sn `ikisi 9 · meteor 8` veriyor (iddia
- * düşer), bant ortancası ise `ikisi 7 · meteor 8` (iddia durur).
- * Aradaki fark dengede değil hangi karede hangi merminin isabet
- * ettiğinde.
- *
- * Bellek zorunlu: beş kare süresi × altı harita × dört kullanım,
- * ve testler aynı çifti defalarca soruyor (S108 — bu dosyalar
- * eşik süresine takılıyordu).
- */
-function canKaybi(m: MapDef, kullanim: YetenekKullanimi): number {
-  const anahtar = `${m.id}|${kullanim}`;
-  const hazir = bellek.get(anahtar);
-  if (hazir !== undefined) return hazir;
-  const o = REFERANS_FPS_BANDI.map((fps) => tekKosu(m, kullanim, 1000 / fps)).sort((x, y) => x - y);
-  const deger = o[Math.floor(o.length / 2)]!;
-  bellek.set(anahtar, deger);
-  return deger;
 }
 
 /** `canKaybi`'nin ölçüm kardeşi — süre ve öldürülen sayısı da lazım (S111). */

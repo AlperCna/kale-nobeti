@@ -87,8 +87,10 @@ const sonuclar = [];
   const DELTA_IZIN = [
     // `update`'in Phaser imzası — kaçınılmaz.
     /^update\(_time:\s*number,\s*delta:\s*number\):\s*void\s*\{$/,
-    // Saati ilerletmek: ham `delta`nın var olma sebebi.
-    /^this\.clock\.tick\(delta\);$/,
+    // Saati ilerletmek: ham `delta`nın var olma sebebi. `M64`'ten beri
+    // `tick` kaç **sabit adım** koşulacağını döndürüyor (S132), ve
+    // hit-stop donmuşken saat hiç ilerlemiyor — ikisi tek satırda.
+    /^const adimlar = donduruldu \? 0 : this\.clock\.tick\(delta\);$/,
     // Hit-stop **oyun zamanını durduran** katman; sayacı durdurduğu saatle
     // ölçseydi hiç bitmezdi (`fx/HitStop.ts` başlığındaki gerekçe).
     /^const donduruldu = this\.hitStop\.update\(delta\);$/,
