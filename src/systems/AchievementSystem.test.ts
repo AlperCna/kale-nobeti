@@ -5,6 +5,7 @@ import type { RunEndContext } from './AchievementSystem';
 import { EventBus } from './EventBus';
 import { SaveSystem } from './SaveSystem';
 import { ACHIEVEMENTS } from '../data/achievements';
+import { STRINGS } from '../data/strings';
 import { MemoryStore, SAVE_KEY } from '../util/storage';
 
 function kur(): { bus: EventBus; sys: AchievementSystem; acilan: string[] } {
@@ -132,6 +133,33 @@ describe('AchievementSystem — el sonu', () => {
     expect(sys.has('flawless')).toBe(false);
     sys.checkRunEnd({ ...BOS_EL, won: true, lives: 20, startLives: 20 });
     expect(sys.has('flawless')).toBe(true);
+  });
+
+  it('EŞİK VERİDEN okunuyor — kodda sabit değil (M51)', () => {
+    // `meteor5` ve `endless20` eşiklerini kodda sabit taşıyordu, yani
+    // `data/achievements.ts`'teki `threshold` ölüydü. Bu test o bağı
+    // kuruyor: eşiğin bir eksiği açmamalı, tam eşik açmalı.
+    const esik = (id: string): number => ACHIEVEMENTS.find((a) => a.id === id)!.threshold;
+
+    const a = kur();
+    a.sys.checkRunEnd({ ...BOS_EL, endlessWave: esik('endless20') - 1 });
+    expect(a.sys.has('endless20')).toBe(false);
+    a.sys.checkRunEnd({ ...BOS_EL, endlessWave: esik('endless20') });
+    expect(a.sys.has('endless20')).toBe(true);
+  });
+
+  it('oyuncuya gösterilen METİN eşikle aynı sayıyı söylüyor (M51)', () => {
+    // Üçüncü kopya: eşik veride, şart kodda, sayı da metinde. İlk ikisi
+    // `M51`'de birleşti; bu test üçüncüsünü bağlıyor — eşiği değiştirip
+    // metni unutmak artık testi kırıyor.
+    for (const id of ['kill100', 'kill1000', 'meteor5', 'endless20']) {
+      const tanim = ACHIEVEMENTS.find((x) => x.id === id)!;
+      for (const dil of ['tr', 'en'] as const) {
+        const metin = STRINGS[dil][tanim.desc];
+        const sayilar = (metin.match(/[0-9]+/g) ?? []).map(Number);
+        expect(sayilar, `${id} · ${dil}: "${metin}"`).toContain(tanim.threshold);
+      }
+    }
   });
 
   it('kusursuz ZOR’da da kazanılabiliyor — eşik mutlak değil, turun kendi canı (M34)', () => {

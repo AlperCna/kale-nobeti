@@ -97,6 +97,27 @@ export class AchievementSystem {
   }
 
   /** El bitince çağrılır. @returns Bu çağrıda açılan başarımlar. */
+  /**
+   * **Tanımdaki eşik** — `M51`.
+   *
+   * `threshold` alanı `data/achievements.ts`'te her başarım için yazılı
+   * ama yalnız **sayaç** başarımlarında okunuyordu (`kill100`,
+   * `kill1000`); `meteor5` ve `endless20` eşiklerini **kodda sabit**
+   * taşıyordu (`hits >= 5`, `endlessWave >= 20`). Yani veri ölüydü:
+   * `threshold: 20`'yi değiştirmek hiçbir şey yapmıyordu, üstelik oyuncuya
+   * gösterilen metin (`achEndless20Desc`, "20. dalgaya ulaş") üçüncü bir
+   * kopyaydı. Bu, S80'in hata sınıfı — "veri ile kod farklı bir şeyi
+   * biliyor". Eşik artık tek adresten okunuyor.
+   *
+   * Tanımsız kimlik **sessizce 0 dönmüyor**: eşiği olmayan bir başarımı
+   * eşikle sınamak sessizce hep açık (ya da hiç açılmaz) yapardı.
+   */
+  #esik(id: string): number {
+    const t = ACHIEVEMENTS.find((a) => a.id === id)?.threshold;
+    if (t === undefined) throw new Error(`AchievementSystem: '${id}' tanımsız ya da eşiksiz`);
+    return t;
+  }
+
   checkRunEnd(ctx: RunEndContext): readonly string[] {
     const acilan: string[] = [];
     const dene = (id: string, kosul: boolean): void => {
@@ -110,7 +131,7 @@ export class AchievementSystem {
     // kalan can zaten 0, o yüzden `won` şartı olmazsa anlamsızlaşırdı.
     dene('flawless', ctx.won && ctx.lives >= ctx.startLives);
     dene('noSell', ctx.won && !ctx.sold);
-    dene('endless20', ctx.endlessWave >= 20);
+    dene('endless20', ctx.endlessWave >= this.#esik('endless20'));
     return acilan;
   }
 
@@ -134,7 +155,7 @@ export class AchievementSystem {
       }
     });
     bus.on('ability:cast', ({ id, hits }) => {
-      if (id === 'meteor' && hits >= 5) this.unlock('meteor5');
+      if (id === 'meteor' && hits >= this.#esik('meteor5')) this.unlock('meteor5');
       // `M23` — iki yetenek de aynı elde kullanıldı mı. Ölçüm ikisinin
       // birlikte en iyi sonucu verdiğini söylüyor (`yetenekKatkisi`);
       // başarım oyuncuya o denemeyi öneriyor.
