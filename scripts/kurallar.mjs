@@ -325,6 +325,7 @@ function gameDesignGuncelle() {
     'kule-top': kuleTablosu('top'),
     'kule-buyu': kuleTablosu('buyu'),
     'kule-kisla': kislaTablosu(),
+    kadro: kadroTablosu(),
   };
   for (const [ad, icerik] of Object.entries(bloklar)) {
     const bas = `<!-- ÜRETİLEN:${ad} -->`;
@@ -448,6 +449,29 @@ function kislaTablosu() {
       String(k.soldierDps), n(k.respawnSeconds),
       k.shield ? `kalkan ${k.shield}` : k.evasion ? `kaçınma %${Math.round(k.evasion * 100)}` : '—',
     ]),
+  );
+}
+
+/**
+ * **Harita başına YENİ tanıtılan düşmanlar** — `M50`.
+ *
+ * Elle yazılıyken üç haritada kalmıştı (harita 4-6 `M8`'de geldi, tablo
+ * büyümedi). Sütun tamamen türetilebilir: her haritanın `enemyRoster`'ı
+ * ile önceki haritaların birleşimi arasındaki **fark**.
+ *
+ * `orumcekYavrusu` listeden çıkarılıyor: kadroda var ama dalgaya elle
+ * konmuyor (yalnız Örümcek Ana bölününce doğuyor), yani "bu haritada
+ * tanıtılan düşman" değil.
+ */
+function kadroTablosu() {
+  const gorulen = new Set();
+  return tablo(
+    ['Harita', 'Yeni düşmanlar'],
+    D.haritalar.map((m) => {
+      const yeni = m.roster.filter((id) => id !== 'orumcekYavrusu' && !gorulen.has(id));
+      for (const id of m.roster) gorulen.add(id);
+      return [HARITA_ADI[m.id], yeni.length ? yeni.map(dusmanAdi).join(', ') : '— (yeni tip yok)'];
+    }),
   );
 }
 

@@ -385,6 +385,15 @@ Bu iki sayı önceden `~300 px kapsanan yol` **varsayımıyla** türetilmişti v
 o varsayım `research/03` §3'ün "≥ 450 px" kriteriyle çelişiyordu. M1'de
 Harita 1 çizildi ve kapsama ölçüldü: **296,3 px** (menzil 150).
 
+> **Bu tablo bir ÖLÇÜM KAYDI, referans değil** (`M50`). `M1`'de harita 1
+> çizilip kapsama ölçüldüğünde alınmış ve *"450 px mi 300 px mi"*
+> tartışmasını kapatan kanıt bu. **Bugünkü değerler farklı** — boss oranı
+> artık %78,7 değil **%87,7** (çarpanlar M14/M18/M20/M22/M47'de yeniden
+> türetildi). Güncel sayılar için üretilen tabloya bak (§12 boss
+> ölçeklemesi) ya da `docs/KURALLAR.md`. Buradaki sayılar **bilerek
+> donduruldu**: argümanın dayandığı ölçüm değişirse argüman okunamaz hâle
+> gelir.
+
 | Düşman | Menzilde süre | ΣDPS | Tavan | Etkin HP | Oran |
 |---|---|---|---|---|---|
 | Ogre Şef | 10,58 sn | 84 | **889** | 700 | **%78,7** ✓ hedef %75-85 |
@@ -439,11 +448,38 @@ altının kullanım değeri düşük.
 
 Mekanik erken, uç örneği geç tanıtılır (Kingdom Rush kalıbı):
 
-| Harita | Yeni düşmanlar | Tanıtılan kavram |
+<!-- ÜRETİLEN:kadro -->
+| Harita | Yeni düşmanlar |
+|---|---|
+| 1 · Değirmen Geçidi | Goblin, Ork Savaşçı, Kurt Binicisi, Harpi, **Ogre Şef** (boss) |
+| 2 · Taş Köprü | Zırhlı Ork, Şaman |
+| 3 · Kül Ovası | Trol, Örümcek Ana |
+| 4 · Kar Geçidi | — (yeni tip yok) |
+| 5 · Kadim Harabe | — (yeni tip yok) |
+| 6 · Sisli Bataklık | Tünelci |
+<!-- /ÜRETİLEN:kadro -->
+
+> **Yukarıdaki tablo ÜRETİLİYOR** — sütun `enemyRoster` farkından
+> türetiliyor (`M50`). Elle yazılıyken **üç haritada kalmıştı**; harita
+> 4-6 `M8`'de geldi, tablo büyümedi.
+
+**Her harita ne tanıtıyor** (bu düzyazı veriden türetilemez, elle yazılı):
+
+| Harita | Tanıtılan kavram | Nasıl |
 |---|---|---|
-| 1 | Goblin, Ork Savaşçı, Kurt Binicisi, Harpi, Ogre Şef | Zırh (hafif, 2), hız, uçan |
-| 2 | + Zırhlı Ork, Şaman | Ağır zırh (8), büyü direnci, iyileştirme |
-| 3 | + Trol, Örümcek Ana | Yenilenme, bölünme, çoklu giriş |
+| 1 | Zırh (hafif, 2), hız, uçan | yeni tip |
+| 2 | Ağır zırh (8), büyü direnci, iyileştirme | yeni tip |
+| 3 | Yenilenme, bölünme, çoklu giriş | yeni tip + harita geometrisi |
+| 4 | **Buz kalkanı** | mevcut tipe **değiştirici** (`orkSavasci` + `KAR_GECIDI_KALKANI`) |
+| 5 | **Boss ikinci evresi** | bossa değiştirici (`KADIM_HARABE_EVRE2`) |
+| 6 | **Yeraltı geçişi** + **çağırma** | yeni tip (Tünelci) **ve** bossa değiştirici |
+
+Üretilen tablonun ortaya çıkardığı şey: **harita 4 ve 5 hiç yeni düşman
+tipi tanıtmıyor.** Bu bir eksiklik değil, bilinçli bir kalıp — geç
+haritalar yeni *tip* yerine tanıdık tipe **değiştirici** takıyor
+(kalkan, ikinci evre). Oyuncu yeni bir silüet öğrenmek yerine bildiği
+silüetin kuralının değiştiğini öğreniyor. `M10`'un kararı, `M12`/`M13`
+onu bozmadan üstüne yeni tip **ve** değiştirici birden koydu.
 
 Harita 1'in 10 dalgasına 9 düşman tipi sıkıştırmak okunabilirliği öldürür.
 
@@ -883,6 +919,10 @@ ve referans tahta sabit tutulup gereken ortalama kapsama çıkarıldı
 kıvıracağımdır" demenin karşılığı.
 
 **Ölçülen menzil-kapsama eğrisi (Harita 1):**
+
+> **Ölçüm kaydı** (`M50` etiketi): harita 1'in eğrisi, `M1`'de alındı.
+> Argümanı taşıyor ("menzil büyüdükçe oran yükseliyor"), güncel referans
+> değil.
 
 | Menzil | Ortalama kapsama | `ort ÷ 2r` |
 |---|---|---|
