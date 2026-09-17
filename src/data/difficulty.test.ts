@@ -128,6 +128,18 @@ describe('DIFFICULTY — M8-T11 (S80)', () => {
    * (S87) çünkü `waveSim`'in üç körlüğü kapanınca gerçek değerler 3 ve
    * 8 çıkmıştı. S87'de harita çarpanları yeniden türetildi ve iddia
    * **geri kondu**.
+   *
+   * ## S130 — harita 6 burada TEK KARE SÜRESİNE borçlu (`M60`)
+   *
+   * Liste `MAPS.slice(3)`, yani harita 6 da dahil. Harita 6 bu eşiği
+   * üretim adımında 13 ile geçiyor; 55-65 fps bandının **ortancası ise
+   * 11**, yani eşiğin altında. İddia harita 4 ve 5 için sağlam (ortanca
+   * 12 ve 14), harita 6 için değil.
+   *
+   * Sağlama ortancaya taşınmadı, çünkü taşımak onu **kırardı** ve
+   * düzeltecek bir çarpan yok: `maps.ts`'teki S130 taraması 7,0-8,6
+   * arasında bütün şartları sağlayan tek nokta buluyor (7,60) ve o
+   * noktanın iki komşusu da Okçu'dan kırılıyor. Kusur S131.
    */
   it('Zor: harita 4 ve 5 referans tahtadan DAHA İYİSİNİ istiyor (S87)', () => {
     expect(DIFFICULTY.zor.startLives).toBe(12);

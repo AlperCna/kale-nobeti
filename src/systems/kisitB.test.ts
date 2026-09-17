@@ -26,7 +26,11 @@ import {
 } from '../data/waves';
 import { buildReferenceBoards } from './balanceChecks';
 import { simulateAllWaves } from './waveSim';
-import { REFERANS_ERKEN_BONUSU, REFERANS_POLITIKA } from './referansOlcum';
+import {
+  REFERANS_ERKEN_BONUSU,
+  REFERANS_POLITIKA,
+  referansCanKaybiOrtanca,
+} from './referansOlcum';
 import { measureCoverage } from '../util/coverage';
 import { getEnemyForMap } from '../data/enemies';
 import type { EnemyId } from '../types/enemy';
@@ -152,15 +156,26 @@ describe('Kısıt B — düşman kırılımı', () => {
    *
    * Harita 2'nin zorluğu zaten çarpanda değil **kadroda**: Zırhlı Ork ve
    * Şaman orada tanıtılıyor.
+   *
+   * ## S130 — iddia artık TEK KOŞUYA dayanmıyor (`M60`)
+   *
+   * Altı türetmenin hepsi tek bir adım süresiyle (1/60 sn) ölçülmüştü.
+   * `M59`'un adım taraması bunun bir *seçim* olduğunu gösterdi: 55-65
+   * fps arasında harita 5 bir yerde 14 yerine **10**, harita 4 bir yerde
+   * 12 yerine **11** veriyor. O tek noktalarda bu testin "kesin artan"
+   * şartı düşerdi — yani iddia bugüne kadar kare süresinin şansına
+   * bağlıydı, dengeye değil.
+   *
+   * Ölçüt `referansCanKaybiOrtanca`'ya taşındı: aynı harita beş kare
+   * süresinde koşuluyor ve **ortanca** alınıyor. Ortanca bandın iki
+   * ucundaki tek atışları yutuyor. Üretim adımındaki değerlerle
+   * karşılaştırma `referansOlcum.ts`'teki tabloda; harita 1-5 için
+   * rampa değişmiyor (`0 · 0 · 5 · 12 · 14`), yalnız **dayanağı**
+   * değişiyor.
    */
-  it('**zorluk MONOTON** — çarpan değil, ölçülen can kaybı (M8-T04, S87)', () => {
-    const kayip = [
-      canKaybi(MAP_1, MAP1_WAVES),
-      canKaybi(MAP_2, MAP2_WAVES),
-      canKaybi(MAP_3, MAP3_WAVES),
-      canKaybi(MAP_4, MAP4_WAVES),
-      canKaybi(MAP_5, MAP5_WAVES),
-    ];
+  it('**zorluk MONOTON** — çarpan değil, ölçülen can kaybı (M8-T04, S87, S130)', () => {
+    // Tek koşu değil, bant ortancası — S130.
+    const kayip = [MAP_1, MAP_2, MAP_3, MAP_4, MAP_5].map((m) => referansCanKaybiOrtanca(m));
     // Hiçbir yerde AZALMIYOR.
     for (let i = 1; i < kayip.length; i++) {
       expect(kayip[i]!, `harita ${i + 1}: ${kayip.join(' → ')}`).toBeGreaterThanOrEqual(

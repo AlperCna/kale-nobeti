@@ -113,6 +113,13 @@ describe('Aile dengesi — M11 Faz 5 (S95)', () => {
   it('Okçu artık ÖLÜ aile değil — en kötü harita 20 canın altında', () => {
     // Faz 5 öncesi: 14 / 23 / 28 / 33. Bu eşik o hâlin geri gelmesini
     // yakalar; Okçu'nun en iyi aile olmasını iddia etmiyor.
+    //
+    // **S130 (`M60`): harita 6 bu eşiği şansla geçiyor.** Üretim adımında
+    // Okçu 12 veriyor, 55-65 fps bandının ortancası **21**. Harita 6'nın
+    // HP çarpanı taranınca (`maps.ts` S130) Okçu on dokuz değerin on
+    // altısında 20'nin üstünde çıktı — yani bu ölü aile hâli harita 6'da
+    // hiç düzelmemiş, çarpanın altında duruyor. Eşik gevşetilmedi ve
+    // ortancaya da taşınmadı; kusur S131 olarak açık bırakıldı.
     for (const m of HARITALAR) {
       expect(canKaybi(m, 'okcu'), m.id).toBeLessThan(20);
     }
