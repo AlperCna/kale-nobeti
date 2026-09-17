@@ -321,6 +321,10 @@ function gameDesignGuncelle() {
     dusman: dusmanTablosu(),
     boss: bossTablosu(),
     rampa: rampaTablosu(),
+    'kule-okcu': kuleTablosu('okcu'),
+    'kule-top': kuleTablosu('top'),
+    'kule-buyu': kuleTablosu('buyu'),
+    'kule-kisla': kislaTablosu(),
   };
   for (const [ad, icerik] of Object.entries(bloklar)) {
     const bas = `<!-- ÜRETİLEN:${ad} -->`;
@@ -394,6 +398,56 @@ function bossTablosu() {
         k ? yuzde(k.oran) : '—',
       ];
     }),
+  );
+}
+
+/**
+ * **Bir T3 dalının etki metni** — sayı değil, sayının anlamı.
+ *
+ * `M48`'de kule tablolarında iki eski hasar bulundu (Keskin Nişancı 34,
+ * gerçek 41; Yıldırım 30, gerçek 36). `M49`'da tablolar üreticiye geçti,
+ * ama "hasar" sütunu salt sayı değil: yanma/zincir/yavaşlatma orada
+ * anlatılıyor. Bu fonksiyon o cümleyi **veriden** kuruyor.
+ */
+function etkiCumlesi(k) {
+  const e = k.effect;
+  if (!e) return n(k.damage);
+  if (e.kind === 'burn') return `${n(k.damage)} + **${e.dps}**/sn yanma (${e.seconds} sn)`;
+  if (e.kind === 'chain') return `**${n(k.damage)}**, ${e.targets} hedefe zincirleme (%${e.falloff * 100} azalarak)`;
+  if (e.kind === 'slow') return `${n(k.damage)} + %${e.factor * 100} yavaşlatma (${e.seconds} sn)`;
+  return n(k.damage);
+}
+
+function kuleTablosu(id) {
+  const t = D.kuleler.find((x) => x.id === id);
+  if (!t) throw new Error(`kurallar.mjs: '${id}' kulesi dökümde yok`);
+  const patlamaVar = t.kademeler.some((k) => k.splashRadius);
+  const basliklar = ['Kademe', 'Maliyet', 'Hasar', 'Atış/sn', 'Menzil'];
+  if (patlamaVar) basliklar.push('Yarıçap');
+  basliklar.push('Uçan');
+  return tablo(
+    basliklar,
+    t.kademeler.map((k) => {
+      const satir = [
+        k.branchName ? `${k.ad} ${k.branchName}` : k.ad,
+        String(k.cost), etkiCumlesi(k), n(k.fireRate), String(k.range),
+      ];
+      if (patlamaVar) satir.push(k.splashRadius ? String(k.splashRadius) : '—');
+      satir.push(k.airMultiplier === 0 ? '**vuramaz**' : k.airMultiplier === 1 ? 'tam' : `%${k.airMultiplier * 100}`);
+      return satir;
+    }),
+  );
+}
+
+function kislaTablosu() {
+  return tablo(
+    ['Kademe', 'Maliyet', 'Asker', 'Asker HP', 'Asker DPS', 'Diriliş (sn)', 'Ek'],
+    D.kisla.kademeler.map((k) => [
+      k.branchName ? `${k.ad} ${k.branchName}` : k.ad,
+      String(k.cost), String(k.soldierCount), String(k.soldierHp),
+      String(k.soldierDps), n(k.respawnSeconds),
+      k.shield ? `kalkan ${k.shield}` : k.evasion ? `kaçınma %${Math.round(k.evasion * 100)}` : '—',
+    ]),
   );
 }
 

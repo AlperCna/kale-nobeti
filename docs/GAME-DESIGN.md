@@ -148,12 +148,22 @@ Kural: **hiçbir kule diğerinin düpedüz üstünü değildir; her biri bir rol
 ### 4.1 Okçu Kulesi — tek hedef, hızlı, ucuz
 Fiziksel hasar. Uçanlara vurabilir. Zırha karşı zayıf.
 
-| Tier | Maliyet | Hasar | Atış/sn | Menzil |
-|---|---|---|---|---|
-| 1 | 70 | **8** | 1.1 | 150 |
-| 2 | 110 | **14** | 1.3 | 165 |
-| 3a Keskin Nişancı | 170 | **41** | 0.6 | 260 |  <!-- M22/S119: 34 → 41 -->
-| 3b Kundakçı | 170 | 9 + **11**/sn yanma (4 sn) | 1.4 | **195** |
+> **Aşağıdaki dört kule tablosu ÜRETİLİYOR** (`node scripts/kurallar.mjs`)
+> — maliyet, hasar, atış hızı, menzil, patlama ve uçan çarpanı
+> `data/towers.ts` ve `data/barracks.ts`'ten okunuyor. `M48`'de burada iki
+> eski sayı vardı (Keskin Nişancı 34, gerçek 41; Yıldırım 30, gerçek 36);
+> `M49`'da üreticiye devredildi ki bir daha eskimesin. **Dalların tasarım
+> gerekçesi** (neyin neyle takas edildiği) tabloların altında, elle yazılı
+> kalmaya devam ediyor — o düzyazı veriden türetilemez.
+
+<!-- ÜRETİLEN:kule-okcu -->
+| Kademe | Maliyet | Hasar | Atış/sn | Menzil | Uçan |
+|---|---|---|---|---|---|
+| T1 | 70 | 8 | 1,1 | 150 | tam |
+| T2 | 110 | 14 | 1,3 | 165 | tam |
+| T3a Keskin Nişancı | 170 | 41 | 0,6 | 260 | tam |
+| T3b Kundakçı | 170 | 9 + **11**/sn yanma (4 sn) | 1,4 | 195 | tam |
+<!-- /ÜRETİLEN:kule-okcu -->
 
 **`M11` Faz 5 (S95): Okçu ÖLÜ AİLEYDİ.** Maliyet dahil ölçüldü — tahta
 her aile için yeniden türetilip ucuz aileye hak ettiği fazladan kule
@@ -175,12 +185,14 @@ sayısıyla doğrusal büyüyor; Keskin Nişancı ise **tek sert** hedefte.
 Fiziksel hasar, patlama yarıçapı. Kalabalığın cevabı.
 **İki dal da uçana vurur (hasarın %50'si)** — `M11` Faz 2'ye kadar Havan hiç vuramıyordu, bkz. aşağıdaki not.
 
-| Tier | Maliyet | Hasar | Atış/sn | Menzil | Yarıçap | Uçan |
+<!-- ÜRETİLEN:kule-top -->
+| Kademe | Maliyet | Hasar | Atış/sn | Menzil | Yarıçap | Uçan |
 |---|---|---|---|---|---|---|
-| 1 | 110 | 22 | 0.5 | 140 | 45 | hayır |
-| 2 | 160 | 34 | 0.55 | 150 | 55 | hayır |
-| 3a Havan | 240 | 48 | 0.45 | 230 | **55** | **evet, %50** |
-| 3b Barut Fıçısı | 240 | **24** | **0.9** | 150 | **85** | evet, %50 |
+| T1 | 110 | 22 | 0,5 | 140 | 45 | **vuramaz** |
+| T2 | 160 | 34 | 0,55 | 150 | 55 | **vuramaz** |
+| T3a Havan | 240 | 48 | 0,45 | 230 | 55 | %50 |
+| T3b Barut Fıçısı | 240 | 24 | 0,9 | 150 | 85 | %50 |
+<!-- /ÜRETİLEN:kule-top -->
 
 **`M11` Faz 2 (S91) — ikisinin DPS'i artık EŞİT (21,6).** Takas tek bir
 eksene indi: **menzil ↔ patlama yarıçapı.** Havan uzağı dar vuruyor
@@ -220,12 +232,14 @@ uçan farkı artık kimlik değil, menzil/yarıçap kimlik.
 ### 4.3 Büyü Kulesi — zırh delen
 Büyü hasarı. Zırhlı düşmanların tek temiz cevabı. Büyü dirençli düşmanlara zayıf.
 
-| Tier | Maliyet | Hasar | Atış/sn | Menzil |
-|---|---|---|---|---|
-| 1 | 100 | 14 | 0.7 | 155 |
-| 2 | 150 | 24 | 0.75 | 170 |
-| 3a Yıldırım | 230 | **36**, 3 hedefe zincirleme (%70 azalarak) | 0.7 | 170 |  <!-- M18/S110: 30 → 36 -->
-| 3b Buz | 230 | **8** + %**30** yavaşlatma (**2** sn), patlama **30** | 0.8 | 180 |
+<!-- ÜRETİLEN:kule-buyu -->
+| Kademe | Maliyet | Hasar | Atış/sn | Menzil | Yarıçap | Uçan |
+|---|---|---|---|---|---|---|
+| T1 | 100 | 14 | 0,7 | 155 | — | tam |
+| T2 | 150 | 24 | 0,75 | 170 | — | tam |
+| T3a Yıldırım | 230 | **36**, 3 hedefe zincirleme (%70 azalarak) | 0,7 | 170 | — | tam |
+| T3b Buz | 230 | 8 + %30 yavaşlatma (2 sn) | 0,8 | 180 | 30 | tam |
+<!-- /ÜRETİLEN:kule-buyu -->
 
 **`M11` Faz 2 (S91):** Buz **tahtanın yavaşlatıcısı**. Hasarı bilerek
 düşük (8) — ödediği bedel bu; karşılığında yavaşlatma bütün tahtanın
@@ -240,12 +254,14 @@ uçanda Yıldırım önde.
 Hasar vermez, **zaman kazandırır**. Türün en önemli mekaniği: düşmanı durdurup
 diğer kulelerin menzilinde tutar. Uçanlar engellenemez.
 
-| Tier | Maliyet | Asker | Asker HP | Asker DPS | Diriliş |
-|---|---|---|---|---|---|
-| 1 | 90 | 2 | 45 | 5 | 8 sn |
-| 2 | 140 | 2 | 75 | 8 | 7 sn |
-| 3a Paladin | 210 | 2 | 140 | 11 | 6 sn |
-| 3b Haydutlar | 210 | 3 | 70 | 9 + kaçınma %25 | 5 sn |
+<!-- ÜRETİLEN:kule-kisla -->
+| Kademe | Maliyet | Asker | Asker HP | Asker DPS | Diriliş (sn) | Ek |
+|---|---|---|---|---|---|---|
+| T1 | 90 | 2 | 45 | 5 | 8 | — |
+| T2 | 140 | 2 | 75 | 8 | 7 | — |
+| T3a Paladin | 210 | 2 | 140 | 11 | 6 | — |
+| T3b Haydutlar | 210 | 3 | 70 | 9 | 5 | kaçınma %25 |
+<!-- /ÜRETİLEN:kule-kisla -->
 
 **Paladin'in "kalkan"ı KALDIRILDI (`M11` Faz 3, S43).** Bu satır uzun
 süre `11 + kalkan` yazıyordu ve kalkanın sayısı hiç verilmemişti.
