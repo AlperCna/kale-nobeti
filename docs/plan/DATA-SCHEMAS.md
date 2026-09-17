@@ -251,7 +251,7 @@ dalgaSonrasıBekleme = REST_K  × dalgaBoyu
 export interface MapDef {
   readonly id: string;
   /** Ayrı WebP dosyası, atlas DEĞİL. CLAUDE.md Varlık formatları. */
-  readonly background: string;
+  // `background` M52'de silindi — yol kimlikten türetiliyor, alan ölüydü
   /** Her giriş için waypoint dizisi. ÇOĞUL — harita 1 tek elemanlı. */
   readonly paths: readonly (readonly Vec2[])[];
   readonly buildSpots: readonly Vec2[];

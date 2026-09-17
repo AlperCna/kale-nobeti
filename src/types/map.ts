@@ -12,8 +12,20 @@ import type { SpotCoverage } from '../util/coverage';
 
 export interface MapDef {
   readonly id: string;
-  /** Ayrı WebP dosyası, atlas DEĞİL (`CLAUDE.md` Varlık formatları). */
-  readonly background: string;
+  /**
+   * **`background` alanı KALDIRILDI** — `M52`.
+   *
+   * Hiçbir yerde okunmuyordu: arka plan yolu **kimlikten türetiliyor**
+   * (`PreloadScene`, `assets/bg/${id}.webp` ve `assets/lazy/${id}.webp`).
+   * Üstelik ölü değerlerin yarısı **yanlıştı** — harita 1-3 için
+   * `bg/map1.webp` yazıyordu, gerçek dosya `bg/degirmen-gecidi.webp` ve
+   * harita 2-3 zaten `lazy/` altında. Yani alan bağlansaydı oyun
+   * kırılırdı.
+   *
+   * `activityRatio` ve başarım `threshold`'larıyla aynı sınıf: veri
+   * ölüyken sessizce ayrışıyor, sonra "burada yazıyor" diye güvenilen
+   * bir yalana dönüşüyor. Türetilen yol tek kaynak.
+   */
   /**
    * Her giriş için bir waypoint dizisi.
    *
