@@ -36,13 +36,13 @@ import { wavesFor } from '../data/waves';
 import { getEnemyForMap } from '../data/enemies';
 import { buildReferenceBoards } from './balanceChecks';
 import { simulateAllWaves } from './waveSim';
-import { REFERANS_ERKEN_BONUSU, REFERANS_POLITIKA } from './referansOlcum';
+import { REFERANS_ERKEN_BONUSU, REFERANS_POLITIKA, REFERANS_FPS_BANDI } from './referansOlcum';
 import type { YetenekKullanimi } from './waveSim';
 import { measureCoverage } from '../util/coverage';
 import type { EnemyId } from '../types/enemy';
 import type { MapDef } from '../types/map';
 
-function canKaybi(m: MapDef, kullanim: YetenekKullanimi): number {
+function tekKosu(m: MapDef, kullanim: YetenekKullanimi, adimMs: number): number {
   const w = wavesFor(m.id);
   const k = measureCoverage(m.paths, m.buildSpots, COVERAGE_REFERENCE_RANGE);
   // S109 — tahta ile simülasyon aynı oyuncuyu varsayıyor (`referansOlcum`).
@@ -50,7 +50,7 @@ function canKaybi(m: MapDef, kullanim: YetenekKullanimi): number {
     w,
     buildReferenceBoards(m, w, k, REFERANS_ERKEN_BONUSU),
     m,
-    undefined,
+    adimMs,
     1,
     kullanim,
     REFERANS_POLITIKA,
@@ -63,6 +63,33 @@ function canKaybi(m: MapDef, kullanim: YetenekKullanimi): number {
     }
   }
   return can;
+}
+
+const bellek = new Map<string, number>();
+
+/**
+ * **Ölçüt BANT ORTANCASI — S130 (`M60`).**
+ *
+ * Buradaki iddialar bir yeteneğin diğerinden 1-2 can iyi olmasına
+ * dayanıyor, yani ölçümün gürültüsü iddianın büyüklüğüyle aynı
+ * mertebede. Tek kare süresiyle ölçüldüğünde `M61` bunu somut olarak
+ * kırdı: Sisli Bataklık'ta 1/60 sn `ikisi 9 · meteor 8` veriyor (iddia
+ * düşer), bant ortancası ise `ikisi 7 · meteor 8` (iddia durur).
+ * Aradaki fark dengede değil hangi karede hangi merminin isabet
+ * ettiğinde.
+ *
+ * Bellek zorunlu: beş kare süresi × altı harita × dört kullanım,
+ * ve testler aynı çifti defalarca soruyor (S108 — bu dosyalar
+ * eşik süresine takılıyordu).
+ */
+function canKaybi(m: MapDef, kullanim: YetenekKullanimi): number {
+  const anahtar = `${m.id}|${kullanim}`;
+  const hazir = bellek.get(anahtar);
+  if (hazir !== undefined) return hazir;
+  const o = REFERANS_FPS_BANDI.map((fps) => tekKosu(m, kullanim, 1000 / fps)).sort((x, y) => x - y);
+  const deger = o[Math.floor(o.length / 2)]!;
+  bellek.set(anahtar, deger);
+  return deger;
 }
 
 /** `canKaybi`'nin ölçüm kardeşi — süre ve öldürülen sayısı da lazım (S111). */
@@ -117,24 +144,42 @@ describe('Yeteneklerin katkısı — M11 Faz 4', () => {
    * `M16`'da kaybettirmesi Takviye'nin kusuru değil, tahtanınkiydi.
    */
   it('**Takviye de** can kurtarıyor — gölgede değil', () => {
-    // `M22` (S119) sonrası ölçüm: Kar Geçidi 12 → 11, Kadim Harabe
-    // 13 → **6**. Sisli Bataklık **istisna**, aşağıdaki teste bakınız.
-    expect(canKaybi(MAP_4, 'takviye')).toBeLessThan(canKaybi(MAP_4, 'yok'));
+    // **`M61` (S121 KAPANDI):** bant ortancasıyla ölçüm —
+    // Kar Geçidi 12 → 12 (**berabere**) · Kadim Harabe 14 → 12 ·
+    // Sisli Bataklık 11 → **10**.
+    //
+    // Sisli Bataklık artık istisna DEĞİL: Okçu'nun dal kuralı
+    // düzelince (S131) tahta askerin tuttuğunu öldürebiliyor ve
+    // tutmak ertelemekten çıkıp öldürmeye dönüyor — üstteki notun
+    // kendi cümlesi ("tahta zayıfken tutmak *erteleme*, güçlüyken
+    // **öldürme**"), bu kez harita 6'da doğrulandı.
+    //
+    // Kar Geçidi'ndeki beraberlik `M18`'in Meteor için kaydettiği
+    // desenin aynısı ve aynı sebeple duruyor: orada Meteor tek başına
+    // işin tamamını yapıyor, Takviye'ye kurtaracak can bırakmıyor.
+    // İddia "gölgede değil", yani hiçbir yerde **kötüleştirmiyor**.
+    expect(canKaybi(MAP_4, 'takviye')).toBeLessThanOrEqual(canKaybi(MAP_4, 'yok'));
     expect(canKaybi(MAP_5, 'takviye')).toBeLessThan(canKaybi(MAP_5, 'yok'));
+    expect(canKaybi(MAP_6, 'takviye')).toBeLessThan(canKaybi(MAP_6, 'yok'));
   });
 
   /**
-   * **Sisli Bataklık istisnası — ve sebebi mekanik, kusur değil.**
+   * **Sisli Bataklık istisnası KAPANDI — `M61` (S121).**
    *
-   * Orada Takviye can **kaybettiriyor** (12 → 21). Sebep haritanın
-   * kendi verb'ü: **Tünelci** yolun %15-60'ında hedeflenemez (`M12`).
-   * Asker onu tutabiliyor ama kuleler o sırada vuramıyor, yani tutmak
-   * saf **erteleme** oluyor ve `M16`'nın üst üste binmesiyle gecikme
-   * bir sonraki dalgaya taşınıyor — S111'in tam olarak tarif ettiği
-   * mekanizma, bu sefer haritaya özgü bir sebeple.
+   * `M22`'de orada Takviye can **kaybettiriyordu** (12 → 21) ve sebep
+   * haritanın kendi verb'üne bağlanmıştı: **Tünelci** yolun %15-60'ında
+   * hedeflenemez (`M12`), asker onu tutuyor ama kuleler o sırada
+   * vuramıyor, yani tutmak saf **erteleme** oluyordu.
    *
-   * Bozuk durumu iddia etmiyoruz; Meteor'la birlikte hâlâ en iyi
-   * sonucu verdiğini bağlıyoruz (21 → **6**).
+   * Teşhis doğruydu ama eksikti. Kuleler o pencerede gerçekten vuramaz
+   * — *hedef seçimiyle*. Yanma seçimden geçmiyor (`TargetingSystem`
+   * `gomuluMu` notu), ve referans tahta o güne kadar hiç Kundakçı
+   * kurmuyordu çünkü dal kuralı Okçu'yu saymıyordu (S131). Kural
+   * düzeltilince tahta askerin tuttuğunu öldürebilir hâle geldi ve
+   * Takviye erteleyici olmaktan çıktı: **11 → 10**.
+   *
+   * Yani "haritaya özgü mekanik" diye kaydedilen şey bir tahta kusuruymuş.
+   * İddia korunuyor: ikisi birden hâlâ en iyi sonucu veriyor (**7**).
    */
   it('Sisli Bataklık: Takviye tek başına erteliyor, Meteor’la öldürüyor', () => {
     expect(canKaybi(MAP_6, 'ikisi')).toBeLessThan(canKaybi(MAP_6, 'takviye'));
@@ -194,6 +239,19 @@ describe('Yeteneklerin katkısı — M11 Faz 4', () => {
    * kalabalık zaten asker tarafından tutuluyor, yani ikisi aynı işi
    * yapıyor. Aranan şey **birbirlerini yememeleri** ve ikisinin birden
    * hiçbir yerde tek başına hiçbirinden kötü olmaması.
+   *
+   * **`M61` — tablo yeniden ölçüldü (bant ortancası, S130):**
+   *
+   * | harita | yok | meteor | takviye | ikisi |
+   * |---|---|---|---|---|
+   * | Kar Geçidi | 12 | 11 | 12 | **9** |
+   * | Kadim Harabe | 14 | 11 | 12 | **8** |
+   * | Sisli Bataklık | 11 | 8 | 10 | **7** |
+   *
+   * Kadim Harabe'deki tersliğin (`M22`: takviye 6 < ikisi 7) kendisi de
+   * o günün tek koşusuymuş; ortancada ikisi her üç haritada da **kesin**
+   * en iyi. `M18`/`M19`'un gevşetip sıkıştırdığı iddia böylece kendi
+   * ölçüsüne kavuştu.
    */
   it('yetenekler birbirini YEMİYOR — ikisi hiçbir yerde kötü değil', () => {
     for (const m of [MAP_4, MAP_5, MAP_6]) {

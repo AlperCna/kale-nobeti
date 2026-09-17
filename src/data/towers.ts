@@ -81,6 +81,15 @@ export const OKCU: TowerDef = {
     // 3b Kundakçı — 9 hasar + 11/sn yanma (4 sn).
     // (`M31`: başlık "4/sn" diyordu; değer M11-T02'de 4 → 7 → 11 oldu,
     //  değişim aşağıdaki satıra yazıldı ama başlık güncellenmedi.)
+    //
+    // **`M61` (S131): referans tahta bu dalı ARTIK KURUYOR.** Eskiden
+    // hiç kurmuyordu — dal kuralı Top ve Büyü'yü sayıp Okçu'yu
+    // saymıyordu — ve üstteki `M22` notunun anlattığı harita 6 sorunu
+    // buradan geliyordu: yanma hedef seçiminden geçmediği için gömülü
+    // Tünelci'ye **değen tek Okçu cevabı** buydu, ama tahtada yoktu.
+    // Kural kadroda gömülen düşman varken ilk Okçu'ya bu dalı veriyor
+    // (`balanceChecks.buildReferenceBoards`); Sisli Bataklık'ta Okçu
+    // tahtası 21 → 11.
     {
       cost: 170,
       damage: 9,
