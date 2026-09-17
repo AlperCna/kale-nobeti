@@ -9,7 +9,7 @@ import {
   ceilingAPerBranch,
   effectiveHp,
 } from '../systems/balanceChecks';
-import { referansCanKaybiOrtanca } from '../systems/referansOlcum';
+import { referansCanKaybi } from '../systems/referansOlcum';
 import { measureCoverage } from '../util/coverage';
 import type { EnemyId } from '../types/enemy';
 import type { MapDef } from '../types/map';
@@ -56,25 +56,17 @@ function enKotuKisitA(m: MapDef, hpScale: number): { oran: number; kim: string }
  * başlıyor, saha boşalınca değil). Yani tahta tam erken bonusuyla
  * zenginleşiyor, oyuncu o bonusu hiç kazanmıyordu.
  */
-const bellek = new Map<string, number>();
-
 /**
- * **Ölçüt BANT ORTANCASI — S130 (`M60`), buraya `M62`'de taşındı.**
+ * **`M64` (S132) — ölçüt yine TEK KOŞU, ama bu kez hak edilmiş.**
  *
- * Buradaki eşiklerin hepsi tek canlık farklara bakıyor (≥ 12, ≤ 10) ve
- * `M59`-`M60` ölçümün o mertebede kare süresine bağlı olduğunu
- * gösterdi: harita 6 aynı dengede 55-65 fps arasında 10 ile 13 arası
- * değerler veriyor. Tek koşu, iddiayı dengeye değil şansa bağlıyordu.
- * `kisitB` ve `yetenekKatkisi` `M60`/`M61`'de taşınmıştı; bu dosya da
- * `M62`'nin denge turunda taşındı.
+ * `M60` bunu bant ortancasına taşımıştı çünkü ölçüm kare süresine
+ * bağlıydı ve tek koşu iddiayı şansa bağlıyordu. `M64` sebebi düzeltti:
+ * `GameClock` sabit adımlı biriktirici, oyunun adımı her ekranda
+ * `SABIT_ADIM_MS` ve `waveSim` de onu aynı sabitten alıyor. Ortalanacak
+ * bir bant kalmadı — tek koşu artık oyunun kendisi.
  */
 function canKaybi(m: MapDef, hpScale: number): number {
-  const anahtar = `${m.id}|${hpScale}`;
-  const hazir = bellek.get(anahtar);
-  if (hazir !== undefined) return hazir;
-  const deger = referansCanKaybiOrtanca(m, hpScale);
-  bellek.set(anahtar, deger);
-  return deger;
+  return referansCanKaybi(m, hpScale);
 }
 
 describe('DIFFICULTY — M8-T11 (S80)', () => {

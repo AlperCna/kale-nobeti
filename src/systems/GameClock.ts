@@ -29,13 +29,51 @@ export interface ClockTarget {
  * `Speed` tipinde `0` yok, çünkü sıfır ölçek bölme hataları doğuruyor
  * (research/02 §3).
  */
+/**
+ * **Mantığın sabit adımı.** Birim: ms.
+ *
+ * `1000/60` seçildi çünkü bütün denge sayıları `M0`'dan beri bu adımda
+ * ölçüldü (`waveSim`'in varsayılanı da bu). Başka bir değer seçmek,
+ * düzeltmenin kendisiyle birlikte bütün rampayı da kaydırırdı — iki
+ * değişikliği aynı anda yapmak hangisinin ne yaptığını görünmez kılar.
+ */
+export const SABIT_ADIM_MS = 1000 / 60;
+
+/**
+ * Bir karede koşulacak **en çok** adım — ölüm sarmalı koruması.
+ *
+ * Kare uzarsa biriktirici daha çok adım ister, adımlar kareyi daha da
+ * uzatır ve oyun kilitlenir. Tavan aşılınca artık **atılıyor**: oyun
+ * yavaşlar (slow motion) ama yanıt vermeye devam eder. 5, 3× hızda
+ * 30 fps'e kadar (3 × 33,3 ms = 5,99 adım) yetiyor.
+ */
+export const KARE_BASINA_MAKS_ADIM = 5;
+
 export class GameClock {
   #scale: Speed = 1;
-  #scaledDelta = 0;
+  #birikim = 0;
 
-  /** Son karenin ölçeklenmiş süresi. Birim: ms. */
+  /**
+   * Mantığın gördüğü süre — **her zaman sabit** (`S132`, `M64`).
+   *
+   * Eskiden bu, karenin ham süresiydi ve oyun kare süresinden bağımsız
+   * değildi: `TowerSystem` kare başına en fazla bir atış yaptığı için
+   * her atış 0-dt arası gecikiyordu, ve geç haritalarda yolda sürekli
+   * duran 5-13 düşmanlık kuyruk yüzünden o gecikme ~450 saniye boyunca
+   * birikiyordu. Ölçülen sonuç: Kar Geçidi 2×'te 10 ile 17 can arasında
+   * geziniyordu (1×'te sabit 12), yani **2× düğmesi zorluğu
+   * değiştiriyordu**. Ayrıntı `OPEN-QUESTIONS.md` S132.
+   */
   get scaledDelta(): number {
-    return this.#scaledDelta;
+    return SABIT_ADIM_MS;
+  }
+
+  /**
+   * Bir sonraki adıma sayılan artık. Birim: ms. Ölçüm ve test için;
+   * mantık buna bakmaz.
+   */
+  get birikim(): number {
+    return this.#birikim;
   }
 
   get scale(): Speed {
@@ -48,9 +86,28 @@ export class GameClock {
    * Ham `delta` başka hiçbir yere sızmaz. Sekme arkaya alınıp geri
    * gelindiğinde oluşan sıçramaları Phaser'ın kendi `TimeStep`'i zaten
    * sınırlıyor; burada ikinci bir kırpma yapılmıyor.
+   *
+   * **Hız burada uygulanıyor, adımda değil** (`M64`). `2×`, adımı
+   * büyütmüyor — biriktiriciye iki katı *gerçek zaman* veriyor, yani
+   * aynı sabit adımdan iki katı **sayıda** koşuluyor. Mantık birebir
+   * aynı, yalnız duvar saatinde daha hızlı akıyor. Kusurun kaynağı tam
+   * olarak buydu: eskiden `2×` adımı 16,7 ms'den 33,3 ms'ye çıkarıyor
+   * ve atış gecikmesini de ikiye katlıyordu.
+   *
+   * @returns Bu karede koşulacak sabit adım sayısı (0 olabilir — 60'tan
+   *          hızlı ekranlarda karelerin bir kısmı mantık koşturmaz).
    */
-  tick(delta: number): void {
-    this.#scaledDelta = delta * this.#scale;
+  tick(delta: number): number {
+    this.#birikim += delta * this.#scale;
+    let adim = 0;
+    while (this.#birikim >= SABIT_ADIM_MS && adim < KARE_BASINA_MAKS_ADIM) {
+      this.#birikim -= SABIT_ADIM_MS;
+      adim += 1;
+    }
+    // Tavana dayandıysak artığı taşımıyoruz; taşısak bir sonraki kare
+    // daha da borçlu başlar ve sarmal kapanmaz.
+    if (adim >= KARE_BASINA_MAKS_ADIM) this.#birikim = 0;
+    return adim;
   }
 
   /**

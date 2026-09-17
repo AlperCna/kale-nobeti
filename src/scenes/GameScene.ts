@@ -1111,12 +1111,36 @@ export class GameScene extends Phaser.Scene {
    * işi saati ilerletmek; zaman bağımlı her mantık `clock.scaledDelta`
    * üzerinden çalışır.
    */
+  /**
+   * **Kare döngüsü — mantığı DEĞİL, yalnız kaç adım koşulacağını belirler**
+   * (`M64`, S132).
+   *
+   * Oyun mantığı artık ekranın kare süresine bakmıyor: `GameClock` gerçek
+   * süreyi biriktiriyor ve tam `SABIT_ADIM_MS`'lik adımlar veriyor. 144
+   * Hz'de karelerin çoğu **sıfır** adım koşar, 30 Hz'de bir kare iki adım
+   * koşar; ikisinde de oyun birebir aynı oynanır.
+   *
+   * Çizim yine her karede oluyor — ama çizimi yapan `#sabitAdim` içindeki
+   * katmanlar, çünkü bu oyunda sunum da oyun zamanına bağlı (hasar sayısı,
+   * altın uçuşu, ekran sarsıntısı `2×`'te hızlanmalı — `M11` kararı). 60
+   * Hz mantık adımı ile 144 Hz çizim arasındaki fark düşman başına kare
+   * başına ~1 px; ara değer üretmeye (interpolation) gerek görülmedi.
+   */
   update(_time: number, delta: number): void {
-    this.clock.tick(delta);
     // **Hit-stop oyun zamanını sıfırlıyor** (§10). Sayacı duvar saatiyle
     // işliyor — durdurduğu saatle kendini ölçseydi hiç bitmezdi.
+    // Donmuşken saat hiç ilerlemiyor: biriktirici de durur, artık korunur.
     const donduruldu = this.hitStop.update(delta);
-    const sd = donduruldu ? 0 : this.clock.scaledDelta;
+    const adimlar = donduruldu ? 0 : this.clock.tick(delta);
+    for (let i = 0; i < adimlar; i += 1) this.#sabitAdim();
+
+    const devKare = devHooks();
+    if (devKare !== undefined) devKare.gameFrames = (devKare.gameFrames ?? 0) + 1;
+  }
+
+  /** Bir sabit mantık adımı. Sırası `waveSim` ile birebir aynı. */
+  #sabitAdim(): void {
+    const sd = this.clock.scaledDelta;
 
     this.#waves?.update(sd);
     const dusmanlar = this.#enemyPool?.activeItems() ?? [];
@@ -1153,9 +1177,6 @@ export class GameScene extends Phaser.Scene {
     this.shake.update(sd);
     const kayma = this.shake.offset;
     this.cameras.main.setScroll(kayma.x, kayma.y);
-
-    const dev = devHooks();
-    if (dev !== undefined) dev.gameFrames = (dev.gameFrames ?? 0) + 1;
   }
 
   /**

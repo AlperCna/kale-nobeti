@@ -38,11 +38,20 @@ ve `M29`'a kadar öyle kaldı.
    sonra değişmeyen metinlerde serbesttir. Gerekçe: `Text` içeriği her
    değiştiğinde canvas yeniden üretilip GPU'ya yükleniyor — havuzlamak
    bu cezayı kaldırmaz.
-8. **Ham `delta` yasak.** Tüm zaman bağımlı mantık `GameClock.scaledDelta`
-   üzerinden çalışır. `GameClock.setScale(1|2)` ayrıca **üç** Phaser
-   özelliğini de günceller: `tweens.timeScale`, `time.timeScale`,
-   `anims.globalTimeScale`. Bu sözleşme **M0'da** kurulur — sonradan
-   eklemek her sisteme dokunmak demektir.
+8. **Ham `delta` yasak, ve adım SABİT.** Tüm zaman bağımlı mantık
+   `GameClock.scaledDelta` üzerinden çalışır. `GameClock.setScale(1|2|3)`
+   ayrıca **üç** Phaser özelliğini de günceller: `tweens.timeScale`,
+   `time.timeScale`, `anims.globalTimeScale`. Bu sözleşme **M0'da**
+   kurulur — sonradan eklemek her sisteme dokunmak demektir.
+   **`M64` (S132): `scaledDelta` artık karenin süresi değil, sabit
+   `SABIT_ADIM_MS` (1000/60).** `GameClock` gerçek zamanı biriktirip tam
+   adımlar veriyor; `update` kaç adım koşulacağını alıp döngüye giriyor.
+   Hız da adımı değil adım **sayısını** çarpıyor. Gerekçe ölçüldü:
+   `TowerSystem` kare başına en fazla bir atış yapıyor, yani her atış
+   0-dt gecikiyordu, ve geç haritalarda yolda duran 5-13 düşmanlık kuyruk
+   o gecikmeyi koşu boyunca biriktiriyordu — Kar Geçidi 1×'te sabit 12
+   can, 2×'te 10 ile 17 arası. Sabit `1000/60`, çünkü bütün denge sayıları
+   o adımda türetildi; değiştirmek hepsini yeniden türetmek demek.
 9. **Menzil ve mesafe kontrolleri karesel yapılır.** `Math.sqrt` çağrılmaz.
    Kule, ateşe hazır olmadığı sürece hedef aramaz.
 10. **`localStorage` erişimi her zaman `try/catch` içinde.** Gizli sekmede

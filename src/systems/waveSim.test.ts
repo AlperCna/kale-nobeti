@@ -5,6 +5,7 @@ import { MAP_1 } from '../data/maps';
 import { MAP1_WAVES } from '../data/waves';
 import { measureCoverage } from '../util/coverage';
 import { BALANCE } from '../data/balance';
+import { SABIT_ADIM_MS } from './GameClock';
 import { TOWERS } from '../data/towers';
 import type { ReferenceBoard } from '../types/board';
 
@@ -72,17 +73,23 @@ describe('simulateWave — temel davranış', () => {
 });
 
 /**
- * **`M9-T03` — 3× hız dengeyi bozmuyor.**
+ * **`M9-T03`'ün sorusu `M64`'te ORTADAN KALKTI — blok kalıyor, gerekçesi değişti.**
  *
- * `GameClock.scaledDelta = delta * scale`, yani 60 kare/sn'de 3× hız
- * simülasyonda **50 ms'lik adım** demek. Soru tek: adım üç katına
- * çıkınca dalganın sonucu değişiyor mu?
+ * Eskiden `GameClock.scaledDelta = delta * scale` idi, yani 60 kare/sn'de
+ * 3× hız **50 ms'lik adım** demekti ve bu blok "adım üç katına çıkınca
+ * sonuç değişiyor mu" diye soruyordu. Cevabı harita 1'de "değişmiyor"du
+ * ve bu doğruydu — ama soru yanlış haritada sorulmuştu. `M63` (S132)
+ * geç haritalarda cevabın **değişiyor** olduğunu ölçtü: Kar Geçidi 1×'te
+ * sabit 12 can, 2×'te 10 ile 17 arası. Harita 1'in payı o kadar genişti
+ * ki kusuru hiç göstermedi.
  *
- * Bu test harita 1 ile sınırlı (koşu süresi). Beş haritanın tamamı
- * ölçüldü ve sonuç `GameClock.setScale` dokümanında; oradaki asıl bulgu
- * 3×'in 240 kare/sn'lik "gerçek" cevaba **1× kadar yakın** olması.
+ * `M64` sebebi düzeltti: hız artık adımı değil adım **sayısını** çarpıyor,
+ * yani 3×'te de adım `SABIT_ADIM_MS`. Blok bu yüzden artık hızı değil
+ * **adım kabalığına dayanıklılığı** ölçüyor: biri bir gün sabit adımı
+ * büyütmeye kalkarsa harita 1'de ne olacağını söylüyor. Asıl değeri
+ * sondaki değişmezde — en hızlı kulenin periyodu adımdan uzun olmalı.
  */
-describe('3× hız — adım büyümesi sonucu değiştirmiyor', () => {
+describe('adım kabalığı — harita 1 üç katı adımda da aynı', () => {
   const KARE = 1000 / 60;
   const bir = simulateAllWaves(MAP1_WAVES, GERCEKCI, MAP_1, KARE);
   const uc = simulateAllWaves(MAP1_WAVES, GERCEKCI, MAP_1, KARE * 3);
@@ -114,16 +121,21 @@ describe('3× hız — adım büyümesi sonucu değiştirmiyor', () => {
   });
 
   /**
-   * Asıl sessiz kırılma noktası: `TowerSystem` kare başına **bir** atış
-   * yapıyor. Kare süresi atış periyodunu aşarsa atış düşerdi. En hızlı
-   * kule `fireRate` 1.4/sn → 714 ms periyot; 3×'te kare 50 ms. Bu test
-   * ileride hızlı bir kule eklenirse patlar.
+   * **Asıl sessiz kırılma noktası** — ve `M64`'ten sonra bu blokta
+   * kalan tek gerçek değişmez.
+   *
+   * `TowerSystem` adım başına **bir** atış yapıyor. Adım süresi atış
+   * periyodunu aşarsa atış sessizce düşer: kule yavaşlar, kimse fark
+   * etmez, denge kayar. En hızlı kule bugün Kundakçı (`fireRate` 1,4/sn
+   * → 714 ms); sabit adım 16,7 ms, yani 42 kat pay var.
+   *
+   * Eşik `SABIT_ADIM_MS`'e bağlandı, `KARE * 3`'e değil: hız artık adımı
+   * büyütmüyor (S132), ama sabiti büyüten ya da çok hızlı bir kule
+   * ekleyen bir gelecek değişiklik burada durur.
    */
-  it('en hızlı kule periyodu 3× kare süresinden UZUN', () => {
-    const enHizli = Math.max(
-      ...TOWERS.flatMap((k) => k.tiers.map((t) => t.fireRate)),
-    );
-    expect(1000 / enHizli).toBeGreaterThan(KARE * 3);
+  it('en hızlı kule periyodu SABİT ADIMDAN uzun — atış düşmüyor', () => {
+    const enHizli = Math.max(...TOWERS.flatMap((k) => k.tiers.map((t) => t.fireRate)));
+    expect(1000 / enHizli).toBeGreaterThan(SABIT_ADIM_MS * 3);
   });
 });
 

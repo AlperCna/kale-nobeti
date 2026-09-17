@@ -72,17 +72,17 @@ export const REFERANS_POLITIKA: ErkenPolitika = 'hic';
  * `hpScale` zorluk seviyesinin doğum çarpanı (S92) — `MapDef`'i
  * çarpmakla aynı şey **değil**, boss'u da ölçekliyor.
  */
-export function referansKosu(map: MapDef, hpScale = 1, adimMs?: number): SimResult[] {
+export function referansKosu(map: MapDef, hpScale = 1): SimResult[] {
   const waves = wavesFor(map.id);
   const kapsama = measureCoverage(map.paths, map.buildSpots, COVERAGE_REFERENCE_RANGE);
   const tahtalar = buildReferenceBoards(map, waves, kapsama, REFERANS_ERKEN_BONUSU);
-  return simulateAllWaves(waves, tahtalar, map, adimMs, hpScale, 'yok', REFERANS_POLITIKA);
+  return simulateAllWaves(waves, tahtalar, map, undefined, hpScale, 'yok', REFERANS_POLITIKA);
 }
 
 /** Sızan düşmanların toplam can bedeli — rampanın asıl ölçütü. */
-export function referansCanKaybi(map: MapDef, hpScale = 1, adimMs?: number): number {
+export function referansCanKaybi(map: MapDef, hpScale = 1): number {
   let can = 0;
-  for (const sonuc of referansKosu(map, hpScale, adimMs)) {
+  for (const sonuc of referansKosu(map, hpScale)) {
     for (const [id, adet] of Object.entries(sonuc.leakedByEnemy)) {
       const e = getEnemyForMap(id as EnemyId, map);
       if (e !== undefined) can += e.leakDamage * (adet ?? 0);
@@ -92,50 +92,20 @@ export function referansCanKaybi(map: MapDef, hpScale = 1, adimMs?: number): num
 }
 
 /**
- * **Referans ölçüm TEK KOŞUDA kararlı değil — `M60` (S130).**
+ * **Bant ortancası `M64`'te SÖKÜLDÜ — S130 kapandı.**
  *
- * `referansCanKaybi` bugüne kadar tek bir adım süresiyle (1/60 sn)
- * koşturuldu ve çıkan sayı bir *ölçüm* gibi kullanıldı. Değilmiş.
+ * `M60`-`M62` arasında buradan bir `referansCanKaybiOrtanca` çıkıyordu:
+ * aynı harita beş kare süresinde koşuluyor, ortanca alınıyordu. Gerekçe
+ * doğruydu — ölçüm kare süresine bağlıydı ve tek koşu iddiayı şansa
+ * bağlıyordu.
  *
- * `M59`'da adım süresi taranınca haritaların son dalgası bıçak sırtında
- * çıktı: kapsama ile düşman hızı arasındaki fark tek bir düşmanı ya
- * kaleye ulaştırıyor ya ulaştırmıyor, ve bunu belirleyen şey dengenin
- * kendisi değil **hangi karede hangi merminin isabet ettiği**. Adım
- * küçültmek düzeltmiyor — 1,042 ms'ye kadar inildi, sayı yakınsamıyor,
- * sadece başka yerde salınıyor.
+ * Ama o bir **semptom tedavisiydi.** `M63` sebebi buldu (S132: oyun kare
+ * süresinden bağımsız değildi) ve `M64` sebebi düzeltti: `GameClock`
+ * artık sabit adımlı biriktirici, yani oyunun adımı **her ekranda**
+ * `SABIT_ADIM_MS`. Bant diye bir şey kalmadı; ölçülecek tek bir adım var
+ * ve `waveSim` de onu **aynı sabitten** alıyor.
  *
- * 55-65 fps arasında her tam değerde ölçülen tablo (can kaybı):
- *
- * ```
- *              55  56  57  58  59  60  61  62  63  64  65   ortanca
- * Kar Geçidi   12  12  12  12  12  12  12  11  12  12  11     12
- * Kadim Harabe 14  14  14  14  13  14  14  14  14  10  14     14
- * Sisli Batak. 11  11  11  11  11  13  10  12  12  11  10     11
- * ```
- *
- * Harita 4 ve 5 için üretim adımı (60) ortancayla aynı — o sayılar
- * şanslı değil, gerçekten oranın değeri. **Harita 6 için değil:** 60
- * fps'te 13 çıkıyor, ama bandın *tavanı* orası; ortancası 11. Yani
- * rampanın son basamağı bugüne kadar tek bir talihsiz çekilişti.
- *
- * Bu yüzden rampa iddiası artık tek koşuya değil **ortancaya** bakıyor.
- * Ortanca, banttaki iki uç değeri de yutuyor (harita 5'in 64 fps'teki
- * 10'u gibi) ve sayıyı kare süresine borçlu olmaktan çıkarıyor.
- *
- * Bandın kendisi ölçümden geldi: gerçek oyun `M54`'te **59,4 fps**
- * ölçtü, bant onu ±%8 ile kuşatıyor. Beş örnek alınıyor, on bir değil —
- * ortanca aynı çıkıyor (12 · 14 · 11) ve test iki kat hızlı koşuyor.
+ * Ortalama alan makine bu yüzden silindi — okumayan veri bu projenin
+ * tekrarlayan kusur sınıfı ve artık okunacak bir şey yok. Bandın ölçtüğü
+ * tablo `OPEN-QUESTIONS.md` S130/S132'de duruyor.
  */
-export const REFERANS_FPS_BANDI: readonly number[] = [56, 58, 60, 62, 64];
-
-/**
- * Can kaybının **bant ortancası** — rampanın kabul ölçütü.
- *
- * @see REFERANS_FPS_BANDI — neden tek koşu yetmiyor.
- */
-export function referansCanKaybiOrtanca(map: MapDef, hpScale = 1): number {
-  const olcumler = REFERANS_FPS_BANDI.map((fps) =>
-    referansCanKaybi(map, hpScale, 1000 / fps),
-  ).sort((a, b) => a - b);
-  return olcumler[Math.floor(olcumler.length / 2)]!;
-}
