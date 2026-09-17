@@ -49,7 +49,7 @@ import { writeFileSync } from 'node:fs';
 import { TOWERS, tierAt } from './data/towers';
 import { KISLA, barracksTierAt, BLOCK, SOLDIER_SPEED, MELEE_DPS_PER_POINT, meleeDps } from './data/barracks';
 import { ENEMIES, getEnemyForMap } from './data/enemies';
-import { BOSS_ARMOR_BY_MAP, BOSS_HP_BY_MAP, BOSS_HP_TOLERANCE } from './data/bossScaling';
+import { BOSS_ARMOR_BY_MAP, BOSS_HP_BY_MAP } from './data/bossScaling';
 import { MAPS, COVERAGE_REFERENCE_RANGE } from './data/maps';
 import { wavesFor, budget, wavePoints, waveEnemyCount, spawnDelayFor } from './data/waves';
 import { ABILITIES } from './data/abilities';
@@ -197,7 +197,7 @@ it('dokum', () => {
       budgetBase: BALANCE.budgetBase, budgetGrowth: BALANCE.budgetGrowth, spawnK: SPAWN_K,
       waveEndBonus: [1, 5, 10].map((n) => ({ n, v: BALANCE.waveEndBonus(n) })) },
     havuz: { ...POOL_PREALLOC }, mermiHizi: GECICI_MERMI_HIZI, isabetYaricapi: MERMI_ISABET_YARICAPI,
-    bossOran: BOSS_CEILING_RATIO, bossTolerans: BOSS_HP_TOLERANCE, kislaIle: [...KISLA_ILE_DOGRULANAN],
+    bossOran: BOSS_CEILING_RATIO, kislaIle: [...KISLA_ILE_DOGRULANAN],
     kapsamaMenzil: COVERAGE_REFERENCE_RANGE,
     ayarlar: { efektOlcek: EFFECT_SCALE, varsayilan: DEFAULT_SETTINGS, azaltilmis: reducedMotionDefaults() },
     juice: { shakeMin: SHAKE_MIN_SEC, shakeMax: SHAKE_MAX_SEC, hitStopMin: HITSTOP_MIN_MS, hitStopMax: HITSTOP_MAX_MS },
@@ -661,7 +661,7 @@ function olustur() {
   y(`**Boss HP'si \`700 × hpMultiplier\` DEĞİL — haritadan türetiliyor.**`, '');
   y(`\`700 × çarpan\` harita 2'de 1120, harita 3'te 1820 ediyordu ve o haritalarda`);
   y(`karşılanabilir hiçbir tahta bunu indiremiyordu (Kısıt A %165 ve %282).`, '');
-  y(tablo(['Harita', 'Boss zırhı', 'Boss HP', 'Tavan', 'Oran (hedef %75-85)'],
+  y(tablo(['Harita', 'Boss zırhı', 'Boss HP', 'Tavan', 'Oran (tek düşman tavanına)'],
     D.haritalar.map((m) => {
       const boss = m.kisitA.find((k) => k.id === 'ogreSef');
       return [HARITA_ADI[m.id], `**${n(m.bossZirh)}**`, `**${n(m.bossHp)}**`,
@@ -671,14 +671,18 @@ function olustur() {
   y(`altın daha çok noktaya bölündüğü için tahtanın ortalama kademesi düşüyor ve`);
   y(`zırh 10 o tahtayı hasar tabanına mahkûm ediyor. Zorluk zırhtan değil HP'den`);
   y(`ve dalga kompozisyonundan geliyor.`, '');
-  y(`**Türetme oranı: ${n(D.bossOran)}** (tasarım bandı %75-85'in ortası).`, '');
-  y(`**Regresyon bandı: ±${yuzde(D.bossTolerans * 100)}** — yazılı HP hâlâ \`${n(D.bossOran)} × tavan\` mı,`);
-  y(`her test koşusunda doğrulanıyor. Ekonomi veya geometri sessizce değişirse`);
-  y(`test kırılır. (Bu zaten bir kez oldu: tahtaya kışla eklenince harita 3'ün`);
-  y(`tavanı düştü ve test yakaladı.)`, '');
-  y(`Kısıt A boss için **tautoloji** olduğundan (HP tavanın %80'i tanımlanınca`);
-  y(`\`tavan > HP × 1,15\` her zaman geçer) yerine iki gerçek sağlama var:`);
-  y(`**karşılanabilirlik** ve yukarıdaki **regresyon bandı**.`, '');
+  y(`**İlk türetme oranı: ${n(D.bossOran)}** — \`M7\`, tasarım bandı %75-85'in ortası.`, '');
+  y('**`M71` (S136): bu oran bugün ARTIK TUTMUYOR ve bilerek böyle.**', '');
+  y('`ceilingAPerBranch` **tek** düşmanın karşısındaki tahtayı ölçüyor. Tahtalar', '');
+  y('`M7`’den beri üç katlandı (tavanlar 800-925 → 2400-6100) ama bir *dalganın*', '');
+  y('baskısı o kadar büyümedi. `0,80 × tavan` ile yeniden türetme denendi ve', '');
+  y('Kadim Harabe’nin bossunu sızdırdı — yani türetmenin var olma sebebi olan', '');
+  y('değişmezi kırdı. Çarpanlarla telafi edildiğinde bu kez orta oyun sıfırlandı.', '');
+  y('', '');
+  y('Bugün boss HP’si **türetilmiş değil ölçülerek ayarlanmış** bir sayı ve üç', '');
+  y('testle bağlı: `bossScaling.test`’in regresyon kilidi (yazılı HP’ler ölçülen', '');
+  y('değerlerdir) · `kisitB`’nin “boss hiçbir haritada sızmıyor”u · `kisitB`’nin', '');
+  y('“boss dalgası haritanın zirvesi”i (`M70`). Gerekçe `bossScaling.ts` başlığında.', '');
 
   // ---------------------------------------------------------------- 8
   y('---', '', '## 8. Etkin DPS matrisi', '');

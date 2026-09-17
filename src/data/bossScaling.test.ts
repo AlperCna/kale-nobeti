@@ -9,7 +9,6 @@ import { describe, expect, it } from 'vitest';
 import {
   BOSS_ARMOR_BY_MAP,
   BOSS_HP_BY_MAP,
-  BOSS_HP_TOLERANCE,
   bossFor,
 } from './bossScaling';
 import { MAP_1, MAP_2, MAP_3, MAP_4, MAP_5, MAP_6, MAPS, COVERAGE_REFERENCE_RANGE } from './maps';

@@ -95,9 +95,43 @@ export const BOSS_ARMOR_BY_MAP: Readonly<Record<string, number>> = {
  * `0,80 × o haritanın en zayıf kol tavanı` olarak ölçüldü ve sabitlendi.
  * Çalışma zamanında yeniden türetilmiyor: türetme referans tahtaya, tahta
  * ekonomiye, ekonomi dalgalara bağlı — bu zinciri her doğumda koşturmak
- * hem pahalı hem de denge sayısını **görünmez** yapardı. Sayı burada
- * yazılı ve `balanceChecks.test.ts` onun hâlâ `0,80 × tavan` olduğunu
- * her koşuda doğruluyor; sapma testi kırıyor.
+ * hem pahalı hem de denge sayısını **görünmez** yapardı.
+ *
+ * ## `M71` (S136) — burada YANLIŞ BİR CÜMLE vardı
+ *
+ * Bu paragraf *"`balanceChecks.test.ts` onun hâlâ `0,80 × tavan` olduğunu
+ * her koşuda doğruluyor; sapma testi kırıyor"* diyordu. **Öyle bir test
+ * yoktu.** `BOSS_HP_TOLERANCE` diye bir sabit vardı, `bossScaling.test`'e
+ * içe aktarılmıştı ve tek bir `expect`'te geçmiyordu — okunmayan veri,
+ * bu projenin tekrarlayan kusur sınıfı.
+ *
+ * Sonuç: tahtalar `M61`/`M66`/`M67` ile güçlendikçe yazılı HP'ler yerinde
+ * kaldı ve oranlar sürüklendi. Bugün ölçülen: Değirmen %87,7 · Taş Köprü
+ * %74,3 · Kül Ovası %54,4 · Kar Geçidi %70,1 · Kadim Harabe %36,3 ·
+ * Sisli Bataklık %34,3.
+ *
+ * ## Eksik test yazılmadı, çünkü ÖLÇÜM kuralı reddetti
+ *
+ * `0,80 × tavan` ile yeniden türetme denendi (1069 / 1944 / 3425 / 4330 /
+ * 4900) ve **türetmenin var olma sebebini kırdı**: Kadim Harabe'nin bossu
+ * sızmaya başladı (`kisitB`'nin "boss hiçbir haritada sızmıyor" kilidi).
+ * Çarpanlarla telafi edildiğinde (harita 5 → 7,0 · harita 6 → 6,0) boss
+ * sızmayı bırakıyor ama bu kez **orta oyun sıfırlanıyor** — profiller
+ * `0 0 0 0 0 0 0 0 0 15` oluyor ve S116 geri geliyor; Kolay da 0'a
+ * düşüyor.
+ *
+ * Sebep ölçüldü: `ceilingAPerBranch` **tek** düşmanın karşısındaki tahtayı
+ * ölçüyor. Tahtalar `M7`'den beri üç katına çıktı (tavanlar 800-925 →
+ * 2400-6100) ama bir *dalganın* yarattığı baskı o kadar büyümedi. Yani
+ * `0,80 × tek-düşman tavanı` bugün 20 canlık bütçenin tamamını bossa
+ * veren bir sayı; `M7`'de öyle değildi.
+ *
+ * **Bugün gerçekten garanti edilen üç şey** ve hepsinin testi var:
+ * `bossScaling.test`'in regresyon kilidi (yazılı HP'ler ölçülen
+ * değerlerdir) · `kisitB`'nin "boss hiçbir haritada sızmıyor"u ·
+ * `kisitB`'nin "boss dalgası haritanın zirvesi"si (`M70`, S135).
+ * Yani sayı **türetilmiş değil, ölçülerek ayarlanmış** — ve metin artık
+ * bunu söylüyor.
  */
 export const BOSS_HP_BY_MAP: Readonly<Record<string, number>> = {
   'degirmen-gecidi': 700, // §5'in belgelenmiş değeri (türetme 718 diyor)
@@ -143,9 +177,6 @@ export const BOSS_HP_BY_MAP: Readonly<Record<string, number>> = {
   // `M18` (S113): 2778 → 1825 — aynı türetme.
   'sisli-bataklik': 2100,
 };
-
-/** Türetilen değerin kabul edilebilir sapma payı (regresyon bandı, §12). */
-export const BOSS_HP_TOLERANCE = 0.06;
 
 /**
  * O haritanın boss'u.

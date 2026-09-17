@@ -248,7 +248,7 @@ Kaynak: `src/data/bossScaling.ts`
 `700 × çarpan` harita 2'de 1120, harita 3'te 1820 ediyordu ve o haritalarda
 karşılanabilir hiçbir tahta bunu indiremiyordu (Kısıt A %165 ve %282).
 
-| Harita | Boss zırhı | Boss HP | Tavan | Oran (hedef %75-85) |
+| Harita | Boss zırhı | Boss HP | Tavan | Oran (tek düşman tavanına) |
 |---|---|---|---|---|
 | 1 · Değirmen Geçidi | **10** | **700** | 798 | %87,7 |
 | 2 · Taş Köprü | **5** | **993** | 1336 | %74,3 |
@@ -262,16 +262,29 @@ altın daha çok noktaya bölündüğü için tahtanın ortalama kademesi düş�
 zırh 10 o tahtayı hasar tabanına mahkûm ediyor. Zorluk zırhtan değil HP'den
 ve dalga kompozisyonundan geliyor.
 
-**Türetme oranı: 0,8** (tasarım bandı %75-85'in ortası).
+**İlk türetme oranı: 0,8** — `M7`, tasarım bandı %75-85'in ortası.
 
-**Regresyon bandı: ±%6** — yazılı HP hâlâ `0,8 × tavan` mı,
-her test koşusunda doğrulanıyor. Ekonomi veya geometri sessizce değişirse
-test kırılır. (Bu zaten bir kez oldu: tahtaya kışla eklenince harita 3'ün
-tavanı düştü ve test yakaladı.)
+**`M71` (S136): bu oran bugün ARTIK TUTMUYOR ve bilerek böyle.**
 
-Kısıt A boss için **tautoloji** olduğundan (HP tavanın %80'i tanımlanınca
-`tavan > HP × 1,15` her zaman geçer) yerine iki gerçek sağlama var:
-**karşılanabilirlik** ve yukarıdaki **regresyon bandı**.
+`ceilingAPerBranch` **tek** düşmanın karşısındaki tahtayı ölçüyor. Tahtalar
+
+`M7`’den beri üç katlandı (tavanlar 800-925 → 2400-6100) ama bir *dalganın*
+
+baskısı o kadar büyümedi. `0,80 × tavan` ile yeniden türetme denendi ve
+
+Kadim Harabe’nin bossunu sızdırdı — yani türetmenin var olma sebebi olan
+
+değişmezi kırdı. Çarpanlarla telafi edildiğinde bu kez orta oyun sıfırlandı.
+
+
+
+Bugün boss HP’si **türetilmiş değil ölçülerek ayarlanmış** bir sayı ve üç
+
+testle bağlı: `bossScaling.test`’in regresyon kilidi (yazılı HP’ler ölçülen
+
+değerlerdir) · `kisitB`’nin “boss hiçbir haritada sızmıyor”u · `kisitB`’nin
+
+“boss dalgası haritanın zirvesi”i (`M70`). Gerekçe `bossScaling.ts` başlığında.
 
 ---
 
