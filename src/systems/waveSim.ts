@@ -252,6 +252,23 @@ class SimProjectile implements ProjectileState<SimEnemy>, Poolable {
 const MAX_STEPS_PER_WAVE = 20_000;
 
 /**
+ * **Tavanın gerçek birimi SANİYE, adım değil** — `M59`.
+ *
+ * `MAX_STEPS_PER_WAVE` 20.000 adım demek ve varsayılan 16,667 ms adımda
+ * bu **333 sn**'ye denk geliyor — yorumun anlattığı şey de bu. Ama tavan
+ * adım cinsinden yazıldığı için **adım küçültülünce süre de küçülüyordu**:
+ * 2,083 ms'de 20.000 adım yalnız 41,7 sn ediyor ve dalga ortasında
+ * kesiliyordu. Ölçüldü (`M59`): o adımda harita 4 ve 5 **sıfır** can
+ * kaybı veriyordu — hiçbir düşman kaleye varamadan koşu bitiyordu.
+ * Sessiz ve tamamen yanıltıcı bir sonuç.
+ *
+ * Tavan artık süreden türetiliyor, yani adım boyu değişse de aynı oyun
+ * süresini koruyor. Varsayılan adımda davranış **birebir aynı**
+ * (20.000 × 16,667 ms = 333,3 sn).
+ */
+const MAX_SECONDS_PER_WAVE = (MAX_STEPS_PER_WAVE * (1000 / 60)) / 1000;
+
+/**
  * `'sonBirkac'` politikasının eşiği: sahada bu kadar ya da daha az
  * düşman kalmışsa erken başlat.
  *
@@ -576,7 +593,7 @@ function kosturDalgalar(
     getEnemyForMap(id, map),
   );
 
-  const maxAdim = MAX_STEPS_PER_WAVE * Math.max(1, waves.length);
+  const maxAdim = Math.ceil((MAX_SECONDS_PER_WAVE * 1000) / stepMs) * Math.max(1, waves.length);
   let adim = 0;
   while (!wm.isComplete && adim < maxAdim) {
     wm.update(stepMs);
