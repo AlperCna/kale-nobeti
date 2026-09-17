@@ -912,7 +912,21 @@ export const MAP_6: MapDef = {
   //
   // Harita 6'nın zorluğu bundan sonra da çarpanda değil **kadroda**:
   // Tünelci, çağıran boss, ve son dalgalarda yoğunlaşan Trol.
-  hpMultiplier: 7.4, // S109 → S113 → S119 → S95/M47 → S130/S131 (değişmedi)
+  // **`M67` (S134): 7,4 → 8,1.** Kule kademeleri üç aile için
+  // hizalanınca (bkz. `towers.ts`'teki S134 notu) harita 6'nın karışık
+  // tahtası Zor eşiğinin altına düştü ve çarpan yeniden türetildi.
+  // Tarama (çarpan → karışık · Kolay · Okçu · Top · Büyü):
+  //   7,80 → 10 · 4 · 14 ·  7 ·  8      8,40 → 14 · 5 · 14 · 11 · 10
+  //   8,00 → 14 · 5 · 14 ·  7 ·  8      8,50 → 16 · 8 · 14 · 11 ·  7
+  //   **8,10 → 15 · 5 · 13 · 7 · 8**    8,60 → 17 · 8 · 17 · 14 · 11
+  //   8,20 → 16 · 5 · 12 · 11 · 10      8,90 → 19 · 10 · 14 · 16 · 12
+  // Seçimin iki ölçütü vardı: karışık tahta 12-19 bandında olsun **ve**
+  // Top burada birinci kalsın — `aileDengesi`'nin "her ailenin
+  // parladığı bir harita var" şartı Top'u yalnız burada tutuyor
+  // (Kül Ovası Okçu'nun, Kadim Harabe Büyü'nün). 8,00 ve 8,10 ikisi de
+  // geçiyor, yani tek atış değil plato; ikisinden karışık tahtası
+  // yüksek olan alındı.
+  hpMultiplier: 8.1, // S109 → S113 → S119 → S95/M47 → S130/S131 → S134 (`M67`)
   goldMultiplier: 11.0,
   startGold: Math.round(280 * 11.0),
   enemyRoster: [

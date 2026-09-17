@@ -110,25 +110,37 @@ describe('Aile dengesi — M11 Faz 5 (S95)', () => {
     expect(topIyi).toBeLessThanOrEqual(2);
   });
 
-  it('Okçu artık ÖLÜ aile değil — en kötü harita 20 canın altında', () => {
-    // Faz 5 öncesi: 14 / 23 / 28 / 33. Bu eşik o hâlin geri gelmesini
-    // yakalar; Okçu'nun en iyi aile olmasını iddia etmiyor.
-    //
-    // **S131 KAPANDI (`M61`) — ve kusur ailenin sayılarında değildi.**
-    //
-    // `M60`'ta harita 6'nın Okçu'su bu eşiği şansla geçiyordu: üretim
-    // adımında 12, bant ortancası **21**. Sebep tahtanın kendisiydi —
-    // referans tahta harita 6'da **on dört tane aynı Keskin Nişancı**
-    // kuruyordu, çünkü T3 dal kuralı Top ve Büyü'yü sayıp Okçu'yu
-    // saymıyordu. Gömülü Tünelci'ye değen tek Okçu cevabı (Kundakçı'nın
-    // yanması, `gomuluMu` notu) tahtada hiç yoktu.
-    //
-    // `M22` teşhisi doğru koymuştu ("Okçu'nun hiçbir çarpanı yok") ama
-    // çareyi kule sayısında aradı (T3a 34 → 41). Eksik olan sayı değil
-    // **dal seçimiydi**. Kural düzeltildi: 21 → **11** (ortanca), üretim
-    // adımında 11. Eşik gevşetilmedi.
-    for (const m of HARITALAR) {
-      expect(canKaybi(m, 'okcu'), m.id).toBeLessThan(20);
+  /**
+   * **`M67` (S134) — eşik ÜÇ AİLEYE birden kondu.**
+   *
+   * Buraya kadar yalnız Okçu'ya bakıyordu, çünkü S119'da ölü aile olan
+   * oydu. `M66`'nın bölünme düzeltmesi geç haritaları sertleştirince
+   * ölçüm Top'un Kadim Harabe'de **22**, Büyü'nün Kar Geçidi'nde **21**
+   * can kaybettirdiğini gösterdi — ikisi de 20'nin üstünde, yani o
+   * haritayı tek başlarına kaybediyorlardı ve kimse bakmıyordu.
+   * S119'un birebir tekrarı, bu kez iki ailede.
+   *
+   * Eşiği üç aileye koymak bir denge turu gerektirdi (`maps.ts` ve
+   * `towers.ts`'teki S134 notları). Bugünkü tablo:
+   *
+   * | harita | karışık | Okçu | Top | Büyü |
+   * |---|---|---|---|---|
+   * | Değirmen Geçidi | 0 | 10 | 9 | 0 |
+   * | Taş Köprü | 0 | 1 | 4 | 0 |
+   * | Kül Ovası | 5 | **0** | 8 | 4 |
+   * | Kar Geçidi | 14 | 15 | 16 | 19 |
+   * | Kadim Harabe | 15 | 18 | 19 | **10** |
+   * | Sisli Bataklık | 15 | 13 | **7** | 8 |
+   *
+   * En dar pay Büyü'de (Kar Geçidi 19). Bu bilinçli: daha fazla
+   * yükseltmek Büyü'yü karışık tahtanın üstüne çıkarıyor ve S95'in
+   * "hiçbir aile her yerde karışıktan iyi olmasın" şartını zorluyordu.
+   */
+  it('HİÇBİR aile ölü değil — üç ailenin de en kötü haritası 20 canın altında', () => {
+    for (const aile of AILELER) {
+      for (const m of HARITALAR) {
+        expect(canKaybi(m, aile), `${aile} / ${m.id}`).toBeLessThan(20);
+      }
     }
   });
 

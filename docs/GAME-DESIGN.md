@@ -161,7 +161,7 @@ Fiziksel hasar. Uçanlara vurabilir. Zırha karşı zayıf.
 |---|---|---|---|---|---|
 | T1 | 70 | 8 | 1,1 | 150 | tam |
 | T2 | 110 | 14 | 1,3 | 165 | tam |
-| T3a Keskin Nişancı | 170 | 41 | 0,6 | 260 | tam |
+| T3a Keskin Nişancı | 170 | 44 | 0,6 | 260 | tam |
 | T3b Kundakçı | 170 | 9 + **11**/sn yanma (4 sn) | 1,4 | 195 | tam |
 <!-- /ÜRETİLEN:kule-okcu -->
 
@@ -190,8 +190,8 @@ Fiziksel hasar, patlama yarıçapı. Kalabalığın cevabı.
 |---|---|---|---|---|---|---|
 | T1 | 110 | 22 | 0,5 | 140 | 45 | **vuramaz** |
 | T2 | 160 | 34 | 0,55 | 150 | 55 | **vuramaz** |
-| T3a Havan | 240 | 48 | 0,45 | 230 | 55 | %50 |
-| T3b Barut Fıçısı | 240 | 24 | 0,9 | 150 | 85 | %50 |
+| T3a Havan | 240 | 52 | 0,45 | 230 | 55 | %50 |
+| T3b Barut Fıçısı | 240 | 26 | 0,9 | 150 | 85 | %50 |
 <!-- /ÜRETİLEN:kule-top -->
 
 **`M11` Faz 2 (S91) — ikisinin DPS'i artık EŞİT (21,6).** Takas tek bir
@@ -237,7 +237,7 @@ Büyü hasarı. Zırhlı düşmanların tek temiz cevabı. Büyü dirençli dü�
 |---|---|---|---|---|---|---|
 | T1 | 100 | 14 | 0,7 | 155 | — | tam |
 | T2 | 150 | 24 | 0,75 | 170 | — | tam |
-| T3a Yıldırım | 230 | **36**, 3 hedefe zincirleme (%70 azalarak) | 0,7 | 170 | — | tam |
+| T3a Yıldırım | 230 | **39**, 3 hedefe zincirleme (%70 azalarak) | 0,7 | 170 | — | tam |
 | T3b Buz | 230 | 8 + %30 yavaşlatma (2 sn) | 0,8 | 180 | 30 | tam |
 <!-- /ÜRETİLEN:kule-buyu -->
 
@@ -762,7 +762,7 @@ kenar bir kez parlar.
 | 3 | Kül Ovası | 12 | 2 | 2,8 | 3,8 | 1064 |
 | 4 | Kar Geçidi | 12 | 1 | 7,35 | 7,8 | 2184 |
 | 5 | Kadim Harabe | 15 | 2 | 10,2 | 10,2 | 2856 |
-| 6 | Sisli Bataklık | 15 | 1 | 7,4 | 11 | 3080 |
+| 6 | Sisli Bataklık | 15 | 1 | 8,1 | 11 | 3080 |
 <!-- /ÜRETİLEN:harita -->
 
 Tema ve yol geometrisi tablodan **çıkarıldı**: ikisi de `maps.ts` içinde
@@ -804,10 +804,10 @@ düzeltildi:
 |---|---|---|---|---|
 | 1 · Değirmen Geçidi | 1 | 1 | 0 | 0 |
 | 2 · Taş Köprü | 1,6 | 2,2 | 0 | 0 |
-| 3 · Kül Ovası | 2,8 | 3,8 | 7 | 5 |
-| 4 · Kar Geçidi | 7,35 | 7,8 | 16 | 6 |
-| 5 · Kadim Harabe | 10,2 | 10,2 | 18 | 7 |
-| 6 · Sisli Bataklık | 7,4 | 11 | 12 | 5 |
+| 3 · Kül Ovası | 2,8 | 3,8 | 5 | 5 |
+| 4 · Kar Geçidi | 7,35 | 7,8 | 14 | 3 |
+| 5 · Kadim Harabe | 10,2 | 10,2 | 12 | 4 |
+| 6 · Sisli Bataklık | 8,1 | 11 | 15 | 6 |
 <!-- /ÜRETİLEN:rampa -->
 
   **`M14` (S101): dört çarpan yeniden türetildi.** Erken başlatma bonusu
@@ -983,11 +983,11 @@ hiçbir tahta bunu indiremezdi (M7'de ölçüldü: Kısıt A oranı %165 ve %282
 | Harita | Zırh | Boss HP | Tavanın oranı (ölçülen) |
 |---|---|---|---|
 | 1 · Değirmen Geçidi | 10 | 700 | %87,7 |
-| 2 · Taş Köprü | 5 | 993 | %77 |
-| 3 · Kül Ovası | 2 | 1322 | %58,7 |
-| 4 · Kar Geçidi | 2 | 3000 | %75,7 |
-| 5 · Kadim Harabe | 2 | 1962 | %39,2 |
-| 6 · Sisli Bataklık | 2 | 2100 | %36,8 |
+| 2 · Taş Köprü | 5 | 993 | %74,3 |
+| 3 · Kül Ovası | 2 | 1322 | %54,4 |
+| 4 · Kar Geçidi | 2 | 3000 | %70,1 |
+| 5 · Kadim Harabe | 2 | 1962 | %36,3 |
+| 6 · Sisli Bataklık | 2 | 2100 | %34,3 |
 <!-- /ÜRETİLEN:boss -->
 
 **`M11` Faz 5 (S95): dördü de yeniden türetildi** (712/886/1709/2189 →

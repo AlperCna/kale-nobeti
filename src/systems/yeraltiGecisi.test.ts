@@ -166,6 +166,16 @@ function sizinti(enemy: EnemyId, adet: number, noktalar: readonly number[]): num
   return simulateWave(w, tahta(noktalar), MAP_3).leakedCount;
 }
 
+/**
+ * Düşman adedi — **ölçümün çözünürlüğü**, denge sayısı değil.
+ *
+ * `M11`'de 6'ydı. `M67`'de kademe çıktıları hizalanınca (S134) sentetik
+ * tahta 6 goblini **iki nokta kümesinde de** tamamen öldürmeye başladı
+ * ve karşılaştırma `0 < 0`'a düştü: iddia yanlış değil, **ölçülemez**
+ * olmuştu. 8-24 arası her değer ayırt ediyor; plato ortası alındı.
+ */
+const ADET = 12;
+
 describe('Yeraltı geçişi — yerleştirme artık düşmana bağlı', () => {
   it('ölçüm kurulumu geçerli: iki nokta kümesi de dolu', () => {
     expect(ARALIK_ICI.length).toBeGreaterThan(0);
@@ -173,17 +183,17 @@ describe('Yeraltı geçişi — yerleştirme artık düşmana bağlı', () => {
   });
 
   it('NORMAL düşmana karşı gömülü-aralık noktaları daha iyi', () => {
-    expect(sizinti('goblin', 6, ARALIK_ICI)).toBeLessThan(sizinti('goblin', 6, ARALIK_DISI));
+    expect(sizinti('goblin', ADET, ARALIK_ICI)).toBeLessThan(sizinti('goblin', ADET, ARALIK_DISI));
   });
 
   it('**TÜNELCİ’ye karşı o üstünlük siliniyor**', () => {
-    const ici = sizinti('tunelci', 6, ARALIK_ICI);
-    const disi = sizinti('tunelci', 6, ARALIK_DISI);
+    const ici = sizinti('tunelci', ADET, ARALIK_ICI);
+    const disi = sizinti('tunelci', ADET, ARALIK_DISI);
     expect(ici).toBeGreaterThanOrEqual(disi);
   });
 
   it('aynı tahtada Tünelci gömülü aralık yüzünden daha çok sızıyor', () => {
     // Aynı nokta kümesi, aynı adet: tek fark yeteneğin kendisi.
-    expect(sizinti('tunelci', 6, ARALIK_ICI)).toBeGreaterThan(sizinti('goblin', 6, ARALIK_ICI));
+    expect(sizinti('tunelci', ADET, ARALIK_ICI)).toBeGreaterThan(sizinti('goblin', ADET, ARALIK_ICI));
   });
 });

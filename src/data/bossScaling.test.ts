@@ -15,6 +15,7 @@ import {
 import { MAP_1, MAP_2, MAP_3, MAP_4, MAP_5, MAP_6, MAPS, COVERAGE_REFERENCE_RANGE } from './maps';
 import { MAP1_WAVES, MAP2_WAVES, MAP3_WAVES, MAP4_WAVES, MAP5_WAVES, MAP6_WAVES } from './waves';
 import { OGRE_SEF, getEnemyForMap } from './enemies';
+import { BALANCE } from './balance';
 import {
   BOSS_CEILING_RATIO,
   bossAffordable,
@@ -172,11 +173,21 @@ describe('Boss ölçeklemesi — zırh düşer, HP türetilir', () => {
     expect(kalkansiz).toEqual(temel);
   });
 
-  it('700 × çarpan olsaydı GEÇİLEMEZDİ — düzeltmenin kanıtı', () => {
+  it('700 × çarpan olsaydı PAY BIRAKMAZDI — düzeltmenin kanıtı (S134)', () => {
     // Savunulan iddia: naif `700 × hpMultiplier` boss HP'sini tavanın
     // **üstüne** koyuyor, yani dalga 10 hiç geçilemiyor. Eşik bu yüzden
     // 1,0 — eskiden 1,5 yazıyordu ve o sayının bir gerekçesi yoktu,
     // yalnızca harita 2-3'ün ölçülen değeriydi.
+    //
+    // **`M67` (S134) — eşik 1,0'dan PAY'a çekildi.**
+    //
+    // Kademe çıktıları hizalanınca tahtalar güçlendi ve Kül Ovası'nda
+    // naif formülün oranı **0,96**'ya düştü, yani teknik olarak
+    // geçilebilir oldu. İddia "imkansız"dan "**pay bırakmıyor**"a
+    // çekildi ve eşik uydurulmadı, `BALANCE.safetyMargin`'den
+    // türetildi: Kısıt A'nın bütün kabulü `tavan > hp × 1,15`, yani
+    // oran eşiği `1 / 1,15 ≈ 0,87`. Naif boss o payın üstünde kalıyor
+    // — kanıt duruyor, yalnız cümlesi dürüstleşti.
     //
     // Ölçülen oranlar: harita 2 ≈ 2,6 · harita 3 ≈ 1,9 · harita 4 ≈ 1,29.
     // Harita 4'te düşük olmasının sebebi: 12 nokta + tek kol, yani tavan
@@ -187,7 +198,9 @@ describe('Boss ölçeklemesi — zırh düşer, HP türetilir', () => {
       const eski = { ...OGRE_SEF };
       const tavan = Math.min(...ceilingAPerBranch(tahta(m), eski, m.map));
       const oran = (eski.hp * m.map.hpMultiplier) / tavan;
-      expect(oran, `${m.map.id} eski oran ${oran.toFixed(2)}`).toBeGreaterThan(1.0);
+      expect(oran, `${m.map.id} eski oran ${oran.toFixed(2)}`).toBeGreaterThan(
+        1 / BALANCE.safetyMargin,
+      );
     }
   });
 
