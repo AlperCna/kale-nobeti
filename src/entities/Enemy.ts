@@ -5,6 +5,7 @@ import type { Poolable } from '../util/pool';
 import { resetEnemyState } from '../systems/movers';
 import { emptyEffects, resetEffects } from '../systems/effects';
 import { enemyFrameKey, enemyDisplaySize } from '../data/spriteFrames';
+import { konumIsinla, type AraDegerli } from '../util/araDeger';
 import {
   HIT_FLASH_COLOR,
   HIT_FLASH_MS,
@@ -31,7 +32,7 @@ import {
  * boyutuna sahip (boss 96, yavru 40, geri kalan 64) — `setScale(1)` tek
  * başına bunu düzeltmez.
  */
-export class Enemy extends Phaser.GameObjects.Sprite implements Poolable, EnemyState {
+export class Enemy extends Phaser.GameObjects.Sprite implements Poolable, EnemyState, AraDegerli {
   def: EnemyDef | null = null;
   hp = 0;
   maxHp = 0;
@@ -118,6 +119,16 @@ export class Enemy extends Phaser.GameObjects.Sprite implements Poolable, EnemyS
    * parçacık istemiyor demek, "düşmanlar donuk dursun" demek değil.
    * (`M8-T09` kabul kriteri bu ayrımı açıkça istiyor.)
    */
+  /**
+   * Ara değer üretimi (`M65`, `util/araDeger.ts`). Çizim son iki
+   * mantık durumu arasında yapılıyor; `x`/`y` hem mantığın hem
+   * çizimin alanı olduğu için gerçek konum ayrıca saklanıyor.
+   */
+  oncekiX = 0;
+  oncekiY = 0;
+  gercekX = 0;
+  gercekY = 0;
+
   readonly #hareketAcik: () => boolean;
 
   constructor(scene: Phaser.Scene, size: number, hareketAcik: () => boolean = () => true) {
@@ -165,6 +176,9 @@ export class Enemy extends Phaser.GameObjects.Sprite implements Poolable, EnemyS
     this.setAlpha(0);
     this.setAngle(0);
     this.syncPosition();
+    // Havuz mirasını sil — yoksa düşman ilk karesinde ekranın öbür
+    // ucundan süzülerek gelir (`M65`).
+    konumIsinla(this);
   }
 
   /** @param scaledDelta `GameClock.scaledDelta` (TIER 1 kural 8). */

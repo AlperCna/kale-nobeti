@@ -198,7 +198,8 @@ src/
                 towers · enemies · waves · maps · balance · bossScaling ·
                 difficulty · achievements · strings · ...
   types/        Ortak arayüzler. Çalışma zamanı kodu yok.
-  util/         Bağımsız saf yardımcılar: math · pool · coverage · storage · i18n
+  util/         Bağımsız saf yardımcılar: math · pool · coverage · storage ·
+                i18n · araDeger
 public/assets/  atlas.png · atlas.json · bg/*.webp · audio/ · fonts/
 ```
 
