@@ -114,12 +114,19 @@ describe('Aile dengesi — M11 Faz 5 (S95)', () => {
     // Faz 5 öncesi: 14 / 23 / 28 / 33. Bu eşik o hâlin geri gelmesini
     // yakalar; Okçu'nun en iyi aile olmasını iddia etmiyor.
     //
-    // **S130 (`M60`): harita 6 bu eşiği şansla geçiyor.** Üretim adımında
-    // Okçu 12 veriyor, 55-65 fps bandının ortancası **21**. Harita 6'nın
-    // HP çarpanı taranınca (`maps.ts` S130) Okçu on dokuz değerin on
-    // altısında 20'nin üstünde çıktı — yani bu ölü aile hâli harita 6'da
-    // hiç düzelmemiş, çarpanın altında duruyor. Eşik gevşetilmedi ve
-    // ortancaya da taşınmadı; kusur S131 olarak açık bırakıldı.
+    // **S131 KAPANDI (`M61`) — ve kusur ailenin sayılarında değildi.**
+    //
+    // `M60`'ta harita 6'nın Okçu'su bu eşiği şansla geçiyordu: üretim
+    // adımında 12, bant ortancası **21**. Sebep tahtanın kendisiydi —
+    // referans tahta harita 6'da **on dört tane aynı Keskin Nişancı**
+    // kuruyordu, çünkü T3 dal kuralı Top ve Büyü'yü sayıp Okçu'yu
+    // saymıyordu. Gömülü Tünelci'ye değen tek Okçu cevabı (Kundakçı'nın
+    // yanması, `gomuluMu` notu) tahtada hiç yoktu.
+    //
+    // `M22` teşhisi doğru koymuştu ("Okçu'nun hiçbir çarpanı yok") ama
+    // çareyi kule sayısında aradı (T3a 34 → 41). Eksik olan sayı değil
+    // **dal seçimiydi**. Kural düzeltildi: 21 → **11** (ortanca), üretim
+    // adımında 11. Eşik gevşetilmedi.
     for (const m of HARITALAR) {
       expect(canKaybi(m, 'okcu'), m.id).toBeLessThan(20);
     }

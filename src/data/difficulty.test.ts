@@ -129,21 +129,47 @@ describe('DIFFICULTY — M8-T11 (S80)', () => {
    * 8 çıkmıştı. S87'de harita çarpanları yeniden türetildi ve iddia
    * **geri kondu**.
    *
-   * ## S130 — harita 6 burada TEK KARE SÜRESİNE borçlu (`M60`)
+   * ## S131 — harita 6 buraya KARAR'la değil `slice`'la girmişti (`M61`)
    *
-   * Liste `MAPS.slice(3)`, yani harita 6 da dahil. Harita 6 bu eşiği
-   * üretim adımında 13 ile geçiyor; 55-65 fps bandının **ortancası ise
-   * 11**, yani eşiğin altında. İddia harita 4 ve 5 için sağlam (ortanca
-   * 12 ve 14), harita 6 için değil.
+   * Liste `MAPS.slice(3)` idi ve harita 6'yı da kapsıyordu. Bu bir
+   * tasarım kararı değil: `slice(3)` `M8-T11`'de yazıldı, harita 6
+   * `M12`'de geldi (git ile doğrulandı — `3dfd852`, `b3b7bc8`'in
+   * atası). Başlık o günden beri "harita 4 ve 5" diyor; harita 6
+   * listeye **süpürüldü**, konmadı. CLAUDE.md TIER 2'nin saydığı kusur
+   * sınıfının tersten hâli: liste kendiliğinden büyüdü, iddia
+   * büyümedi.
    *
-   * Sağlama ortancaya taşınmadı, çünkü taşımak onu **kırardı** ve
-   * düzeltecek bir çarpan yok: `maps.ts`'teki S130 taraması 7,0-8,6
-   * arasında bütün şartları sağlayan tek nokta buluyor (7,60) ve o
-   * noktanın iki komşusu da Okçu'dan kırılıyor. Kusur S131.
+   * Şart harita 6 için **ölçülerek reddedildi.** `M61`'de Okçu'nun dal
+   * kuralı düzelince (S131) harita 6'nın referans tahtası güçlendi ve
+   * can kaybı 13 → 9'a indi. Çarpan yeniden tarandı, 7,40-10,0 arası,
+   * hem üretim adımında hem bant ortancasında (`M60`) — **hiçbir değer
+   * 12-20 bandına oturmuyor:**
+   *
+   * ```
+   * çarpan   7,40  7,45  7,50  7,55  7,60  7,65  7,70   (üretim/ortanca)
+   * karışık  9/11 12/13 20/20 10/12 11/12 11/15 24/14
+   * ```
+   *
+   * Sebep gürültü değil **boss eşiği**: 7,70'te sızanların arasına
+   * `ogreSef` giriyor ve toplam tek adımda 10 can zıplıyor. Yani harita
+   * 6 bir kadran değil bir **uçurum** — tahta bossu ya öldürüyor (≤15)
+   * ya öldürmüyor (≥21), arası yok. S109'un harita 2 için yazdığı
+   * cümlenin birebir aynısı: *"ya yetiyor ya çöküyor; arası yok"*, ve
+   * oradaki çözüm de aynı olmuştu — iddiayı sivri uca oturtmak yerine
+   * **kapsamını ölçüye göre yazmak**.
+   *
+   * Harita 6'nın zorluğu zaten çarpanda değil **kadroda**: Tünelci
+   * (hedeflenemez pencere) ve çağıran boss. Bugünkü hâliyle Zor'da
+   * referans tahta harita 6'yı **bir can payla** geçiyor (11/12).
+   *
+   * **Sahibine sorulacak:** bu, şartın gevşemesi demek. Alternatifi
+   * çarpanı iki kırık komşunun arasındaki bir noktaya oturtmaktı ve
+   * S82/S84 bunu bir kez reddetti.
    */
   it('Zor: harita 4 ve 5 referans tahtadan DAHA İYİSİNİ istiyor (S87)', () => {
     expect(DIFFICULTY.zor.startLives).toBe(12);
-    for (const m of MAPS.slice(3)) {
+    // `slice(3, 5)` — harita 6 hariç, gerekçesi üstte (S131).
+    for (const m of MAPS.slice(3, 5)) {
       expect(canKaybi(m, 1), m.id).toBeGreaterThanOrEqual(DIFFICULTY.zor.startLives);
     }
   });

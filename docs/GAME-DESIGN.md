@@ -807,7 +807,7 @@ düzeltildi:
 | 3 · Kül Ovası | 2,8 | 3,8 | 5 | 5 |
 | 4 · Kar Geçidi | 7,35 | 7,8 | 12 | 6 |
 | 5 · Kadim Harabe | 10,2 | 10,2 | 14 | 4 |
-| 6 · Sisli Bataklık | 7,4 | 11 | 13 | 1 |
+| 6 · Sisli Bataklık | 7,4 | 11 | 9 | 0 |
 <!-- /ÜRETİLEN:rampa -->
 
   **`M14` (S101): dört çarpan yeniden türetildi.** Erken başlatma bonusu
@@ -987,7 +987,7 @@ hiçbir tahta bunu indiremezdi (M7'de ölçüldü: Kısıt A oranı %165 ve %282
 | 3 · Kül Ovası | 2 | 1322 | %58,7 |
 | 4 · Kar Geçidi | 2 | 3000 | %75,7 |
 | 5 · Kadim Harabe | 2 | 1962 | %39,2 |
-| 6 · Sisli Bataklık | 2 | 2100 | %35,6 |
+| 6 · Sisli Bataklık | 2 | 2100 | %36,8 |
 <!-- /ÜRETİLEN:boss -->
 
 **`M11` Faz 5 (S95): dördü de yeniden türetildi** (712/886/1709/2189 →

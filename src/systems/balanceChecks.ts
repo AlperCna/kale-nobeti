@@ -413,6 +413,14 @@ export function buildReferenceBoards(
    * nokta bir kuleyi dışarıda bırakıyor. Canlı ölçümde en yüksek kapsamalı
    * noktaya kurmak 20/20 canı 0/20'ye çeviriyordu.
    */
+  /**
+   * Kadroda **hedef seçiminden kaçan** düşman var mı — `M61` (S131).
+   * Harita adı değil kadro sorulur; `gomuluMu`'nun koşuluyla aynı alan.
+   */
+  const kadrodaGomulen = map.enemyRoster.some(
+    (id) => getEnemyForMap(id, map)?.ability?.kind === 'burrow',
+  );
+
   const kislaAlinacak = map.enemyRoster.includes('trol');
   const kislaNoktasi = kislaAlinacak ? kislaNoktasiSec(map) : undefined;
   const sirali = tumSirali.filter((i) => i !== kislaNoktasi);
@@ -524,17 +532,55 @@ export function buildReferenceBoards(
       // Ovası 4 Buz, Kar Geçidi 5). Üstteki yorum hep "bir tane" diyordu.
       let ilkTop = !kuleler.some((k) => k.towerId === 'top' && k.tier === 3);
       let ilkBuyu = !kuleler.some((k) => k.towerId === 'buyu' && k.tier === 3);
+      /**
+       * **`M61` (S131): kural Okçu'yu hiç saymıyordu.**
+       *
+       * Desen `M11-T01`'de Top için yazıldı, `M11-T02`'de Büyü eklendi,
+       * Okçu eklenmedi — bu projenin en sık kusur sınıfı (CLAUDE.md
+       * TIER 2: "yeni bir şey eklerken onu saymayan listeleri ara").
+       * Sonuç: tek aileye zorlanan Okçu tahtası Sisli Bataklık'ta **on
+       * dört tane aynı Keskin Nişancı** kuruyordu.
+       *
+       * Okçu'nun "farklı iş yapan" kulesi Kundakçı, ve farkı tam olarak
+       * şu: **yanma hedef seçiminden geçmiyor.** `TargetingSystem`'in
+       * `gomuluMu` notu bunu zaten söylüyor — gömülü Tünelci'yi kule
+       * *seçemez* ama patlama ve yanma ona **değer**. Top patlamayla,
+       * Büyü zinciriyle o pencereyi kapatıyordu; Okçu'nun elindeki cevap
+       * tahtada hiç kurulmuyordu. `M22` teşhisi doğru koymuştu ("Okçu'nun
+       * hiçbir çarpanı yok") ama çareyi kule sayısında aradı (T3a 34→41);
+       * eksik olan sayı değil **dal seçimiydi**.
+       *
+       * İki dal da 170 altın, yani değişim ekonomik olarak bedelsiz.
+       *
+       * **Koşul kadroda** — ölçülerek. Kuralı koşulsuz uygulamak yanmayı
+       * gerekmediği yerde de kuruyor ve tahtayı zayıflatıyor: Kül Ovası
+       * Okçu `0 → 4`, Kadim Harabe `14 → 18`. Beklenen bir sonuç, çünkü
+       * yanmanın biricik üstünlüğü *seçimi atlamak*; seçilebilen bir
+       * kadroda Keskin Nişancı'nın ham vuruşu daha iyi. Gömülen düşman
+       * bugün yalnız Sisli Bataklık'ta var, ve kural haritayı adıyla
+       * değil **kadrosuyla** tanıyor: yarın başka haritaya Tünelci
+       * konursa kendiliğinden geçerli olur.
+       *
+       * Ölçüm (bant ortancası, `M60`): Sisli Bataklık Okçu **21 → 11**.
+       * Diğer beş harita ve bütün karışık tahtalar **birebir aynı**.
+       */
+      let ilkOkcu = kadrodaGomulen && !kuleler.some((k) => k.towerId === 'okcu' && k.tier === 3);
       for (let i = 0; i < kuleler.length; i++) {
         const k = kuleler[i];
         if (k === undefined || k.tier !== 1) continue;
         const def = getTower(k.towerId);
         if (def === undefined) continue;
         const dal: TierIndex =
-          (def.id === 'top' && ilkTop) || (def.id === 'buyu' && ilkBuyu) ? 3 : 2;
+          (def.id === 'top' && ilkTop) ||
+          (def.id === 'buyu' && ilkBuyu) ||
+          (def.id === 'okcu' && ilkOkcu)
+            ? 3
+            : 2;
         const maliyet = tierAt(def, dal).cost;
         if (kullanilabilir < maliyet) continue;
         if (def.id === 'top') ilkTop = false;
         if (def.id === 'buyu') ilkBuyu = false;
+        if (def.id === 'okcu') ilkOkcu = false;
         kuleler[i] = { ...k, tier: dal };
         kullanilabilir -= maliyet;
         harcanan += maliyet;

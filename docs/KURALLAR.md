@@ -255,7 +255,7 @@ karşılanabilir hiçbir tahta bunu indiremiyordu (Kısıt A %165 ve %282).
 | 3 · Kül Ovası | **2** | **1322** | 2251 | %58,7 |
 | 4 · Kar Geçidi | **2** | **3000** | 3962 | %75,7 |
 | 5 · Kadim Harabe | **2** | **1962** | 5007 | %39,2 |
-| 6 · Sisli Bataklık | **2** | **2100** | 5900 | %35,6 |
+| 6 · Sisli Bataklık | **2** | **2100** | 5700 | %36,8 |
 
 **Zırh haritayla düşüyor** ve bu ters değil, mekanik gereği: geç haritalarda
 altın daha çok noktaya bölündüğü için tahtanın ortalama kademesi düşüyor ve
@@ -356,7 +356,7 @@ tahta 3820'de takılıyor ve oyuncu 34 can kaybediyordu (20 canla kayıp).
 | 3 · Kül Ovası | ×2,8 | ×3,8 **←ayrıştı** | 5100 | 5 / 20 ✓ |
 | 4 · Kar Geçidi | ×7,35 | ×7,8 **←ayrıştı** | 5100 | 12 / 20 ✓ |
 | 5 · Kadim Harabe | ×10,2 | ×10,2 | 6440 | 14 / 20 ✓ |
-| 6 · Sisli Bataklık | ×7,4 | ×11 **←ayrıştı** | 6440 | 13 / 20 ✓ |
+| 6 · Sisli Bataklık | ×7,4 | ×11 **←ayrıştı** | 6440 | 9 / 20 ✓ |
 
 Türetilebilir kural: **altın, haritanın noktalarını tam yükseltmeye
 yetmeli.** 3,8'de maliyet doyuyor (üstü fazladan kule almıyor), yani sayı
@@ -510,9 +510,9 @@ referans tahtaya, tavana ve boss türetmesine hiç girmiyor — hiçbir düşman
 
 | Seviye | HP çarpanı | Başlangıç canı | Yıldız | 1 | 2 | 3 | 4 | 5 | 6 |
 |---|---|---|---|---|---|---|---|---|---|
-| kolay | ×0,8 | 20 | **kaydedilmiyor** | 0 / 20 ✓ | 0 / 20 ✓ | 5 / 20 ✓ | 6 / 20 ✓ | 4 / 20 ✓ | 1 / 20 ✓ |
-| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 0 / 20 ✓ | 5 / 20 ✓ | 12 / 20 ✓ | 14 / 20 ✓ | 13 / 20 ✓ |
-| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 0 / 12 ✓ | 5 / 12 ✓ | 12 / 12 ✗ | 14 / 12 ✗ | 13 / 12 ✗ |
+| kolay | ×0,8 | 20 | **kaydedilmiyor** | 0 / 20 ✓ | 0 / 20 ✓ | 5 / 20 ✓ | 6 / 20 ✓ | 4 / 20 ✓ | 0 / 20 ✓ |
+| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 0 / 20 ✓ | 5 / 20 ✓ | 12 / 20 ✓ | 14 / 20 ✓ | 9 / 20 ✓ |
+| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 0 / 12 ✓ | 5 / 12 ✓ | 12 / 12 ✗ | 14 / 12 ✗ | 9 / 12 ✓ |
 
 Hücreler: referans tahtanın kaybettiği can / o seviyenin canı.
 
@@ -661,15 +661,15 @@ Ayrık yolda **en zayıf kol** belirleyici — düşman hangi kolu seçeceğini 
 
 | Düşman | Efektif HP | Tavan | Oran |
 |---|---|---|---|
-| Goblin | 333 | 3024 | %11 |
-| Ork Savaşçı | 814 | 3876 | %21 |
-| Kurt Binicisi | 444 | 1617 | %27,5 |
-| Harpi | 518 | 1999 | %25,9 |
-| Zırhlı Ork | 1184 | 4037 | %29,3 |
-| Şaman | 962 | 3969 | %24,2 |
-| Trol | 2960 | 5580 | %53 |
-| tunelci | 666 | 2542 | %26,2 |
-| Ogre Şef (boss) | 2100 | 5900 | %35,6 |
+| Goblin | 333 | 2943 | %11,3 |
+| Ork Savaşçı | 814 | 3751 | %21,7 |
+| Kurt Binicisi | 444 | 1570 | %28,3 |
+| Harpi | 518 | 1934 | %26,8 |
+| Zırhlı Ork | 1184 | 3837 | %30,9 |
+| Şaman | 962 | 3853 | %25 |
+| Trol | 2960 | 5368 | %55,1 |
+| tunelci | 666 | 2467 | %27 |
+| Ogre Şef (boss) | 2100 | 5700 | %36,8 |
 
 **ⓑ = Kışla ile doğrulanan.** Kısıt A yalnız **kulelerin** verebileceği
 hasarı topluyor (tanımı bu) — askerlerin DPS'i ve engellemenin kazandırdığı
@@ -693,7 +693,7 @@ Simülasyon **canlı oyunla aynı kodu** kullanıyor: aynı
 | 3 · Kül Ovası | **3** | 1338 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:1 d8:2 d9:0 d10:0 |
 | 4 · Kar Geçidi | **8** | 7752 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:8 |
 | 5 · Kadim Harabe | **11** | 11606 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:11 |
-| 6 · Sisli Bataklık | **12** | 4167 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:2 d10:10 |
+| 6 · Sisli Bataklık | **8** | 3836 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:8 |
 
 
 **Hangi düşman sızıyor** — toplam sayı *neyin* sızdığını söylemiyor ve
@@ -706,7 +706,7 @@ bu ikisi farklı düzeltmeler gerektiriyor:
 | 3 · Kül Ovası | Trol ×2 · Harpi ×1 |
 | 4 · Kar Geçidi | Trol ×4 · Zırhlı Ork ×2 · Harpi ×1 · Şaman ×1 |
 | 5 · Kadim Harabe | Zırhlı Ork ×5 · Trol ×3 · Şaman ×2 · Kurt Binicisi ×1 |
-| 6 · Sisli Bataklık | tunelci ×7 · Ork Savaşçı ×4 · Trol ×1 |
+| 6 · Sisli Bataklık | tunelci ×4 · Ork Savaşçı ×3 · Trol ×1 |
 
 **Kısıt A ile Kısıt B aynı şeyi ölçmüyor.** Kısıt A *tek* düşman için
 ("bir Ork Savaşçı öldürülebilir mi"), Kısıt B *dalga* için ("on bir tanesi

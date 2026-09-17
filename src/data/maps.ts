@@ -862,29 +862,38 @@ export const MAP_6: MapDef = {
   // 7,4; komşuları aile sağlamasını kırıyor. Harita 6'nın tepkisi
   // bu bölgede bıçak sırtı — sayı ayarlanmadı, taranıp tek geçerli
   // değer alındı.
-  // **`M60` (S130): çarpan YENİDEN TÜRETİLEMEDİ — ve engel çarpan değil.**
-  // `M59` ölçümün tek kare süresine bağlı olduğunu gösterince harita 6'nın
-  // taraması **bant ortancasıyla** tekrarlandı
-  // (`referansOlcum.referansCanKaybiOrtanca`). Ortanca tabanında bugünkü
-  // 7,4 iki sağlamayı birden kaybediyor: karışık tahta **11** (Zor ≥ 12
-  // istiyor) ve Okçu **21** (sınır 20). İkisi de üretim adımında geçiyor,
-  // çünkü 1/60 sn harita 6 için bandın *tavanı* — ortancası değil.
+  // **`M60`/`M61` (S130-S131): çarpan YENİDEN TÜRETİLEMEDİ, ve iyi ki.**
   //
-  // Tarama, hepsi ortanca (çarpan → karışık · Kolay · Okçu · Top · Büyü):
-  //   7,45 → 12 · 0 · 22 · 10 · 17     7,65 → 13 · 3 · 22 · 23 · 17
-  //   7,50 → 11 · 0 · 22 · 10 ·  7     7,70 → 12 · 3 · 21 · 24 ·  8
-  //   7,55 → 11 · 1 · 22 · 22 ·  7     7,75 → 14 · 6 · 21 · 24 ·  9
-  //  **7,60 → 13 · 2 · 12 · 23 ·  7**  7,80 → 14 · 6 · 21 · 18 ·  9
-  // 7,0-8,6 arasında bütün sağlamaları geçen **tek** değer 7,60 ve iki
-  // komşusu da Okçu'dan kırılıyor. Yani 7,60 bir plato değil **tek atış**;
-  // `M47` 7,40'ı seçerken tam bu şekli görmüştü. Bir sayıyı iki kırık
-  // komşunun arasındaki tek noktaya oturtmak onu ölçmek değil uydurmaktır
-  // (S82/S84 dersi), o yüzden çarpan **ellenmedi**.
+  // `M59` ölçümün tek kare süresine bağlı olduğunu gösterince harita
+  // 6'nın taraması **bant ortancasıyla** tekrarlandı
+  // (`referansOlcum.referansCanKaybiOrtanca`). İlk turda (`M60`) bütün
+  // şartları geçen tek değer 7,60 çıkmıştı ve iki komşusu da Okçu'dan
+  // kırılıyordu — plato değil tek atış. O yüzden çarpan ellenmedi ve
+  // asıl şüpheli Okçu'ya bakıldı.
   //
-  // Asıl engel şurada: Okçu taranan on dokuz değerin **on altısında**
-  // 20'nin üstünde. `M22`'nin notu bunu zaten söylüyordu (29 can). Çarpan
-  // o kusuru örtmeye çalışıyor, çözmüyor. Kusur **S131** olarak açık.
-  hpMultiplier: 7.4, // S109 → S113 → S119 → S95/M47 → S130 (değişmedi)
+  // **Şüphe doğru çıktı (`M61`).** Referans tahta harita 6'da hiç
+  // Kundakçı kurmuyordu, çünkü dal kuralı Top ve Büyü'yü sayıp Okçu'yu
+  // saymıyordu (`balanceChecks.buildReferenceBoards`). Yanma hedef
+  // seçiminden geçmiyor, yani gömülü Tünelci'ye **değen tek Okçu
+  // cevabı** tahtada yoktu. Kural düzeltilince harita 6'nın karışık
+  // tahtası 13 → **9**, Okçu tahtası 21 → **11**.
+  //
+  // Çarpan bundan sonra yeniden tarandı (7,40-10,0, iki tabanda birden):
+  //
+  //   çarpan   7,40  7,45  7,50  7,55  7,60  7,65  7,70
+  //   karışık  9/11 12/13 20/20 10/12 11/12 11/15 24/14   (üretim/ortanca)
+  //
+  // Hiçbir değer 12-20 bandına oturmuyor ve sebebi gürültü değil **boss
+  // eşiği**: 7,70'te sızanların arasına `ogreSef` giriyor, toplam tek
+  // adımda 10 can zıplıyor. Harita 6 bir kadran değil uçurum — tahta
+  // bossu ya öldürüyor (≤15) ya öldürmüyor (≥21).
+  //
+  // S109'un harita 2 için vardığı yerin aynısı (*"ya yetiyor ya çöküyor;
+  // arası yok"*) ve çözüm de aynı: sayıyı sivri uca oturtmak yerine
+  // iddianın kapsamı ölçüye göre yazıldı (`difficulty.test`, S131).
+  // Harita 6'nın zorluğu çarpanda değil **kadroda**: Tünelci ve çağıran
+  // boss.
+  hpMultiplier: 7.4, // S109 → S113 → S119 → S95/M47 → S130/S131 (değişmedi)
   goldMultiplier: 11.0,
   startGold: Math.round(280 * 11.0),
   enemyRoster: [
