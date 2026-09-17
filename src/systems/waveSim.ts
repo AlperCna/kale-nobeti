@@ -349,8 +349,40 @@ function kosturDalgalar(
   let dalgaAdimi = 0;
   let peakEnemies = 0;
 
+  // `oldur` bölünmeyi çağırıyor ama sistem aşağıda kuruluyor — bu yüzden
+  // `let`. Kurulana kadar hiçbir ölüm olmuyor (`M66`).
+  let yetenekler: EnemyAbilitySystem<SimEnemy> | null = null;
   const enemyPool = new Pool<SimEnemy>(() => new SimEnemy(), POOL_PREALLOC.enemy);
   const projPool = new Pool<SimProjectile>(() => new SimProjectile(), POOL_PREALLOC.projectile);
+
+  /**
+   * **Tek ölüm hunisi — `M66` (S133).**
+   *
+   * Bu üç satır (`alive = false` · say · havuza dön) simülasyonda **dört
+   * ayrı yerde** kopyalanmıştı: hasar hunisi, geçici asker süpürmesi,
+   * kışla süpürmesi ve mermi tarafı. Dördünde de eksik olan aynı şeydi —
+   * **bölünme**. Örümcek Ana ölünce yavru doğurmuyordu, çünkü
+   * `splitOnDeath` ölüm anında çağrılır ve simülasyonun hiçbir ölüm yolu
+   * onu çağırmıyordu.
+   *
+   * `M10-T03`'ün hemen aşağıdaki notu *"Örümcek Ana bölünmüyordu"* diye
+   * yazıp körlüğün kapandığını anlatıyordu; `update()` iyileştirme,
+   * yenilenme ve **çağırmayı** gerçekten kapatmıştı ama bölünme oradan
+   * geçmiyor. Yani metin deliği kapalı sayıyordu, kod açık bırakmıştı.
+   *
+   * R17'nin tam tarifi: aynı kuralın dört kopyası, er geç dört farklı
+   * oyun. Çare tek adres.
+   */
+  const oldur = (e: SimEnemy): void => {
+    if (!e.alive) return;
+    e.alive = false;
+    killedCount++;
+    // Bölünme havuza DÖNMEDEN önce: yavrular annenin `progress`'ini
+    // devralıyor ve `release` onu sıfırlıyor (`GameScene.#olumIsle`
+    // ile birebir aynı sıra).
+    yetenekler?.splitOnDeath(e);
+    enemyPool.release(e);
+  };
 
   /**
    * Tek hasar hunisi — `GameScene.#hasarUygula`'nın karşılığı.
@@ -362,9 +394,7 @@ function kosturDalgalar(
     if (!e.alive) return;
     e.hp -= kalkandanGecir(miktar, e); // M10-T03 — oyunla aynı sıra
     if (e.hp > 0) return;
-    e.alive = false;
-    killedCount++;
-    enemyPool.release(e);
+    oldur(e);
   };
 
   const projectiles = new ProjectileSystem<SimEnemy, SimProjectile>(
@@ -590,7 +620,7 @@ function kosturDalgalar(
    * bu sefer düşman tarafında. Gerçek oyunla aynı sıra: yetenekler
    * kulelerden **önce** işleniyor (`GameScene.update`).
    */
-  const yetenekler = new EnemyAbilitySystem<SimEnemy>(enemyPool, dogumCarpani, (id) =>
+  yetenekler = new EnemyAbilitySystem<SimEnemy>(enemyPool, dogumCarpani, (id) =>
     getEnemyForMap(id, map),
   );
 
@@ -639,9 +669,7 @@ function kosturDalgalar(
           // düşürüyor (kışlayla aynı sözleşme).
           for (const e of canlilar) {
             if (e.alive && e.hp <= 0) {
-              e.alive = false;
-              killedCount++;
-              enemyPool.release(e);
+              oldur(e);
             }
           }
         }
@@ -665,11 +693,7 @@ function kosturDalgalar(
     if (gecicAskerler.length > 0) {
       stepSoldiers(gecicAskerler, dusmanlar, stepMs, Number.POSITIVE_INFINITY);
       for (const e of dusmanlar) {
-        if (e.alive && e.hp <= 0) {
-          e.alive = false;
-          killedCount++;
-          enemyPool.release(e);
-        }
+        if (e.alive && e.hp <= 0) oldur(e);
       }
     }
 
@@ -682,11 +706,7 @@ function kosturDalgalar(
     // öyle — `GameScene.#hasarUygula`).
     if (kislalar.length > 0) {
       for (const e of dusmanlar) {
-        if (e.alive && e.hp <= 0) {
-          e.alive = false;
-          killedCount++;
-          enemyPool.release(e);
-        }
+        if (e.alive && e.hp <= 0) oldur(e);
       }
     }
     towers.update(stepMs, dusmanlar);

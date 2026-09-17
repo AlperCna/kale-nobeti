@@ -100,17 +100,31 @@ describe('Hedefleme modları — M11 Faz 4', () => {
   });
 
   /**
-   * **S94 KAPANDI (`M14`): `strongest` artık bir senaryo kazanıyor.**
+   * **S94 YENİDEN AÇILDI (`M66`) — kapanışı kör bir ölçüme dayanıyormuş.**
    *
-   * `M11` Faz 4'te beş modun yedi senaryoda ölçümü `strongest`'ı tek
-   * başına hiç kazanamaz göstermişti. `M11` Faz 5'in aile dengesi ve
-   * `M14`'ün ekonomi düzeltmesi tabloyu oynattı: Örümcek Ana'lı
-   * dalgada en dayanıklı türe odaklanmak **açık ara** en iyisi
-   * (17'ye 19), çünkü anne ölmeden bölünme hiç durmuyor ve odağı
-   * dağıtmak her anneyi yarım bırakıyor.
+   * `M14` bu testi "`strongest` artık bir senaryo kazanıyor" diye
+   * kapatmıştı: Örümcek Ana'lı dalgada en dayanıklı türe odaklanmak
+   * 17'ye 19 kazanıyordu. Gerekçesi de yazılıydı — *"anne ölmeden
+   * bölünme hiç durmuyor ve odağı dağıtmak her anneyi yarım bırakıyor"*.
+   *
+   * Gerekçe bir mekaniği anlatıyordu ama **ölçüm o mekaniği
+   * göremiyordu**: `waveSim` hiçbir ölüm yolunda `splitOnDeath`
+   * çağırmıyordu, yani o dalgada tek bir yavru bile doğmuyordu (S133).
+   * `M66` deliği kapatınca iddia düştü: `strongest` **22**, `first`
+   * **20**.
+   *
+   * Yön şaşırtıcı değil, sadece eski gerekçenin tersi: yavrular gerçekten
+   * doğunca en dayanıklıya kilitlenmek tahtayı **yavru selinin dışında**
+   * tutuyor; `first` öndekini biçtiği için seli kaleye varmadan
+   * eritiyor. Eski cümle mekanizmayı doğru tarif ediyordu ama yarısını —
+   * annenin ölmesi bölünmeyi *başlatıyor* da.
+   *
+   * Test silinmedi, **yönü çevrildi**: reddedilen tasarımın kanıtı olarak
+   * duruyor. `strongest` bir gün bir senaryo kazanırsa burası kırılır ve
+   * S94 bilinçli olarak yeniden kapatılır.
    */
-  it('`strongest` Örümcek Ana dalgasında `first`’ü yeniyor (S94 kapandı)', () => {
-    expect(canKaybi('okcu', 'strongest', ORUMCEK_VE_ORK)).toBeLessThan(
+  it('`strongest` Örümcek Ana dalgasında `first`’ü YENEMİYOR (S94 açık)', () => {
+    expect(canKaybi('okcu', 'strongest', ORUMCEK_VE_ORK)).toBeGreaterThan(
       canKaybi('okcu', 'first', ORUMCEK_VE_ORK),
     );
   });

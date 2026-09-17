@@ -169,25 +169,52 @@ describe('Aile dengesi — M11 Faz 5 (S95)', () => {
    * (S110: 30 → 36). İkisi de düzelince üç ailenin üçü de bir haritada
    * en iyisi oluyor.
    *
-   * Ölçülen (taban çift, Zor): Kül Ovası karışık 3 · Okçu **0** ·
-   * Top 4 · Büyü 2 | Kar Geçidi karışık 12 · Okçu 19 · Top **13** ·
-   * Büyü 18 | Kadim Harabe karışık 13 · Okçu 19 · Top 14 · Büyü **7**.
-   *
    * Okçu ve Büyü karışık tahtayı da geçiyor; Top yalnız **tek aileler
    * arasında** birinci. Bu bilinçli: S95'in istediği şey hiçbir ailenin
    * karışık tahtayı her yerde yenmemesi ve Top eskiden onu yapıyordu.
+   *
+   * ## `M66` (S133) — tablo yeniden türetildi, TOP'UN EVİ TAŞINDI
+   *
+   * Simülasyon Örümcek Ana'nın bölünmesini hiç işletmiyordu; düzeltilince
+   * (`waveSim.oldur`) örümcekli haritalar belirgin biçimde zorlaştı ve
+   * makas yeniden açıldı. Yeni tablo (taban çift):
+   *
+   * | harita | karışık | Okçu | Top | Büyü |
+   * |---|---|---|---|---|
+   * | Kül Ovası | 7 | **0** | 8 | 7 |
+   * | Kar Geçidi | 16 | **16** | 19 | 21 |
+   * | Kadim Harabe | 18 | 19 | 22 | **16** |
+   * | Sisli Bataklık | 12 | 13 | **7** | 11 |
+   *
+   * İddia duruyor ama dayanağı değişti: Top'un parladığı yer artık Kar
+   * Geçidi değil **Sisli Bataklık** ve orada açık ara birinci (7'ye 11 ve
+   * 13). Kar Geçidi bölünmeyle birlikte Okçu'nun haritası oldu.
+   *
+   * Sebep mekanik: Örümcek Ana ölünce yavru veriyor ve Top'un patlaması
+   * yavru kümesini biçmek için en iyi araç olmalıydı — ama Kar Geçidi'nde
+   * Harpi var ve Top'un T1/T2/Havan'ı **uçana vuramıyor** (§4.2). Örümcek
+   * baskısı artınca o kategorik delik ağır bastı. Sisli Bataklık'ta Harpi
+   * baskısı düşük, örümcek yok, ve Top'un patlaması Tünelci penceresinde
+   * de değiyor (`gomuluMu` notu) — bu yüzden orada birinci.
+   *
+   * **Kayda değer:** Kadim Harabe'de Top 22, Kar Geçidi'nde Büyü 21, yani
+   * ikisi 20 canın üstünde. `aileDengesi`'nin 20 eşiği yalnız Okçu'ya
+   * konmuş durumda (S119'un kapanışı) ve o geçiyor (16 · 19 · 13). Top ve
+   * Büyü için de eşik konmalı mı — sahibinin kararı, S134.
    */
   it('her ailenin parladığı bir harita var', () => {
     // Okçu — Kül Ovası'nda karışık tahtadan bile iyi.
     expect(canKaybi(MAP_3, 'okcu')).toBeLessThan(canKaybi(MAP_3));
     // Büyü — Kadim Harabe'de karışık tahtadan iyi (S110'un kapanışı).
     expect(canKaybi(MAP_5, 'buyu')).toBeLessThan(canKaybi(MAP_5));
-    // Top — Kar Geçidi'nde en iyi tek ailelerden biri. **`M22`'de
-    // "kesin birinci"den "berabere birinci"ye indi:** Okçu'nun Keskin
-    // Nişancı'sı 34 → 41 olunca (S119) makas kapandı ve ikisi de 14.
-    // Top ölü değil (14 · 16 · 7, hepsi 20'nin altında) ama artık tek
-    // başına bir haritanın sahibi değil. Kaydedildi: S120.
-    expect(canKaybi(MAP_4, 'top')).toBeLessThan(canKaybi(MAP_4, 'buyu'));
-    expect(canKaybi(MAP_4, 'top')).toBeLessThanOrEqual(canKaybi(MAP_4, 'okcu'));
+    // Top — **Sisli Bataklık'ta** açık ara birinci (`M66`). `M22`-`M66`
+    // arasında evi Kar Geçidi'ydi ve orada "berabere birinci"ye düşmüştü
+    // (S120); bölünme simüle edilmeye başlayınca Kar Geçidi'ni Okçu aldı
+    // ve Top'un üstünlüğü Sisli Bataklık'ta netleşti. Gerekçe üstteki
+    // notta: Kar Geçidi'nde Harpi var ve Top'un çoğu kademesi uçana
+    // vuramıyor.
+    expect(canKaybi(MAP_6, 'top')).toBeLessThan(canKaybi(MAP_6, 'okcu'));
+    expect(canKaybi(MAP_6, 'top')).toBeLessThan(canKaybi(MAP_6, 'buyu'));
+    expect(canKaybi(MAP_6, 'top')).toBeLessThan(canKaybi(MAP_6));
   });
 });
