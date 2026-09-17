@@ -1928,6 +1928,23 @@ export class GameScene extends Phaser.Scene {
       );
       return true;
     };
+    /**
+     * **Dalga/ekonomi kancaları burada da bağlanıyor** — `M56`.
+     *
+     * Bunlar `HudScene`'de bağlıydı ve **yalnız HUD koşarken** vardı.
+     * `scene.start('Game')` ile doğrudan açılan bir turda HUD başlamıyor,
+     * yani ölçüm koşusu dalga numarasını okuyamıyordu (`M55`, S129 —
+     * referans tahtanın dalga dalga programı tam bu yüzden uygulanamadı).
+     *
+     * Anlattıkları şey **oyunun** durumu, HUD'ın değil; sahibi de burası.
+     * `HudScene` aynı değerleri yeniden atıyor — zararsız, ikisi de aynı
+     * genel erişimciyi okuyor.
+     */
+    dev.waveNumber = () => this.waveNumber;
+    dev.wavePhase = () => this.wavePhase;
+    dev.prepRemaining = () => this.prepRemainingSec ?? -1;
+    dev.gold = () => this.gold;
+    dev.startWaveEarly = () => this.startWaveEarly();
     dev.isEndlessWave = () => this.isEndlessWave;
     dev.isEndlessRun = () => this.isEndlessRun;
     dev.enemyCapacity = () => enemyPool.capacity;
