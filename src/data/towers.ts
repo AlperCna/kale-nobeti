@@ -14,6 +14,36 @@ import type { TargetMode, TierIndex, TowerDef, TowerTier } from '../types/tower'
  * Okçu Kulesi — tek hedef, hızlı, ucuz. Fiziksel hasar, uçana vurur,
  * zırha karşı zayıf (§4.1).
  */
+/**
+ * **`M67` (S134) — kademe çıktıları ÜÇ AİLEDE birden hizalandı.**
+ *
+ * `M66` simülasyonun Örümcek Ana'yı hiç böldürmediğini bulup düzeltti
+ * (S133) ve geç haritalar belirgin biçimde sertleşti. Ortaya çıkan
+ * tablo, `aileDengesi`'nin 20 can eşiğinin yalnız **Okçu'ya** konmuş
+ * olduğunu da görünür kıldı: ölçülünce Top Kadim Harabe'de **22**,
+ * Büyü Kar Geçidi'nde **21** kaybettiriyordu — ikisi de o haritayı tek
+ * başlarına kaybediyor ve hiçbir test bakmıyordu. S119'un birebir
+ * tekrarı, bu kez iki ailede.
+ *
+ * Sahip eşiğin üç aileye de konmasını istedi; bu bir denge turu demekti.
+ * Çare `M11` Faz 5 ve `M18`'in aynısı: **yeni mekanik eklenmedi, kademe
+ * çıktısı hizalandı.**
+ *
+ * | değer | önce | sonra | neyi çözdü |
+ * |---|---|---|---|
+ * | Havan hasarı | 48 | **52** | Top'un zırha karşı debisi (Kadim Harabe 22 → 19) |
+ * | Barut Fıçısı hasarı | 24 | **26** | Top'un iki dalının DPS'i EŞİT kalsın (23,4) |
+ * | Yıldırım hasarı | 36 | **39** | Büyü Kar Geçidi'nin bossunu öldüremiyordu (21'in 10'u boss) |
+ * | Keskin Nişancı hasarı | 41 | **44** | Okçu iki haritada 19'da tıkalıydı, pay yoktu |
+ *
+ * Tarama ve gerekçeler `OPEN-QUESTIONS` S134'te. Barut Fıçısı'nın
+ * yükselmesi bir denge kararı değil **değişmez koruması**: `M11-T02`
+ * iki dalın DPS'ini bilerek eşitlemişti (fark menzil↔patlama), yalnız
+ * Havan'ı yükseltmek o kimliği bozardı.
+ *
+ * Sonuç (taban çift, tek aile / karışık):
+ * rampa `0·0·5·14·15·15`, üç ailenin üçü de her haritada 20'nin altında.
+ */
 export const OKCU: TowerDef = {
   id: 'okcu',
   role: 'Tek hedef, hızlı, ucuz. Zırha karşı zayıf.',
@@ -72,7 +102,7 @@ export const OKCU: TowerDef = {
        * 43 → 9/9/6. 41, üç haritayı da sınırın altına indiren **en
        * küçük** adım.
        */
-      damage: 41,
+      damage: 44,
       fireRate: 0.6,
       range: 260,
       airMultiplier: 1,
@@ -122,7 +152,7 @@ export const TOP: TowerDef = {
     // 3a Havan — kara uzmanı.
     {
       cost: 240,
-      damage: 48,
+      damage: 52,
       fireRate: 0.45,
       range: 230,
       splashRadius: 55, // M11-T02: 70 → 55, kimliği DAR ve UZAK
@@ -142,7 +172,7 @@ export const TOP: TowerDef = {
     //  gövdesiyle çelişiyordu.)
     {
       cost: 240,
-      damage: 24, // M11-T02: 30 → 24 (DPS 21,6 = Havan ile eşit; takas menzil↔patlama)
+      damage: 26, // M11-T02: 30 → 24; `M67`: 24 → 26 (DPS 23,4 = Havan ile eşit)
       fireRate: 0.9, // M11-T02: 0,6 → 0,9
       range: 150,
       splashRadius: 85, // M11-T02: 65 → 85, kimliği GENİŞ ve HIZLI
@@ -204,7 +234,7 @@ export const BUYU: TowerDef = {
        * Tarama (tek aile, taban tahta, Kar Geçidi/Kadim Harabe can
        * kaybı): 30 → 8/21 · 32 → 8/16 · 34 → 7/16 · **36 → 5/13**.
        */
-      damage: 36,
+      damage: 39,
       fireRate: 0.7,
       range: 170,
       airMultiplier: 1,

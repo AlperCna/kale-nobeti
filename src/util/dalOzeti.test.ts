@@ -8,12 +8,12 @@ import { BUYU, OKCU, TOP } from '../data/towers';
 import { KISLA } from '../data/barracks';
 
 describe('dalOzeti — T3 seçimi satın almadan önce okunabilir', () => {
-  it('Top: iki dalın DPS’i aynı, fark menzil ve patlamada', () => {
+  it('Top: iki dalın DPS’i aynı (23,4), fark menzil ve patlamada', () => {
     const havan = dalOzeti('Havan', TOP.branches[0]);
     const barut = dalOzeti('Barut Fıçısı', TOP.branches[1]);
     // Faz 2'nin tasarım iddiası: eşit DPS, farklı geometri.
-    expect(havan).toContain('DPS 21.6');
-    expect(barut).toContain('DPS 21.6');
+    expect(havan).toContain('DPS 23.4');
+    expect(barut).toContain('DPS 23.4');
     expect(havan).toContain('menzil 230');
     expect(barut).toContain('menzil 150');
     expect(havan).toContain('patlama 55');

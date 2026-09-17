@@ -188,7 +188,15 @@ describe('Yeteneklerin katkısı — M11 Faz 4', () => {
     // İki yetenek ayrı beklemelerde, yani oyuncu birini seçmiyor —
     // ikisini de basıyor. Soru "hangisi daha iyi" değil, "ikincisi
     // birincinin üstüne bir şey koyuyor mu".
-    expect(canKaybi(MAP_5, 'ikisi')).toBeLessThan(canKaybi(MAP_5, 'meteor'));
+    //
+    // **`M67` (S134): iddia Kadim Harabe'den Sisli Bataklık'a taşındı.**
+    // Kademe çıktıları hizalanınca Kadim Harabe'de üç seçenek de 10'da
+    // **berabere** kaldı (meteor 10 · takviye 10 · ikisi 10), yani orada
+    // soru artık ölçülemiyor — `M18`'in Kar Geçidi için kaydettiği
+    // beraberliğin aynısı: Meteor tek başına işin tamamını yapıyor.
+    // Sisli Bataklık'ta makas açık: yok 16 · meteor 12 · takviye 12 ·
+    // **ikisi 8**.
+    expect(canKaybi(MAP_6, 'ikisi')).toBeLessThan(canKaybi(MAP_6, 'meteor'));
   });
 
   /**

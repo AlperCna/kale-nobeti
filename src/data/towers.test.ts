@@ -149,10 +149,10 @@ describe('towers.ts — GAME-DESIGN §4.3 Büyü tablosu', () => {
     expect(BUYU.damageType).toBe('magic');
   });
 
-  it('Yıldırım: 230 / 36 / 0.7 / 170, 3 hedefe %70 azalarak (S110)', () => {
+  it('Yıldırım: 230 / 39 / 0.7 / 170, 3 hedefe %70 azalarak (S110)', () => {
     const y = BUYU.branches[0];
     expect(y.cost).toBe(230);
-    expect(y.damage).toBe(36); // `M18` (S110): 30 → 36, gerekçe towers.ts'te
+    expect(y.damage).toBe(39); // `M18` (S110): 30 → 36; `M67` (S134): 36 → 39
     expect(y.fireRate).toBe(0.7);
     expect(y.range).toBe(170);
     expect(y.effect).toEqual({ kind: 'chain', targets: 3, falloff: 0.7 });
@@ -184,9 +184,9 @@ describe('towers.ts — T3 dalları (12 kademe)', () => {
     }
   });
 
-  it('Keskin Nişancı: 170 / 41 / 0.6 / 260, efekt yok (S95 → S119)', () => {
+  it('Keskin Nişancı: 170 / 44 / 0.6 / 260, efekt yok (S95 → S119 → S134)', () => {
     const k = OKCU.branches[0];
-    expect([k.cost, k.damage, k.fireRate, k.range]).toEqual([170, 41, 0.6, 260]);
+    expect([k.cost, k.damage, k.fireRate, k.range]).toEqual([170, 44, 0.6, 260]);
     expect(k.effect).toBeUndefined();
   });
 
@@ -196,18 +196,18 @@ describe('towers.ts — T3 dalları (12 kademe)', () => {
     expect(k.effect).toEqual({ kind: 'burn', dps: 11, seconds: 4 });
   });
 
-  it('Havan: 240 / 48 / 0.45 / 230, yarıçap 55, uçana %50 (M11-T02)', () => {
+  it('Havan: 240 / 52 / 0.45 / 230, yarıçap 55, uçana %50 (M11-T02 → S134)', () => {
     const h = TOP.branches[0];
     expect([h.cost, h.damage, h.fireRate, h.range, h.splashRadius]).toEqual([
-      240, 48, 0.45, 230, 55,
+      240, 52, 0.45, 230, 55,
     ]);
     expect(h.airMultiplier).toBe(0.5);
   });
 
-  it('Barut Fıçısı: 240 / 24 / 0.9 / 150, yarıçap 85, YAVAŞLATMA YOK (M11-T02)', () => {
+  it('Barut Fıçısı: 240 / 26 / 0.9 / 150, yarıçap 85, YAVAŞLATMA YOK (M11-T02 → S134)', () => {
     const b = TOP.branches[1];
     expect([b.cost, b.damage, b.fireRate, b.range, b.splashRadius]).toEqual([
-      240, 24, 0.9, 150, 85,
+      240, 26, 0.9, 150, 85,
     ]);
     expect(b.airMultiplier).toBe(0.5);
     // `M11-T02` — yavaşlatma KALDIRILDI, Buz'un kimliği oldu. Sebep
