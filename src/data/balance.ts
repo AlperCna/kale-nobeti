@@ -166,6 +166,36 @@ export const BALANCE = {
    */
   eliteWaves: [6],
   eliteFactor: 2.2,
+  /**
+   * **Boss dalgasının bütçe çarpanı — `M70` (S135).**
+   *
+   * §7 boss dalgasını haritanın zirvesi olarak tanımlıyor. Kül
+   * Ovası'nda değildi: dalga 10 **sıfır** can kaybettiriyordu, bütün
+   * baskı elit dalgasının taşmasındaydı (S135).
+   *
+   * Sebep yapısal ve ölçüldü: `BOSS_CEILING_RATIO = 0,80` bossun
+   * referans tahta tarafından öldürülmesini **garanti ediyor** — yani
+   * "boss dalgası zirve" aslında "boss **refakati** zirve" demek. Kül
+   * Ovası'nda elit dalgası 51 puanın tamamını refakat sınıfı birime
+   * veriyordu; boss dalgası ise 51 puanın 25'ini tek bir bossa
+   * harcıyor, geriye 26 puanlık refakat kalıyordu. Elit dalga, boss
+   * dalgasının iki katı refakat taşıyordu.
+   *
+   * Denenip elenenler (hepsi ölçüldü): dalga 10'un kompozisyonunu
+   * değiştirmek (beş varyant, hepsi d10 = 0 — tahta bütçe içindeki her
+   * şeyi yutuyor) · boss HP'sini `0,80 × tavan` ile yeniden türetmek
+   * (d10 yine 0, çünkü kural zaten öldürülmesini garanti ediyor) ·
+   * haritanın çarpanını yükseltmek (d10 ancak 4,4'te zirve oluyor ve
+   * orada toplam 15, Kolay 11, Top 21 — üç sağlama birden kırılıyor).
+   *
+   * İşleyen tek yol refakati büyütmek oldu. Çarpan **ölçüldü**: 52
+   * puanlık taban bütçede 65 → d10 2 · 75 → d10 4 · **79 → d10 7** ·
+   * 113 (elit çarpanı 2,2) → d10 15 ve toplam 20 (bandın dışı).
+   * `79 / 52 ≈ 1,52`; 1,5 alındı.
+   *
+   * `eliteFactor` gibi yalnız `ELIT_DALGALI_HARITALAR` için geçerli.
+   */
+  bossWaveFactor: 1.5,
   /** §7 — bütçe tabanı ve büyüme oranı. */
   budgetBase: 10,
   budgetGrowth: 1.2,

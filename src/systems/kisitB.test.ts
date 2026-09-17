@@ -74,7 +74,53 @@ function canKaybi(map: MapDef, waves: readonly Wave[]): number {
   return can;
 }
 
+/** Dalga başına **can bedeli** — S135'in ölçütü. */
+function dalgaBasinaCan(map: MapDef, waves: readonly Wave[]): number[] {
+  return kosu(map, waves).sim.map((r) => {
+    let can = 0;
+    for (const [id, n] of Object.entries(r.leakedByEnemy)) {
+      const e = getEnemyForMap(id as EnemyId, map);
+      if (e) can += e.leakDamage * (n ?? 0);
+    }
+    return can;
+  });
+}
+
 describe('Kısıt B — düşman kırılımı', () => {
+  /**
+   * **Boss dalgası haritanın ZİRVESİDİR — §7, sahibin kararı (`M70`).**
+   *
+   * `GAME-DESIGN.md` §7 boss dalgasını zirve olarak tanımlıyor ama
+   * hiçbir test bakmıyordu. `M69`'un S116 yeniden ölçümü Kül Ovası'nda
+   * tersini buldu: boss dalgası **sıfır** can kaybettiriyor, bütün
+   * baskı elit dalgasının taşmasında (S135). Sahibi kuralı seçti —
+   * boss her haritada zirve olacak — ve bu test onu bağlıyor.
+   *
+   * İki kademeli, çünkü öğretici haritalar hiç sızdırmıyor:
+   * her haritada zirve **en az** boss dalgasında, ve baskının olduğu
+   * haritalarda **kesin** orada.
+   *
+   * Ölçüt sızıntı **sayısı** değil **can bedeli**: Trol'ün `leakDamage`
+   * değeri 2, goblininki 1 — iki goblin bir Trol etmiyor.
+   */
+  it('**boss dalgası haritanın ZİRVESİ** — §7 (S135)', () => {
+    for (const [m, w] of [
+      [MAP_1, MAP1_WAVES],
+      [MAP_2, MAP2_WAVES],
+      [MAP_3, MAP3_WAVES],
+      [MAP_4, MAP4_WAVES],
+      [MAP_5, MAP5_WAVES],
+      [MAP_6, MAP6_WAVES],
+    ] as const) {
+      const pw = dalgaBasinaCan(m, w);
+      const son = pw[9] ?? 0;
+      const erkenEnCok = Math.max(...pw.slice(0, 9));
+      const etiket = `${m.id}: ${pw.join(' ')}`;
+      expect(son, etiket).toBeGreaterThanOrEqual(erkenEnCok);
+      if (pw.reduce((a, b) => a + b, 0) > 0) expect(son, etiket).toBeGreaterThan(erkenEnCok);
+    }
+  });
+
   it('harita 1: HİÇ sızıntı yok', () => {
     const r = kosu(MAP_1, MAP1_WAVES);
     expect(r.adet).toBe(0);

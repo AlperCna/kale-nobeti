@@ -72,8 +72,11 @@ export const ELIT_DALGALI_HARITALAR: readonly string[] = ['kul-ovasi'];
  * iki ayrı kural yazmak sessizce ayrışırdı.
  */
 export function budgetFor(mapId: string, n: number): number {
-  const elit = ELIT_DALGALI_HARITALAR.includes(mapId) && BALANCE.eliteWaves.includes(n as 6);
-  return budget(n, elit);
+  if (!ELIT_DALGALI_HARITALAR.includes(mapId)) return budget(n);
+  if (BALANCE.eliteWaves.includes(n as 6)) return budget(n, true);
+  // Boss dalgası — gerekçe `balance.bossWaveFactor` (S135).
+  if (n === 10) return Math.round(budget(n) * BALANCE.bossWaveFactor);
+  return budget(n);
 }
 
 /** Grup içi doğum aralığı (`GAME-DESIGN.md` §7). Birim: saniye. */
@@ -340,11 +343,16 @@ export const MAP3_WAVES: readonly Wave[] = [
   ]), // 21 = bütçe 21. ÖRÜMCEK ANA tanıtılıyor: bölünme.
   // **ELİT DALGASI** (`M21`, S116) — bütçe ×2,2 ve fazlalık tek sert
   // birime gidiyor. Gerekçe `balance.eliteWaves`'te.
+  // **`M70` (S135): trol ×4 → ×3 + goblin ×5.** Puan korundu (51 → 48,
+  // elit bütçe 55, pay içinde) ama yük bir sert birimden kalabalığa
+  // kaydırıldı: dört Trol'ün taşması dalga 7-8'e 5 can bindiriyordu ve
+  // boss dalgasını gölgede bırakıyordu. Şimdi taşma 2 can.
   dalgaKur(6, [
     ['zirhliOrk', 2],
-    ['trol', 4, 1],
+    ['trol', 3, 1],
     ['orkSavasci', 4],
     ['harpi', 1, 1],
+    ['goblin', 5],
   ]), // 51 ≈ elit bütçe 55. TROL tanıtılıyor: yenilenme + kışla.
   dalgaKur(7, [
     ['goblin', 4],
@@ -367,10 +375,16 @@ export const MAP3_WAVES: readonly Wave[] = [
   dalgaKur(
     10,
     [
+      // **`M70` (S135): refakat BÜYÜDÜ** — 51 → 79 puan. Boss dalgası
+      // §7'nin dediği gibi zirve değildi (sıfır can kaybettiriyordu),
+      // çünkü 51 puanın 25'i tek bir bossa gidiyor ve `BOSS_CEILING_RATIO`
+      // zaten onun öldürülmesini garanti ediyor. Yeni bütçe çarpanı
+      // `balance.bossWaveFactor` (1,5) ve gerekçesi orada.
       ['ogreSef', 1], // 0. kapı
-      ['trol', 2, 1], // 1. kapı — refakat AYRI kapıdan
-      ['orumcekAna', 1, 1],
-      ['zirhliOrk', 1],
+      ['trol', 4, 1], // 1. kapı — refakat AYRI kapıdan
+      ['orumcekAna', 2, 1],
+      ['zirhliOrk', 2],
+      ['orkSavasci', 1],
     ],
     BOSS_REFAKAT_GECIKMESI_SN,
   ), // 51 ≈ bütçe 52
