@@ -22,6 +22,13 @@ import { Projectile } from '../entities/Projectile';
 import { Tower } from '../entities/Tower';
 import { Soldier } from '../entities/Soldier';
 import {
+  adimBasla,
+  adimBitti,
+  araDegerUygula,
+  gercegeDon,
+  type AraDegerli,
+} from '../util/araDeger';
+import {
   clampRally,
   defaultRally,
   spawnSoldier,
@@ -1132,15 +1139,65 @@ export class GameScene extends Phaser.Scene {
     // Donmuşken saat hiç ilerlemiyor: biriktirici de durur, artık korunur.
     const donduruldu = this.hitStop.update(delta);
     const adimlar = donduruldu ? 0 : this.clock.tick(delta);
-    for (let i = 0; i < adimlar; i += 1) this.#sabitAdim();
+    if (adimlar > 0) {
+      // Önceki karenin ara değeri siliniyor: mantık **gerçek** konumdan
+      // devam etmeli, yoksa hedefleme yarım adım yanılır (`M65`).
+      for (const n of this.#araDegerliler()) gercegeDon(n);
+      for (let i = 0; i < adimlar; i += 1) this.#sabitAdim();
+      for (const n of this.#araDegerliler()) adimBitti(n);
+    }
+    this.#araDegerleriCiz();
 
     const devKare = devHooks();
     if (devKare !== undefined) devKare.gameFrames = (devKare.gameFrames ?? 0) + 1;
   }
 
+  /**
+   * Ara değer üretilecek nesneler: hareket eden her şey (`M65`).
+   *
+   * Kuleler yok — yerlerinde duruyorlar. Kışla askerleri iki listede
+   * yaşıyor (kışlanınkiler ve Takviye'nin **geçici** olanları); ikincisi
+   * `M16`'da bir kez atlanmıştı (bkz. `shutdown`'daki not), o yüzden
+   * burada ikisi de açıkça sayılıyor.
+   */
+  *#araDegerliler(): Generator<AraDegerli> {
+    yield* this.#enemyPool?.activeItems() ?? [];
+    yield* this.#mermiHavuzu?.activeItems() ?? [];
+    yield* this.#gecici;
+    // `BarracksKayit.soldiers` saf tip (`SoldierState`) tutuyor ve o tip
+    // ara değer alanlarını taşımıyor — `waveSim`'in askerleri de aynı
+    // tipte ve onların çizimi yok. Zorlama yerine daraltma: sahnedeki
+    // asker her zaman `Soldier`.
+    for (const [, k] of this.#barracksBySpot) {
+      for (const asker of k.soldiers) if (asker instanceof Soldier) yield asker;
+    }
+  }
+
+  /**
+   * Çizim konumlarını son iki mantık durumu **arasına** koyar ve
+   * düşmandan türeyen katmanları oradan çizer (`M65`).
+   *
+   * Can çubuğu, durum işaretleri, kalkan halkası ve yeraltı gölgesi
+   * `#sabitAdim`'den buraya taşındı: düşman ara değerde, çubuğu gerçek
+   * konumda çizilseydi ikisi ayrı yerlerde titrerdi.
+   */
+  #araDegerleriCiz(): void {
+    const oran = this.clock.oran;
+    for (const n of this.#araDegerliler()) araDegerUygula(n, oran);
+
+    const dusmanlar = this.#enemyPool?.activeItems() ?? [];
+    // `M15`'in deseni: olay her karede yayılıyor, "ilk kez mi" kararı
+    // `TutorialSystem`'in.
+    if (this.#durumKatmani?.update(dusmanlar) === true) this.bus.emit('enemy:healing', {});
+    this.#gomululeriCiz(dusmanlar);
+    this.#enemyHealthBars?.update(dusmanlar);
+    this.#kalkanlariCiz(dusmanlar);
+  }
+
   /** Bir sabit mantık adımı. Sırası `waveSim` ile birebir aynı. */
   #sabitAdim(): void {
     const sd = this.clock.scaledDelta;
+    for (const n of this.#araDegerliler()) adimBasla(n);
 
     this.#waves?.update(sd);
     const dusmanlar = this.#enemyPool?.activeItems() ?? [];
@@ -1149,7 +1206,6 @@ export class GameScene extends Phaser.Scene {
     // iyileştirmeyi gösteriyor, bir kare öncekini değil.
     // `M15`'in `enemy:burrowed` deseni: olay her karede yayılıyor,
     // "ilk kez mi" kararı `TutorialSystem`'in.
-    if (this.#durumKatmani?.update(dusmanlar) === true) this.bus.emit('enemy:healing', {});
     this.#etkileriIsle(sd, dusmanlar);
     // Kışla, kulelerden **önce**: engellenen düşman aynı karede duruyor,
     // yani kule ona ateş ederken doğru konumda oluyor.
@@ -1159,9 +1215,6 @@ export class GameScene extends Phaser.Scene {
     this.#projectiles?.update(sd, dusmanlar);
     this.#damageTexts?.update(sd);
     this.#altinUcusu?.update(sd);
-    this.#gomululeriCiz(dusmanlar);
-    this.#enemyHealthBars?.update(dusmanlar);
-    this.#kalkanlariCiz(dusmanlar);
     // `true` yalnız hattın GÖRÜNDÜĞÜ karede — öğretici bir kez tetiklensin.
     if (this.#mapRenderer?.updateFlyerHint(this.#waves?.upcomingWave) === true) {
       this.bus.emit('wave:flyers', {});

@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { BlockableEnemy, SoldierState, SoldierStateName } from '../types/barracks';
 import type { Vec2 } from '../types/common';
 import type { Poolable } from '../util/pool';
+import { konumIsinla, type AraDegerli } from '../util/araDeger';
 import { resetSoldierState } from '../systems/BarracksSystem';
 import { SOLDIER_FRAME } from '../data/spriteFrames';
 
@@ -41,7 +42,7 @@ function renkKaristir(taban: number, hedef: number, oran: number): number {
  * `x`/`y` Phaser'ın kendi alanları; sistem onları doğrudan yazıyor —
  * `Projectile` ve `Enemy` ile aynı sözleşme.
  */
-export class Soldier extends Phaser.GameObjects.Sprite implements SoldierState, Poolable {
+export class Soldier extends Phaser.GameObjects.Sprite implements SoldierState, Poolable, AraDegerli {
   /** `Y08` — bkz. `Enemy.HAVUZ_ALANLARI`'ın başındaki gerekçe. */
   static readonly HAVUZ_ALANLARI: readonly string[] = [
     'Active',
@@ -83,6 +84,9 @@ export class Soldier extends Phaser.GameObjects.Sprite implements SoldierState, 
   /** Asker göründü — `spawnSoldier` alanları doldurduktan sonra. */
   activate(): void {
     this.setActive(true).setVisible(true).setAlpha(1);
+    // Havuz mirasını sil — yoksa nesne ilk karesinde ekranın öbür
+    // ucundan süzülerek gelir (`M65`).
+    konumIsinla(this);
   }
 
   /**
@@ -92,6 +96,16 @@ export class Soldier extends Phaser.GameObjects.Sprite implements SoldierState, 
    * özellikle `engagedWith` **iki taraflı** temizleniyor: sıfırlanmayan
    * kilit ölü askeri düşmana bağlı bırakır ve düşman sonsuza kadar durur.
    */
+  /**
+   * Ara değer üretimi (`M65`, `util/araDeger.ts`). Çizim son iki
+   * mantık durumu arasında yapılıyor; `x`/`y` hem mantığın hem
+   * çizimin alanı olduğu için gerçek konum ayrıca saklanıyor.
+   */
+  oncekiX = 0;
+  oncekiY = 0;
+  gercekX = 0;
+  gercekY = 0;
+
   resetForPool(): void {
     resetSoldierState(this);
     this.spotIndex = -1;

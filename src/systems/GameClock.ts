@@ -76,6 +76,18 @@ export class GameClock {
     return this.#birikim;
   }
 
+  /**
+   * **Ara değer oranı** — biriktiricinin doluluğu, `0..1` (`M65`).
+   *
+   * Çizim son iki mantık durumu arasında bu oranla yapılıyor. Mantık 60
+   * Hz'de koşarken 144 Hz ekranda kareler arası hareket böyle sürekli
+   * görünüyor; sonuç birebir aynı kalıyor çünkü bu sayıyı **yalnız
+   * çizim** okuyor (`util/araDeger.ts`).
+   */
+  get oran(): number {
+    return this.#birikim / SABIT_ADIM_MS;
+  }
+
   get scale(): Speed {
     return this.#scale;
   }

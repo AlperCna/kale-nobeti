@@ -5,6 +5,7 @@ import type { ProjectileState } from '../types/projectile';
 import type { Poolable } from '../util/pool';
 import type { TowerEffect } from '../types/tower';
 import type { ProjectileLook } from '../data/projectileVisuals';
+import { konumIsinla, type AraDegerli } from '../util/araDeger';
 
 /** Gülle yay nabzı — `M8-T08`. Tepe ölçek ve yarım periyot. */
 const ARC_TEPE = 1.25;
@@ -18,7 +19,7 @@ const ARC_MS = 260;
  * `node`'da test edilmiş; burada yalnız görüntü var. `x`/`y` Phaser'ın
  * kendi alanları, sistem onları doğrudan yazıyor.
  */
-export class Projectile extends Phaser.GameObjects.Arc implements ProjectileState<Enemy>, Poolable {
+export class Projectile extends Phaser.GameObjects.Arc implements ProjectileState<Enemy>, Poolable, AraDegerli {
   /** `Y08` — bkz. `Enemy.HAVUZ_ALANLARI`'ın başındaki gerekçe. */
   static readonly HAVUZ_ALANLARI: readonly string[] = [
     'Active',
@@ -41,6 +42,16 @@ export class Projectile extends Phaser.GameObjects.Arc implements ProjectileStat
   lastKnownX = 0;
   lastKnownY = 0;
 
+  /**
+   * Ara değer üretimi (`M65`, `util/araDeger.ts`). Çizim son iki
+   * mantık durumu arasında yapılıyor; `x`/`y` hem mantığın hem
+   * çizimin alanı olduğu için gerçek konum ayrıca saklanıyor.
+   */
+  oncekiX = 0;
+  oncekiY = 0;
+  gercekX = 0;
+  gercekY = 0;
+
   readonly #baseColor: number;
   /**
    * `M8-T08` — bu mermi arkasında iz bırakıyor mu ve rengi ne.
@@ -60,6 +71,9 @@ export class Projectile extends Phaser.GameObjects.Arc implements ProjectileStat
   /** Mermi göründü — `ProjectileSystem.fire` alanları doldurduktan sonra. */
   activate(): void {
     this.setActive(true).setVisible(true);
+    // Havuz mirasını sil — yoksa nesne ilk karesinde ekranın öbür
+    // ucundan süzülerek gelir (`M65`).
+    konumIsinla(this);
   }
 
   /**
