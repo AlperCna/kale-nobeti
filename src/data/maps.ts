@@ -584,10 +584,11 @@ export const MAP_4: MapDef = {
 // almak için yükseldi. Tarama: 8,5→10 · **9,2→13** · 9,9→14.
 // **`M22` (S119): 9,2 → 9,6.** Aynı sebep. Tarama: 9,2→8 · **9,6→13** ·
 // 10,0→10 (altın çarpanı 10,0 tavan, S73).
-// **`M47` (S95): 9,6·10,0 → 10,2·10,4.** Harita 4 üç ölçütlü sıralamadan
-// sonra 13'e türetilince rampanın **kesin artan** şartı (harita 5 > harita 4)
-// harita 5'i de yukarı zorladı. Tarama (yok / takviye / meteor / en kötü aile):
-// İki boyutlu tarandı (hp × altın), çünkü altın da tahtayı değiştiriyor.
+// **`M47` (S95): 9,6·10,0 → 10,2·10,2.** Harita 4 üç ölçütlü nokta
+// sıralamasından sonra yeniden türetilince rampanın **kesin artan** şartı
+// (harita 5 > harita 4) harita 5'i de yukarı zorladı. İki boyutlu tarandı
+// (hp × altın), çünkü altın da tahtayı değiştiriyor — tek eksenli ilk
+// tarama yanıltmıştı.
 // Bütün sağlamaları geçen dört nokta çıktı — `10,2·10,2` · `10,2·10,8` ·
 // `10,4·10,4` · `10,4·10,8` — ve en küçük hamle olan ilki alındı:
 // `yok 14 · takviye 12 · meteor 11 · ikisi 9 · en kötü aile 17`.

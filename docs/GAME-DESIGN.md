@@ -693,14 +693,21 @@ düzeltildi:
 
 - **S87 → S91 — ölçülen zorluk rampası (Zor'da can kaybı):**
 
-  | Harita | HP çarpanı | Altın çarpanı | Zor | Kolay (×0,80) |
+  > **`M47` — bu tablo M14'ten beri eskiydi ve altı satırın beşi yanlıştı.**
+  > Aradan M14 (S101), M18 (S113), M20 (S118), M22 (S119) ve M47 (S95)
+  > geçti; her biri çarpanları yeniden türetti, tablo hiç güncellenmedi.
+  > Aşağıdaki değerler ölçülerek yenilendi. **Zor sütunu kaldırıldı:** Zor
+  > yalnız başlangıç canını değiştiriyor (`hpScale` 1,0), yani can kaybı
+  > Normal ile **birebir aynı** — ayrı sütun olması yanıltıcıydı.
+
+  | Harita | HP çarpanı | Altın çarpanı | Normal = Zor | Kolay (×0,80) |
   |---|---|---|---|---|
   | 1 Değirmen Geçidi | 1,0 | 1,0 | 0 | 0 |
-  | 2 Taş Köprü | **1,5** | 1,6 | 4 | 1 |
-  | 3 Kül Ovası | **2,8** | 3,8 | 8 | 2 |
-  | 4 Kar Geçidi | **4,4** | 7,2 | 12 | 4 |
-  | 5 Kadim Harabe | **7,2** | 10,0 | 16 | 8 |
-  | 6 Sisli Bataklık | 6,2 | 11,0 | 18 | 5 |
+  | 2 Taş Köprü | 1,6 | 2,2 | 0 | 0 |
+  | 3 Kül Ovası | 2,8 | 3,8 | 5 | 5 |
+  | 4 Kar Geçidi | **7,35** | **7,8** | 12 | 4 |
+  | 5 Kadim Harabe | **10,2** | **10,2** | 14 | 4 |
+  | 6 Sisli Bataklık | **7,4** | 11,0 | 13 | 1 |
 
   **`M14` (S101): dört çarpan yeniden türetildi.** Erken başlatma bonusu
   altın çarpanını izlemeye başlayınca geç haritaların referans tahtası
