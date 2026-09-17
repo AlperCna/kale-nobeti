@@ -353,9 +353,9 @@ tahta 3820'de takılıyor ve oyuncu 34 can kaybediyordu (20 canla kayıp).
 |---|---|---|---|---|
 | 1 · Değirmen Geçidi | ×1 | ×1 | 1350 | 0 / 20 ✓ |
 | 2 · Taş Köprü | ×1,6 | ×2,2 **←ayrıştı** | 2940 | 0 / 20 ✓ |
-| 3 · Kül Ovası | ×2,8 | ×3,8 **←ayrıştı** | 5100 | 5 / 20 ✓ |
-| 4 · Kar Geçidi | ×7,35 | ×7,8 **←ayrıştı** | 5100 | 12 / 20 ✓ |
-| 5 · Kadim Harabe | ×10,2 | ×10,2 | 6440 | 14 / 20 ✓ |
+| 3 · Kül Ovası | ×2,8 | ×3,8 **←ayrıştı** | 5100 | 7 / 20 ✓ |
+| 4 · Kar Geçidi | ×7,35 | ×7,8 **←ayrıştı** | 5100 | 16 / 20 ✓ |
+| 5 · Kadim Harabe | ×10,2 | ×10,2 | 6440 | 18 / 20 ✓ |
 | 6 · Sisli Bataklık | ×7,4 | ×11 **←ayrıştı** | 6440 | 12 / 20 ✓ |
 
 Türetilebilir kural: **altın, haritanın noktalarını tam yükseltmeye
@@ -374,7 +374,7 @@ kule, ama goblin efektif HP'si 45/72/126/331/459/333. §9'un kendi gerekçesi
 | 2 · Taş Köprü | 340 | **616** = 280 × 1,6 | **4 → 0** |
 | 3 · Kül Ovası | 400 | **1064** = 280 × 2,6 | **7 → 0** |
 
-Toplam sızıntı: harita 2'de 13 → 0, harita 3'te 43 → 3.
+Toplam sızıntı: harita 2'de 13 → 0, harita 3'te 43 → 4.
 
 ---
 
@@ -510,9 +510,9 @@ referans tahtaya, tavana ve boss türetmesine hiç girmiyor — hiçbir düşman
 
 | Seviye | HP çarpanı | Başlangıç canı | Yıldız | 1 | 2 | 3 | 4 | 5 | 6 |
 |---|---|---|---|---|---|---|---|---|---|
-| kolay | ×0,8 | 20 | **kaydedilmiyor** | 0 / 20 ✓ | 0 / 20 ✓ | 5 / 20 ✓ | 6 / 20 ✓ | 4 / 20 ✓ | 5 / 20 ✓ |
-| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 0 / 20 ✓ | 5 / 20 ✓ | 12 / 20 ✓ | 14 / 20 ✓ | 12 / 20 ✓ |
-| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 0 / 12 ✓ | 5 / 12 ✓ | 12 / 12 ✗ | 14 / 12 ✗ | 12 / 12 ✗ |
+| kolay | ×0,8 | 20 | **kaydedilmiyor** | 0 / 20 ✓ | 0 / 20 ✓ | 5 / 20 ✓ | 6 / 20 ✓ | 7 / 20 ✓ | 5 / 20 ✓ |
+| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 0 / 20 ✓ | 7 / 20 ✓ | 16 / 20 ✓ | 18 / 20 ✓ | 12 / 20 ✓ |
+| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 0 / 12 ✓ | 7 / 12 ✓ | 16 / 12 ✗ | 18 / 12 ✗ | 12 / 12 ✗ |
 
 Hücreler: referans tahtanın kaybettiği can / o seviyenin canı.
 
@@ -690,9 +690,9 @@ Simülasyon **canlı oyunla aynı kodu** kullanıyor: aynı
 |---|---|---|---|
 | 1 · Değirmen Geçidi | **0** | 0 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:0 |
 | 2 · Taş Köprü | **0** | 0 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:0 |
-| 3 · Kül Ovası | **3** | 1338 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:1 d8:2 d9:0 d10:0 |
-| 4 · Kar Geçidi | **8** | 7752 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:8 |
-| 5 · Kadim Harabe | **11** | 11606 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:11 |
+| 3 · Kül Ovası | **4** | 1345 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:1 d8:2 d9:0 d10:1 |
+| 4 · Kar Geçidi | **11** | 8504 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:11 |
+| 5 · Kadim Harabe | **14** | 12949 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:14 |
 | 6 · Sisli Bataklık | **10** | 4822 | d1:0 d2:0 d3:0 d4:0 d5:2 d6:0 d7:0 d8:0 d9:0 d10:8 |
 
 
@@ -703,9 +703,9 @@ bu ikisi farklı düzeltmeler gerektiriyor:
 |---|---|
 | 1 · Değirmen Geçidi | **hiç yok** |
 | 2 · Taş Köprü | **hiç yok** |
-| 3 · Kül Ovası | Trol ×2 · Harpi ×1 |
-| 4 · Kar Geçidi | Trol ×4 · Zırhlı Ork ×2 · Harpi ×1 · Şaman ×1 |
-| 5 · Kadim Harabe | Zırhlı Ork ×5 · Trol ×3 · Şaman ×2 · Kurt Binicisi ×1 |
+| 3 · Kül Ovası | Trol ×3 · Harpi ×1 |
+| 4 · Kar Geçidi | Trol ×4 · Harpi ×2 · Zırhlı Ork ×2 · Örümcek Yavrusu ×1 · Örümcek Ana ×1 · Şaman ×1 |
+| 5 · Kadim Harabe | Trol ×4 · Zırhlı Ork ×4 · Örümcek Yavrusu ×3 · Şaman ×2 · Kurt Binicisi ×1 |
 | 6 · Sisli Bataklık | tunelci ×6 · Ork Savaşçı ×2 · Trol ×2 |
 
 **Kısıt A ile Kısıt B aynı şeyi ölçmüyor.** Kısıt A *tek* düşman için

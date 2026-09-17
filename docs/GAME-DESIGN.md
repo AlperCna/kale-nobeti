@@ -804,9 +804,9 @@ düzeltildi:
 |---|---|---|---|---|
 | 1 · Değirmen Geçidi | 1 | 1 | 0 | 0 |
 | 2 · Taş Köprü | 1,6 | 2,2 | 0 | 0 |
-| 3 · Kül Ovası | 2,8 | 3,8 | 5 | 5 |
-| 4 · Kar Geçidi | 7,35 | 7,8 | 12 | 6 |
-| 5 · Kadim Harabe | 10,2 | 10,2 | 14 | 4 |
+| 3 · Kül Ovası | 2,8 | 3,8 | 7 | 5 |
+| 4 · Kar Geçidi | 7,35 | 7,8 | 16 | 6 |
+| 5 · Kadim Harabe | 10,2 | 10,2 | 18 | 7 |
 | 6 · Sisli Bataklık | 7,4 | 11 | 12 | 5 |
 <!-- /ÜRETİLEN:rampa -->
 
