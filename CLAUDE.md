@@ -114,7 +114,12 @@ ve `M29`'a kadar öyle kaldı.
   `SimResult.peakEnemies`, altı harita × on dalga): en kalabalık tek dalga
   23 düşman, sahadaki eşzamanlı tepe **18** — ve bu 18, oyuncunun her
   dalgayı mümkün olan en erken anda başlattığı (`ErkenPolitika 'hemen'`,
-  `M16` örtüşmesi sonuna kadar) en kötü hâl. Örtüşmesiz tepe 14.
+  `M16` örtüşmesi sonuna kadar) en kötü hâl. Örtüşmesiz tepe **15**.
+  `M68`'de yeniden ölçüldü: `M66` örümcek bölünmesini simulasyona ekleyince
+  tepe sayısı kayabilirdi — kaymadı (en kötü hâl yine 18, örtüşmesiz 14 → 15),
+  çünkü yavrular anneyi **yerine geçiyor**. Havuz kapasitesi 60, yani 3,3 kat pay;
+  `Pool` sessizce büyümüyor, dolduğunda `acquire` null döndürüp `onExhausted`
+  tetikliyor.
   Eşiğe 11 kat pay var; ızgara gerekmiyor. Bu satırdaki sayı el yordamıyla
   yazılmaz, `peakEnemies` ile ölçülür.
 - Yalnızca yatay yönlendirme (mobilde çevirme uyarısı platform tarafından yapılır)
