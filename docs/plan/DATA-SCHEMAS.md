@@ -387,15 +387,15 @@ export interface SaveData {
 | §4.4 (4 kademe × 5 sütun) | `BarracksTier` | ⚠️ `shield` (S43), `evasion` anlamı (S44) |
 | §4.4 kural 2, 6 (4 sabit) | `BLOCK` | ✅ tam |
 | §4.5 (5 hedefleme modu) | `TargetMode` | ✅ tam |
-| §5 (9 düşman × 7 sütun) | `EnemyDef` | ⚠️ yavru satırı (S38), Şaman yarıçapı (S37) |
+| §5 (**11** düşman × 7 sütun) | `EnemyDef` | ⚠️ Şaman yarıçapı (S37) · `M52`: kadro 9 → 11 (Tünelci `M12`, yavru), tablo eskimişti |
 | §5 sızma cezası | `leakDamage` | ✅ tam |
 | §6 (8 ekonomi sabiti) | `BALANCE` | ⚠️ `SPAWN_K`/`REST_K` (S28) |
-| §6 aktiflik tablosu | `activityRatio` | ✅ kullanım dışı — Kısıt B simülasyona çevrildi |
+| §6 aktiflik tablosu | ~~`activityRatio`~~ | ✅ **`M52`'de SİLİNDİ** — kullanım dışıydı ama `balance.ts`'te ayarlanabilir görünüyordu |
 | §7 (bütçe, nefes, şema) | `Wave`, `budget` | ✅ tam |
 | §8 (2 yetenek × 3 alan) | Yetenek tablosu | ✅ tam |
-| §9 (3 harita × 8 sütun) | `MapDef` | ⚠️ koordinatlar (S57) |
+| §9 (**6** harita × 8 sütun) | `MapDef` | ⚠️ koordinatlar (S57) · `M52`: 3 → 6, tablo `M8`'den beri eskimişti |
 | `CLAUDE.md` Teknoloji | `KeyValueStore` | ✅ tam |
-| §9 yıldız eşikleri | `starThresholds` | ✅ tam (20 / 15-19 / ≤14) |
+| §9 yıldız eşikleri | `starsFor` | ✅ tam — **`M26`'dan beri ORAN** (`STAR_TWO_RATIO` 0,75), mutlak değil; 20/15/≤14 yalnız Normal'in görünümü, Zor 12 canla başlıyor |
 | ROADMAP M7 (3 yıldız) | `SaveData.stars` | ⚠️ şema (S60) |
 
 **Kaçak yok.** Eksik olan her hücre bir açık soru kimliğine bağlı.

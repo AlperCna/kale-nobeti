@@ -126,8 +126,22 @@ export const BALANCE = {
   focusLoss: 0.75,
   /** §6 — her iki kısıt için pay: `tavan > gerekenHP × 1.15`. */
   safetyMargin: 1.15,
-  /** §6 tablosu — kapsanan düz yol parçası sayısına göre aktiflik. */
-  activityRatio: { 1: 0.6, 2: 0.8, 3: 0.95 },
+  /**
+   * **`activityRatio` KALDIRILDI** — `M52`.
+   *
+   * §6'nın "kapsanan düz yol parçası sayısına göre aktiflik" tablosu
+   * (`{1: 0,60, 2: 0,80, 3: 0,95}`) buradaydı ve **hiçbir yerde
+   * okunmuyordu**: Kısıt B statik formülden `waveSim`'e çevrilince
+   * aktiflik artık simülasyonun kendisinden çıkıyor, tablodan değil.
+   * `DATA-SCHEMAS.md` bunu "kullanım dışı" diye kaydetmişti ama sabit
+   * burada, ayarlanabilir görünerek duruyordu.
+   *
+   * Silinme gerekçesi `M51`'in dersi: **denge dosyasındaki ölü bir sayı
+   * tuzaktır.** Birinin onu "ayarlaması" hiçbir şey değiştirmez ve
+   * değiştirmediğini anlaması zordur (`threshold` alanı tam olarak böyle
+   * iki başarımda ölü kalmıştı). Kavramın kendisi kayıtta:
+   * `research/01-denge-matematigi.md` §6 ve `GAME-DESIGN.md` §6.
+   */
   /** §7 — tekdüze rampa yorucu; zirveler ve nefes anları planlanıyor. */
   breatherWaves: [4, 7],
   /** §7 — nefes dalgasının bütçe çarpanı. */
