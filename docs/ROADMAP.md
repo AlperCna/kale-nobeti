@@ -317,6 +317,10 @@ M8 bitti: 5 harita, 50 dalga, sonsuz mod, üç zorluk, 12 başarım, ilk
 indirme 0,93 MB. Sonuç defteri: [`results/M8-SONUC.md`](results/M8-SONUC.md).
 Yayın paketi hazır (`npm run package:itch`), yükleme sahibin işi.
 
+> **Bu satır M8 anının fotoğrafı, bugünün durumu DEĞİL** (`M53` notu).
+> Güncel: **6 harita · 60 dalga · 16 başarım · 11 düşman türü · ilk
+> indirme 0,82 MB · 1058 test**. Aşağıdaki "M11 sonrası" bölümüne bakın.
+
 ---
 
 ## M9 — Yayın hazırlığı (plan: [`plan/M9-yayin-hazirligi.md`](plan/M9-yayin-hazirligi.md))
@@ -381,6 +385,57 @@ kapanmadan sayı türetme — iki denge sayısı yarım simülasyonda türetilip
 
 ---
 
+## M11 sonrası — özet (`M53`'te yazıldı)
+
+> **Bu belge M10'da duruyordu ve 42 kilometre taşı geride kalmıştı.**
+> Her taşa satır açmak gürültü olurdu; aşağısı **temalara göre** özet.
+> Taş taş ayrıntı iki yerde yaşıyor: karar kayıtları
+> [`plan/OPEN-QUESTIONS.md`](plan/OPEN-QUESTIONS.md) ve git geçmişi
+> (commit başlıkları `M<n>: <ne bulundu>` biçiminde).
+
+**İçerik (M11-M13).** Kararların gerçekten fark ettiği ölçüldü ve iki
+ölü aile düzeltildi (S95). Altıncı harita **Sisli Bataklık** ve yeni
+verb **yeraltı geçişi** (Tünelci) geldi; son haritanın bossu **çağırma**
+kazandı — altı haritada aynı boss olmaktan çıktı.
+
+**Ekonomi ve dalga akışı (M14-M22).** Erken başlatma bonusu altın
+çarpanını izlemeye başladı; dalgalar artık **üst üste biniyor** (M16) ve
+bu, "erken bas" düğmesini bedelsiz bir kazançtan gerçek bir riske
+çevirdi. `ceilingA` yavaşlatmayı görmeye başladı (M18) ve boss HP'si
+statik tavandan **simülasyona** taşındı. M17 tamamen geri alındı —
+zincir kapanmadığı için; içtihat olarak duruyor.
+
+**Oyuncu deneyimi (M23-M34).** Başarımlar 12 → 16. Geri bildirimi
+olmayan eylemler kapatıldı (M24), erken başlatmanın hem kazancı hem
+riski HUD'a geldi (M25). Zor'da üç yıldız imkânsızdı (M26) ve
+"Kusursuz" başarımı Zor'da hiç kazanılamıyordu (M34) — ikisi de aynı
+kusurun iki kopyasıydı. Oyunun **sessiz** eylemleri görünür oldu: Şaman
+iyileştirmesi ve Trol yenilenmesi (M30), kule yanması ve yavaşlatması
+(M31), ve Tünelci'nin Örümcek Ana'yla aynı silüeti taşıması (M32).
+
+**Ölçüm ve denge tabanı (M36-M47).** S116 ve S117 yeniden ölçüldü;
+ikisinin de kökü aynı yerde çıktı: referans tahtanın **nokta ataması
+keyfîydi** (kapsamalar eşit olunca sıra `maps.ts`'teki yazılış sırasına
+düşüyordu ve harita 6'nın sonucunu 8 ile 25 can arasında oynatabiliyordu).
+M47'de sıralama **üç ölçüte** çıkarıldı — kapsama ↓ · kaleye uzaklık ↑ ·
+yol trafiği ↓ — ve rampa yeniden türetildi:
+**`0·0·5·12·14·13`**.
+
+**Doküman ve veri hijyeni (M48-M52).** `GAME-DESIGN.md`'nin dört tablosu
+birden bozuktu (harita tablosu üç haritada kalmış, boss tablosunun beş
+satırı yanlış). Dokuz tablo **üreticiye devredildi**
+(`scripts/kurallar.mjs`, işaretçi blokları); ölçüm kaydı olan tablolar
+bilerek elle bırakıldı ve etiketlendi. Üç **ölü veri** silindi ya da
+canlandırıldı: başarım `threshold`'ları (kod sabit yazıyordu),
+`BALANCE.activityRatio`, `MapDef.background` (değerlerinin yarısı
+yanlıştı).
+
+**Açık duran denge soruları:** S116 (baskı son iki dalgada yoğunlaşıyor),
+S117 (geç haritalarda gelirin yarısından fazlası harcanmıyor), S120,
+S127. Hepsinin ölçümü ve denenip elenen kolları `OPEN-QUESTIONS.md`'de.
+
+---
+
 ## Claude Code komut şablonu
 
 Her taşın başında:
@@ -400,7 +455,7 @@ Birinci adımı uygula, sonra dur ve diff'i göster. Devam demeden ilerleme.
 Taş sonunda:
 
 ```
-npm run typecheck && npm run test && npm run build çalıştır.
+npm run typecheck && npm run test && npm run guard && npm run build çalıştır.
 İlk indirme boyutunu raporla. Sonra bu taşta verilen kararlardan CLAUDE.md'ye
 eklenmesi gerekenleri öner (ekleme yapma, öner).
 ```
