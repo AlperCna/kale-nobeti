@@ -6,7 +6,7 @@ import { SaveSystem } from '../systems/SaveSystem';
 import { LocalStore } from '../util/storage';
 import { t } from '../util/i18n';
 import { PreloadScene } from './PreloadScene';
-import { createParchmentButton } from '../fx/ParchmentFrame';
+import { createParchmentButton, addPressFeedback } from '../fx/ParchmentFrame';
 import { getSettings } from '../systems/Settings';
 import { EndlessRecords } from '../systems/EndlessRecords';
 import { DIFFICULTY } from '../data/difficulty';
@@ -207,6 +207,7 @@ export class LevelSelectScene extends Phaser.Scene {
         // yalnız renge dayanmıyor (TIER 1 kural 6).
         this.add.rectangle(x, y - 8, 3 * YILDIZ_ADIM + 16, 40, PARSOMEN, 0.85);
         kart = createParchmentButton(this, x, y, KART_W, KART_H, 20, true);
+        addPressFeedback(kart);
       } else {
         kart = this.add
           .rectangle(x, y, KART_W, KART_H, INK)
@@ -276,7 +277,7 @@ export class LevelSelectScene extends Phaser.Scene {
       });
     });
 
-    this.add
+    const geri = this.add
       .text(width / 2, height - 42, t('back'), {
         fontFamily: 'Spectral, serif',
         fontSize: '18px',
@@ -285,6 +286,7 @@ export class LevelSelectScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true })
       .on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => this.scene.start('Menu'));
+    addPressFeedback(geri);
   }
 
   /**
@@ -369,7 +371,7 @@ export class LevelSelectScene extends Phaser.Scene {
       if (aktif) {
         createParchmentButton(this, x, y, BTN_W, BTN_H, 10);
       } else {
-        this.add
+        const secenek = this.add
           .rectangle(x, y, BTN_W, BTN_H, INK)
           .setStrokeStyle(2, GOLD, KILITLI_KONTUR_ALFA)
           .setInteractive({ useHandCursor: true })
@@ -377,6 +379,7 @@ export class LevelSelectScene extends Phaser.Scene {
             settings.set('difficulty', o.id);
             this.scene.restart();
           });
+        addPressFeedback(secenek);
       }
       this.add
         .text(x, y, t(o.etiket), {

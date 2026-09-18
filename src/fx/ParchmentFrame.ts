@@ -148,7 +148,18 @@ const PRESS_SCALE = 0.98;
  * VFX'i değil — `settings.effectScale`'e bağlanmıyor, tıpkı kod
  * tabanındaki hiçbir düğmenin bugün bağlanmadığı gibi.
  */
-export function addPressFeedback(container: Phaser.GameObjects.Container): void {
+/**
+ * Geri bildirim alabilen nesne — `M89`.
+ *
+ * Önceden imza yalnız `Container` alıyordu ve arayüzün düz
+ * `Rectangle`/`Text` düğmeleri (seviye seçimdeki zorluk seçenekleri,
+ * “← Geri” bağlantıları) bu yüzden geri bildirimsiz kalıyordu.
+ * Gereken iki şey var: olay dinleyebilmek (`GameObject`) ve
+ * ölçeklenebilmek (`Transform`).
+ */
+type Basilabilir = Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform;
+
+export function addPressFeedback(container: Basilabilir): void {
   container.on('pointerover', () => container.setScale(HOVER_SCALE));
   container.on('pointerout', () => container.setScale(1));
   container.on('pointerdown', () => {

@@ -456,6 +456,7 @@ export class HudScene extends Phaser.Scene {
     const x = this.scale.width - MARGIN - BTN / 2;
     const y = AYAR_BTN_Y;
     const btn = createParchmentButton(this, x, y, BTN, BTN, 14);
+    addPressFeedback(btn);
     this.add
       .text(x, y, '⚙', { fontFamily: 'Spectral, serif', fontSize: '24px', color: '#14203A' })
       .setOrigin(0.5);
@@ -588,6 +589,7 @@ export class HudScene extends Phaser.Scene {
     // `G02` — diğer HUD butonlarıyla aynı parşömen çerçeve. Kare bir
     // kutuda 9-slice köşeleri hiç gerilmiyor, dönüşüm en ucuz durum.
     const cerceve = createParchmentButton(this, x, y, BTN, BTN, 12);
+    addPressFeedback(cerceve);
 
     // Parşömen zeminde mürekkep — altın burada okunmuyor.
     // Etiket `#speed`'ten türüyor, sabit `'1×'` değil: dil değişiminde
