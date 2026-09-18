@@ -593,7 +593,15 @@ export const MAP_4: MapDef = {
 // Bütün sağlamaları geçen dört nokta çıktı — `10,2·10,2` · `10,2·10,8` ·
 // `10,4·10,4` · `10,4·10,8` — ve en küçük hamle olan ilki alındı:
 // `yok 14 · takviye 12 · meteor 11 · ikisi 9 · en kötü aile 17`.
-const MAP5_HP_CARPANI = 10.2; // S87 → S91 → S101 → S109 → S113 → S119 → S95/M47
+// **`M81`: 10,2 → 10,05.** `M80` belgedeki ölçümü düzeltince harita 5'in
+// gerçek can kaybının 14 değil **17** olduğu görüldü — kimse yükseltmedi,
+// `M66` (örümcek bölünmesi) sürükledi ve iyimser ölçüm saklıyordu. 17,
+// altıncı haritaya 20 sınırının altında yer bırakmıyordu. Tarama (hp → can):
+// 9,0→9 · 9,2→12 · 9,4→13 · 9,6→13 · 9,8→12 · 9,85→14 · 9,9→14 · 9,95→14 ·
+// **10,05→15** · 10,1→14 · 10,15→14 · 10,2→17. Harita 4'ün 14'ünün üstünde
+// ve harita 6'ya yer bırakan tek değer 10,05. Altın çarpanı 10,2'de kaldı
+// (S73: altın ≥ HP), yani başlangıç altını kıpırdamadı.
+const MAP5_HP_CARPANI = 10.05; // S87 → S91 → S101 → S109 → S113 → S119 → S95/M47
 const MAP5_ALTIN_CARPANI = 10.2; // S87 — HP ile birlikte (S73 değişmezi)
 
 const MAP5_KALE: Vec2 = { x: 1180, y: 600 };
@@ -936,7 +944,21 @@ export const MAP_6: MapDef = {
   // berabere), 1,3'te Takviye can kaybettirmeye başlıyor, 1,7+'da Kolay
   // sınırı aşıyor. Oran 0,36'da kalıyor — altı haritanın en düşüğü ve
   // S117'nin açık kalan kolu.
-  hpMultiplier: 8.1, // S109 → S113 → S119 → S95/M47 → S130/S131 → S134 (`M67`)
+  // **`M81`: 8,1 → 8,9.** Kampanyanın **son** haritası rampanın dışındaydı
+  // (`kisitB` listesi harita 5'te bitiyordu) ve ölçülünce harita 5'ten
+  // **kolay** çıktı: 15'e 17. Tarama (hp → can | Kolay | tek aile en kötü):
+  // 8,1→15|7 · 8,8→18|10 · **8,9→16|10** · 9,0→19|10 · 9,1→20|11 · 9,2→21|12.
+  // 9,1 ve üstü Kolay sınırını (≤10) ve geçilebilirliği (<20) kırıyor.
+  // 8,8 ve 9,0 başka bir şeyi kırıyor: **Top'un evi** (S138) — tek aile
+  // Top 8,8'de 16, 9,0'da 17 verirken Okçu 14/15'te kalıyor, yani harita
+  // artık Top'un parladığı yer olmaktan çıkıyor. 8,9'da sıra korunuyor
+  // (Top 14 < Okçu 15 < karışık 16).
+  //
+  // **Altın kolu ölçüldü ve REDDEDİLDİ:** çarpanı kısmak haritayı
+  // **kolaylaştırıyor** (11,0→15 · 10,0→15 · 9,0→11 · 8,1→12), çünkü tahta
+  // her değerde aynı 14 kule + 1 kışlaya ulaşıyor, yalnız sırası değişiyor.
+  // S117'nin oranı da en fazla 0,50'ye çıkıyordu — o kol hâlâ açık.
+  hpMultiplier: 8.9, // S109 → S113 → S119 → S95/M47 → S130/S131 → S134 (`M67`)
   goldMultiplier: 11.0,
   startGold: Math.round(280 * 11.0),
   enemyRoster: [

@@ -761,8 +761,8 @@ kenar bir kez parlar.
 | 2 | Taş Köprü | 10 | 2 | 1,6 | 2,2 | 616 |
 | 3 | Kül Ovası | 12 | 2 | 2,8 | 3,8 | 1064 |
 | 4 | Kar Geçidi | 12 | 1 | 7,35 | 7,8 | 2184 |
-| 5 | Kadim Harabe | 15 | 2 | 10,2 | 10,2 | 2856 |
-| 6 | Sisli Bataklık | 15 | 1 | 8,1 | 11 | 3080 |
+| 5 | Kadim Harabe | 15 | 2 | 10,05 | 10,2 | 2856 |
+| 6 | Sisli Bataklık | 15 | 1 | 8,9 | 11 | 3080 |
 <!-- /ÜRETİLEN:harita -->
 
 Tema ve yol geometrisi tablodan **çıkarıldı**: ikisi de `maps.ts` içinde
@@ -817,8 +817,8 @@ düzeltildi:
 | 2 · Taş Köprü | 1,6 | 2,2 | 0 | 0 |
 | 3 · Kül Ovası | 2,8 | 3,8 | 9 | 2 |
 | 4 · Kar Geçidi | 7,35 | 7,8 | 14 | 3 |
-| 5 · Kadim Harabe | 10,2 | 10,2 | 17 | 6 |
-| 6 · Sisli Bataklık | 8,1 | 11 | 15 | 7 |
+| 5 · Kadim Harabe | 10,05 | 10,2 | 15 | 6 |
+| 6 · Sisli Bataklık | 8,9 | 11 | 16 | 10 |
 <!-- /ÜRETİLEN:rampa -->
 
   **`M14` (S101): dört çarpan yeniden türetildi.** Erken başlatma bonusu

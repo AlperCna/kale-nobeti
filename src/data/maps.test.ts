@@ -388,7 +388,10 @@ describe('Harita 5 - M8-T05', () => {
     // S87 → S91.
     // `M47` (S95): üç ölçütlü sıralama harita 4'ü 13'e çıkarınca rampanın
     // kesin artan şartı harita 5'i de yukarı zorladı. Tarama `maps.ts`'te.
-    expect(MAP_5.hpMultiplier).toBe(10.2); // S109 → S113 → S119 → S95/M47
+    // `M81`: 10,2 → 10,05. `M80` ölçümü dürüstleştirince harita 5'in
+    // gerçek can kaybı 14 değil **17** çıktı — sayı yükselmedi, ölçüm
+    // iyimserdi. Altıncı halka için yer açıldı: 10,05 → **15**.
+    expect(MAP_5.hpMultiplier).toBe(10.05); // S109 → S113 → S119 → S95/M47 → M81
     expect(MAP_5.goldMultiplier).toBe(10.2);
     expect(MAP_5.startGold).toBe(2856);
   });
