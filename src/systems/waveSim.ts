@@ -162,6 +162,16 @@ export interface SimResult {
   readonly atilanHasar: number;
   readonly bosaUcusta: number;
   readonly bosaAsiri: number;
+  /**
+   * **Sızan canın DOĞUM dalgasına göre dağılımı** — `S116`, `M84`.
+   * Anahtar 1 tabanlı dalga numarası, değer **can** (sızıntı sayısı değil).
+   *
+   * `leakedByEnemy` sızıntıyı **sızdığı ana** yazıyor. `M16`'dan beri
+   * dalgalar üst üste bindiği için 9. dalganın Trol'ü 10. dalga
+   * koşarken kaleye varıyor ve bütün baskı finale yazılıyor — S116'nın
+   * "orta oyun boş" iddiası kısmen bu muhasebeden doğuyordu.
+   */
+  readonly canDogumDalgasina: Readonly<Record<number, number>>;
 }
 
 /** Sahnesiz düşman. `Enemy`'nin Phaser'sız ikizi. */
@@ -183,6 +193,13 @@ class SimEnemy implements SpawnableEnemy, Poolable, Targetable {
   /** `M10-T05` — süreli kule etkileri (yanma, yavaşlatma). Oyunla aynı alan. */
   readonly effects = emptyEffects();
   mover: Mover | null = null;
+  /**
+   * **Hangi dalgada doğdu** — yalnız ölçüm (`S116`, `M84`). `-1` = henüz
+   * damgalanmadı. `M16`'dan beri dalgalar üst üste biniyor, yani bir
+   * düşman doğduğu dalgada değil **sonraki** dalgada sızabiliyor; kaybı
+   * sızdığı ana yazmak orta oyunu boş gösterir.
+   */
+  dogumDalgasi = -1;
 
   get remainingDistance(): number {
     return this.progress.remainingDistance;
@@ -218,6 +235,7 @@ class SimEnemy implements SpawnableEnemy, Poolable, Targetable {
     this.mover = null;
     this.x = 0;
     this.y = 0;
+    this.dogumDalgasi = -1; // damga da sıfırlanır (kural 3)
   }
 
   #konumla(): void {
@@ -364,6 +382,10 @@ function kosturDalgalar(
   let leakedHp = 0;
   let leakedCount = 0;
   let leakedByEnemy: Partial<Record<EnemyId, number>> = {};
+  /** S116 ölçümü — sızan can, **doğum** dalgasına yazılıyor. */
+  let canDogumDalgasina: Record<number, number> = {};
+  /** O an doğanların damgası — `wave:started` ile ilerliyor. */
+  let suankiDalga = 0;
   let killedCount = 0;
   let dalgaAdimi = 0;
   let peakEnemies = 0;
@@ -512,6 +534,10 @@ function kosturDalgalar(
       leakedCount++;
       const id = e.def?.id;
       if (id !== undefined) leakedByEnemy[id] = (leakedByEnemy[id] ?? 0) + 1;
+      // S116 — kaybı **doğduğu** dalgaya yaz: üst üste binen dalgalarda
+      // bir önceki dalganın artığı finalin hanesine yazılıyordu.
+      const dogum = e.dogumDalgasi > 0 ? e.dogumDalgasi : suankiDalga;
+      canDogumDalgasina[dogum] = (canDogumDalgasina[dogum] ?? 0) + (e.def?.leakDamage ?? 0);
       // `M37` — aynı olay, bir de **zamanıyla**. `adim` aşağıda tanımlı
       // ama bu geri çağrı yalnız döngü içinde koşuyor, yani güvenli.
       // `sonuclar.length` o an koşan dalganın 0 tabanlı indeksi:
@@ -595,6 +621,7 @@ function kosturDalgalar(
   };
   tahtayiHazirla(0);
   bus.on('wave:started', ({ index }) => {
+    suankiDalga = index;
     tahtayiHazirla(index - 1);
   });
   bus.on('wave:ended', () => {
@@ -605,6 +632,7 @@ function kosturDalgalar(
       killedCount,
       peakEnemies,
       leakedByEnemy,
+      canDogumDalgasina,
       atilanHasar,
       bosaUcusta,
       bosaAsiri,
@@ -612,6 +640,7 @@ function kosturDalgalar(
     leakedHp = 0;
     leakedCount = 0;
     leakedByEnemy = {};
+    canDogumDalgasina = {};
     killedCount = 0;
     peakEnemies = 0;
     dalgaAdimi = 0;
@@ -677,6 +706,10 @@ function kosturDalgalar(
     // `GameScene.update`'in birebir sırası.
     for (const e of dusmanlar) {
       if (!e.alive) continue;
+      // S116 ölçümü — yeni doğanı damgala. `WaveManager` doğumu kendi
+      // içinde yapıyor ve çağırana haber vermiyor; damga ilk görüldüğü
+      // adımda vuruluyor — aynı adımda doğduğu için fark yok.
+      if (e.dogumDalgasi < 0) e.dogumDalgasi = suankiDalga;
       const yanma = stepEffects(e.effects, stepMs);
       e.speedFactor = speedMultiplier(e.effects);
       // Yanma **gerçek hasar**: zırh/direnç uygulanmıyor (§4.1).
@@ -799,6 +832,7 @@ export function simulateWave(
       atilanHasar: 0,
       bosaUcusta: 0,
       bosaAsiri: 0,
+      canDogumDalgasina: {},
     }
   );
 }

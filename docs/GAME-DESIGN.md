@@ -833,7 +833,7 @@ düzeltildi:
 | 3 · Kül Ovası | 2,8 | 3,8 | 9 | 2 |
 | 4 · Kar Geçidi | 7,35 | 7,8 | 14 | 3 |
 | 5 · Kadim Harabe | 10,05 | 10,2 | 15 | 6 |
-| 6 · Sisli Bataklık | 8,5 | 11 | 16 | 8 |
+| 6 · Sisli Bataklık | 8,5 | 11 | 18 | 7 |
 <!-- /ÜRETİLEN:rampa -->
 
   **`M14` (S101): dört çarpan yeniden türetildi.** Erken başlatma bonusu

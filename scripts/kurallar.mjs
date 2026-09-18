@@ -160,6 +160,16 @@ it('dokum', () => {
         ucus: Math.round(sim.reduce((t, r) => t + r.bosaUcusta, 0)),
         asiri: Math.round(sim.reduce((t, r) => t + r.bosaAsiri, 0)),
         bosa: Math.round(sim.reduce((t, r) => t + r.bosaUcusta + r.bosaAsiri, 0)) },
+      dogumBaskisi: (() => {
+        const d = new Array(10).fill(0);
+        for (const r of sim) {
+          for (const [no, can] of Object.entries(r.canDogumDalgasina)) {
+            const i = Number(no) - 1;
+            if (i >= 0 && i < 10) d[i] += can;
+          }
+        }
+        return d;
+      })(),
       kisitB: { sizanAdet: sim.reduce((t, r) => t + r.leakedCount, 0),
         sizanHp: Math.round(sim.reduce((t, r) => t + r.leakedHp, 0)),
         dalga: sim.map((r) => r.leakedCount),
@@ -909,6 +919,18 @@ function olustur() {
       HARITA_ADI[m.id], `**${n(m.kisitB.sizanAdet)}**`, n(m.kisitB.sizanHp),
       m.kisitB.dalga.map((v, i) => `d${i + 1}:${v}`).join(' '),
     ])), '');
+  y('', `**Baskı hangi dalgadan geliyor?** Üstteki dağılım sızıntıyı **sızdığı ana**`);
+  y(`yazıyor. \`M16\`'dan beri dalgalar üst üste bindiği için 9. dalganın Trol'ü`);
+  y(`10. dalga koşarken kaleye varıyor ve finalin hanesine yazılıyor — S116'nın`);
+  y(`"bütün baskı 10. dalgada" iddiası kısmen bu muhasebeden doğuyordu. Aşağıdaki`);
+  y(`tablo aynı canı düşmanın **doğduğu** dalgaya yazıyor (\`M84\`):`, '');
+  y(tablo(['Harita', 'Doğum dalgasına göre can kaybı', 'Final payı'],
+    D.haritalar.map((m) => {
+      const d = m.dogumBaskisi;
+      const toplam = d.reduce((a, b) => a + b, 0);
+      return [HARITA_ADI[m.id], d.map((v, i) => `d${i + 1}:${v}`).join(' '),
+        toplam > 0 ? `**${yuzde((d[9] / toplam) * 100, 0)}**` : '—'];
+    })), '');
   y('', `**Hangi düşman sızıyor** — toplam sayı *neyin* sızdığını söylemiyor ve`);
   y(`bu ikisi farklı düzeltmeler gerektiriyor:`, '');
   y(tablo(['Harita', 'Sızan düşmanlar (çok → az)'],
