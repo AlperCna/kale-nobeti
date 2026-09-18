@@ -132,6 +132,46 @@ describe('MAPS', () => {
   it('kimlikler benzersiz — kayıt anahtarı bunlara dayanıyor', () => {
     expect(new Set(MAPS.map((m) => m.id)).size).toBe(MAPS.length);
   });
+
+  /**
+   * **TÜRETİLEN değişmezler — `M90`.**
+   *
+   * Bu dosyadaki “sayılar ÖLÇÜLDÜ” blokları harita **başına** elle
+   * yazılıyor ve işleri o: bir sayının hangi ölçümden geldiğini
+   * kaydediyorlar. Ama elle yazılan liste yeni üyeyi saymayı unutuyor —
+   * harita 6 on taş boyunca kendi bloğu olmadan durdu. Aşağıdaki
+   * değişmezler `MAPS` üzerinden **türetiliyor**: yedinci harita
+   * eklendiğinde bu testler onu kendiliğinden kapsıyor.
+   *
+   * İddiaların kaynağı: S73 (altın ≥ HP), S72 (başlangıç altını çarpanı
+   * izliyor), `M4-T06` (uçan hattını gören nokta oranı ≥ %40 — tek tek
+   * bloklarda da var, burada bütünü için).
+   */
+  it('her haritada altın çarpanı ≥ HP çarpanı (S73)', () => {
+    for (const m of MAPS) {
+      expect(m.goldMultiplier, m.id).toBeGreaterThanOrEqual(m.hpMultiplier);
+    }
+  });
+
+  it('her haritada başlangıç altını = 280 × altın çarpanı (S72)', () => {
+    for (const m of MAPS) {
+      expect(m.startGold, m.id).toBe(Math.round(280 * m.goldMultiplier));
+    }
+  });
+
+  it('her haritanın kadrosu benzersiz ve bossu var', () => {
+    for (const m of MAPS) {
+      expect(new Set(m.enemyRoster).size, m.id).toBe(m.enemyRoster.length);
+      expect(m.enemyRoster, m.id).toContain('ogreSef');
+    }
+  });
+
+  it('her haritada en az bir uçan hattı ve bir yol var', () => {
+    for (const m of MAPS) {
+      expect(m.paths.length, m.id).toBeGreaterThanOrEqual(1);
+      expect(m.flyerPaths.length, m.id).toBeGreaterThanOrEqual(1);
+    }
+  });
 });
 
 // ---------------------------------------------------------------------
@@ -521,6 +561,63 @@ function parcaKutuMesafesi(
   }
   return enKucuk;
 }
+
+// ---------------------------------------------------------------------
+// M12 — Harita 6 "Sisli Bataklık"
+// ---------------------------------------------------------------------
+
+/**
+ * **`M90`: bu blok on taş boyunca YOKTU.**
+ *
+ * Harita 1-5'in her birinin “sayılar ÖLÇÜLDÜ, uydurulmadı” kaydı var;
+ * harita 6 `M12`'de geldi ve kendi kaydı hiç yazılmadı — bu dosyada
+ * yalnız `MAPS[5]` dizilim kontrolünde geçiyordu. Sonuç: kampanyanın
+ * **son** haritasının çarpanları `M81`/`M82`'de iki kez değişti ve hiçbir
+ * test bunu bir **karar** olarak işaretlemedi (yalnız `maps.ts` yorumları
+ * tuttu). `CLAUDE.md` TIER 2'nin “sayan listeler” maddesi, bu kez
+ * listenin kendisi bir *describe* bloğu.
+ *
+ * Kadro tam **dokuz** tip: harita 4-5'in dokuzundan farklı olarak
+ * Örümcek Ana çıkıyor, Tünelci giriyor — `M12`'nin tasarımı haritayı
+ * Tünelci'nin **etrafında** kuruyor.
+ */
+describe('Harita 6 - M12', () => {
+  it('sayılar ÖLÇÜLDÜ, uydurulmadı', () => {
+    expect(MAP_6.id).toBe('sisli-bataklik');
+    expect(MAP_6.buildSpots).toHaveLength(15);
+    // Tek yol, tek kapı — harita 5'in iki kolundan sonra bilinçli sadeleşme:
+    // buradaki zorluk geometriden değil **kadrodan** (Tünelci) geliyor.
+    expect(MAP_6.paths).toHaveLength(1);
+    expect(MAP_6.flyerPaths).toHaveLength(1);
+    // Çarpanlar üç turda türetildi, gerekçe ve tarama `maps.ts`'te:
+    // `M67` (S134) 8,00/8,10 platosundan 8,1'i seçti · `M81` (S139) rampanın
+    // son halkası için 8,9'a çıkardı · `M82` bandı ölçüp 8,5'e çekti
+    // (8,9 yalnız tek bir mermi hızında güvenliydi).
+    expect(MAP_6.hpMultiplier).toBe(8.5);
+    // Altın çarpanı HP'nin üstünde (S73 değişmezi) ve `M84`'te ölçülüp
+    // **dokunulmadı**: kısmak haritayı kolaylaştırıyor (tahta her değerde
+    // aynı 14 kule + 1 kışlaya varıyor, yalnız sırası değişiyor).
+    expect(MAP_6.goldMultiplier).toBe(11);
+    expect(MAP_6.startGold).toBe(3080); // 280 × 11 (S72)
+  });
+
+  it('kadroda TÜNELCİ var, Örümcek Ana YOK — `M12`nin tasarımı', () => {
+    expect(MAP_6.enemyRoster).toContain('tunelci');
+    expect(MAP_6.enemyRoster).not.toContain('orumcekAna');
+    // Yavru da yok: annesi olmadan sahada doğamaz.
+    expect(MAP_6.enemyRoster).not.toContain('orumcekYavrusu');
+    expect(MAP_6.enemyRoster).toHaveLength(9);
+  });
+
+  it('uçan hattını gören nokta oranı >= %40', () => {
+    const goren = spotsCoveringFlyerPaths(
+      MAP_6.flyerPaths,
+      MAP_6.buildSpots,
+      COVERAGE_REFERENCE_RANGE,
+    );
+    expect(goren / MAP_6.buildSpots.length).toBeGreaterThanOrEqual(0.4);
+  });
+});
 
 describe('yapı noktası HUD’un altında kalmıyor', () => {
   /**
