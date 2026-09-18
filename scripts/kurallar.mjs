@@ -156,6 +156,10 @@ it('dokum', () => {
           oran: tavan > 0 ? +((effectiveHp(e, m) / tavan) * 100).toFixed(1) : null };
       }).filter(Boolean),
       canKaybi: sim.reduce((t, r) => t + Object.entries(r.leakedByEnemy).reduce((a, [id, v]) => a + (getEnemyForMap(id, m)?.leakDamage ?? 0) * v, 0), 0),
+      odaklanma: { atilan: Math.round(sim.reduce((t, r) => t + r.atilanHasar, 0)),
+        ucus: Math.round(sim.reduce((t, r) => t + r.bosaUcusta, 0)),
+        asiri: Math.round(sim.reduce((t, r) => t + r.bosaAsiri, 0)),
+        bosa: Math.round(sim.reduce((t, r) => t + r.bosaUcusta + r.bosaAsiri, 0)) },
       kisitB: { sizanAdet: sim.reduce((t, r) => t + r.leakedCount, 0),
         sizanHp: Math.round(sim.reduce((t, r) => t + r.leakedHp, 0)),
         dalga: sim.map((r) => r.leakedCount),
@@ -185,7 +189,7 @@ it('dokum', () => {
     yetenekler: ABILITIES.map((a) => ({ ...a })),
     blok: { ...BLOCK }, soldierSpeed: SOLDIER_SPEED, meleeK: +MELEE_DPS_PER_POINT.toFixed(4),
     balance: { startLives: BALANCE.startLives, sellRefund: BALANCE.sellRefund, damageFloor: BALANCE.damageFloor,
-      prepSeconds: BALANCE.prepSeconds, earlyBonusFrom: BALANCE.earlyBonusFrom, focusLoss: BALANCE.focusLoss,
+      prepSeconds: BALANCE.prepSeconds, earlyBonusFrom: BALANCE.earlyBonusFrom,
       safetyMargin: BALANCE.safetyMargin, breatherWaves: BALANCE.breatherWaves, breatherFactor: BALANCE.breatherFactor,
       budgetBase: BALANCE.budgetBase, budgetGrowth: BALANCE.budgetGrowth, spawnK: SPAWN_K,
       waveEndBonus: [1, 5, 10].map((n) => ({ n, v: BALANCE.waveEndBonus(n) })) },
@@ -755,7 +759,6 @@ function olustur() {
     ['Hazırlık süresi', `${n(D.balance.prepSeconds)} sn`, 'Her dalgada sabit'],
     ['Dalga bitiş bonusu', `30 + 5n → ${D.balance.waveEndBonus.map((w) => `d${w.n}:${w.v}`).join(', ')}`, '**Harita altın çarpanıyla çarpılıyor** (S70)'],
     ['Erken başlatma bonusu', '`kalanSaniye × ceil(dalgaNo/2)`', `Dalga ${n(D.balance.earlyBonusFrom)}'ten itibaren açık`],
-    ['Odaklanma kaybı', `×${n(D.balance.focusLoss)}`, 'Kuleler aynı hedefe ateş ederken kayıp'],
     ['Güvenlik payı', `×${n(D.balance.safetyMargin)}`, 'Kısıt A eşiği: `tavan > eHP × 1,15`'],
   ]), '');
   y(`**Altın çarpanı ≥ HP çarpanı** (S73). §9 "eşit" diyordu ve gerekçesi`);
@@ -887,6 +890,18 @@ function olustur() {
   y(`Dalgayı gerçekten çalıştırıp **sızan HP'yi ölçüyor.** Formül değil,`);
   y(`çünkü girdileri (dalga süresi, aktiflik oranı) statik veriden hesaplanamaz.`);
   y(`Odaklanma kaybı doğal olarak ortaya çıkıyor — çarpan gerekmiyor.`, '');
+  y(`**Odaklanma kaybı artık SAYILIYOR** (`+'`'+`M83`+'`'+`, S24). §6'nın formülündeki`);
+  y(`\`× 0,75\` bir varsayımdı ve hiçbir kod onu okumuyordu; silindi. Boşa giden`);
+  y(`hasarın iki kalemi var: uçuşta hedefi ölen **tek hedefli** mermiler (alan`);
+  y(`hasarlı mermi yine patlıyor, boşa gitmiyor — S21) ve hedefin kalan canını`);
+  y(`aşan hasar. Kalkanın yuttuğu kayıp sayılmıyor: o gerçek bir mekanik.`, '');
+  y(tablo(['Harita', 'Atılan hasar', 'Uçuşta boşa', 'Aşırı öldürme', 'Verim'],
+    D.haritalar.map((m) => [HARITA_ADI[m.id], n(m.odaklanma.atilan), n(m.odaklanma.ucus),
+      n(m.odaklanma.asiri),
+      `**${yuzde((1 - m.odaklanma.bosa / m.odaklanma.atilan) * 100)}**`])), '');
+  y(`Öğretici haritada kayıp en yüksek — çünkü orada atış başına hasar`);
+  y(`düşmanın canının büyük bir kısmı ve aşırı öldürme baskın. Geç haritalarda`);
+  y(`düşman HP'si 8-10 kat büyük olduğu için aynı atış fire üretmiyor.`, '');
   y(`Simülasyon **canlı oyunla aynı kodu** kullanıyor: aynı `);
   y(`\`BarracksSystem\`, aynı \`applyDamage\`, aynı \`TowerSystem\`.`, '');
   y(tablo(['Harita', 'Sızan düşman', 'Sızan HP', 'Dalga dağılımı'],

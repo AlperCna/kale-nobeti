@@ -675,6 +675,21 @@ Burada yerleşim çok önemli. Ölçülmüş aktiflik oranları:
 Sondaki `× 0.75` **odaklanma kaybıdır**: `first` hedeflemesi varsayılan olduğu
 için kuleler aynı düşmana vurur ve fazla hasar boşa gider.
 
+> **`M83` (S24) — bu çarpan bir VARSAYIMDI ve ölçüm onu üç kat
+> abartılı buldu.** Formülün kendisi `S26`/`S27` ile zaten düşmüştü
+> (`dalgaSüresi` ve `aktiflikOranı` statik veriden hesaplanamıyor, yerine
+> simülasyon kondu) ama `0,75` `BALANCE.focusLoss` olarak veri dosyasında
+> kalmıştı — **hiçbir formül onu okumuyordu**, yalnız üretilen belge onu
+> yaşayan bir kural gibi basıyordu. Simülasyon artık kaybı **sayıyor**:
+> uçuşta hedefi ölen tek hedefli mermiler + kalan canı aşan hasar
+> (`SimResult.atilanHasar` / `bosaHasar`). Ölçülen verim (1 = hiç kayıp):
+> **0,87 · 0,95 · 0,96 · 0,96 · 0,97 · 0,97** — yani gerçek kayıp %25 değil
+> **%3-13**. En yüksek kayıp öğretici haritada, çünkü orada atış başına
+> hasar düşmanın canının büyük bir kısmı (24 hasar, 8 canlık goblin) ve
+> aşırı öldürme baskın; geç haritalarda düşman HP'si 8-10 kat büyük olduğu
+> için aynı atış fireyi üretmiyor. `BALANCE.focusLoss` **silindi**; güncel
+> tablo `KURALLAR.md`'de ve her `build`'de yeniden ölçülüyor.
+
 Her iki kısıt için **%15 pay** bırakılır: `tavan > gerekenHP × 1.15`.
 Bu üç sağlama Vitest'te saf fonksiyon olarak yazılır (M3'te, M6'da değil).
 
