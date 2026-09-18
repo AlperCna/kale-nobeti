@@ -143,6 +143,25 @@ export interface SimResult {
    * goblinler mi? İkisi tamamen farklı iki düzeltme gerektiriyor.
    */
   readonly leakedByEnemy: Readonly<Partial<Record<EnemyId, number>>>;
+  /**
+   * **Odaklanma kaybı — ÖLÇÜLEN** (`S24`, `M83`). Birim: HP.
+   *
+   * `atilanHasar`: kulelerin ateşlediği nominal hasar toplamı.
+   * `bosaUcusta`: hedefi uçuşta ölen **tek hedefli** mermilerin hasarı
+   * (alan hasarlı mermi yine patlıyor — S21 — yani boşa gitmiyor).
+   * `bosaAsiri`: hedefin kalan canını aşan hasar. Kalkanın yuttuğu
+   * kayıp **sayılmıyor**: o gerçek bir mekanik, fire değil.
+   *
+   * İkisi ayrı tutuluyor çünkü farklı şeyler söylüyorlar: birincisi
+   * **hedefleme** kusuru, ikincisi **kalibrasyon** (atış başına hasar
+   * düşmanın canına göre çok büyük).
+   *
+   * `BALANCE.focusLoss` (×0,75) bir **varsayımdı** ve hiçbir formül onu
+   * okumuyordu; `M83` yerine ölçümü koydu.
+   */
+  readonly atilanHasar: number;
+  readonly bosaUcusta: number;
+  readonly bosaAsiri: number;
 }
 
 /** Sahnesiz düşman. `Enemy`'nin Phaser'sız ikizi. */
@@ -390,9 +409,22 @@ function kosturDalgalar(
    * Mermi de yanma da buradan geçiyor; ayrı yazılsaydı kalkan ya da
    * ölüm muhasebesi iki yerde ayrışırdı (S80/S81'in hata sınıfı).
    */
+  /**
+   * **Odaklanma kaybı ölçümü** (`S24`, `M83`). İki kalem:
+   * uçuşta hedefi ölen tek hedefli mermiler ve hedefin kalan canını aşan
+   * hasar. İkisi de "kule ateş etti ama işe yaramadı" demek.
+   */
+  let atilanHasar = 0;
+  let bosaUcusta = 0;
+  let bosaAsiri = 0;
+
   const hasarVer = (e: SimEnemy, miktar: number): void => {
     if (!e.alive) return;
-    e.hp -= kalkandanGecir(miktar, e); // M10-T03 — oyunla aynı sıra
+    const gecen = kalkandanGecir(miktar, e); // M10-T03 — oyunla aynı sıra
+    // Aşırı öldürme: kalan candan fazlası boşa. Kalkanın yuttuğu **boşa
+    // değil** — o gerçek bir mekanik, ölçümün dışında.
+    if (gecen > e.hp) bosaAsiri += gecen - Math.max(e.hp, 0);
+    e.hp -= gecen;
     if (e.hp > 0) return;
     oldur(e);
   };
@@ -412,10 +444,15 @@ function kosturDalgalar(
      * üçüncüsü: oyun ile sim farklı şey çalıştırıyor.
      */
     (e, effect) => applyEffect(e.effects, effect),
+    undefined, // onExplode — sahne yok
+    (m) => {
+      bosaUcusta += m.damage; // S24: hedef uçuşta öldü, mermi hiç dokunmadı
+    },
   );
 
   const towers = new TowerSystem((kule, tier, hedef) => {
     const ucanCarpani = hedef.def?.flying === true ? tier.airMultiplier : 1;
+    atilanHasar += tier.damage * ucanCarpani; // S24 ölçümü
     projectiles.fire({
       x: kule.x,
       y: kule.y,
@@ -568,6 +605,9 @@ function kosturDalgalar(
       killedCount,
       peakEnemies,
       leakedByEnemy,
+      atilanHasar,
+      bosaUcusta,
+      bosaAsiri,
     });
     leakedHp = 0;
     leakedCount = 0;
@@ -575,6 +615,9 @@ function kosturDalgalar(
     killedCount = 0;
     peakEnemies = 0;
     dalgaAdimi = 0;
+    atilanHasar = 0;
+    bosaUcusta = 0;
+    bosaAsiri = 0;
   });
 
   /**
@@ -753,6 +796,9 @@ export function simulateWave(
       killedCount: 0,
       peakEnemies: 0,
       leakedByEnemy: {},
+      atilanHasar: 0,
+      bosaUcusta: 0,
+      bosaAsiri: 0,
     }
   );
 }

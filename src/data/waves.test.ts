@@ -210,7 +210,10 @@ describe('BALANCE — GAME-DESIGN §6 sabitleri', () => {
     expect(BALANCE.damageFloor).toBe(0.15);
     expect(BALANCE.prepSeconds).toBe(20);
     expect(BALANCE.earlyBonusFrom).toBe(4);
-    expect(BALANCE.focusLoss).toBe(0.75);
+    // `focusLoss` **silindi** (`M83`, S24): hiçbir formül okumuyordu ve
+    // ölçüm varsayımı üç kat abartılı buldu (gerçek kayıp %3-13).
+    // Yerine `waveSim`'in saydığı boşa hasar var; sınaması
+    // `odaklanmaKaybi.test.ts`.
     expect(BALANCE.safetyMargin).toBe(1.15);
   });
 });

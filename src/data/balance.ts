@@ -145,8 +145,18 @@ export const BALANCE = {
   prepSeconds: 20,
   /** §6 — erken başlatma bonusu ilk 3 dalgada **kapalı**, buton dalga 4'te açılır. */
   earlyBonusFrom: 4,
-  /** §6 Kısıt B — odaklanma kaybı (overkill). */
-  focusLoss: 0.75,
+  /**
+   * **`focusLoss` KALDIRILDI** — `M83` (S24).
+   *
+   * §6'nın Kısıt B formülündeki `× 0,75` bir varsayımdı ve formül
+   * `S26`/`S27` ile zaten düşmüştü; sabit burada kaldı ama **hiçbir
+   * kod onu okumuyordu** — yalnız üretilen belge onu yaşayan bir kural
+   * gibi basıyordu (`activityRatio` ile aynı sınıf, `M52`).
+   *
+   * Ölçüm yerine kondu: `waveSim` artık boşa giden hasarı sayıyor
+   * (`SimResult.atilanHasar` / `bosaHasar`). Ölçülen verim altı haritada
+   * 0,87-0,97, yani gerçek kayıp %25 değil **%3-13**.
+   */
   /** §6 — her iki kısıt için pay: `tavan > gerekenHP × 1.15`. */
   safetyMargin: 1.15,
   /**

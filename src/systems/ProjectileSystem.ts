@@ -70,6 +70,15 @@ export class ProjectileSystem<E extends Targetable, T extends ProjectileState<E>
      * kamerayı bilmiyor, sahneye haber veriyor (TIER 1 kural 11).
      */
     private readonly onExplode?: (x: number, y: number, radius: number) => void,
+    /**
+     * **Mermi boşa gitti** — hedef uçuş sırasında öldü ve mermi alan hasarı
+     * taşımıyordu, yani hiç kimseye dokunmadan söndü. `S24`'ün
+     * "odaklanma kaybı" dediği olay tam olarak bu (`M83`).
+     *
+     * Yalnız **ölçüm** için: `waveSim` bunu sayarak gerçek kaybı çıkarıyor.
+     * Oyunun davranışına dokunmuyor — sahne bu geri çağrıyı vermiyor.
+     */
+    private readonly onBosaGiden?: (mermi: T) => void,
   ) {}
 
   get activeCount(): number {
@@ -142,6 +151,7 @@ export class ProjectileSystem<E extends Targetable, T extends ProjectileState<E>
         // Hedef öldü ve son bilinen konuma varıldı (S21).
         // Alan hasarlıysa yine de patlar — top mermisi boşa gitmez.
         if (m.splashRadius > 0) this.#patlat(m, enemies);
+        else this.onBosaGiden?.(m); // S24 ölçümü — tek hedefli mermi söndü
         m.alive = false;
         this.pool.release(m);
       }

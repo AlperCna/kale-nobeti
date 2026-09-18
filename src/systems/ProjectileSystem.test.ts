@@ -59,8 +59,18 @@ function dusman(o: Partial<Targetable> = {}): MutTargetable {
 function kur(prealloc = 20) {
   const pool = new Pool<SahteMermi>(() => new SahteMermi(), prealloc);
   const onDamage = vi.fn();
-  const sys = new ProjectileSystem(pool, onDamage);
-  return { pool, sys, onDamage };
+  /**
+   * Boşa giden merminin hasarı **çağrı anında** kaydediliyor: nesne hemen
+   * ardından havuza dönüp `resetForPool` ile sıfırlanıyor, yani sonradan
+   * `mock.calls[0][0].damage` okumak **0** verir (kural 3'ün doğal sonucu).
+   * `waveSim` de aynı yüzden toplamayı geri çağrının içinde yapıyor.
+   */
+  const bosaHasar: number[] = [];
+  const onBosa = vi.fn((m: SahteMermi) => {
+    bosaHasar.push(m.damage);
+  });
+  const sys = new ProjectileSystem(pool, onDamage, undefined, undefined, onBosa);
+  return { pool, sys, onDamage, onBosa, bosaHasar };
 }
 
 function at(sys: ProjectileSystem<MutTargetable, SahteMermi>, o: Partial<ProjectileState<MutTargetable>> = {}) {
@@ -328,5 +338,48 @@ describe('ProjectileSystem — havuz (TIER 1 kural 3)', () => {
     sys.update(-16, [hedef]);
     expect(m.x).toBe(0);
     expect(pool.activeCount).toBe(1);
+  });
+});
+
+/**
+ * **Boşa giden mermi ölçümü** — `M83` (S24).
+ *
+ * `waveSim` odaklanma kaybını bu geri çağrıyla sayıyor. Sayılan şeyin
+ * doğru şey olduğunu sınayan tek yer burası: **hiç ateşlenmeyen** bir
+ * sayacın ürettiği %0 kayıp, ölçüm gibi görünen bir yalandır (S136).
+ */
+describe('ProjectileSystem — boşa giden mermi (S24)', () => {
+  it('hedef uçuşta ölürse tek hedefli mermi BOŞA sayılıyor', () => {
+    const { sys, onDamage, onBosa, bosaHasar } = kur();
+    const hedef = dusman({ x: 300, y: 0 });
+    at(sys, { target: hedef, damage: 9 });
+    sys.update(1000 / 60, [hedef]);
+    hedef.alive = false; // kule ateşledi, başka bir kule düşmanı öldürdü
+    for (let i = 0; i < 60 && sys.activeCount > 0; i++) sys.update(1000 / 60, [hedef]);
+
+    expect(onDamage).not.toHaveBeenCalled();
+    expect(onBosa).toHaveBeenCalledTimes(1);
+    expect(bosaHasar).toEqual([9]);
+  });
+
+  it('alan hasarlı mermi boşa SAYILMIYOR — yine patlıyor (S21)', () => {
+    const { sys, onDamage, onBosa } = kur();
+    const hedef = dusman({ x: 300, y: 0 });
+    const yakin = dusman({ x: 305, y: 0 });
+    at(sys, { target: hedef, damage: 9, splashRadius: 40 });
+    sys.update(1000 / 60, [hedef, yakin]);
+    hedef.alive = false;
+    for (let i = 0; i < 60 && sys.activeCount > 0; i++) sys.update(1000 / 60, [hedef, yakin]);
+
+    expect(onBosa).not.toHaveBeenCalled();
+    expect(onDamage).toHaveBeenCalled(); // yakındaki düşman hasar aldı
+  });
+
+  it('hedefe varan mermi boşa SAYILMIYOR', () => {
+    const { sys, onBosa } = kur();
+    const hedef = dusman({ x: 100, y: 0 });
+    at(sys, { target: hedef });
+    for (let i = 0; i < 30 && sys.activeCount > 0; i++) sys.update(1000 / 60, [hedef]);
+    expect(onBosa).not.toHaveBeenCalled();
   });
 });

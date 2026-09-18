@@ -354,7 +354,6 @@ Kaynak: `src/data/balance.ts` · `GAME-DESIGN.md` §6
 | Hazırlık süresi | 20 sn | Her dalgada sabit |
 | Dalga bitiş bonusu | 30 + 5n → d1:35, d5:55, d10:80 | **Harita altın çarpanıyla çarpılıyor** (S70) |
 | Erken başlatma bonusu | `kalanSaniye × ceil(dalgaNo/2)` | Dalga 4'ten itibaren açık |
-| Odaklanma kaybı | ×0,75 | Kuleler aynı hedefe ateş ederken kayıp |
 | Güvenlik payı | ×1,15 | Kısıt A eşiği: `tavan > eHP × 1,15` |
 
 **Altın çarpanı ≥ HP çarpanı** (S73). §9 "eşit" diyordu ve gerekçesi
@@ -695,6 +694,25 @@ onu olduğundan **zor** gösteriyor; doğrulaması Kısıt B'de.
 Dalgayı gerçekten çalıştırıp **sızan HP'yi ölçüyor.** Formül değil,
 çünkü girdileri (dalga süresi, aktiflik oranı) statik veriden hesaplanamaz.
 Odaklanma kaybı doğal olarak ortaya çıkıyor — çarpan gerekmiyor.
+
+**Odaklanma kaybı artık SAYILIYOR** (`M83`, S24). §6'nın formülündeki
+`× 0,75` bir varsayımdı ve hiçbir kod onu okumuyordu; silindi. Boşa giden
+hasarın iki kalemi var: uçuşta hedefi ölen **tek hedefli** mermiler (alan
+hasarlı mermi yine patlıyor, boşa gitmiyor — S21) ve hedefin kalan canını
+aşan hasar. Kalkanın yuttuğu kayıp sayılmıyor: o gerçek bir mekanik.
+
+| Harita | Atılan hasar | Uçuşta boşa | Aşırı öldürme | Verim |
+|---|---|---|---|---|
+| 1 · Değirmen Geçidi | 11714 | 178 | 1330 | **%87,1** |
+| 2 · Taş Köprü | 19728 | 170 | 913 | **%94,5** |
+| 3 · Kül Ovası | 37188 | 366 | 1200 | **%95,8** |
+| 4 · Kar Geçidi | 63192 | 814 | 1657 | **%96,1** |
+| 5 · Kadim Harabe | 83166 | 967 | 1611 | **%96,9** |
+| 6 · Sisli Bataklık | 64629 | 780 | 1364 | **%96,7** |
+
+Öğretici haritada kayıp en yüksek — çünkü orada atış başına hasar
+düşmanın canının büyük bir kısmı ve aşırı öldürme baskın. Geç haritalarda
+düşman HP'si 8-10 kat büyük olduğu için aynı atış fire üretmiyor.
 
 Simülasyon **canlı oyunla aynı kodu** kullanıyor: aynı 
 `BarracksSystem`, aynı `applyDamage`, aynı `TowerSystem`.
