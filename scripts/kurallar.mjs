@@ -60,7 +60,7 @@ import { ABILITIES } from './data/abilities';
 // dizesinin içinde yaşıyor, ters tırnak onu erken kapatıyor.)
 import { STRINGS } from './data/strings';
 const dalAdi = (k) => (k === undefined ? null : STRINGS.tr[k]);
-import { BALANCE, POOL_PREALLOC, GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI, SPAWN_K } from './data/balance';
+import { BALANCE, POOL_PREALLOC, MERMI_HIZI, MERMI_ISABET_YARICAPI, SPAWN_K } from './data/balance';
 import { EFFECT_SCALE, DEFAULT_SETTINGS, reducedMotionDefaults } from './systems/Settings';
 import { SHAKE_MIN_SEC, SHAKE_MAX_SEC } from './fx/ScreenShake';
 import { HITSTOP_MIN_MS, HITSTOP_MAX_MS } from './fx/HitStop';
@@ -189,7 +189,7 @@ it('dokum', () => {
       safetyMargin: BALANCE.safetyMargin, breatherWaves: BALANCE.breatherWaves, breatherFactor: BALANCE.breatherFactor,
       budgetBase: BALANCE.budgetBase, budgetGrowth: BALANCE.budgetGrowth, spawnK: SPAWN_K,
       waveEndBonus: [1, 5, 10].map((n) => ({ n, v: BALANCE.waveEndBonus(n) })) },
-    havuz: { ...POOL_PREALLOC }, mermiHizi: GECICI_MERMI_HIZI, isabetYaricapi: MERMI_ISABET_YARICAPI,
+    havuz: { ...POOL_PREALLOC }, mermiHizi: MERMI_HIZI, isabetYaricapi: MERMI_ISABET_YARICAPI,
     bossOran: BOSS_CEILING_RATIO, kislaIle: [...KISLA_ILE_DOGRULANAN],
     kapsamaMenzil: COVERAGE_REFERENCE_RANGE,
     ayarlar: { efektOlcek: EFFECT_SCALE, varsayilan: DEFAULT_SETTINGS, azaltilmis: reducedMotionDefaults() },

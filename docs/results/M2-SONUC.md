@@ -161,6 +161,11 @@ daraltmak ileride gerçek bir sızıntıyı kaçırabilirdi.
 |---|---|---|
 | `GECICI_MERMI_HIZI` | 600 px/sn | **S20** — dokümanda hiçbir yerde yok |
 | `MERMI_ISABET_YARICAPI` | 12 px | greybox 22 px'e bağlı, M6'da yeniden |
+
+> **`M82` notu:** yukarıdaki iki satır M2'nin kaydı — adları ve soruları o
+> günün hali. İkisi de `M82`'de ölçülüp kapandı: hız adı artık `MERMI_HIZI`
+> (“geçici” iddiası ölçümle düştü), yarıçap 12'de kaldı. Ayrıntı
+> `OPEN-QUESTIONS` S20.
 | Patlama azalması | yok (sabit hasar) | **S22** |
 | Aynı hedefe mermi sınırı | yok | **S24** |
 | Kule dönüş animasyonu | yok | **S23** |

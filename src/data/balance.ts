@@ -51,21 +51,44 @@ export const POOL_PREALLOC = {
 /**
  * Mermi uçuş hızı. Birim: px/sn.
  *
- * `// GEÇİCİ — S20`: **dokümanda hiçbir yerde yok.** Uydurulmadı, geçici
- * işaretlendi. Denge etkisi var — yavaş mermi hızlı düşmanı (Kurt Binicisi
- * 110 px/sn) ıskalar ve kulenin etkin DPS'i düşer.
+ * **`M82` (S20) — "GEÇİCİ" etiketi ölçülerek kaldırıldı.** Sayı `M0`'dan
+ * beri `GECICI_MERMI_HIZI` adıyla duruyordu: dokümanda yoktu, uydurulmadığı
+ * için geçici işaretlenmişti ve on dokuz taş boyunca kimse ölçmemişti.
+ * Ölçüm (referans tahta, altı harita, can kaybı):
  *
- * 600, en hızlı düşmanın 5,5 katı; menzil 150 px'lik bir kulede uçuş süresi
- * en fazla 0,25 sn.
+ * | hız | 1 | 2 | 3 | 4 | 5 | 6 |
+ * |---|---|---|---|---|---|---|
+ * | 300 | 0 | 0 | 9 | 14 | 12 | 15 |
+ * | 450 | 0 | 0 | 9 | 14 | 15 | 15 |
+ * | **600** | 0 | 0 | 9 | 14 | 15 | **16** |
+ * | 900 | 0 | 0 | 9 | 14 | 14 | 16 |
+ * | 1500 | 0 | 0 | 9 | 14 | 15 | 15 |
+ *
+ * Harita 1-4 **hiç** kıpırdamıyor (200 ile 4000 arasında da denendi), 5-6
+ * bir-iki can salınıyor ve yön yok — yani hız bu bantta dengeyi
+ * **belirlemiyor**. 600 yerinde kalıyor: en hızlı düşmanın (Kurt Binicisi
+ * 110 px/sn) 5,5 katı, menzil 150 px'lik kulede uçuş süresi en fazla
+ * 0,25 sn. Adı artık geçici olduğunu iddia etmiyor.
+ *
+ * **Kullanımı:** aynı sabit hem oyunda (`GameScene`) hem simülasyonda
+ * (`waveSim`) okunuyor — ikisi ayrışırsa ölçüm oyunu ölçmeyi bırakır.
  */
-export const GECICI_MERMI_HIZI = 600;
+export const MERMI_HIZI = 600;
 
 /**
  * Mermi isabet yarıçapı. Birim: px.
  *
  * Greybox düşman 22×22 px; yarı kenarı 11, yarı köşegeni ~15,6. 12 ikisinin
- * arasında. **M6'da sprite gelince yeniden bakılacak** — o zamana kadar
- * görsel boyutla bağlantısı elle korunuyor.
+ * arasında.
+ *
+ * **`M82` — "M6'da sprite gelince yeniden bakılacak" notu kapatıldı.**
+ * Tetik çoktan ateşlenmişti: sprite'lar `M10`'dan beri 30 px (boss 46,
+ * örümcek yavrusu 22 — `spriteFrames.enemyDisplaySize`), yani 12 artık
+ * normal bir düşmanın yarı kenarının (15) **altında**. Ölçüldü: yarıçap
+ * 6 → 26 arasında harita 1-5'in can kaybı **birebir aynı** (0 0 9 14 15),
+ * yalnız harita 6 15-17 arasında salınıyor. Yani bu sayı denge taşımıyor;
+ * işi algısal (vurmuş **görünmek**). Ölçüm gerekçesi olmadan
+ * değiştirmek bir denge sayısını boşuna oynatmak olurdu — 12 kalıyor.
  *
  * Tünellemeye karşı asıl koruma bu sayı değil, `ProjectileSystem`'deki
  * **süpürülmüş** isabet kontrolü.
