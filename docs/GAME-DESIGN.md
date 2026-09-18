@@ -816,9 +816,9 @@ düzeltildi:
 | 1 · Değirmen Geçidi | 1 | 1 | 0 | 0 |
 | 2 · Taş Köprü | 1,6 | 2,2 | 0 | 0 |
 | 3 · Kül Ovası | 2,8 | 3,8 | 9 | 2 |
-| 4 · Kar Geçidi | 7,35 | 7,8 | 13 | 3 |
-| 5 · Kadim Harabe | 10,2 | 10,2 | 14 | 5 |
-| 6 · Sisli Bataklık | 8,1 | 11 | 15 | 6 |
+| 4 · Kar Geçidi | 7,35 | 7,8 | 14 | 3 |
+| 5 · Kadim Harabe | 10,2 | 10,2 | 17 | 6 |
+| 6 · Sisli Bataklık | 8,1 | 11 | 15 | 7 |
 <!-- /ÜRETİLEN:rampa -->
 
   **`M14` (S101): dört çarpan yeniden türetildi.** Erken başlatma bonusu

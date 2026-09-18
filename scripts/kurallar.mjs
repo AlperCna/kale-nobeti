@@ -66,7 +66,10 @@ import { SHAKE_MIN_SEC, SHAKE_MAX_SEC } from './fx/ScreenShake';
 import { HITSTOP_MIN_MS, HITSTOP_MAX_MS } from './fx/HitStop';
 import { applyDamage } from './systems/combat';
 import { buildReferenceBoards, ceilingAPerBranch, effectiveHp, effectiveDps, BOSS_CEILING_RATIO, cumulativeGold, spotsFullAtWave, KISLA_ILE_DOGRULANAN } from './systems/balanceChecks';
-import { simulateAllWaves } from './systems/waveSim';
+// S109/S92 — referans ölçümün TEK adresi. Bu betik M80'e kadar çifti
+// kendi kuruyordu (gerçekçi tahta + politikasız sim) ve belgeye iyimser
+// sayı basıyordu; testler aynı kusuru S109'da kapatmıştı.
+import { referansKosu, referansCanKaybi } from './systems/referansOlcum';
 import { measureCoverage } from './util/coverage';
 import { DIFFICULTY, DEFAULT_DIFFICULTY } from './data/difficulty';
 
@@ -125,9 +128,8 @@ it('dokum', () => {
     const w = wavesFor(m.id);
     const kaps = measureCoverage(m.paths, m.buildSpots, COVERAGE_REFERENCE_RANGE);
     const boards = buildReferenceBoards(m, w, kaps, false);
-    const boardsG = buildReferenceBoards(m, w, kaps, true);
     const b10 = boards[9];
-    const sim = simulateAllWaves(w, boardsG, m);
+    const sim = referansKosu(m);
     const kolOrt = (kol) => { const g = kol.filter((c) => c.coveredPx > 0);
       return { n: g.length, ort: +(g.reduce((a, c) => a + c.coveredPx, 0) / g.length).toFixed(1) }; };
     return {
@@ -172,19 +174,9 @@ it('dokum', () => {
       startLives: d.startLives,
       recordStars: d.recordStars,
       // Referans tahtanın o seviyede kaybettiği can — harita başına.
-      canKaybi: MAPS.map((m) => {
-        const harita = { ...m, hpMultiplier: m.hpMultiplier * d.hpScale };
-        const w = wavesFor(m.id);
-        const k = measureCoverage(harita.paths, harita.buildSpots, COVERAGE_REFERENCE_RANGE);
-        const sim = simulateAllWaves(w, buildReferenceBoards(harita, w, k, true), harita);
-        let can = 0;
-        for (const r of sim) {
-          for (const [id, n] of Object.entries(r.leakedByEnemy)) {
-            can += (getEnemyForMap(id, harita)?.leakDamage ?? 0) * n;
-          }
-        }
-        return can;
-      }),
+      // \`hpScale\` SIMULASYONA veriliyor; \`hpMultiplier\`i çarpmak aynı şey
+      // DEĞİL — o boss'u ölçeklemiyor (S92).
+      canKaybi: MAPS.map((m) => referansCanKaybi(m, d.hpScale)),
     })),
   };
 
