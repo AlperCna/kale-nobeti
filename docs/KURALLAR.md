@@ -112,7 +112,7 @@ Hasar tipi: `magic`
 |---|---|---|---|---|---|---|---|---|
 | **T1** | 100 | 14 | 0,7 | 9,8 | 155 | — | ×1 | — |
 | **T2** | 150 | 24 | 0,75 | 18 | 170 | — | ×1 | — |
-| **T3a** Yıldırım | 230 | 39 | 0,7 | 27,3 | 170 | — | ×1 | `chain` targets=3 falloff=0,7 |
+| **T3a** Yıldırım | 230 | 39 | 0,7 | 27,3 | 170 | — | ×1 | `chain` targets=3 falloff=0,55 |
 | **T3b** Buz | 230 | 8 | 0,8 | 6,4 | 180 | 30 px | ×1 | `slow` factor=0,3 seconds=2 |
 
 **Hedefleme modları** (kule başına seçilir, varsayılan `first`):
@@ -366,10 +366,10 @@ tahta 3820'de takılıyor ve oyuncu 34 can kaybediyordu (20 canla kayıp).
 |---|---|---|---|---|
 | 1 · Değirmen Geçidi | ×1 | ×1 | 1350 | 0 / 20 ✓ |
 | 2 · Taş Köprü | ×1,6 | ×2,2 **←ayrıştı** | 2940 | 0 / 20 ✓ |
-| 3 · Kül Ovası | ×2,8 | ×3,8 **←ayrıştı** | 5100 | 6 / 20 ✓ |
-| 4 · Kar Geçidi | ×7,35 | ×7,8 **←ayrıştı** | 5100 | 12 / 20 ✓ |
+| 3 · Kül Ovası | ×2,8 | ×3,8 **←ayrıştı** | 5100 | 9 / 20 ✓ |
+| 4 · Kar Geçidi | ×7,35 | ×7,8 **←ayrıştı** | 5100 | 14 / 20 ✓ |
 | 5 · Kadim Harabe | ×10,2 | ×10,2 | 6440 | 14 / 20 ✓ |
-| 6 · Sisli Bataklık | ×8,1 | ×11 **←ayrıştı** | 6440 | 13 / 20 ✓ |
+| 6 · Sisli Bataklık | ×8,1 | ×11 **←ayrıştı** | 6440 | 15 / 20 ✓ |
 
 Türetilebilir kural: **altın, haritanın noktalarını tam yükseltmeye
 yetmeli.** 3,8'de maliyet doyuyor (üstü fazladan kule almıyor), yani sayı
@@ -387,7 +387,7 @@ kule, ama goblin efektif HP'si 45/72/126/331/459/365. §9'un kendi gerekçesi
 | 2 · Taş Köprü | 340 | **616** = 280 × 1,6 | **4 → 0** |
 | 3 · Kül Ovası | 400 | **1064** = 280 × 2,6 | **7 → 0** |
 
-Toplam sızıntı: harita 2'de 13 → 0, harita 3'te 43 → 3.
+Toplam sızıntı: harita 2'de 13 → 0, harita 3'te 43 → 6.
 
 ---
 
@@ -523,9 +523,9 @@ referans tahtaya, tavana ve boss türetmesine hiç girmiyor — hiçbir düşman
 
 | Seviye | HP çarpanı | Başlangıç canı | Yıldız | 1 | 2 | 3 | 4 | 5 | 6 |
 |---|---|---|---|---|---|---|---|---|---|
-| kolay | ×0,8 | 20 | **kaydedilmiyor** | 0 / 20 ✓ | 0 / 20 ✓ | 2 / 20 ✓ | 2 / 20 ✓ | 2 / 20 ✓ | 5 / 20 ✓ |
-| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 0 / 20 ✓ | 6 / 20 ✓ | 12 / 20 ✓ | 14 / 20 ✓ | 13 / 20 ✓ |
-| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 0 / 12 ✓ | 6 / 12 ✓ | 12 / 12 ✗ | 14 / 12 ✗ | 13 / 12 ✗ |
+| kolay | ×0,8 | 20 | **kaydedilmiyor** | 0 / 20 ✓ | 0 / 20 ✓ | 2 / 20 ✓ | 4 / 20 ✓ | 5 / 20 ✓ | 6 / 20 ✓ |
+| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 0 / 20 ✓ | 9 / 20 ✓ | 14 / 20 ✓ | 14 / 20 ✓ | 15 / 20 ✓ |
+| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 0 / 12 ✓ | 9 / 12 ✓ | 14 / 12 ✗ | 14 / 12 ✗ | 15 / 12 ✗ |
 
 Hücreler: referans tahtanın kaybettiği can / o seviyenin canı.
 
@@ -703,10 +703,10 @@ Simülasyon **canlı oyunla aynı kodu** kullanıyor: aynı
 |---|---|---|---|
 | 1 · Değirmen Geçidi | **0** | 0 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:0 |
 | 2 · Taş Köprü | **0** | 0 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:0 |
-| 3 · Kül Ovası | **3** | 882 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:1 d9:0 d10:2 |
-| 4 · Kar Geçidi | **8** | 6620 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:8 |
-| 5 · Kadim Harabe | **11** | 9767 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:11 |
-| 6 · Sisli Bataklık | **11** | 5755 | d1:0 d2:0 d3:0 d4:0 d5:2 d6:0 d7:0 d8:0 d9:0 d10:9 |
+| 3 · Kül Ovası | **6** | 1048 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:1 d9:0 d10:5 |
+| 4 · Kar Geçidi | **10** | 7256 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:10 |
+| 5 · Kadim Harabe | **11** | 10133 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:11 |
+| 6 · Sisli Bataklık | **13** | 6695 | d1:0 d2:0 d3:0 d4:0 d5:2 d6:0 d7:0 d8:0 d9:1 d10:10 |
 
 
 **Hangi düşman sızıyor** — toplam sayı *neyin* sızdığını söylemiyor ve
@@ -716,10 +716,10 @@ bu ikisi farklı düzeltmeler gerektiriyor:
 |---|---|
 | 1 · Değirmen Geçidi | **hiç yok** |
 | 2 · Taş Köprü | **hiç yok** |
-| 3 · Kül Ovası | Trol ×3 |
-| 4 · Kar Geçidi | Trol ×4 · Zırhlı Ork ×2 · Harpi ×1 · Şaman ×1 |
-| 5 · Kadim Harabe | Zırhlı Ork ×3 · Trol ×3 · Örümcek Yavrusu ×3 · Şaman ×2 |
-| 6 · Sisli Bataklık | tunelci ×7 · Trol ×2 · Ork Savaşçı ×2 |
+| 3 · Kül Ovası | Trol ×3 · Örümcek Yavrusu ×3 |
+| 4 · Kar Geçidi | Trol ×4 · Zırhlı Ork ×3 · Örümcek Yavrusu ×1 · Harpi ×1 · Şaman ×1 |
+| 5 · Kadim Harabe | Zırhlı Ork ×3 · Trol ×3 · Şaman ×2 · Örümcek Yavrusu ×2 · Kurt Binicisi ×1 |
+| 6 · Sisli Bataklık | tunelci ×7 · Ork Savaşçı ×4 · Trol ×2 |
 
 **Kısıt A ile Kısıt B aynı şeyi ölçmüyor.** Kısıt A *tek* düşman için
 ("bir Ork Savaşçı öldürülebilir mi"), Kısıt B *dalga* için ("on bir tanesi

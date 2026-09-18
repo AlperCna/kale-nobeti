@@ -237,7 +237,7 @@ Büyü hasarı. Zırhlı düşmanların tek temiz cevabı. Büyü dirençli dü�
 |---|---|---|---|---|---|---|
 | T1 | 100 | 14 | 0,7 | 155 | — | tam |
 | T2 | 150 | 24 | 0,75 | 170 | — | tam |
-| T3a Yıldırım | 230 | **39**, 3 hedefe zincirleme (%70 azalarak) | 0,7 | 170 | — | tam |
+| T3a Yıldırım | 230 | **39**, 3 hedefe zincirleme (her sıçramada %55.00000000000001'ine düşerek) | 0,7 | 170 | — | tam |
 | T3b Buz | 230 | 8 + %30 yavaşlatma (2 sn) | 0,8 | 180 | 30 | tam |
 <!-- /ÜRETİLEN:kule-buyu -->
 
@@ -804,10 +804,10 @@ düzeltildi:
 |---|---|---|---|---|
 | 1 · Değirmen Geçidi | 1 | 1 | 0 | 0 |
 | 2 · Taş Köprü | 1,6 | 2,2 | 0 | 0 |
-| 3 · Kül Ovası | 2,8 | 3,8 | 6 | 2 |
-| 4 · Kar Geçidi | 7,35 | 7,8 | 12 | 2 |
-| 5 · Kadim Harabe | 10,2 | 10,2 | 14 | 2 |
-| 6 · Sisli Bataklık | 8,1 | 11 | 13 | 5 |
+| 3 · Kül Ovası | 2,8 | 3,8 | 9 | 2 |
+| 4 · Kar Geçidi | 7,35 | 7,8 | 14 | 4 |
+| 5 · Kadim Harabe | 10,2 | 10,2 | 14 | 5 |
+| 6 · Sisli Bataklık | 8,1 | 11 | 15 | 6 |
 <!-- /ÜRETİLEN:rampa -->
 
   **`M14` (S101): dört çarpan yeniden türetildi.** Erken başlatma bonusu

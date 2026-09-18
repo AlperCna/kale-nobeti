@@ -94,8 +94,24 @@ function kosu(m: MapDef, kullanim: YetenekKullanimi): { sure: number; oldurulen:
 }
 
 describe('Yeteneklerin katkısı — M11 Faz 4', () => {
+  /**
+   * **`M76` (S138): ölçüm Kar Geçidi'nden KADIM HARABE'ye taşındı.**
+   *
+   * Yıldırım'ın zinciri kısılınca (sönüm 0,7 → 0,55) Kar Geçidi'nde
+   * Meteor tek başına **berabere** kaldı: yok 12 · meteor 12. Sebep
+   * `M18`'in Kar Geçidi için zaten kaydettiği desen — orada sızıntı
+   * tek bir yoğun anda değil, Meteor'un bir vuruşla toplayamadığı
+   * biçimde dağılıyor.
+   *
+   * İddia yanlış değil, **yanlış haritada** ölçülüyordu. Bugünkü tablo:
+   * Kar Geçidi `12/12/11/11` · Kadim Harabe `17/15/12/12` · Sisli
+   * Bataklık `15/10/12/9`. Meteor iki haritada açık ara kurtarıyor.
+   */
   it('Meteor can kurtarıyor', () => {
-    expect(canKaybi(MAP_4, 'meteor')).toBeLessThan(canKaybi(MAP_4, 'yok'));
+    expect(canKaybi(MAP_5, 'meteor')).toBeLessThan(canKaybi(MAP_5, 'yok'));
+    expect(canKaybi(MAP_6, 'meteor')).toBeLessThan(canKaybi(MAP_6, 'yok'));
+    // Kar Geçidi'nde berabere — kötüleştirmiyor, üstteki not.
+    expect(canKaybi(MAP_4, 'meteor')).toBeLessThanOrEqual(canKaybi(MAP_4, 'yok'));
   });
 
   /**

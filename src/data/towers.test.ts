@@ -155,7 +155,9 @@ describe('towers.ts — GAME-DESIGN §4.3 Büyü tablosu', () => {
     expect(y.damage).toBe(39); // `M18` (S110): 30 → 36; `M67` (S134): 36 → 39
     expect(y.fireRate).toBe(0.7);
     expect(y.range).toBe(170);
-    expect(y.effect).toEqual({ kind: 'chain', targets: 3, falloff: 0.7 });
+    // `M76` (S138): 0,7 → 0,55 — zincir Büyü'nün **dalga** üstünlüğünü
+    // taşıyor, tek hedef DPS'ini değil. Gerekçe `towers.ts`'te.
+    expect(y.effect).toEqual({ kind: 'chain', targets: 3, falloff: 0.55 });
   });
 
   /**
