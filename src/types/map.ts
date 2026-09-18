@@ -42,6 +42,22 @@ export interface MapDef {
   /** `= hpMultiplier` (`GAME-DESIGN.md` §9). */
   readonly goldMultiplier: number;
   readonly startGold: number;
+  /**
+   * **Kule fiyatı çarpanı** — `S117`, varsayılan `1`.
+   *
+   * Kusur şuydu: kule fiyatları **mutlak**, gelir ise haritayla
+   * **ölçekli**. Tahta maliyeti nokta sayısıyla sınırlı (5100-6440
+   * altın) ama gelir `goldMultiplier` ile büyüyor — ve o çarpan
+   * S73'ün "altın ≥ HP" değişmezi yüzünden yükselmek zorunda.
+   * Sonuç: maliyet/gelir oranı kampanya boyunca 0,84'ten **0,36**'ya
+   * savruluyordu, yani ekonomi harita 4'ten sonra 6-7. dalgada kısıt
+   * olmaktan çıkıyordu.
+   *
+   * Geliri kısmak çözüm değil (S73 altını HP'nin altına indirtmiyor);
+   * çözüm fiyatları da haritayla ölçeklemek. Tek adres:
+   * `towers.maliyet(ham, map)`.
+   */
+  readonly costMultiplier?: number;
   readonly enemyRoster: readonly EnemyId[];
   /**
    * `util/coverage.ts` **üretir**, elle yazılmaz (`CLAUDE.md` Mimari).

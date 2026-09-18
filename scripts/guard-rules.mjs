@@ -760,6 +760,42 @@ const sonuclar = [];
 }
 
 // ---------------------------------------------------------------------
+// 18 — Ham kule fiyatı (`S117`, `M79`)
+//
+// `TowerTier.cost` **ham** fiyat; oyuncunun ödediği `maliyet(ham, map)`.
+// Fiyat üç dosyada yirmi beş yerden okunuyordu ve birini atlamak
+// "menüde yazan fiyat ile kesilen fiyat farklı" demek — sessiz ve
+// oyuncuya güven kaybettiren bir hata. Tek adres zorunlu.
+//
+// **Muaf:** `towers.ts` (`maliyet` orada yaşıyor) ve `*.test.ts` — testler
+// HAM tabloyu sınamakta serbest, çünkü korunan şey **çalışma zamanında**
+// ödenen fiyat. Kör noktası: fiyatı bir değişkene alıp başka satırda
+// kullanan kod (`const c = t.cost` → ilk satır yakalanır, ikincisi değil).
+//
+// **SÖZCÜK SINIRI KAÇIŞI KULLANMA.** Bu kural ilk yazıldığında regex
+// `/\.cost\b/` idi; geçtiği katmanlarda \b **gerçek bir geri-boşluk
+// baytına** (0x08) dönüştü ve regex `/\.cost<BS>/` hiçbir şeyle
+// eşleşmez oldu — kural **sessizce hep yeşil** döndü, S136'nın aynısı
+// ("ateşlenmeyen bekçi"). Yerine karakter sınıfı kullanılıyor.
+// Negatif doğrulama yapıldı:
+// `GameScene`'e kasten ham `.cost` kondu → 17/18.
+// ---------------------------------------------------------------------
+{
+  let ihlalVar = false;
+  for (const dosya of dosyalar) {
+    // `maliyet` burada yaşıyor; testler HAM tabloyu sınamakta serbest.
+    if (/towers\.ts$/.test(dosya) || /\.test\.ts$/.test(dosya)) continue;
+    for (const h of kodSatirlari(readFileSync(dosya, 'utf8'))) {
+      if (!/\.cost(?![A-Za-z0-9_])/.test(h.metin)) continue;
+      if (/maliyet\s*\(/.test(h.metin)) continue; // zaten sarılmış
+      ihlalVar = true;
+      ihlal('S117', dosya, h.no, 'ham `.cost` — `maliyet(ham, map)` kullan');
+    }
+  }
+  sonuclar.push(['S117 kule fiyatı tek adresten (maliyet)', !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
 
 const gecen = sonuclar.filter(([, ok]) => ok).length;
 if (taranamayan.length > 0) {

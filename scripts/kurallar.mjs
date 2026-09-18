@@ -132,6 +132,7 @@ it('dokum', () => {
       return { n: g.length, ort: +(g.reduce((a, c) => a + c.coveredPx, 0) / g.length).toFixed(1) }; };
     return {
       id: m.id, hpMultiplier: m.hpMultiplier, goldMultiplier: m.goldMultiplier,
+      costMultiplier: m.costMultiplier ?? 1,
       startGold: m.startGold, spots: m.buildSpots.length, kollar: m.paths.length,
       roster: m.enemyRoster, ucanHat: m.flyerPaths.length,
       kapsama: m.coverage.map((c) => ({ i: c.spotIndex, px: +c.coveredPx.toFixed(1) })),
@@ -769,10 +770,12 @@ function olustur() {
   y(`"altın/HP oranı düşmesin"di; ölçüm eşitliğin harita 3'te bu gerekçeyi`);
   y(`**karşılamadığını** gösterdi — 12 nokta ×2,6 altınla tam yükseltilemiyor,`);
   y(`tahta 3820'de takılıyor ve oyuncu 34 can kaybediyordu (20 canla kayıp).`, '');
-  y(tablo(['Harita', 'HP çarpanı', 'Altın çarpanı', 'Tahta maliyeti', 'Can kaybı'],
+  y(tablo(['Harita', 'HP çarpanı', 'Altın çarpanı', 'Fiyat çarpanı', 'Tahta maliyeti', 'maliyet/gelir', 'Can kaybı'],
     D.haritalar.map((m) => [HARITA_ADI[m.id], `×${n(m.hpMultiplier)}`,
       `×${n(m.goldMultiplier)}${m.goldMultiplier !== m.hpMultiplier ? ' **←ayrıştı**' : ''}`,
-      n(m.tahta10?.maliyet), `${n(m.canKaybi)} / 20${m.canKaybi < 20 ? ' ✓' : ' ✗'}`])), '');
+      `×${n(m.costMultiplier)}`, n(m.tahta10?.maliyet),
+      n(+((m.tahta10?.maliyet ?? 0) / m.altinMuhafazakar).toFixed(2)),
+      `${n(m.canKaybi)} / 20${m.canKaybi < 20 ? ' ✓' : ' ✗'}`])), '');
   y(`Türetilebilir kural: **altın, haritanın noktalarını tam yükseltmeye`);
   y(`yetmeli.** 3,8'de maliyet doyuyor (üstü fazladan kule almıyor), yani sayı`);
   y(`seçilmedi — tam yükseltme noktası olarak **ölçüldü**.`, '');

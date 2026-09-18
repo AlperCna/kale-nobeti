@@ -59,7 +59,7 @@ import { averageCoverage, measureCoverage } from '../util/coverage';
 import { MAP_1, getMap, COVERAGE_REFERENCE_RANGE } from '../data/maps';
 import { PreloadScene } from './PreloadScene';
 import type { MapDef } from '../types/map';
-import { TOWERS, TARGET_MODES, getTower, tierAt } from '../data/towers';
+import { TOWERS, TARGET_MODES, getTower, maliyet, tierAt } from '../data/towers';
 import { towerFrameKey } from '../data/spriteFrames';
 import { projectileLook } from '../data/projectileVisuals';
 import { getEnemy, getEnemyForMap, ENEMIES } from '../data/enemies';
@@ -1531,9 +1531,10 @@ export class GameScene extends Phaser.Scene {
     if (spot === undefined) return false;
 
     const kademe = barracksTierAt(KISLA, 0);
-    if (this.#eco?.canAfford(kademe.cost) !== true) return false;
+    const fiyat = maliyet(kademe.cost, this.#map);
+    if (this.#eco?.canAfford(fiyat) !== true) return false;
     if (this.#occupancy?.occupy(spotIndex) !== true) return false;
-    this.#eco.buyAt(spotIndex, kademe.cost);
+    this.#eco.buyAt(spotIndex, fiyat);
 
     // `M24` — kışla da kule ile **aynı** toz halkasını atıyor. §10'un
     // "kule yerleşimi: toz halkası" kuralı `M6-T10`'da yalnız kuleye
@@ -1639,8 +1640,9 @@ export class GameScene extends Phaser.Scene {
     if (k === undefined) return false;
 
     const kademe = barracksTierAt(KISLA, hedef);
-    if (this.#eco?.canAfford(kademe.cost) !== true) return false;
-    this.#eco.buyAt(spotIndex, kademe.cost);
+    const fiyat = maliyet(kademe.cost, this.#map);
+    if (this.#eco?.canAfford(fiyat) !== true) return false;
+    this.#eco.buyAt(spotIndex, fiyat);
     k.tier = hedef;
     k.govde.setFrame(towerFrameKey('kisla', hedef));
     /**
@@ -1879,8 +1881,8 @@ export class GameScene extends Phaser.Scene {
     if (hedefKademe >= 2 && kule.tierIndex !== 1) return false;
     if (hedefKademe === 0) return false;
 
-    const maliyet = tierAt(kule.def, hedefKademe).cost;
-    if (this.#eco?.buyAt(spotIndex, maliyet) !== true) return false;
+    const fiyat = maliyet(tierAt(kule.def, hedefKademe).cost, this.#map);
+    if (this.#eco?.buyAt(spotIndex, fiyat) !== true) return false;
 
     kule.setTier(hedefKademe);
     kule.target = null;
@@ -1904,14 +1906,14 @@ export class GameScene extends Phaser.Scene {
     const spot = this.#map.buildSpots[spotIndex];
     if (spot === undefined) return false;
 
-    const maliyet = def.tiers[0].cost;
+    const fiyat = maliyet(def.tiers[0].cost, this.#map);
     // **Önce para, sonra yer.** Ters sıra olsaydı parası yetmeyen oyuncu
     // noktayı kilitler ve o nokta boşa giderdi.
-    if (this.#eco?.canAfford(maliyet) !== true) return false;
+    if (this.#eco?.canAfford(fiyat) !== true) return false;
     // Doluluk defteri **tek yerde**: `SpotOccupancy`. `TowerSystem` kendi
     // kontrolünü yapmıyor — aynı defteri iki yerde tutmak sessizce ayrışır.
     if (this.#occupancy?.occupy(spotIndex) !== true) return false;
-    this.#eco.buyAt(spotIndex, maliyet);
+    this.#eco.buyAt(spotIndex, fiyat);
 
     // §10 kule yerleşimi: toz halkası. (40 ms zoom M6-T10'un görsel
     // yarısı; kamera kaydırması sarsıntıyla çakışmasın diye eklenmedi.)

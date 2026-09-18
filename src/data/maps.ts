@@ -541,6 +541,11 @@ export const MAP_4: MapDef = {
   // iki çarpan da yukarı gidiyor ve komşu altın değeri de geçiyor, yani
   // tek nokta adası değil.
   hpMultiplier: 7.35, // S87 → S91 → S101 → S109 → S113 → S119 → S95/M47
+  // **`S117` (`M79`): kule fiyatları ×1,4.** Maliyet/gelir oranı
+  // 0,41 → **0,57**. Tarama (gerçek alanla): 1,2 ve 1,6 yetenek
+  // sağlamasını kırıyor, 1,8'de Top 23 (aile eşiği 20).
+  // Gerekçe `types/map.ts`'teki alan notunda.
+  costMultiplier: 1.4,
   goldMultiplier: 7.8, // S87 — HP ile birlikte yükseldi (S73 değişmezi)
   startGold: Math.round(280 * 7.8), // S87
   // §5: kadro **tam** — dokuz tip, yeni tanıtım yok.
@@ -926,6 +931,11 @@ export const MAP_6: MapDef = {
   // (Kül Ovası Okçu'nun, Kadim Harabe Büyü'nün). 8,00 ve 8,10 ikisi de
   // geçiyor, yani tek atış değil plato; ikisinden karışık tahtası
   // yüksek olan alındı.
+  // **`S117` (`M79`): harita 6'ya çarpan KONMADI.** İnce tarama (1,0-1,9)
+  // yalnız 1,0'ı geçirdi: 1,1-1,2'de “ikisi < meteor” düşüyor (9'a 9
+  // berabere), 1,3'te Takviye can kaybettirmeye başlıyor, 1,7+'da Kolay
+  // sınırı aşıyor. Oran 0,36'da kalıyor — altı haritanın en düşüğü ve
+  // S117'nin açık kalan kolu.
   hpMultiplier: 8.1, // S109 → S113 → S119 → S95/M47 → S130/S131 → S134 (`M67`)
   goldMultiplier: 11.0,
   startGold: Math.round(280 * 11.0),

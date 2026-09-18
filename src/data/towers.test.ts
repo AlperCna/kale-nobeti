@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { OKCU, TOP, BUYU, TOWERS, getTower, tierAt } from './towers';
+import { OKCU, TOP, BUYU, TOWERS, getTower, tierAt, maliyet } from './towers';
 import {
   GOBLIN,
   ORK_SAVASCI,
@@ -13,7 +13,7 @@ import {
   ENEMIES,
   getEnemy,
 } from './enemies';
-import { COVERAGE_REFERENCE_RANGE, MAP_1 } from './maps';
+import { COVERAGE_REFERENCE_RANGE, MAP_1, MAP_4, MAPS } from './maps';
 
 /**
  * Test sabitleri **elle yazılı ve kaynağı belirtilmiş** — veri dosyasından
@@ -338,5 +338,47 @@ describe('enemies.ts — GAME-DESIGN §5 tablosu', () => {
     expect(ORUMCEK_YAVRUSU.magicResist).toBe(0);
     expect(ORUMCEK_YAVRUSU.gold).toBe(0);
     expect(ORUMCEK_YAVRUSU.points).toBe(0);
+  });
+});
+
+/**
+ * **`maliyet(ham, map)` — kule fiyatının TEK adresi** (`S117`, `M79`).
+ *
+ * `TowerTier.cost` ham fiyat, oyuncunun ödediği `maliyet(...)`. Menü ile
+ * kesinti ayrı yerden okunursa "yazan fiyat ile ödenen fiyat" ayrışır;
+ * bekçinin 18. kuralı ham `.cost` okumasını `towers.ts` dışında yasaklıyor.
+ * Buradaki sayılar elle yazılı — ham fiyatlar §4.1/§4.2 tablolarından,
+ * çarpan `maps.ts`'ten okunsaydı test kendi kendini doğrulardı.
+ */
+describe('towers.ts — maliyet(ham, map) (S117)', () => {
+  it('çarpansız haritada ham fiyat AYNEN geçiyor', () => {
+    expect(maliyet(70, MAP_1)).toBe(70);
+    expect(maliyet(510, {})).toBe(510);
+  });
+
+  it('Kar Geçidi ×1,4: Okçu T1 70 → 98, Keskin Nişancı 170 → 238', () => {
+    expect(MAP_4.costMultiplier).toBe(1.4);
+    expect(maliyet(70, MAP_4)).toBe(98);
+    expect(maliyet(170, MAP_4)).toBe(238);
+  });
+
+  it('TAM SAYI döndürüyor — altın kesirli olamaz', () => {
+    expect(maliyet(71, { costMultiplier: 1.4 })).toBe(99); // 99,4
+    expect(maliyet(33, { costMultiplier: 1.15 })).toBe(38); // 37,95
+    for (const ham of [70, 100, 130, 180, 230, 170, 510]) {
+      expect(Number.isInteger(maliyet(ham, MAP_4))).toBe(true);
+    }
+  });
+
+  /**
+   * **Sayan liste.** `M79` altı haritada k'yı tek tek taradı ve bütün
+   * sağlamalardan geçen tek değer Kar Geçidi 1,4 çıktı (oran 0,41 → 0,57).
+   * Harita 5 yalnız k=1'de, harita 6 ise 1,1'de bile geçmiyor. Yeni bir
+   * çarpan konursa denge yeniden türetilmeli — bu test onu durdurur.
+   */
+  it('çarpan YALNIZ Kar Geçidi haritasında var (M79 taraması)', () => {
+    expect(MAPS.filter((m) => m.costMultiplier !== undefined).map((m) => m.id)).toEqual([
+      'kar-gecidi',
+    ]);
   });
 });

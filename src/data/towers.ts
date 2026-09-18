@@ -333,3 +333,17 @@ export function tierAt(def: TowerDef, index: TierIndex): TowerTier {
   if (index === 3) return def.branches[1];
   return def.tiers[index];
 }
+
+/**
+ * **Bir kademenin haritadaki gerçek fiyatı — TEK ADRES** (`S117`).
+ *
+ * `TowerTier.cost` **ham** fiyat; oyuncunun ödediği bundan
+ * `MapDef.costMultiplier` kadar farklı olabilir. Neden tek adres:
+ * fiyat üç dosyada **yirmi beş** yerden okunuyor (menü, yerleştirme,
+ * tahta türetici) ve birini atlamak "menüde yazan fiyat ile kesilen
+ * fiyat farklı" demek — sessiz ve oyuncuya güven kaybettiren bir hata.
+ * `guard` ham `.cost` okumasını bu fonksiyonun dışında yasaklıyor.
+ */
+export function maliyet(ham: number, map: { readonly costMultiplier?: number }): number {
+  return Math.round(ham * (map.costMultiplier ?? 1));
+}

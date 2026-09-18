@@ -362,14 +362,14 @@ Kaynak: `src/data/balance.ts` · `GAME-DESIGN.md` §6
 **karşılamadığını** gösterdi — 12 nokta ×2,6 altınla tam yükseltilemiyor,
 tahta 3820'de takılıyor ve oyuncu 34 can kaybediyordu (20 canla kayıp).
 
-| Harita | HP çarpanı | Altın çarpanı | Tahta maliyeti | Can kaybı |
-|---|---|---|---|---|
-| 1 · Değirmen Geçidi | ×1 | ×1 | 1350 | 0 / 20 ✓ |
-| 2 · Taş Köprü | ×1,6 | ×2,2 **←ayrıştı** | 2940 | 0 / 20 ✓ |
-| 3 · Kül Ovası | ×2,8 | ×3,8 **←ayrıştı** | 5100 | 9 / 20 ✓ |
-| 4 · Kar Geçidi | ×7,35 | ×7,8 **←ayrıştı** | 5100 | 14 / 20 ✓ |
-| 5 · Kadim Harabe | ×10,2 | ×10,2 | 6440 | 14 / 20 ✓ |
-| 6 · Sisli Bataklık | ×8,1 | ×11 **←ayrıştı** | 6440 | 15 / 20 ✓ |
+| Harita | HP çarpanı | Altın çarpanı | Fiyat çarpanı | Tahta maliyeti | maliyet/gelir | Can kaybı |
+|---|---|---|---|---|---|---|
+| 1 · Değirmen Geçidi | ×1 | ×1 | ×1 | 1350 | 0,84 | 0 / 20 ✓ |
+| 2 · Taş Köprü | ×1,6 | ×2,2 **←ayrıştı** | ×1 | 2940 | 0,83 | 0 / 20 ✓ |
+| 3 · Kül Ovası | ×2,8 | ×3,8 **←ayrıştı** | ×1 | 5100 | 0,78 | 9 / 20 ✓ |
+| 4 · Kar Geçidi | ×7,35 | ×7,8 **←ayrıştı** | ×1,4 | 7140 | 0,57 | 13 / 20 ✓ |
+| 5 · Kadim Harabe | ×10,2 | ×10,2 | ×1 | 6440 | 0,4 | 14 / 20 ✓ |
+| 6 · Sisli Bataklık | ×8,1 | ×11 **←ayrıştı** | ×1 | 6440 | 0,36 | 15 / 20 ✓ |
 
 Türetilebilir kural: **altın, haritanın noktalarını tam yükseltmeye
 yetmeli.** 3,8'de maliyet doyuyor (üstü fazladan kule almıyor), yani sayı
@@ -523,9 +523,9 @@ referans tahtaya, tavana ve boss türetmesine hiç girmiyor — hiçbir düşman
 
 | Seviye | HP çarpanı | Başlangıç canı | Yıldız | 1 | 2 | 3 | 4 | 5 | 6 |
 |---|---|---|---|---|---|---|---|---|---|
-| kolay | ×0,8 | 20 | **kaydedilmiyor** | 0 / 20 ✓ | 0 / 20 ✓ | 2 / 20 ✓ | 4 / 20 ✓ | 5 / 20 ✓ | 6 / 20 ✓ |
-| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 0 / 20 ✓ | 9 / 20 ✓ | 14 / 20 ✓ | 14 / 20 ✓ | 15 / 20 ✓ |
-| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 0 / 12 ✓ | 9 / 12 ✓ | 14 / 12 ✗ | 14 / 12 ✗ | 15 / 12 ✗ |
+| kolay | ×0,8 | 20 | **kaydedilmiyor** | 0 / 20 ✓ | 0 / 20 ✓ | 2 / 20 ✓ | 3 / 20 ✓ | 5 / 20 ✓ | 6 / 20 ✓ |
+| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 0 / 20 ✓ | 9 / 20 ✓ | 13 / 20 ✓ | 14 / 20 ✓ | 15 / 20 ✓ |
+| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 0 / 12 ✓ | 9 / 12 ✓ | 13 / 12 ✗ | 14 / 12 ✗ | 15 / 12 ✗ |
 
 Hücreler: referans tahtanın kaybettiği can / o seviyenin canı.
 
@@ -704,7 +704,7 @@ Simülasyon **canlı oyunla aynı kodu** kullanıyor: aynı
 | 1 · Değirmen Geçidi | **0** | 0 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:0 |
 | 2 · Taş Köprü | **0** | 0 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:0 |
 | 3 · Kül Ovası | **6** | 1048 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:1 d9:0 d10:5 |
-| 4 · Kar Geçidi | **10** | 7256 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:10 |
+| 4 · Kar Geçidi | **9** | 7265 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:9 |
 | 5 · Kadim Harabe | **11** | 10133 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:11 |
 | 6 · Sisli Bataklık | **13** | 6695 | d1:0 d2:0 d3:0 d4:0 d5:2 d6:0 d7:0 d8:0 d9:1 d10:10 |
 
@@ -717,7 +717,7 @@ bu ikisi farklı düzeltmeler gerektiriyor:
 | 1 · Değirmen Geçidi | **hiç yok** |
 | 2 · Taş Köprü | **hiç yok** |
 | 3 · Kül Ovası | Trol ×3 · Örümcek Yavrusu ×3 |
-| 4 · Kar Geçidi | Trol ×4 · Zırhlı Ork ×3 · Örümcek Yavrusu ×1 · Harpi ×1 · Şaman ×1 |
+| 4 · Kar Geçidi | Trol ×4 · Zırhlı Ork ×3 · Harpi ×1 · Şaman ×1 |
 | 5 · Kadim Harabe | Zırhlı Ork ×3 · Trol ×3 · Şaman ×2 · Örümcek Yavrusu ×2 · Kurt Binicisi ×1 |
 | 6 · Sisli Bataklık | tunelci ×7 · Ork Savaşçı ×4 · Trol ×2 |
 
@@ -742,7 +742,7 @@ kapsamalı** noktaya kuruluyor.
 | 1 · Değirmen Geçidi | dalga 7 | 1602 | 2122 | 8 kule (1350 altın) |
 | 2 · Taş Köprü | dalga 3 | 3548 | 4692 | 10 kule (2940 altın) |
 | 3 · Kül Ovası | dalga 4 | 6500 | 8476 | 11 kule + 1 kışla (5100 altın) |
-| 4 · Kar Geçidi | dalga 4 | 12513 | 16569 | 11 kule + 1 kışla (5100 altın) |
+| 4 · Kar Geçidi | dalga 4 | 12513 | 16569 | 11 kule + 1 kışla (7140 altın) |
 | 5 · Kadim Harabe | dalga 4 | 16285 | 21589 | 14 kule + 1 kışla (6440 altın) |
 | 6 · Sisli Bataklık | dalga 4 | 17655 | 23375 | 14 kule + 1 kışla (6440 altın) |
 
