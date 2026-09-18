@@ -58,13 +58,36 @@ export function budget(n: number, elit = false): number {
  * karışık tahta ile tek aile tahtası arasındaki makasın (S95'in alanı)
  * ya da maliyet/gelir oranının (S117) ele alınması gerekiyor.
  *
- * **Harita 6 ölçümle DIŞARIDA.** Sisli Bataklık'ın orta oyununda zaten
- * baskı var (Tünelci, dalga 6'da 2 can) ve elit dalgası eklenince
- * tepkisi kaotikleşiyor: çarpan taramasında orta pay 0'a düşerken final
- * 4 ↔ 17 ↔ 9 arasında zıplıyor. Çağıran boss (`M13`) + yeraltı geçişi
- * bileşimi bu haritayı zaten farklı bir rejimde tutuyor.
+ * **Harita 6 `M84`'te İÇERİ ALINDI.** `M21`'in "kaotik" ölçümü
+ * `M61`/`M66`/`M79`/`M81` öncesinin tahtasına aitti. Bugün elit dalgası
+ * kampanyanın ağırlığını finalden ortaya kaydırıyor ve hiçbir sağlamayı
+ * kırmıyor; beste ve bandı dalganın kendi başlığında.
+ *
+ * **Harita 4 ve 5 `M84`'te YENİDEN ölçüldü — hâlâ dışarıda, ama sebep
+ * eskisinden daha net.** Elit dalgasının ağırlığı orta oyuna **hiç
+ * yazılmıyor**, doğruca finale gidiyor (doğum dalgasına göre ölçüldü:
+ * Kar Geçidi +2 Trol'de dalga 6'nın payı **0**, toplam 14 → 16 ve artışın
+ * tamamı dalga 9-10'da). Yeterince büyüdüğünde ise iki sağlamayı birden
+ * kırıyor: Kar Geçidi +3 Trol → toplam **21** (harita kaybediliyor) ve
+ * Okçu **22**; Kadim Harabe +2 Trol → toplam **23**, Okçu **28**.
+ * (+1 Trol ikisinde de toplamı düşürüyor: 14 → 14 ve 15 → 13.)
+ * Sebep S95'in alanı: 12-15 noktalı tahtada tek aileye zorlanan Okçu
+ * zaten 17-18'de duruyor, elit dalgası onu eşiğin üstüne atıyor.
  */
-export const ELIT_DALGALI_HARITALAR: readonly string[] = ['kul-ovasi'];
+export const ELIT_DALGALI_HARITALAR: readonly string[] = ['kul-ovasi', 'sisli-bataklik'];
+
+/**
+ * **Büyük refakatli haritalar** — dalga 10 bütçesi `bossWaveFactor` kadar
+ * büyüyor (S135, `M70`).
+ *
+ * `M84`'e kadar bu liste yoktu: `budgetFor` **elit dalgası** bayrağını
+ * ikinci bir karar için de kullanıyordu. İki karar aynı turda (`M70`)
+ * aynı haritaya konduğu için fark edilmemişti; harita 6'ya elit dalgası
+ * eklenince ortaya çıktı: bayrak onun **boss dalgasını da** %50 büyütmek
+ * isteyecekti, oysa değişikliğin amacı tam tersiydi — finalin payını
+ * azaltmak. İki karar artık iki adreste.
+ */
+export const BUYUK_REFAKATLI_HARITALAR: readonly string[] = ['kul-ovasi'];
 
 /**
  * Bir haritanın `n`. dalgasının bütçesi. **Tek adres** — hem dalga
@@ -72,10 +95,14 @@ export const ELIT_DALGALI_HARITALAR: readonly string[] = ['kul-ovasi'];
  * iki ayrı kural yazmak sessizce ayrışırdı.
  */
 export function budgetFor(mapId: string, n: number): number {
-  if (!ELIT_DALGALI_HARITALAR.includes(mapId)) return budget(n);
-  if (BALANCE.eliteWaves.includes(n as 6)) return budget(n, true);
-  // Boss dalgası — gerekçe `balance.bossWaveFactor` (S135).
-  if (n === 10) return Math.round(budget(n) * BALANCE.bossWaveFactor);
+  if (ELIT_DALGALI_HARITALAR.includes(mapId) && BALANCE.eliteWaves.includes(n as 6)) {
+    return budget(n, true);
+  }
+  // Boss dalgası — gerekçe `balance.bossWaveFactor` (S135). `M84`: artık
+  // elit bayrağından AYRI bir liste.
+  if (n === 10 && BUYUK_REFAKATLI_HARITALAR.includes(mapId)) {
+    return Math.round(budget(n) * BALANCE.bossWaveFactor);
+  }
   return budget(n);
 }
 
@@ -575,12 +602,36 @@ export const MAP6_WAVES: readonly Wave[] = [
     ['tunelci', 3],
     ['zirhliOrk', 3],
   ]), // 21 = bütçe 21
+  /**
+   * **ELİT DALGASI** (`M84`, S116) — bütçe ×2,2; fazlalık iki Trol ve
+   * yedi goblin.
+   *
+   * `M21` bu haritayı "kaotik" diye dışarıda bırakmıştı ama o ölçüm
+   * `M61`/`M66`/`M79`/`M81` öncesinin tahtasıyla alınmıştı. Bugün
+   * ölçüldü: elit dalgası kampanyanın ağırlığını **finalden ortaya**
+   * kaydırıyor. Doğum dalgasına göre can kaybı `[0 0 0 2 0 1 0 0 6 9]`,
+   * yani artık 6. dalga da bir can götürüyor ve toplam 16 → **18**.
+   *
+   * Beste taranarak seçildi (Trol/goblin → toplam | Kolay | Okçu):
+   * 3/2 → 15|10|17 (rampa harita 5'e **eşitleniyor**, iddia düşüyor) ·
+   * 2/2 → 16|10|14 · 2/6 → 17|9|16 · **2/7 → 18|7|16** · 2/8 → 14|7|16 ·
+   * 4/2 → 20|10|20 (harita kaybediliyor). Seçimi belirleyen şey **band**:
+   * mermi hızı 300-1500 arasında oynatıldığında 2/6 Kolay'ı **11**'e
+   * çıkarıyor (sınır 10), 2/7 ise 7-9 bandında kalıyor ve toplam 16-18,
+   * Okçu 15-18 — hiçbir sağlamaya değmiyor (`M82`'nin dersi).
+   *
+   * Goblin'in işi kalabalık değil **nefes**: tek hedefli aileye (Okçu)
+   * Trol arasında vurabileceği ucuz hedef veriyor. Goblin'siz 49 puanlık
+   * hal Okçu'yu 20'ye çıkarıp S95'in eşiğini kırıyordu.
+   */
   dalgaKur(6, [
     ['kurtBinicisi', 3],
     ['tunelci', 2],
     ['harpi', 2],
     ['orkSavasci', 2],
-  ]), // 25 = bütçe 25
+    ['trol', 2],
+    ['goblin', 7],
+  ]), // 48 ≈ elit bütçe 55
   dalgaKur(7, [
     ['goblin', 6],
     ['tunelci', 3],

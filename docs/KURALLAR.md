@@ -368,7 +368,7 @@ tahta 3820'de takılıyor ve oyuncu 34 can kaybediyordu (20 canla kayıp).
 | 3 · Kül Ovası | ×2,8 | ×3,8 **←ayrıştı** | ×1 | 5100 | 0,78 | 9 / 20 ✓ |
 | 4 · Kar Geçidi | ×7,35 | ×7,8 **←ayrıştı** | ×1,4 | 7140 | 0,57 | 14 / 20 ✓ |
 | 5 · Kadim Harabe | ×10,05 | ×10,2 **←ayrıştı** | ×1 | 6440 | 0,4 | 15 / 20 ✓ |
-| 6 · Sisli Bataklık | ×8,5 | ×11 **←ayrıştı** | ×1 | 6440 | 0,36 | 16 / 20 ✓ |
+| 6 · Sisli Bataklık | ×8,5 | ×11 **←ayrıştı** | ×1 | 6440 | 0,35 | 18 / 20 ✓ |
 
 Türetilebilir kural: **altın, haritanın noktalarını tam yükseltmeye
 yetmeli.** 3,8'de maliyet doyuyor (üstü fazladan kule almıyor), yani sayı
@@ -502,7 +502,7 @@ Doğum penceresi `SPAWN_K = 24` (saniye × düşman). **Uydurulmadı,
 | **3** | 14 | 14 | 8 | 3 sn | 5× Goblin, 3× tunelci |
 | **4** _(nefes)_ | 15 | 15 | 9 | 2,67 sn | 3× tunelci, 6× Goblin |
 | **5** | 21 | 21 | 6 | 4 sn | 3× tunelci, 3× Zırhlı Ork |
-| **6** | 25 | 25 | 9 | 2,67 sn | 3× Kurt Binicisi, 2× tunelci, 2× Harpi, 2× Ork Savaşçı |
+| **6** | 25 | 48 | 18 | 1,33 sn | 3× Kurt Binicisi, 2× tunelci, 2× Harpi, 2× Ork Savaşçı, 2× Trol, 7× Goblin |
 | **7** _(nefes)_ | 25 | 25 | 14 | 1,71 sn | 6× Goblin, 3× tunelci, 5× Ork Savaşçı |
 | **8** | 36 | 36 | 8 | 3 sn | 2× Trol, 4× tunelci, 2× Zırhlı Ork |
 | **9** | 43 | 44 | 9 | 2,67 sn | 3× Trol, 1× Şaman, 3× tunelci, 2× Harpi |
@@ -522,9 +522,9 @@ referans tahtaya, tavana ve boss türetmesine hiç girmiyor — hiçbir düşman
 
 | Seviye | HP çarpanı | Başlangıç canı | Yıldız | 1 | 2 | 3 | 4 | 5 | 6 |
 |---|---|---|---|---|---|---|---|---|---|
-| kolay | ×0,8 | 20 | **kaydedilmiyor** | 0 / 20 ✓ | 0 / 20 ✓ | 2 / 20 ✓ | 3 / 20 ✓ | 6 / 20 ✓ | 8 / 20 ✓ |
-| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 0 / 20 ✓ | 9 / 20 ✓ | 14 / 20 ✓ | 15 / 20 ✓ | 16 / 20 ✓ |
-| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 0 / 12 ✓ | 9 / 12 ✓ | 14 / 12 ✗ | 15 / 12 ✗ | 16 / 12 ✗ |
+| kolay | ×0,8 | 20 | **kaydedilmiyor** | 0 / 20 ✓ | 0 / 20 ✓ | 2 / 20 ✓ | 3 / 20 ✓ | 6 / 20 ✓ | 7 / 20 ✓ |
+| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 0 / 20 ✓ | 9 / 20 ✓ | 14 / 20 ✓ | 15 / 20 ✓ | 18 / 20 ✓ |
+| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 0 / 12 ✓ | 9 / 12 ✓ | 14 / 12 ✗ | 15 / 12 ✗ | 18 / 12 ✗ |
 
 Hücreler: referans tahtanın kaybettiği can / o seviyenin canı.
 
@@ -708,7 +708,7 @@ aşan hasar. Kalkanın yuttuğu kayıp sayılmıyor: o gerçek bir mekanik.
 | 3 · Kül Ovası | 37188 | 366 | 1200 | **%95,8** |
 | 4 · Kar Geçidi | 63192 | 814 | 1657 | **%96,1** |
 | 5 · Kadim Harabe | 83166 | 967 | 1611 | **%96,9** |
-| 6 · Sisli Bataklık | 64629 | 780 | 1364 | **%96,7** |
+| 6 · Sisli Bataklık | 69039 | 1044 | 1482 | **%96,3** |
 
 Öğretici haritada kayıp en yüksek — çünkü orada atış başına hasar
 düşmanın canının büyük bir kısmı ve aşırı öldürme baskın. Geç haritalarda
@@ -724,7 +724,23 @@ Simülasyon **canlı oyunla aynı kodu** kullanıyor: aynı
 | 3 · Kül Ovası | **6** | 1240 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:1 d9:0 d10:5 |
 | 4 · Kar Geçidi | **10** | 7622 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:10 |
 | 5 · Kadim Harabe | **12** | 9866 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:12 |
-| 6 · Sisli Bataklık | **14** | 7392 | d1:0 d2:0 d3:0 d4:0 d5:2 d6:0 d7:0 d8:0 d9:0 d10:12 |
+| 6 · Sisli Bataklık | **16** | 7614 | d1:0 d2:0 d3:0 d4:0 d5:2 d6:0 d7:1 d8:0 d9:0 d10:13 |
+
+
+**Baskı hangi dalgadan geliyor?** Üstteki dağılım sızıntıyı **sızdığı ana**
+yazıyor. `M16`'dan beri dalgalar üst üste bindiği için 9. dalganın Trol'ü
+10. dalga koşarken kaleye varıyor ve finalin hanesine yazılıyor — S116'nın
+"bütün baskı 10. dalgada" iddiası kısmen bu muhasebeden doğuyordu. Aşağıdaki
+tablo aynı canı düşmanın **doğduğu** dalgaya yazıyor (`M84`):
+
+| Harita | Doğum dalgasına göre can kaybı | Final payı |
+|---|---|---|
+| 1 · Değirmen Geçidi | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:0 | — |
+| 2 · Taş Köprü | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:0 | — |
+| 3 · Kül Ovası | d1:0 d2:0 d3:0 d4:0 d5:0 d6:2 d7:0 d8:0 d9:0 d10:7 | **%78** |
+| 4 · Kar Geçidi | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:6 d10:8 | **%57** |
+| 5 · Kadim Harabe | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:7 d10:8 | **%53** |
+| 6 · Sisli Bataklık | d1:0 d2:0 d3:0 d4:2 d5:0 d6:1 d7:0 d8:0 d9:6 d10:9 | **%50** |
 
 
 **Hangi düşman sızıyor** — toplam sayı *neyin* sızdığını söylemiyor ve
@@ -737,7 +753,7 @@ bu ikisi farklı düzeltmeler gerektiriyor:
 | 3 · Kül Ovası | Trol ×3 · Örümcek Yavrusu ×3 |
 | 4 · Kar Geçidi | Trol ×4 · Zırhlı Ork ×3 · Örümcek Yavrusu ×1 · Harpi ×1 · Şaman ×1 |
 | 5 · Kadim Harabe | Zırhlı Ork ×3 · Trol ×3 · Örümcek Yavrusu ×3 · Şaman ×2 · Kurt Binicisi ×1 |
-| 6 · Sisli Bataklık | tunelci ×8 · Ork Savaşçı ×4 · Trol ×2 |
+| 6 · Sisli Bataklık | tunelci ×9 · Ork Savaşçı ×5 · Trol ×2 |
 
 **Kısıt A ile Kısıt B aynı şeyi ölçmüyor.** Kısıt A *tek* düşman için
 ("bir Ork Savaşçı öldürülebilir mi"), Kısıt B *dalga* için ("on bir tanesi
@@ -762,7 +778,7 @@ kapsamalı** noktaya kuruluyor.
 | 3 · Kül Ovası | dalga 4 | 6500 | 8476 | 11 kule + 1 kışla (5100 altın) |
 | 4 · Kar Geçidi | dalga 4 | 12513 | 16569 | 11 kule + 1 kışla (7140 altın) |
 | 5 · Kadim Harabe | dalga 4 | 16285 | 21589 | 14 kule + 1 kışla (6440 altın) |
-| 6 · Sisli Bataklık | dalga 4 | 17655 | 23375 | 14 kule + 1 kışla (6440 altın) |
+| 6 · Sisli Bataklık | dalga 4 | 18414 | 24134 | 14 kule + 1 kışla (6440 altın) |
 
 ---
 
