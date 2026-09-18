@@ -466,6 +466,9 @@ const KALICI_HUD = [
   // oyun boyunca duruyor — kalıcı sayılır. `M8-B01`'de sağ kenardan üst
   // şeride alındı; sağ kenarda üç cebin üçü de düğmelerle doluydu.
   { ad: 'zorluk rozeti', x0: 1086, y0: 25, x1: 1154, y1: 59 },
+  // `M87` duraklatma düğmesi — dokunmatikte duraklatma menüsünün tek kapısı.
+  // Sağ kenarda yer yok (üç cep de dolu), üst şeritte rozetin solunda.
+  { ad: 'duraklat', x0: 996, y0: 24, x1: 1044, y1: 72 },
   { ad: 'yetenek', x0: 28, y0: 622, x1: 170, y1: 707 },
   // `M8-T12` tam ekran düğmesi. İlk yerleşimi sağ kenarın **ortasıydı**
   // ve harita 2'nin kalesinin (1220, 360) tam üstüne düşüyordu; aşağıdaki
@@ -558,10 +561,14 @@ describe('yapı noktası HUD’un altında kalmıyor', () => {
     const KAPSANAN = KALICI_HUD.filter((b) => b.x0 > 640);
     const YARI_SERIT = 24; // PATH_WIDTH / 2
 
+    // Bu liste **sayan liste**: yeni bir sağ/alt kutu eklenip buraya
+    // yazılmazsa test onu sessizce atlar. `M87`'de tam bu oldu — duraklatma
+    // düğmesi eklenince liste önce dörtte kaldı ve kontrol dışında kalacaktı.
     expect(KAPSANAN.map((b) => b.ad)).toEqual([
       'hız',
       'ayar',
       'zorluk rozeti',
+      'duraklat',
       'tam ekran',
     ]);
 

@@ -153,7 +153,11 @@ Ayrıntı: `docs/research/05-yayin-platformlari.md`
   Unutulursa oyun portalda hiç yüklenmez.
 - UI, 640×360'a küçültüldüğünde okunur kalmalı: minimum yazı **16 px**,
   minimum dokunmatik hedef **44×44 px** (1280×720 ölçeğinde).
-- **ESC ve boşluk** duraklatmayı açar/kapatır (Poki zorunlu).
+- **ESC ve boşluk** duraklatmayı açar/kapatır (Poki zorunlu) — **ve HUD'da
+  bir duraklatma düğmesi var** (`M87`). Yalnız tuş yetmiyor: portalların
+  trafiği ağırlıklı dokunmatik ve duraklatma menüsü (yeniden başla / ana
+  menü) oyundan çıkmanın tek yolu; klavyesiz oyuncu haritayı bitirmeden
+  çıkamıyordu.
 - Sayfa CSS'inde `-webkit-user-select: none`.
 - Yayın yapısında konsol çıktısı, hata ayıklama tuşları ve FPS sayacı bulunmaz.
 

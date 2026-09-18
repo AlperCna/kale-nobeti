@@ -57,6 +57,21 @@ const MARGIN = 20;
  */
 const HIZ_BTN_Y = MARGIN + BTN / 2;
 const AYAR_BTN_Y = 180;
+/**
+ * Duraklatma düğmesi — `M87`. **Üst şeritte, sağ kenarda değil.**
+ *
+ * Sağ kenardaki üç cebin (`30-68`, `172-196`, `654-700`) üçü de dolu;
+ * dördüncü bir düğme oraya konsaydı `M8-B01`'in düzelttiği kusur geri
+ * gelirdi (ayar düğmesi harita 3'ün giriş yolunun üstündeydı). Üst şerit
+ * `x = 362`'den sağa boş; zorluk rozeti 1086-1154'te, düğme onun soluna
+ * oturuyor. Yeri `maps.test.ts`'in `KALICI_HUD` listesinde ve altı
+ * haritaya karşı sınanıyor — göze göre değil.
+ */
+const DURAKLAT_BTN_X = 1020;
+/** Hiz düğmesiyle **aynı eksende** (48): iki düğme yan yana okunuyor. */
+const DURAKLAT_BTN_Y = HIZ_BTN_Y;
+/** Dokunmatik hedef en az 44 (CLAUDE.md Platform); üst şerit 56'yı taşımıyor. */
+const DURAKLAT_BTN = 48;
 /** Zorluk rozeti: üst şeritte, hız düğmesinin solunda. Boss can çubuğu
  *  (640 merkez, 360 geniş → 460-820) ile de çakışmıyor. */
 const ZORLUK_ROZET_X = 1120;
@@ -269,6 +284,7 @@ export class HudScene extends Phaser.Scene {
       this.sound.mute = !settings.state.sound;
     }
     this.#createSettingsButton();
+    this.#createPauseButton();
     this.#createPauseOverlay();
     this.#bindKeys();
     // Dil değişiminden geldiyse panel açık kalıyor — oyuncu tek tıkla
@@ -445,6 +461,35 @@ export class HudScene extends Phaser.Scene {
       .setOrigin(0.5);
     btn.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => {
       this.#settingsPanel?.setVisible(!(this.#settingsPanel?.visible ?? false));
+    });
+  }
+
+  /**
+   * **Duraklatma düğmesi** — `M87`.
+   *
+   * Duraklatma menüsü (`Devam · Yeniden başla · Ayarlar · Ana menü`)
+   * `M8-T03`'ten beri var ama **yalnız ESC/boşluk** ile açılıyordu. Poki
+   * ve CrazyGames ağırlıklı olarak dokunmatik; klavyesi olmayan oyuncu
+   * duraklayamıyor, **haritayı yeniden başlatamıyor ve menüye dönemiyordu**
+   * — tek çıkışı kaybetmeyi beklemekti. Ayar düğmesi bunun yerine
+   * geçmiyor: o bilerek duraklatmıyor (etkileri ancak oyun akarken
+   * görülür, kendi başlığındaki gerekçe).
+   *
+   * Glif çizgiyle çiziliyor, yazıyla değil: `⏸` Spectral'de yok ve
+   * atlas'ta duraklatma ikonu bulunmuyor. İki çubuk **biçim**, yani
+   * bilgi renge dayanmıyor (TIER 1 kural 6).
+   */
+  #createPauseButton(): void {
+    const x = DURAKLAT_BTN_X;
+    const y = DURAKLAT_BTN_Y;
+    const btn = createParchmentButton(this, x, y, DURAKLAT_BTN, DURAKLAT_BTN, 12);
+    addPressFeedback(btn);
+    const cubuk = this.add.graphics();
+    cubuk.fillStyle(INK, 1);
+    cubuk.fillRoundedRect(x - 9, y - 10, 6, 20, 2);
+    cubuk.fillRoundedRect(x + 3, y - 10, 6, 20, 2);
+    btn.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => {
+      this.#togglePause();
     });
   }
 
