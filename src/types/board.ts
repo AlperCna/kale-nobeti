@@ -28,6 +28,28 @@ export interface BoardTower {
    * (`last` ile arkadan seç)" satırı uçtan uca ölçülemiyordu, çünkü tahta
    * hedefleme modu taşımıyordu ve simülasyon her kuleyi `first` yapıyordu.
    * Şaman grubun **arkasında** duruyor; `first` ona hiç ulaşamıyor.
+   *
+   * **`M85` — alan var, referans tahta onu YAZMIYOR; bu bilinçli.**
+   * `buildReferenceBoards` hiçbir kuleye mod vermiyor, yani bütün denge
+   * sayıları oyunun **varsayılan** modunda (`first`, §4.5) türetiliyor;
+   * alanı yalnız senaryo testleri (`hedefModu.test.ts`) dolduruyor.
+   * Seçimin bedeli ölçüldü — bütün tahtayı tek moda zorlayıp kampanya
+   * koşuldu (can kaybı; `first` = bugünkü):
+   *
+   * | Harita / tahta | first | last | strongest | weakest | closest |
+   * |---|---|---|---|---|---|
+   * | Kar Geçidi karışık | 14 | 17 | 13 | 14 | 13 |
+   * | Kar Geçidi Okçu | 17 | 19 | **13** | 14 | 19 |
+   * | Kadim Harabe karışık | 15 | 18 | **12** | 13 | 17 |
+   * | Kadim Harabe Top | 17 | 17 | 13 | 14 | 19 |
+   * | Sisli Bataklık karışık | 18 | 19 | 17 | **20** | **20** |
+   *
+   * İki sonuç: **(1)** mod seçimi beş cana kadar değer, yani oyuncunun
+   * gerçek bir kararı; **(2)** hiçbir mod her yerde kazanmıyor — `weakest`
+   * harita 4-5'te en iyi, harita 6'da en kötü. Bu yüzden tahtaya
+   * "haritaya göre en iyi mod" yazmak **makul oyuncuyu değil uzmanı**
+   * modellerdi ve bütün rampayı yeniden türetmek gerekirdi. Varsayılan
+   * kalıyor; sayılar burada duruyor ki bir daha ölçülmesin.
    */
   readonly targetMode?: TargetMode;
 }
