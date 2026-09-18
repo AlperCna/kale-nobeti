@@ -218,7 +218,20 @@ const D = JSON.parse(readFileSync(veriYolu, 'utf8'));
 
 // ---------------------------------------------------------------- yardımcılar
 const n = (x) => (x === null || x === undefined ? '—' : String(x).replace('.', ','));
-const yuzde = (x) => (x === null ? '—' : `%${String(x).replace('.', ',')}`);
+/**
+ * Yüzde biçimi — **yuvarlama zorunlu** (`M78`).
+ *
+ * `0,55 × 100` JavaScript'te `55.00000000000001` ediyor ve bu sayı
+ * GAME-DESIGN §4.3'ün zincir satırına aynen yazılmıştı.
+ *
+ * Tek bir yeri düzeltmek yetmezdi: üretici **altı ayrı yerde** ham
+ * `× 100` yapıyordu ve hangisinin patlayacağı sabitin ikilik tabanda
+ * temsil edilebilirliğine bağlı — yani sessiz bir kur'a. `0,5` ve `0,15`
+ * temiz çıkıyor, `0,55` çıkmıyor. Hepsi artık buradan geçiyor ve
+ * çıktı `artikDenetle` ile ayrıca sınanıyor.
+ */
+const yuzde = (x, basamak = 1) =>
+  x === null ? '—' : `%${String(Number(Number(x).toFixed(basamak))).replace('.', ',')}`;
 const tablo = (basliklar, satirlar) =>
   [`| ${basliklar.join(' | ')} |`, `|${basliklar.map(() => '---').join('|')}|`, ...satirlar.map((s) => `| ${s.join(' | ')} |`)].join('\n');
 
@@ -289,10 +302,38 @@ const KULE_ADI = { okcu: 'Okçu', top: 'Top', buyu: 'Büyü' };
 const b = [];
 const y = (...s) => b.push(...s);
 
-writeFileSync('docs/KURALLAR.md', olustur(), 'utf8');
+/**
+ * **Kayan nokta artığı belgeye sızmasın** — `M78`.
+ *
+ * `yuzde()` artık yuvarlıyor, ama bu kontrol **sınıfı** kapatıyor:
+ * yeni bir tablo ham `× 100` ile yazılırsa üretim burada durur,
+ * sessizce belgeye geçmez. Eksik marker'ın üretimi durdurmasıyla (`M49`)
+ * aynı desen.
+ *
+ * Altı basamağın altı serbest: meşru ondalıklar (`0,45` · `23,4` ·
+ * süreler) oraya girmiyor, ikilik taban artığı ise her zaman 10+ basamak.
+ */
+function artikDenetle(metin, dosya) {
+  // `split` argumani kacis icermiyor: bu dosya bir uretici ve
+  // kacis karakterleri duzenleme sirasinda sessizce bozulabiliyor.
+  const satirlar = metin.split(String.fromCharCode(10));
+  for (let i = 0; i < satirlar.length; i += 1) {
+    const m = /\d\.\d{6,}/.exec(satirlar[i]);
+    if (m !== null) {
+      throw new Error(
+        `${dosya}:${i + 1} — kayan nokta artığı (${m[0]}). Ham × 100 yerine yuzde() kullan.`,
+      );
+    }
+  }
+}
+
+const kurallarMetni = olustur();
+artikDenetle(kurallarMetni, 'docs/KURALLAR.md');
+writeFileSync('docs/KURALLAR.md', kurallarMetni, 'utf8');
 process.stdout.write('docs/KURALLAR.md yazıldı\n');
 
 gameDesignGuncelle();
+artikDenetle(readFileSync('docs/GAME-DESIGN.md', 'utf8'), 'docs/GAME-DESIGN.md');
 
 /**
  * **`GAME-DESIGN.md`'nin SAYISAL tabloları da buradan üretiliyor** — `M49`.
@@ -367,7 +408,7 @@ function dusmanTablosu() {
     if (a.kind === 'regen') return `${a.hps} HP/sn yenilenme`;
     if (a.kind === 'split') return `Ölünce ${a.count}× yavru`;
     if (a.kind === 'burrow')
-      return `**Yeraltı geçişi** — yolun %${a.fromFraction * 100}-%${a.toFraction * 100} arasında hedeflenemez`;
+      return `**Yeraltı geçişi** — yolun ${yuzde(a.fromFraction * 100)}-${yuzde(a.toFraction * 100)} arasında hedeflenemez`;
     if (a.kind === 'summon') return `Canı düştükçe ${a.count} yandaş çağırır`;
     return a.kind;
   };
@@ -419,8 +460,8 @@ function etkiCumlesi(k) {
   // öğretiyordu — CLAUDE.md TIER 2'nin "oyuncuya sessizce yanlış kural
   // öğretme" kusur sınıfı.
   if (e.kind === 'chain')
-    return `**${n(k.damage)}**, ${e.targets} hedefe zincirleme (her sıçramada %${e.falloff * 100}'ine düşerek)`;
-  if (e.kind === 'slow') return `${n(k.damage)} + %${e.factor * 100} yavaşlatma (${e.seconds} sn)`;
+    return `**${n(k.damage)}**, ${e.targets} hedefe zincirleme (her sıçramada ${yuzde(e.falloff * 100)}'ine düşerek)`;
+  if (e.kind === 'slow') return `${n(k.damage)} + ${yuzde(e.factor * 100)} yavaşlatma (${e.seconds} sn)`;
   return n(k.damage);
 }
 
@@ -439,7 +480,7 @@ function kuleTablosu(id) {
         String(k.cost), etkiCumlesi(k), n(k.fireRate), String(k.range),
       ];
       if (patlamaVar) satir.push(k.splashRadius ? String(k.splashRadius) : '—');
-      satir.push(k.airMultiplier === 0 ? '**vuramaz**' : k.airMultiplier === 1 ? 'tam' : `%${k.airMultiplier * 100}`);
+      satir.push(k.airMultiplier === 0 ? '**vuramaz**' : k.airMultiplier === 1 ? 'tam' : yuzde(k.airMultiplier * 100));
       return satir;
     }),
   );
@@ -452,7 +493,7 @@ function kislaTablosu() {
       k.branchName ? `${k.ad} ${k.branchName}` : k.ad,
       String(k.cost), String(k.soldierCount), String(k.soldierHp),
       String(k.soldierDps), n(k.respawnSeconds),
-      k.shield ? `kalkan ${k.shield}` : k.evasion ? `kaçınma %${Math.round(k.evasion * 100)}` : '—',
+      k.shield ? `kalkan ${k.shield}` : k.evasion ? `kaçınma ${yuzde(k.evasion * 100)}` : '—',
     ]),
   );
 }
@@ -564,7 +605,7 @@ function olustur() {
   y('---', '', '## 3. Kuleler', '');
   y(`Kaynak: \`src/data/towers.ts\` · \`GAME-DESIGN.md\` §4.1–§4.3`, '');
   y(`Üç aile × 4 kademe. T2'den sonra **iki dal** var ve seçim geri alınamıyor`);
-  y(`(değiştirmek için satmak gerekiyor, %${n(Math.round((1 - D.balance.sellRefund) * 100))} kayıp).`, '');
+  y(`(değiştirmek için satmak gerekiyor, ${yuzde((1 - D.balance.sellRefund) * 100)} kayıp).`, '');
   for (const t of D.kuleler) {
     y('', `### ${KULE_ADI[t.id] ?? t.id} — ${t.role}`, '');
     y(`Hasar tipi: \`${t.damageType}\``, '');
