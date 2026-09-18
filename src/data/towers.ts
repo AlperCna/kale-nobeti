@@ -155,7 +155,14 @@ export const TOP: TowerDef = {
       damage: 52,
       fireRate: 0.45,
       range: 230,
-      splashRadius: 55, // M11-T02: 70 → 55, kimliği DAR ve UZAK
+      // **`M75` (S137): 55 → 65.** `M11-T02` 70'ten 55'e indirmişti
+      // ("kimliği DAR ve UZAK"). Ölçüm o daraltılmayı geri istedi:
+      // `M73` Top'un tek hedef DPS'inin her yerde geride olduğunu
+      // gösterdi (Yıldırım 27,3'e Havan 23,4 — zırhsızda bile), yani
+      // Top'un karşılığı **patlamanın kendisi**. Hasarı yükseltmek
+      // kimliği bozardı; yarıçap Top'a kendi işinde pay açıyor ve boss
+      // türetmesinin (S137) önünü açan tek değişiklik bu oldu.
+      splashRadius: 65,
       // `M11-T02` — **0 → 0,5.** `airMultiplier: 0` düşmanı hedef
       // listesinden tümden eliyor (§4.2), yani Havan harpi dalgasında
       // **tamamen ölü** kalıyordu. Araştırmanın "kilit-anahtar tasarımı
