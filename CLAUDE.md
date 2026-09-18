@@ -112,15 +112,16 @@ ve `M29`'a kadar öyle kaldı.
   **Eşik:** aynı anda düşman sayısı 200'ü aşarsa naif `O(n·m)` mesafe
   taraması yetmez, uzamsal ızgara gerekir. **Ölçülen** pay (`M29`,
   `SimResult.peakEnemies`, altı harita × on dalga): en kalabalık tek dalga
-  23 düşman, sahadaki eşzamanlı tepe **18** — ve bu 18, oyuncunun her
+  23 düşman, sahadaki eşzamanlı tepe **21** — ve bu 21, oyuncunun her
   dalgayı mümkün olan en erken anda başlattığı (`ErkenPolitika 'hemen'`,
   `M16` örtüşmesi sonuna kadar) en kötü hâl. Örtüşmesiz tepe **15**.
-  `M68`'de yeniden ölçüldü: `M66` örümcek bölünmesini simulasyona ekleyince
-  tepe sayısı kayabilirdi — kaymadı (en kötü hâl yine 18, örtüşmesiz 14 → 15),
-  çünkü yavrular anneyi **yerine geçiyor**. Havuz kapasitesi 60, yani 3,3 kat pay;
-  `Pool` sessizce büyümüyor, dolduğunda `acquire` null döndürüp `onExhausted`
-  tetikliyor.
-  Eşiğe 11 kat pay var; ızgara gerekmiyor. Bu satırdaki sayı el yordamıyla
+  `M68`'de bir kez ölçüldü (18/15) ve `M86`'da **yeniden**: `M84`'ün elit
+  dalgası Sisli Bataklık'ın 6. dalgasına dokuz birim ekledi ve tepe
+  18 → **21** oldu (örtüşmesiz değişmedi). Yani bu satır bir dalga verisi
+  değiştiren her turda yeniden ölçülür. Havuz kapasitesi 60, yani **2,9**
+  kat pay; `Pool` sessizce büyümüyor, dolduğunda `acquire` null döndürüp
+  `onExhausted` tetikliyor.
+  Eşiğe **9,5** kat pay var; ızgara gerekmiyor. Bu satırdaki sayı el yordamıyla
   yazılmaz, `peakEnemies` ile ölçülür.
 - Yalnızca yatay yönlendirme (mobilde çevirme uyarısı platform tarafından yapılır)
 - Ses: Phaser'ın kendi ses sistemi
@@ -129,8 +130,11 @@ ve `M29`'a kadar öyle kaldı.
 - **Oyuncuya görünen hiçbir metin kodun içinde yazılmaz.** Hepsi
   `src/data/strings.ts` içinde bir **dil haritası**nda durur:
   `{ tr: {...}, en: {...} }`, varsayılan `tr`. Kullanım `t('play')`
-  biçimindedir, `strings.play` değil. **`en` tamamlandı** (202 anahtar) —
-  yapı önce kurulduğu için çeviri gerçekten bir oturumluk iş oldu.
+  biçimindedir, `strings.play` değil. **`en` tamamlandı** — yapı önce
+  kurulduğu için çeviri gerçekten bir oturumluk iş oldu. (Buraya bir süre
+  "202 anahtar" yazıyordu; `M86`'da sayıldı ve **201**'di. Sayı hiçbir
+  şey söylemiyor — eşitliği zaten derleyici zorluyor — ama sessizce
+  yalan söylüyordu; kaldırıldı.)
   Eşitlik derleyicide bağlı: `STRINGS` tipi
   `Record<Locale, Record<StringKey, string>>` ve `StringKey = keyof typeof TR`,
   yani `tr`'ye anahtar ekleyip `en`'e eklemeyen `npm run typecheck`'i kırar.

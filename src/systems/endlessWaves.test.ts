@@ -12,7 +12,7 @@ import {
   ENDLESS_MAX_ENEMIES,
 } from '../data/endless';
 import { POOL_PREALLOC } from '../data/balance';
-import { MAP_1, MAP_3, MAP_5 } from '../data/maps';
+import { MAP_1, MAP_3, MAP_5, MAPS } from '../data/maps';
 import { budget, wavePoints, waveEnemyCount } from '../data/waves';
 
 const KADRO = MAP_5.enemyRoster;
@@ -88,11 +88,33 @@ describe('generateEndlessWave', () => {
     expect(a).not.toEqual(b);
   });
 
+  /**
+   * **`M86`: yalnız harita 1 sınanıyordu.** Dar kadro doğru seçimdi (5
+   * tip, trol/örümcek yok) ama kadroya özgü tipler — özellikle harita
+   * 6'nın **Tünelci**'si — hiç sınanmamıştı. Liste artık `MAPS`'ten
+   * türetiliyor: yeni harita kendiliğinden giriyor.
+   */
   it('**yalnız kadro** — haritada olmayan düşman doğmuyor', () => {
-    // Harita 1'in kadrosu dar (5 tip); trol/örümcek orada YOK.
-    for (let n = 11; n <= 45; n++) {
-      for (const g of generateEndlessWave(n, MAP_1.enemyRoster, 1).groups) {
-        expect(MAP_1.enemyRoster, `dalga ${n}: ${g.enemy}`).toContain(g.enemy);
+    for (const m of MAPS) {
+      for (let n = 11; n <= 45; n++) {
+        for (const g of generateEndlessWave(n, m.enemyRoster, m.paths.length).groups) {
+          expect(m.enemyRoster, `${m.id} dalga ${n}: ${g.enemy}`).toContain(g.enemy);
+        }
+      }
+    }
+  });
+
+  /**
+   * **`M86`** — beden tavanı da altı kadronun hepsinde. Tavan
+   * `ENDLESS_MAX_ENEMIES`; aşılırsa `WaveManager` doğumu erteler ve dalga
+   * hiç bitmez (kilitlenme). Kadro genişledikçe üretici farklı tipler
+   * seçiyor, yani tavan her kadroda ayrı sınanmalı.
+   */
+  it('beden tavanı ALTI kadroda da tutuyor (M86)', () => {
+    for (const m of MAPS) {
+      for (let n = 11; n <= 60; n++) {
+        const w = generateEndlessWave(n, m.enemyRoster, m.paths.length);
+        expect(endlessBodyCost(w), `${m.id} dalga ${n}`).toBeLessThanOrEqual(ENDLESS_MAX_ENEMIES);
       }
     }
   });
