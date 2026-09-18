@@ -246,7 +246,36 @@ export const BUYU: TowerDef = {
       range: 170,
       airMultiplier: 1,
       branchNameKey: 'branchLightning',
-      effect: { kind: 'chain', targets: 3, falloff: 0.7 },
+      // **`M76` (S138): sönüm 0,7 → 0,45.** Sektör standardının iki
+      // yarısından biri sizde eksikti: *"her kulenin en iyi olduğu bir
+      // senaryo olmalı"* (`M11-secimi-gercek-yap.md`'deki araştırma
+      // tablosu). Ölçüm sebebi gösterdi: Büyü hem **en yüksek tek
+      // hedef DPS'ine** (27,3'e karşı Okçu 26,4 · Havan 23,4) hem de
+      // zincire sahipti — yani Okçu'nun sahip olduğu hiçbir şeye karşı
+      // üstünlüğü yoktu ve üç zor haritanın üçünde de en iyisiydi.
+      //
+      // Hasar denendi ve **işe yaramadı**: 39 → 38 tek puanda Büyü'yü
+      // Kar Geçidi'nde 9'dan 20'ye fırlatıyor, çünkü o sayı bossu
+      // öldürüp öldürmediğine kilitli — kadran değil anahtar.
+      // Zincir ise **yalnız dalga performansını** taşıyor: tek hedef
+      // DPS'i (dolayısıyla boss) hiç değişmiyor. Cerrahi kaldıraç buydu.
+      //
+      // Hedef sayısı **3'te bırakıldı**: §4.3 ve oyuncuya gösterilen
+      // metin "3 hedefe zincirleme" diyor, yani 2'ye düşürmek kulenin
+      // ilan edilmiş kimliğini değiştirirdi. Sönüm tek bir sayı ve
+      // anlamı açık: her sıçrama artık %70'ine değil **%55'ine** düşüyor.
+      //
+      // Sönüm taraması (hepsi 3 hedefle): 0,70 → Büz üç haritada da
+      // en iyi · 0,60 → Top hâlâ evsiz · **0,55 → üçüne de ev** ·
+      // 0,45 → yetenekler birbirini yemeye başlıyor (Meteor tek
+      // başına ikisinden iyi — S111'in sınıfı). 0,55 tek geçen değer.
+      //
+      // Sonuç — üç ailenin de bir evi var: Kül Ovası **Okçu**'nun
+      // (6'ya karışık 9), Sisli Bataklık **Top**'un (12'ye 15),
+      // Kar Geçidi ve Kadim Harabe **Büyü**'nün. Hiçbir aile ölü değil
+      // ve hiçbiri her yerde en iyi değil — araştırmanın istediği iki
+      // şart bu.
+      effect: { kind: 'chain', targets: 3, falloff: 0.55 },
     },
     // 3b Buz — %30 yavaşlatma (2 sn).
     // (`M31`: başlık "%50 · 2,5 sn" diyordu; iki sayı da yanlıştı.

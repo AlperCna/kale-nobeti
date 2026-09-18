@@ -414,7 +414,12 @@ function etkiCumlesi(k) {
   const e = k.effect;
   if (!e) return n(k.damage);
   if (e.kind === 'burn') return `${n(k.damage)} + **${e.dps}**/sn yanma (${e.seconds} sn)`;
-  if (e.kind === 'chain') return `**${n(k.damage)}**, ${e.targets} hedefe zincirleme (%${e.falloff * 100} azalarak)`;
+  // `M76`: "%70 azalarak" YANLIŞTI. Kod `hasar *= falloff` yapıyor, yani
+  // 0,7 hasarı %70'ine **düşürüyor** (=%30 azalıyor). Metin tersini
+  // öğretiyordu — CLAUDE.md TIER 2'nin "oyuncuya sessizce yanlış kural
+  // öğretme" kusur sınıfı.
+  if (e.kind === 'chain')
+    return `**${n(k.damage)}**, ${e.targets} hedefe zincirleme (her sıçramada %${e.falloff * 100}'ine düşerek)`;
   if (e.kind === 'slow') return `${n(k.damage)} + %${e.factor * 100} yavaşlatma (${e.seconds} sn)`;
   return n(k.damage);
 }
