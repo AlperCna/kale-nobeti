@@ -5,7 +5,7 @@ import { getSettings } from '../systems/Settings';
 import { DIFFICULTY } from '../data/difficulty';
 import { LocalStore } from '../util/storage';
 import { devHooks } from '../util/devHooks';
-import { createParchmentButton } from '../fx/ParchmentFrame';
+import { createParchmentButton, addPressFeedback } from '../fx/ParchmentFrame';
 import { MAPS } from '../data/maps';
 import { FRAME_STAR, FRAME_STAR_EMPTY } from '../data/spriteFrames';
 import { EndlessRecords } from '../systems/EndlessRecords';
@@ -397,6 +397,7 @@ export class GameOverScene extends Phaser.Scene {
     onClick: () => void,
   ): void {
     const cerceve = createParchmentButton(this, x, y, w, h, 14);
+    addPressFeedback(cerceve);
 
     this.add
       .text(x, y, metin, {

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import type { Settings, EffectLevel, AudioLevel } from '../systems/Settings';
-import { createParchmentButton } from './ParchmentFrame';
+import { createParchmentButton, addPressFeedback } from './ParchmentFrame';
 import { t } from '../util/i18n';
 
 const GOLD = 0xd4a032;
@@ -165,6 +165,7 @@ export class SettingsPanel {
         .setOrigin(0, 0.5),
     );
     const buton = createParchmentButton(scene, GENISLIK / 2 - 74, y, 116, 44, 10);
+    addPressFeedback(buton);
     buton.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => {
       this.settings.cycleEffects();
       this.refresh();
@@ -210,6 +211,7 @@ export class SettingsPanel {
         .setOrigin(0, 0.5),
     );
     const buton = createParchmentButton(scene, GENISLIK / 2 - 74, y, 116, 44, 10);
+    addPressFeedback(buton);
     buton.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => {
       onTap();
       this.refresh();
@@ -249,6 +251,7 @@ export class SettingsPanel {
         .setOrigin(0, 0.5),
     );
     const buton = createParchmentButton(scene, GENISLIK / 2 - 74, y, 116, 44, 10);
+    addPressFeedback(buton);
     buton.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, onTap);
     this.#kok.add(buton);
 
