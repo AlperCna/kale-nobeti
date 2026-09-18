@@ -4,8 +4,29 @@ import { PreloadScene } from './PreloadScene';
 import type { StringKey } from '../data/strings';
 
 const INK = 0x14203a;
-const UST = 120;
-const SATIR_Y = 46;
+const UST = 108;
+/** Satırlar arası nefes. */
+const SATIR_ARALIGI = 12;
+/** Bölümler arası nefes — başlığın üstünde. */
+const BOLUM_ARALIGI = 18;
+
+/**
+ * Sayfa **bölümlere ayrılıyor** — `M87`.
+ *
+ * On satır tek blok halinde duruyordu ve oyuncu gözüyle bakıldığında bir
+ * duvar görünüyordu: hepsi aynı punto, aynı renk, aynı aralık. Üç başlık
+ * taramanın ölçüsünü veriyor — **ne yaparsın · neyle yaparsın · kime
+ * karşı** — ve satırların sırası değişmedi, yalnız gruplandı.
+ */
+const BOLUMLER: readonly { readonly baslik: StringKey; readonly satirlar: readonly StringKey[] }[] =
+  [
+    { baslik: 'howToSecBasics', satirlar: ['howTo1', 'howTo3', 'howTo6', 'howTo7'] },
+    { baslik: 'howToSecTowers', satirlar: ['howTo2', 'howTo4', 'howTo5', 'howTo8'] },
+    // `M28` — `M12` (yeraltı geçişi) ve `M13` (çağıran boss) bu sayfaya hiç
+    // girmemişti; `M10`'un iki mekaniği `howTo8/9` ile eklenip sonrakiler
+    // atlanmıştı.
+    { baslik: 'howToSecEnemies', satirlar: ['howTo9', 'howTo10'] },
+  ];
 
 /**
  * "Nasıl oynanır" — `M8-T13`.
@@ -18,25 +39,6 @@ const SATIR_Y = 46;
  * `CLAUDE.md` i18n: tüm satırlar `strings.ts`'te; bu dosyada tek bir
  * oyuncuya görünen dizge yok.
  */
-const SATIRLAR: readonly StringKey[] = [
-  'howTo1',
-  'howTo2',
-  'howTo3',
-  'howTo4',
-  'howTo5',
-  'howTo6',
-  'howTo7',
-  // `M10` — yeni mekanikler. Sinerji oyuncuya BAŞKA hiçbir yerde
-  // görünmüyor; kalkan ve boss evresi ekranda görünüyor ama ne
-  // olduklarını söylemiyor.
-  'howTo8',
-  'howTo9',
-  // `M28` — `M12` (yeraltı geçişi) ve `M13` (çağıran boss) bu sayfaya
-  // hiç girmemişti; `M10`'un iki mekaniği `howTo8/9` ile eklenip
-  // sonrakiler atlanmıştı.
-  'howTo10',
-];
-
 export class HowToScene extends Phaser.Scene {
   constructor() {
     super('HowTo');
@@ -58,17 +60,37 @@ export class HowToScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    SATIRLAR.forEach((k, i) => {
-      this.add
-        .text(width / 2, UST + i * SATIR_Y, t(k), {
-          fontFamily: 'Spectral, serif',
-          fontSize: '20px',
-          color: '#E4D3A8',
-          align: 'center',
-          wordWrap: { width: width - 200 },
+    /**
+     * **Akış yerleşimi, sabit aralık değil.** Eskiden her satır
+     * `UST + i * SATIR_Y` ile konuyordu; iki satıra taşan paragraflar
+     * (erken başlatma, Tünelci) 46 px'lik aralığı aşıp bir sonrakine
+     * yaklaşıyordu. Şimdi her metnin ölçülen yüksekliği kadar iniliyor.
+     */
+    let y = UST;
+    for (const bolum of BOLUMLER) {
+      const baslik = this.add
+        .text(width / 2, y, t(bolum.baslik), {
+          fontFamily: '"Grenze Gotisch", serif',
+          fontSize: '24px',
+          color: '#D4A032',
         })
-        .setOrigin(0.5);
-    });
+        .setOrigin(0.5, 0);
+      y += baslik.height + 10;
+
+      for (const k of bolum.satirlar) {
+        const satir = this.add
+          .text(width / 2, y, t(k), {
+            fontFamily: 'Spectral, serif',
+            fontSize: '20px',
+            color: '#E4D3A8',
+            align: 'center',
+            wordWrap: { width: width - 200 },
+          })
+          .setOrigin(0.5, 0);
+        y += satir.height + SATIR_ARALIGI;
+      }
+      y += BOLUM_ARALIGI;
+    }
 
     this.add
       .text(width / 2, height - 42, t('back'), {

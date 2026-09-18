@@ -168,6 +168,14 @@ const TR = {
   tagline: 'Kale senin nöbetinde',
   howToPlay: 'Nasıl oynanır',
   howToTitle: 'Nasıl oynanır',
+  /**
+   * `M87` — sayfa on satırlık bir duvardı; üç başlık taramanın ölçüsünü
+   * veriyor. Başlıklar oyunun kendi kavramları: ne yaparsın · neyle
+   * yaparsın · kime karşı.
+   */
+  howToSecBasics: 'Temel',
+  howToSecTowers: 'Kuleler ve yetenekler',
+  howToSecEnemies: 'Düşmanlar',
   howTo1: 'Altın dairelere dokunup kule kur. Her ailenin işi farklı:',
   howTo2: 'Okçu hızlı ve ucuz · Top alan hasarı · Büyü zırhı delen · Kışla yolu tıkar',
   howTo3: 'Düşman kaleye varırsa can gider. Can biterse harita kaybedilir.',
@@ -181,10 +189,23 @@ const TR = {
    */
   howTo6:
     'Hazırlık sayacını erken bitirmek altın kazandırır — ama yeni dalga sahada kalanların üstüne biner. Düğmede iki sayı da yazıyor.',
-  howTo7: 'ESC ya da boşluk duraklatır.',
+  /**
+   * `M87` — duraklatma düğmesi gelince bu satır **eski kuralı**
+   * anlatıyordu: dokunmatikte klavye yok, yani oyuncuya “duraklatamazsın”
+   * demiş oluyordu. CLAUDE.md TIER 2'nin “oyuncu metinleri” sınıfı.
+   */
+  howTo7: 'Üstteki duraklatma düğmesi — ya da ESC/boşluk — oyunu durdurur; menüde yeniden başlat ve ana menü de var.',
   /** `M10` — sinerji oyuncuya başka hiçbir yerde görünmüyor. */
   howTo8: 'Yavaşlatılmış düşman fiziksel hasardan daha çok etkilenir: Buz kulesi, Okçu ve Top ile birlikte çalışır.',
-  howTo9: 'Mavi halka buz kalkanı; erimeden cana hasar geçmez. Boss canı yarıya inince hızlanır.',
+  /**
+   * `M88` — ikinci cümle **yalnız harita 5'te doğruydu** ama kural gibi
+   * yazılıyordu: hızlanma `BOSS_YETENEGI` tablosunda yalnız
+   * `kadim-harabe`ye bağlı (`enemies.ts`). İlk dört haritanın bossu düz;
+   * oyuncu “benim bossum neden hızlanmıyor” diye düşünüyordu. Cümle
+   * boss numaralarının anlatıldığı `howTo10`'a taşındı ve haritasıyla
+   * söylendi.
+   */
+  howTo9: 'Mavi halka buz kalkanı; erimeden cana hasar geçmez.',
   /**
    * **`M28` — `M12` ve `M13`'ün verb'leri buraya hiç girmemişti.**
    * `M10`'un kalkanı ve boss evresi `howTo8/9` ile eklenmişti; sonraki
@@ -192,7 +213,7 @@ const TR = {
    * ama bu sayfa "bir şeyi kaçırdım" diyenin baktığı yer.
    */
   howTo10:
-    'Bazı düşmanların kendi numarası var: Tünelci yolun ortasında yeraltına iner ve hedeflenemez; son haritanın bossu canı düştükçe yandaş çağırır.',
+    'Bazı düşmanların kendi numarası var: Tünelci yolun ortasında yeraltına iner ve hedeflenemez. Son iki haritanın bossu da öyle — Kadim Harabe’de canı yarıya inince hızlanır, Sisli Bataklık’ta yandaş çağırır.',
   lockedHint: 'Önce önceki haritayı bitir',
   endlessBestShort: 'Sonsuz',
   settingsTitle: 'Ayarlar',
@@ -491,6 +512,9 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     tagline: 'The keep is yours to hold',
     howToPlay: 'How to play',
     howToTitle: 'How to play',
+    howToSecBasics: 'Basics',
+    howToSecTowers: 'Towers and abilities',
+    howToSecEnemies: 'Enemies',
     howTo1: 'Tap a gold circle to build a tower. Each family does a different job:',
     howTo2: 'Archer fast and cheap · Cannon splash · Magic pierces armour · Barracks blocks the road',
     howTo3: 'Enemies reaching the keep cost lives. Run out and the map is lost.',
@@ -498,11 +522,11 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     howTo5: 'Meteor and Reinforcements are on cooldown; save them for a crowd.',
     howTo6:
       'Ending the prep timer early earns gold — but the new wave arrives on top of whoever is still on the field. The button shows both numbers.',
-    howTo7: 'ESC or space pauses.',
+    howTo7: 'The pause button up top — or ESC/space — stops the game; the menu also has restart and main menu.',
     howTo8: 'Slowed enemies take more physical damage: the Frost tower pairs with Archer and Cannon.',
-    howTo9: 'A blue ring is a frost shield; nothing reaches health until it breaks. The boss speeds up at half health.',
+    howTo9: 'A blue ring is a frost shield; nothing reaches health until it breaks.',
     howTo10:
-      'Some enemies have a trick of their own: the Tunneler burrows mid-path and cannot be targeted; the final map’s boss summons help as its health drops',
+      'Some enemies have a trick of their own: the Tunneler burrows mid-path and cannot be targeted. So do the last two bosses — the one in Ancient Ruin speeds up at half health, the one in Misty Marsh summons help.',
     lockedHint: 'Finish the previous map first',
     endlessBestShort: 'Endless',
     settingsTitle: 'Settings',
