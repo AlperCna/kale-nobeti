@@ -237,7 +237,7 @@ Büyü hasarı. Zırhlı düşmanların tek temiz cevabı. Büyü dirençli dü�
 |---|---|---|---|---|---|---|
 | T1 | 100 | 14 | 0,7 | 155 | — | tam |
 | T2 | 150 | 24 | 0,75 | 170 | — | tam |
-| T3a Yıldırım | 230 | **39**, 3 hedefe zincirleme (her sıçramada %55.00000000000001'ine düşerek) | 0,7 | 170 | — | tam |
+| T3a Yıldırım | 230 | **39**, 3 hedefe zincirleme (her sıçramada %55'ine düşerek) | 0,7 | 170 | — | tam |
 | T3b Buz | 230 | 8 + %30 yavaşlatma (2 sn) | 0,8 | 180 | 30 | tam |
 <!-- /ÜRETİLEN:kule-buyu -->
 
