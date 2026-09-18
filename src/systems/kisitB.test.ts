@@ -162,6 +162,7 @@ describe('Kısıt B — düşman kırılımı', () => {
       [MAP_3, MAP3_WAVES],
       [MAP_4, MAP4_WAVES],
       [MAP_5, MAP5_WAVES],
+      [MAP_6, MAP6_WAVES],
     ] as const) {
       expect(canKaybi(m, w), m.id).toBeLessThan(20);
     }
@@ -217,8 +218,17 @@ describe('Kısıt B — düşman kırılımı', () => {
    */
   it('**zorluk MONOTON** — çarpan değil, ölçülen can kaybı (M8-T04, S87, S130)', () => {
     // `M64` (S132): adım sabitlendi, bant ortancası söküldü — tek koşu
-    // artık oyunun kendisi. Rampa değişmedi: `0 · 0 · 5 · 12 · 14`.
-    const kayip = [MAP_1, MAP_2, MAP_3, MAP_4, MAP_5].map((m) => referansCanKaybi(m));
+    // artık oyunun kendisi.
+    //
+    // **`M81` — liste altıncı haritada BİTİYORDU.** Harita 6 `M12`'de geldi,
+    // bu iddia `M8`'de yazıldı ve aradan yedi türetme geçti; kampanyanın
+    // **son** haritası rampanın dışında kaldı. Eklenince ilk ölçüm
+    // `0 · 0 · 9 · 14 · 17 · 15` — yani son harita bir öncekinden **kolay**
+    // ve iddia düşüyordu. Çarpanlar yeniden türetildi (harita 5: 10,2 →
+    // 10,05 · harita 6: 8,1 → 8,9) ve rampa `0 · 0 · 9 · 14 · 15 · 16` oldu.
+    // `M18`'in aynı dosyadaki dersi ("liste harita 5'te bitiyordu") bu kez
+    // **bütün** listelere uygulandı.
+    const kayip = [MAP_1, MAP_2, MAP_3, MAP_4, MAP_5, MAP_6].map((m) => referansCanKaybi(m));
     // Hiçbir yerde AZALMIYOR.
     for (let i = 1; i < kayip.length; i++) {
       expect(kayip[i]!, `harita ${i + 1}: ${kayip.join(' → ')}`).toBeGreaterThanOrEqual(
@@ -251,6 +261,7 @@ describe('Kısıt B — düşman kırılımı', () => {
       [MAP_3, MAP3_WAVES],
       [MAP_4, MAP4_WAVES],
       [MAP_5, MAP5_WAVES],
+      [MAP_6, MAP6_WAVES],
     ] as const) {
       expect(kosu(m, w).sim[0]!.leakedCount, `${m.id} dalga 1`).toBe(0);
     }
@@ -262,6 +273,8 @@ describe('Kısıt B — düşman kırılımı', () => {
     expect(kosu(MAP_3, MAP3_WAVES).adet).toBeLessThanOrEqual(25);
     expect(kosu(MAP_4, MAP4_WAVES).adet).toBeLessThanOrEqual(14);
     expect(kosu(MAP_5, MAP5_WAVES).adet).toBeLessThanOrEqual(14);
+    // `M81` — harita 6 bu listeye de eklendi; ölçülen 14.
+    expect(kosu(MAP_6, MAP6_WAVES).adet).toBeLessThanOrEqual(16);
   });
 
   it('kırılım toplamı sızıntı sayısıyla TUTARLI', () => {
@@ -271,6 +284,7 @@ describe('Kısıt B — düşman kırılımı', () => {
       [MAP_3, MAP3_WAVES],
       [MAP_4, MAP4_WAVES],
       [MAP_5, MAP5_WAVES],
+      [MAP_6, MAP6_WAVES],
     ] as const) {
       const r = kosu(m, w);
       const kirilimToplam = Object.values(r.toplam).reduce((a, b) => a + (b ?? 0), 0);
