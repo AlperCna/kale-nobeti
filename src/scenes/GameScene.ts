@@ -63,7 +63,7 @@ import { TOWERS, TARGET_MODES, getTower, maliyet, tierAt } from '../data/towers'
 import { towerFrameKey } from '../data/spriteFrames';
 import { projectileLook } from '../data/projectileVisuals';
 import { getEnemy, getEnemyForMap, ENEMIES } from '../data/enemies';
-import { BALANCE, POOL_PREALLOC, GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI } from '../data/balance';
+import { BALANCE, POOL_PREALLOC, MERMI_HIZI, MERMI_ISABET_YARICAPI } from '../data/balance';
 import { MUSIC_BASE_VOLUME } from '../data/audio';
 import { portal } from '../systems/Portal';
 import { haritaBasladi } from '../systems/olcum';
@@ -721,7 +721,7 @@ export class GameScene extends Phaser.Scene {
         target: hedef as Enemy,
         damage: tier.damage * ucanCarpani,
         damageType: kule.def.damageType,
-        speed: GECICI_MERMI_HIZI, // GEÇİCİ — S20
+        speed: MERMI_HIZI, // S20 kapandı (`M82`): ölçüldü, geçici değil
         splashRadius: tier.splashRadius ?? 0,
         hitRadius: MERMI_ISABET_YARICAPI,
         effect: tier.effect,

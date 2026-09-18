@@ -944,21 +944,30 @@ export const MAP_6: MapDef = {
   // berabere), 1,3'te Takviye can kaybettirmeye başlıyor, 1,7+'da Kolay
   // sınırı aşıyor. Oran 0,36'da kalıyor — altı haritanın en düşüğü ve
   // S117'nin açık kalan kolu.
-  // **`M81`: 8,1 → 8,9.** Kampanyanın **son** haritası rampanın dışındaydı
+  // **`M81`: 8,1 → 8,5.** Kampanyanın **son** haritası rampanın dışındaydı
   // (`kisitB` listesi harita 5'te bitiyordu) ve ölçülünce harita 5'ten
-  // **kolay** çıktı: 15'e 17. Tarama (hp → can | Kolay | tek aile en kötü):
-  // 8,1→15|7 · 8,8→18|10 · **8,9→16|10** · 9,0→19|10 · 9,1→20|11 · 9,2→21|12.
+  // **kolay** çıktı: 15'e 17. Tarama (hp → can | Kolay | tek aile Top/Okçu):
+  // 8,1→15|7|12/14 · 8,4→15|8|11/15 · **8,5→16|8|11/15** · 8,6→17|8|11/15 ·
+  // 8,8→18|10|16/14 · 8,9→16|10|14/15 · 9,0→19|10|17/15 · 9,1→20|11 · 9,2→21|12.
   // 9,1 ve üstü Kolay sınırını (≤10) ve geçilebilirliği (<20) kırıyor.
-  // 8,8 ve 9,0 başka bir şeyi kırıyor: **Top'un evi** (S138) — tek aile
-  // Top 8,8'de 16, 9,0'da 17 verirken Okçu 14/15'te kalıyor, yani harita
-  // artık Top'un parladığı yer olmaktan çıkıyor. 8,9'da sıra korunuyor
-  // (Top 14 < Okçu 15 < karışık 16).
+  // 8,8 ve 9,0 başka bir şeyi kırıyor: **Top'un evi** (S138) — tek aile Top,
+  // Okçu'nun üstüne çıkıyor ve harita Top'un parladığı yer olmaktan
+  // çıkıyor.
+  //
+  // **`M82`: 8,9 → 8,5 — seçim NOKTAYA değil BANDA göre yapıldı.** S20'nin
+  // mermi hızı taraması bir yan bulgu verdi: 8,9 yalnız 600 px/sn'de
+  // güvenliydi. Aynı hp'de hızı oynatınca harita 16-**20** arası geziyor,
+  // yani tek bir zamanlama pertürbasyonu haritayı kaybettiriyor. Bandı
+  // ölçülen adaylar (hız 300-1500, can): 8,1 → 13-15 · 8,5 → **15-16** ·
+  // 8,7 → 15-16 · 8,9 → 16-**20**. 8,7 noktada harita 5'e **eşit** (15)
+  // kalıyor, yani kesin artan şartı düşüyor; 8,5 hem 16 veriyor hem bandı
+  // 16'yı aşmıyor. S130'un dersi: iddia bir sabitin şansına dayanmamalı.
   //
   // **Altın kolu ölçüldü ve REDDEDİLDİ:** çarpanı kısmak haritayı
   // **kolaylaştırıyor** (11,0→15 · 10,0→15 · 9,0→11 · 8,1→12), çünkü tahta
   // her değerde aynı 14 kule + 1 kışlaya ulaşıyor, yalnız sırası değişiyor.
   // S117'nin oranı da en fazla 0,50'ye çıkıyordu — o kol hâlâ açık.
-  hpMultiplier: 8.9, // S109 → S113 → S119 → S95/M47 → S130/S131 → S134 (`M67`)
+  hpMultiplier: 8.5, // S109 → S113 → S119 → S95/M47 → S130/S131 → S134 → S139 (`M82`)
   goldMultiplier: 11.0,
   startGold: Math.round(280 * 11.0),
   enemyRoster: [

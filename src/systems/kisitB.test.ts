@@ -225,7 +225,7 @@ describe('Kısıt B — düşman kırılımı', () => {
     // **son** haritası rampanın dışında kaldı. Eklenince ilk ölçüm
     // `0 · 0 · 9 · 14 · 17 · 15` — yani son harita bir öncekinden **kolay**
     // ve iddia düşüyordu. Çarpanlar yeniden türetildi (harita 5: 10,2 →
-    // 10,05 · harita 6: 8,1 → 8,9) ve rampa `0 · 0 · 9 · 14 · 15 · 16` oldu.
+    // 10,05 · harita 6: 8,1 → 8,5) ve rampa `0 · 0 · 9 · 14 · 15 · 16` oldu.
     // `M18`'in aynı dosyadaki dersi ("liste harita 5'te bitiyordu") bu kez
     // **bütün** listelere uygulandı.
     const kayip = [MAP_1, MAP_2, MAP_3, MAP_4, MAP_5, MAP_6].map((m) => referansCanKaybi(m));

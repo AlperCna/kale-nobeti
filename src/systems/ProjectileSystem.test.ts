@@ -5,7 +5,7 @@ import type { Poolable } from '../util/pool';
 import type { ProjectileState } from '../types/projectile';
 import type { Targetable } from '../types/enemy';
 import { GOBLIN } from '../data/enemies';
-import { GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI } from '../data/balance';
+import { MERMI_HIZI, MERMI_ISABET_YARICAPI } from '../data/balance';
 import type { TowerEffect } from '../types/tower';
 
 type MutTargetable = { -readonly [K in keyof Targetable]: Targetable[K] };
@@ -70,7 +70,7 @@ function at(sys: ProjectileSystem<MutTargetable, SahteMermi>, o: Partial<Project
     target: null,
     damage: 6,
     damageType: 'physical',
-    speed: GECICI_MERMI_HIZI,
+    speed: MERMI_HIZI,
     splashRadius: 0,
     hitRadius: MERMI_ISABET_YARICAPI,
     effect: undefined,
@@ -104,7 +104,7 @@ describe('ProjectileSystem — hareket ve isabet', () => {
     const hedef = dusman({ x: 600, y: 0 });
     const m = at(sys, { target: hedef })!;
     sys.update(1000 / 60, [hedef]);
-    expect(m.x).toBeCloseTo(GECICI_MERMI_HIZI / 60, 6);
+    expect(m.x).toBeCloseTo(MERMI_HIZI / 60, 6);
     expect(m.y).toBe(0);
   });
 

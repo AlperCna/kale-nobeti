@@ -27,7 +27,7 @@ import type { ReferenceBoard } from '../types/board';
 import type { Wave } from '../types/wave';
 import type { Poolable } from '../util/pool';
 import { Pool } from '../util/pool';
-import { GECICI_MERMI_HIZI, MERMI_ISABET_YARICAPI, POOL_PREALLOC } from '../data/balance';
+import { MERMI_HIZI, MERMI_ISABET_YARICAPI, POOL_PREALLOC } from '../data/balance';
 import { getTower } from '../data/towers';
 import { kalkandanGecir } from './combat';
 import { getEnemyForMap } from '../data/enemies';
@@ -422,7 +422,7 @@ function kosturDalgalar(
       target: hedef as SimEnemy,
       damage: tier.damage * ucanCarpani,
       damageType: kule.def.damageType,
-      speed: GECICI_MERMI_HIZI,
+      speed: MERMI_HIZI,
       splashRadius: tier.splashRadius ?? 0,
       hitRadius: MERMI_ISABET_YARICAPI,
       effect: tier.effect,

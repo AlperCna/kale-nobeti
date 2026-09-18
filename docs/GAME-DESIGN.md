@@ -762,7 +762,7 @@ kenar bir kez parlar.
 | 3 | Kül Ovası | 12 | 2 | 2,8 | 3,8 | 1064 |
 | 4 | Kar Geçidi | 12 | 1 | 7,35 | 7,8 | 2184 |
 | 5 | Kadim Harabe | 15 | 2 | 10,05 | 10,2 | 2856 |
-| 6 | Sisli Bataklık | 15 | 1 | 8,9 | 11 | 3080 |
+| 6 | Sisli Bataklık | 15 | 1 | 8,5 | 11 | 3080 |
 <!-- /ÜRETİLEN:harita -->
 
 Tema ve yol geometrisi tablodan **çıkarıldı**: ikisi de `maps.ts` içinde
@@ -818,7 +818,7 @@ düzeltildi:
 | 3 · Kül Ovası | 2,8 | 3,8 | 9 | 2 |
 | 4 · Kar Geçidi | 7,35 | 7,8 | 14 | 3 |
 | 5 · Kadim Harabe | 10,05 | 10,2 | 15 | 6 |
-| 6 · Sisli Bataklık | 8,9 | 11 | 16 | 10 |
+| 6 · Sisli Bataklık | 8,5 | 11 | 16 | 8 |
 <!-- /ÜRETİLEN:rampa -->
 
   **`M14` (S101): dört çarpan yeniden türetildi.** Erken başlatma bonusu
