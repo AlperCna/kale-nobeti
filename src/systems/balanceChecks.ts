@@ -566,6 +566,36 @@ export function buildReferenceBoards(
        * Ölçüm (bant ortancası, `M60`): Sisli Bataklık Okçu **21 → 11**.
        * Diğer beş harita ve bütün karışık tahtalar **birebir aynı**.
        */
+      /**
+       * **`M85` (S95) — "bir tane" kuralı genelleştirilmeye çalışıldı ve
+       * ÖLÇÜM REDDETTİ.**
+       *
+       * Şüphe makuldü: tek aileye zorlanan tahta on dört kulenin
+       * **on üçünü** aynı dala kuruyor (ölçüldü: Kadim Harabe Okçu
+       * `T3×14`, sıfır Kundakçı). Gerçek bir oyuncu aile içinde dal
+       * karıştırır; yani S95'in ölçtüğü makasın bir kısmı **ölçüm
+       * kusuru** olabilirdi — ki öyle olsaydı S116 ve S117'nin duvarı da
+       * kısmı kalkacaktı.
+       *
+       * Denenen kural: aile başına **her N. kule** (N=4) B dalını alsın.
+       * Karışık tahtalar aynen kalıyor (hiçbir ailede 4'ten fazla kule
+       * yok) — yani değişiklik yalnız tek aile tahtasını etkiliyor.
+       * Ölçüm (can kaybı, bugünkü → N=4):
+       *
+       * | Harita | Okçu | Top | Büyü |
+       * |---|---|---|---|
+       * | Kadim Harabe | 18 → 18 | 17 → **19** | 13 → **16** |
+       * | Sisli Bataklık | 16 → **19** | 9 → 9 | 12 → **19** |
+       *
+       * Yani çeşitlendirmek tahtayı **zayıflatıyor**: B dalları (Barut
+       * Fıçısı, Buz, Kundakçı) yardımcı kuleler ve on dört kulelik bir
+       * tahtanın ihtiyacı ham hasar. Okçu'nun koşulu kaldırılınca (her
+       * haritada Kundakçı) daha da kötü: Okçu 23/21/27 ve **karışık**
+       * tahta da bozuluyor (Kar Geçidi 14 → 18) — `M61`'in ölçümü aynen
+       * tekrarlandı.
+       *
+       * Yani makas gerçek, kural yerinde kalıyor.
+       */
       let ilkOkcu = kadrodaGomulen && !kuleler.some((k) => k.towerId === 'okcu' && k.tier === 3);
       for (let i = 0; i < kuleler.length; i++) {
         const k = kuleler[i];
