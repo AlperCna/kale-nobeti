@@ -782,6 +782,17 @@ düzeltildi:
   haritada aynı sayıda kule alırken düşman HP'si haritayla büyüyordu ve
   ilk dalgalar sızdırıyordu.
 - **S73** — harita 3'te altın çarpanı HP çarpanından **ayrıştı** (2,6 → 3,8).
+- **S117** (`M79`) — **kule fiyatı da haritayla ölçeklenebiliyor**
+  (`MapDef.costMultiplier`, bugün yalnız Kar Geçidi ×1,4). Gerekçe ölçüldü:
+  fiyatlar MUTLAK, gelir ölçekli olduğu için tahta maliyeti / toplam gelir
+  oranı kampanya boyunca 0,84'ten 0,36'ya savruluyordu — ekonomi 4. haritadan
+  sonra karşı güç olmaktan çıkıyordu. **Değişen:** Kar Geçidi oranı 0,41 →
+  **0,57**, boşta kalan altın %59 → %43. **DEĞİŞMEYEN:** yapı noktaları hâlâ
+  4. dalgada doluyor, dalga 10 tahtası birebir aynı, can kaybı 14 → 13. Yani
+  çarpan atıl altını emiyor, **kıtlığı geri getirmiyor**. Harita 5-6'ya
+  konmadı: taranan her k değeri bir sağlamayı kırıyor (`OPEN-QUESTIONS` S117).
+  Fiyatın tek adresi `towers.maliyet(ham, map)`; ham `.cost` okumasını
+  bekçinin 18. kuralı yasaklıyor.
 - **S82 → S86 → S87** — harita 3'ün çarpanı bir ara 2,5'e çekildi,
   **geri alındı**, sonra rampa yeniden türetilirken **3,0** oldu.
   `waveSim` M10'a kadar üç şeyi birden simüle etmiyordu: haritaya
@@ -805,7 +816,7 @@ düzeltildi:
 | 1 · Değirmen Geçidi | 1 | 1 | 0 | 0 |
 | 2 · Taş Köprü | 1,6 | 2,2 | 0 | 0 |
 | 3 · Kül Ovası | 2,8 | 3,8 | 9 | 2 |
-| 4 · Kar Geçidi | 7,35 | 7,8 | 14 | 4 |
+| 4 · Kar Geçidi | 7,35 | 7,8 | 13 | 3 |
 | 5 · Kadim Harabe | 10,2 | 10,2 | 14 | 5 |
 | 6 · Sisli Bataklık | 8,1 | 11 | 15 | 6 |
 <!-- /ÜRETİLEN:rampa -->
@@ -952,6 +963,7 @@ interface MapDef {
   waves: Wave[];
   hpMultiplier: number;
   goldMultiplier: number;         // >= hpMultiplier (S73; eskiden '=' idi)
+  costMultiplier?: number;        // kule fiyat çarpanı (S117) — yok = ×1
   startGold: number;
   enemyRoster: EnemyId[];         // bu haritada çıkabilecek tipler
   /** util/coverage.ts ile üretilir, ELLE YAZILMAZ. Denge testleri kullanır. */

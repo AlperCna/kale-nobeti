@@ -250,6 +250,7 @@ PowerShell'de de çalışsın.
 | 15 | `console` yalnız `import.meta.env.DEV` korumalı | Platform | bekçi taraması |
 | 16 | Dokunmatik hedef ≥ 44 px | Platform | bekçi taraması |
 | 17 | `base: './'` | Platform · `RISKS.md` R15 | bekçi taraması |
+| 18 | Kule fiyatı tek adresten (`maliyet`) | `S117` · `M79` | bekçi taraması |
 
 **Negatif doğrulama zorunlu** (`M0-T10`): kasten bir ihlal ekle, `guard`'ın
 exit 1 verdiğini gör, geri al. Yapılmazsa bekçilerin çalıştığı bilinmiyor.

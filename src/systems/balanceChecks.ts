@@ -14,7 +14,7 @@ import type { Wave } from '../types/wave';
 import type { SpotCoverage } from '../util/coverage';
 import { BALANCE } from '../data/balance';
 import { getEnemy, getEnemyForMap } from '../data/enemies';
-import { BUYU, OKCU, TOP, getTower, tierAt } from '../data/towers';
+import { BUYU, OKCU, TOP, getTower, maliyet, tierAt } from '../data/towers';
 import { KISLA, barracksTierAt } from '../data/barracks';
 import { applyDamage, etkiDps } from './combat';
 import { nearestPathIndex, measureCoverage, pathLength } from '../util/coverage';
@@ -258,17 +258,19 @@ function kuleSecimi(sira: number): TowerDef {
 function karsilanabilirKule(
   sira: number,
   butce: number,
+  map: { readonly costMultiplier?: number },
   tekAile?: TowerDef['id'],
 ): TowerDef | undefined {
+  const fiyat = (d: TowerDef): number => maliyet(d.tiers[0].cost, map);
   if (tekAile !== undefined) {
     const d = getTower(tekAile);
-    return d !== undefined && butce >= d.tiers[0].cost ? d : undefined;
+    return d !== undefined && butce >= fiyat(d) ? d : undefined;
   }
   const tercih = kuleSecimi(sira);
-  if (butce >= tercih.tiers[0].cost) return tercih;
+  if (butce >= fiyat(tercih)) return tercih;
   // Ucuzdan pahalıya dene — gerçek oyuncu elindekiyle alabildiğini alır.
   const sirali = [OKCU, BUYU, TOP].filter((d) => d !== tercih);
-  return sirali.find((d) => butce >= d.tiers[0].cost);
+  return sirali.find((d) => butce >= fiyat(d));
 }
 
 /**
@@ -443,11 +445,11 @@ export function buildReferenceBoards(
     // kışla almak ilk kuleyi geciktirir ve erken dalgaları sızdırır.
     // Dalga 4 (ilk nefes) makul oyuncunun nefes aldığı yer.
     if (kislaAlinacak && !kislaKuruldu && kislaNoktasi !== undefined && w.index >= 4) {
-      const maliyet = barracksTierAt(KISLA, 0).cost;
-      if (kullanilabilir >= maliyet) {
+      const fiyat = maliyet(barracksTierAt(KISLA, 0).cost, map);
+      if (kullanilabilir >= fiyat) {
         kislalar.push({ spotIndex: kislaNoktasi, tier: 0 });
-        kullanilabilir -= maliyet;
-        harcanan += maliyet;
+        kullanilabilir -= fiyat;
+        harcanan += fiyat;
         kislaKuruldu = true;
       }
     }
@@ -455,12 +457,12 @@ export function buildReferenceBoards(
     // 1) Boş nokta kaldıysa doldur.
     for (const spotIndex of sirali) {
       if (kuleler.some((k) => k.spotIndex === spotIndex)) continue;
-      const def = karsilanabilirKule(kuleler.length, kullanilabilir, tekAile);
+      const def = karsilanabilirKule(kuleler.length, kullanilabilir, map, tekAile);
       if (def === undefined) break;
-      const maliyet = def.tiers[0].cost;
+      const fiyat = maliyet(def.tiers[0].cost, map);
       kuleler.push({ spotIndex, towerId: def.id, tier: 0 });
-      kullanilabilir -= maliyet;
-      harcanan += maliyet;
+      kullanilabilir -= fiyat;
+      harcanan += fiyat;
     }
 
     // 2) Nokta kalmadıysa yükselt: önce hepsi T2, sonra T3.
@@ -471,11 +473,11 @@ export function buildReferenceBoards(
         if (k === undefined || k.tier !== 0) continue;
         const def = getTower(k.towerId);
         if (def === undefined) continue;
-        const maliyet = def.tiers[1].cost;
-        if (kullanilabilir < maliyet) continue;
+        const fiyat = maliyet(def.tiers[1].cost, map);
+        if (kullanilabilir < fiyat) continue;
         kuleler[i] = { ...k, tier: 1 };
-        kullanilabilir -= maliyet;
-        harcanan += maliyet;
+        kullanilabilir -= fiyat;
+        harcanan += fiyat;
       }
 
       // 2b) T2 → T3. **M7'de eklendi.**
@@ -576,14 +578,14 @@ export function buildReferenceBoards(
           (def.id === 'okcu' && ilkOkcu)
             ? 3
             : 2;
-        const maliyet = tierAt(def, dal).cost;
-        if (kullanilabilir < maliyet) continue;
+        const fiyat = maliyet(tierAt(def, dal).cost, map);
+        if (kullanilabilir < fiyat) continue;
         if (def.id === 'top') ilkTop = false;
         if (def.id === 'buyu') ilkBuyu = false;
         if (def.id === 'okcu') ilkOkcu = false;
         kuleler[i] = { ...k, tier: dal };
-        kullanilabilir -= maliyet;
-        harcanan += maliyet;
+        kullanilabilir -= fiyat;
+        harcanan += fiyat;
       }
     }
 

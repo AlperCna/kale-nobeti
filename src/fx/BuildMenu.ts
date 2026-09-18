@@ -7,7 +7,7 @@ import type { Soldier } from '../entities/Soldier';
 import type { MapDef } from '../types/map';
 import type { Vec2 } from '../types/common';
 import type { TargetMode, TierIndex, TowerDef } from '../types/tower';
-import { TOWERS, TARGET_MODES, tierAt } from '../data/towers';
+import { TOWERS, TARGET_MODES, tierAt, maliyet } from '../data/towers';
 import { KISLA, barracksTierAt } from '../data/barracks';
 import { FRAME_CARTOUCHE } from '../data/spriteFrames';
 import { measureCoverage } from '../util/coverage';
@@ -425,16 +425,16 @@ export class BuildMenu {
 
     TOWERS.forEach((def, i) => {
       const bx = (i - (toplam - 1) / 2) * BUTON_ARA;
-      const maliyet = def.tiers[0].cost;
-      const alinabilir = this.#economy.canAfford(maliyet);
+      const fiyat = maliyet(def.tiers[0].cost, this.#map);
+      const alinabilir = this.#economy.canAfford(fiyat);
 
-      const cerceve = this.#menuButonu(kap, bx, `${kuleAdi(def.id)} ${maliyet}`, alinabilir, () =>
+      const cerceve = this.#menuButonu(kap, bx, `${kuleAdi(def.id)} ${fiyat}`, alinabilir, () =>
         this.#actions.placeTower(spotIndex, def),
       );
       roller.bagla(cerceve, ROLE_KEY[def.id] ?? 'roleOkcu');
     });
 
-    const kislaMaliyet = barracksTierAt(KISLA, 0).cost;
+    const kislaMaliyet = maliyet(barracksTierAt(KISLA, 0).cost, this.#map);
     const kislaCerceve = this.#menuButonu(
       kap,
       (TOWERS.length - (toplam - 1) / 2) * BUTON_ARA,
@@ -485,8 +485,8 @@ export class BuildMenu {
 
     if (kule.tierIndex === 0) {
       // T1 → T2, tek seçenek.
-      const maliyet = kule.def.tiers[1].cost;
-      this.#menuButonu(kap, -IKILI_OFSET, `↑ ${maliyet}`, this.#economy.canAfford(maliyet), () =>
+      const fiyat = maliyet(kule.def.tiers[1].cost, this.#map);
+      this.#menuButonu(kap, -IKILI_OFSET, `↑ ${fiyat}`, this.#economy.canAfford(fiyat), () =>
         this.#actions.upgradeTower(spotIndex, 1),
       );
       this.#satButonu(kap, IKILI_OFSET, iade, () => this.#actions.sellTower(spotIndex));
@@ -531,16 +531,16 @@ export class BuildMenu {
       this.#menuButonu(
         kap,
         -DAL_BUTON_ARA,
-        `${dalAdi(a.branchNameKey, '3a')} ${a.cost}`,
-        this.#economy.canAfford(a.cost),
+        `${dalAdi(a.branchNameKey, '3a')} ${maliyet(a.cost, this.#map)}`,
+        this.#economy.canAfford(maliyet(a.cost, this.#map)),
         () => this.#actions.upgradeTower(spotIndex, 2),
         DAL_BUTON_W,
       );
       this.#menuButonu(
         kap,
         0,
-        `${dalAdi(b.branchNameKey, '3b')} ${b.cost}`,
-        this.#economy.canAfford(b.cost),
+        `${dalAdi(b.branchNameKey, '3b')} ${maliyet(b.cost, this.#map)}`,
+        this.#economy.canAfford(maliyet(b.cost, this.#map)),
         () => this.#actions.upgradeTower(spotIndex, 3),
         DAL_BUTON_W,
       );
@@ -640,7 +640,7 @@ export class BuildMenu {
     const iade = this.#economy.sellRefund(this.#economy.spentAt(spotIndex));
 
     if (k.tier === 0) {
-      const m = barracksTierAt(KISLA, 1).cost;
+      const m = maliyet(barracksTierAt(KISLA, 1).cost, this.#map);
       this.#menuButonu(kap, -IKILI_OFSET, `↑ ${m}`, this.#economy.canAfford(m), () =>
         this.#actions.upgradeBarracks(spotIndex, 1),
       );
@@ -670,16 +670,16 @@ export class BuildMenu {
       this.#menuButonu(
         kap,
         -DAL_BUTON_ARA,
-        `${dalAdi(a.branchNameKey, '3a')} ${a.cost}`,
-        this.#economy.canAfford(a.cost),
+        `${dalAdi(a.branchNameKey, '3a')} ${maliyet(a.cost, this.#map)}`,
+        this.#economy.canAfford(maliyet(a.cost, this.#map)),
         () => this.#actions.upgradeBarracks(spotIndex, 2),
         DAL_BUTON_W,
       );
       this.#menuButonu(
         kap,
         0,
-        `${dalAdi(b.branchNameKey, '3b')} ${b.cost}`,
-        this.#economy.canAfford(b.cost),
+        `${dalAdi(b.branchNameKey, '3b')} ${maliyet(b.cost, this.#map)}`,
+        this.#economy.canAfford(maliyet(b.cost, this.#map)),
         () => this.#actions.upgradeBarracks(spotIndex, 3),
         DAL_BUTON_W,
       );

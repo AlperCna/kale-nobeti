@@ -247,7 +247,7 @@ public/assets/  atlas.png · atlas.json · bg/*.webp · audio/ · fonts/
 - Görsel/sahne testi yazılmaz.
 - Bir kilometre taşı bitince **dört adım**, sırayla:
   `npm run typecheck && npm run test && npm run guard && npm run build`
-  `guard` (`scripts/guard-rules.mjs`, bugün 17 kural) uzun süre bu satırda
+  `guard` (`scripts/guard-rules.mjs`, bugün 18 kural) uzun süre bu satırda
   yazmıyordu ama fiilen her kilometre taşında koşuyordu — TIER 1'in
   otomatikleştirilebilen kısmını o bekliyor (k.5 `any`, k.7 `BitmapText`,
   k.8 ham `delta`, k.9 `Math.sqrt`, k.11 `import type`). Kapıdan geçmeyen
