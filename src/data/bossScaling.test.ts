@@ -24,6 +24,7 @@ import {
   effectiveHp,
 } from '../systems/balanceChecks';
 import { measureCoverage } from '../util/coverage';
+import { referansKosu } from '../systems/referansOlcum';
 
 /**
  * **`M27`: harita 6 listeye EKLENDİ.**
@@ -170,6 +171,48 @@ describe('Boss ölçeklemesi — zırh düşer, HP türetilir', () => {
     // Kalkan dışında TEK bir alan bile farklı olmamalı.
     const { shield: _atilan, ...kalkansiz } = varyant;
     expect(kalkansiz).toEqual(temel);
+  });
+
+  /**
+   * **Bossun PAYI — `M74` (S136'nın bıraktığı boşluğu dolduruyor).**
+   *
+   * `M71` şunu buldu: dosya bir bandın "her koşuda doğrulandığını"
+   * söylüyordu ama öyle bir test yoktu, ve sabit (`BOSS_HP_TOLERANCE`)
+   * okunmadan duruyordu. Yanlış cümle silindi; **eksik sağlama buydu.**
+   *
+   * Eski bandın ölçütü (`0,80 × tek düşman tavanı`) `M71`'de ölçümle
+   * reddedildi: tahtalar `M7`'den beri üç katlandı, o tavan bir *dalganın*
+   * baskısını artık temsil etmiyor. `M73` doğru ölçütü ölçtü: **bossun
+   * gerçek dalgada öldüğü en büyük HP**.
+   *
+   * Bu test o eşiği *aramadan* aynı şeyi soruyor — aramak altı haritada
+   * ikili arama demekti ve suite'e sekiz saniye eklerdi. Soru tek koşuya
+   * indirgendi: **HP'nin %15 fazlasında boss hâlâ ölüyor mu?** Pay yine
+   * uydurulmadı, `BALANCE.safetyMargin`'den geliyor — Kısıt A'nın bütün
+   * kabulü `tavan > hp × 1,15`, burada tavan yerine **dalga baskısı**.
+   *
+   * Ölçülen paylar (HP / eşik): Değirmen %72,7 · Taş Köprü %67,4 ·
+   * Kül Ovası %54,6 · Kar Geçidi %68,8 · Kadim Harabe %52,2 · Sisli
+   * Bataklık %54,4 — hepsi `1/1,15 ≈ %87`'nin altında.
+   *
+   * **Neden önemli:** `kisitB`'nin "boss hiçbir haritada sızmıyor"u ikili
+   * bir kontrol; sürüklenmeyi ancak kaza olduktan sonra görür. Bu test
+   * kazadan **önce** görüyor. Tam olarak `M61`/`M66`/`M67`'de olan şey
+   * bu: tahtalar değişti, boss yerinde kaldı, kimse bakmıyordu.
+   */
+  it('**bossun PAYI var** — HP’nin %15 fazlasında da ölüyor (S136)', () => {
+    const yazilabilir = BOSS_HP_BY_MAP as unknown as Record<string, number>;
+    for (const m of MAPS) {
+      const asil = BOSS_HP_BY_MAP[m.id];
+      if (asil === undefined) continue;
+      try {
+        yazilabilir[m.id] = Math.round(asil * BALANCE.safetyMargin);
+        const sizdi = referansKosu(m).some((r) => (r.leakedByEnemy.ogreSef ?? 0) > 0);
+        expect(sizdi, `${m.id}: boss ${asil} × ${BALANCE.safetyMargin} = ${Math.round(asil * BALANCE.safetyMargin)}`).toBe(false);
+      } finally {
+        yazilabilir[m.id] = asil;
+      }
+    }
   });
 
   it('700 × çarpan olsaydı PAY BIRAKMAZDI — düzeltmenin kanıtı (S134)', () => {
