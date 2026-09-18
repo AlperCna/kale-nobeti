@@ -196,10 +196,10 @@ describe('towers.ts — T3 dalları (12 kademe)', () => {
     expect(k.effect).toEqual({ kind: 'burn', dps: 11, seconds: 4 });
   });
 
-  it('Havan: 240 / 52 / 0.45 / 230, yarıçap 55, uçana %50 (M11-T02 → S134)', () => {
+  it('Havan: 240 / 52 / 0.45 / 230, yarıçap 65, uçana %50 (M11-T02 → S134 → S137)', () => {
     const h = TOP.branches[0];
     expect([h.cost, h.damage, h.fireRate, h.range, h.splashRadius]).toEqual([
-      240, 52, 0.45, 230, 55,
+      240, 52, 0.45, 230, 65,
     ]);
     expect(h.airMultiplier).toBe(0.5);
   });

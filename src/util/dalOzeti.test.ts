@@ -16,7 +16,7 @@ describe('dalOzeti — T3 seçimi satın almadan önce okunabilir', () => {
     expect(barut).toContain('DPS 23.4');
     expect(havan).toContain('menzil 230');
     expect(barut).toContain('menzil 150');
-    expect(havan).toContain('patlama 55');
+    expect(havan).toContain('patlama 65');
     expect(barut).toContain('patlama 85');
   });
 

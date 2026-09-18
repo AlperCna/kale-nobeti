@@ -214,19 +214,46 @@ describe('Aile dengesi — M11 Faz 5 (S95)', () => {
    * konmuş durumda (S119'un kapanışı) ve o geçiyor (16 · 19 · 13). Top ve
    * Büyü için de eşik konmalı mı — sahibinin kararı, S134.
    */
+  /**
+   * **`M75` (S137/S138) — OKÇU'NUN EVİ KAYBOLDU, sahibi bilerek kabul etti.**
+   *
+   * Boss HP'leri dalga baskısı eşiğinden yeniden türetilince
+   * (`bossScaling`, S137) tablo bir kez daha oynadı:
+   *
+   * | harita | karışık | Okçu | Top | Büyü |
+   * |---|---|---|---|---|
+   * | Kül Ovası | 6 | **6** | 8 | 9 |
+   * | Kar Geçidi | 12 | 15 | 14 | **9** |
+   * | Kadim Harabe | 15 | 18 | 19 | **10** |
+   * | Sisli Bataklık | 13 | 14 | **12** | 11 |
+   *
+   * Büyü üç haritada, Top bir haritada karışık tahtayı **geçiyor**;
+   * Okçu Kül Ovası'nda 6'ya 6 **berabere** kalıyor, yani hiçbir yerde
+   * tek başına en iyi seçim değil. İddia bu yüzden "geçiyor"dan
+   * "**geri kalmıyor**"a çekildi — Okçu ölü değil (üstteki 20 eşiği
+   * onu bağlıyor) ama evi yok.
+   *
+   * Bu bir ölçüm kazası değil, **kabul edilmiş bir bedel**: S137'nin
+   * boss türetmesi uygulanırken iki sonucu sahibine önceden ölçülük
+   * olarak söylendi ve onaylandı. İkincisi `yetenekKatkisi`'nde.
+   * Açık kol **S138** olarak kayıtlı: Okçu'ya bir ev geri verilmeli mi?
+   */
   it('her ailenin parladığı bir harita var', () => {
-    // Okçu — Kül Ovası'nda karışık tahtadan bile iyi.
-    expect(canKaybi(MAP_3, 'okcu')).toBeLessThan(canKaybi(MAP_3));
-    // Büyü — Kadim Harabe'de karışık tahtadan iyi (S110'un kapanışı).
-    expect(canKaybi(MAP_5, 'buyu')).toBeLessThan(canKaybi(MAP_5));
-    // Top — **Sisli Bataklık'ta** açık ara birinci (`M66`). `M22`-`M66`
-    // arasında evi Kar Geçidi'ydi ve orada "berabere birinci"ye düşmüştü
-    // (S120); bölünme simüle edilmeye başlayınca Kar Geçidi'ni Okçu aldı
-    // ve Top'un üstünlüğü Sisli Bataklık'ta netleşti. Gerekçe üstteki
-    // notta: Kar Geçidi'nde Harpi var ve Top'un çoğu kademesi uçana
-    // vuramıyor.
-    expect(canKaybi(MAP_6, 'top')).toBeLessThan(canKaybi(MAP_6, 'okcu'));
-    expect(canKaybi(MAP_6, 'top')).toBeLessThan(canKaybi(MAP_6, 'buyu'));
+    // Okçu — Kül Ovası'nda karışık tahtadan **geri kalmıyor** (6'ya 6).
+    expect(canKaybi(MAP_3, 'okcu')).toBeLessThanOrEqual(canKaybi(MAP_3));
+    // Büyü — üç zor haritanın üçünde de karışık tahtadan iyi. S110'un
+    // kapanışı `M75`'te genişledi: boss türetmesinden sonra Büyü **tek
+    // ev sahibi aile** oldu (S138).
+    for (const m of [MAP_4, MAP_5, MAP_6]) {
+      expect(canKaybi(m, 'buyu'), m.id).toBeLessThan(canKaybi(m));
+    }
+    // Top — Sisli Bataklık'ta karışık tahtayı **geçiyor** (12'ye 13).
+    //
+    // **`M75` (S138): "açık ara birinci" iddiası düştü.** `M66`-`M75`
+    // arasında Top orada üçünü de geçiyordu; boss türetmesinden sonra
+    // Büyü 11 ile Top'un 12'sinin önüne geçti. Top ölü değil ve
+    // rekabetçi (karışık tahtadan iyi), ama artık **en iyisi değil**.
     expect(canKaybi(MAP_6, 'top')).toBeLessThan(canKaybi(MAP_6));
+    expect(canKaybi(MAP_6, 'top')).toBeLessThan(canKaybi(MAP_6, 'okcu'));
   });
 });

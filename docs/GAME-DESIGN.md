@@ -190,7 +190,7 @@ Fiziksel hasar, patlama yarıçapı. Kalabalığın cevabı.
 |---|---|---|---|---|---|---|
 | T1 | 110 | 22 | 0,5 | 140 | 45 | **vuramaz** |
 | T2 | 160 | 34 | 0,55 | 150 | 55 | **vuramaz** |
-| T3a Havan | 240 | 52 | 0,45 | 230 | 55 | %50 |
+| T3a Havan | 240 | 52 | 0,45 | 230 | 65 | %50 |
 | T3b Barut Fıçısı | 240 | 26 | 0,9 | 150 | 85 | %50 |
 <!-- /ÜRETİLEN:kule-top -->
 
@@ -804,10 +804,10 @@ düzeltildi:
 |---|---|---|---|---|
 | 1 · Değirmen Geçidi | 1 | 1 | 0 | 0 |
 | 2 · Taş Köprü | 1,6 | 2,2 | 0 | 0 |
-| 3 · Kül Ovası | 2,8 | 3,8 | 9 | 2 |
-| 4 · Kar Geçidi | 7,35 | 7,8 | 14 | 3 |
-| 5 · Kadim Harabe | 10,2 | 10,2 | 12 | 4 |
-| 6 · Sisli Bataklık | 8,1 | 11 | 15 | 6 |
+| 3 · Kül Ovası | 2,8 | 3,8 | 6 | 2 |
+| 4 · Kar Geçidi | 7,35 | 7,8 | 12 | 2 |
+| 5 · Kadim Harabe | 10,2 | 10,2 | 14 | 2 |
+| 6 · Sisli Bataklık | 8,1 | 11 | 13 | 5 |
 <!-- /ÜRETİLEN:rampa -->
 
   **`M14` (S101): dört çarpan yeniden türetildi.** Erken başlatma bonusu
@@ -983,11 +983,11 @@ hiçbir tahta bunu indiremezdi (M7'de ölçüldü: Kısıt A oranı %165 ve %282
 | Harita | Zırh | Boss HP | Tavanın oranı (ölçülen) |
 |---|---|---|---|
 | 1 · Değirmen Geçidi | 10 | 700 | %87,7 |
-| 2 · Taş Köprü | 5 | 993 | %74,3 |
-| 3 · Kül Ovası | 2 | 1322 | %54,4 |
-| 4 · Kar Geçidi | 2 | 3000 | %70,1 |
-| 5 · Kadim Harabe | 2 | 1962 | %36,3 |
-| 6 · Sisli Bataklık | 2 | 2100 | %34,3 |
+| 2 · Taş Köprü | 5 | 958 | %71,7 |
+| 3 · Kül Ovası | 2 | 1573 | %64,7 |
+| 4 · Kar Geçidi | 2 | 2807 | %65,6 |
+| 5 · Kadim Harabe | 2 | 2345 | %43,3 |
+| 6 · Sisli Bataklık | 2 | 2333 | %38,1 |
 <!-- /ÜRETİLEN:boss -->
 
 **`M11` Faz 5 (S95): dördü de yeniden türetildi** (712/886/1709/2189 →

@@ -140,9 +140,26 @@ describe('Yeteneklerin katkısı — M11 Faz 4', () => {
     // desenin aynısı ve aynı sebeple duruyor: orada Meteor tek başına
     // işin tamamını yapıyor, Takviye'ye kurtaracak can bırakmıyor.
     // İddia "gölgede değil", yani hiçbir yerde **kötüleştirmiyor**.
-    expect(canKaybi(MAP_4, 'takviye')).toBeLessThanOrEqual(canKaybi(MAP_4, 'yok'));
+    //
+    // **`M75` (S137): KAR GEÇİDİ İSTİSNA OLDU — sahibi bilerek kabul etti.**
+    //
+    // Boss HP'leri dalga baskısı eşiğinden türetilince Kar Geçidi'nin
+    // bossu sertleşti ve Takviye orada **can kaybettirmeye** başladı:
+    // yok 12 → takviye **14**. Mekanizma S111'in tam kendisi ve dosyanın
+    // kendi cümlesi: *tahta zayıfken tutmak erteleme, güçlüyken
+    // öldürme.* Daha sert boss, askerin tuttuğunu öldüremeyen tahta,
+    // ertelenen sızıntı.
+    //
+    // `M19` bunu bilerek kapatmış bir kusurdu; S137'nin boss türetmesi
+    // uygulanırken geri geleceği **önceden ölçülüp** sahibine söylendi
+    // ve onaylandı. İddia bu yüzden Kar Geçidi'ni kapsamıyor; Takviye
+    // orada tek başına **kötü**, ama Meteor'la birlikte hâlâ en iyi
+    // sonucu veriyor (ikisi 9 < yok 12) ve alttaki test onu bağlıyor.
+    // Açık kol S138'de.
     expect(canKaybi(MAP_5, 'takviye')).toBeLessThan(canKaybi(MAP_5, 'yok'));
-    expect(canKaybi(MAP_6, 'takviye')).toBeLessThan(canKaybi(MAP_6, 'yok'));
+    expect(canKaybi(MAP_6, 'takviye')).toBeLessThanOrEqual(canKaybi(MAP_6, 'yok'));
+    // Kar Geçidi'nde tek başına kötü, ama Meteor'la birlikte iyi.
+    expect(canKaybi(MAP_4, 'ikisi')).toBeLessThan(canKaybi(MAP_4, 'yok'));
   });
 
   /**

@@ -88,8 +88,23 @@ describe('Boss ölçeklemesi — zırh düşer, HP türetilir', () => {
   it('düz bossların HP’si monoton artıyor (harita 1-4)', () => {
     const hp = MAPS.slice(0, 4).map((m) => BOSS_HP_BY_MAP[m.id]!);
     for (let i = 1; i < hp.length; i++) expect(hp[i]!).toBeGreaterThan(hp[i - 1]!);
-    // Yetenekli bosslar (5-6) kendi aralarında da artıyor.
-    expect(BOSS_HP_BY_MAP['sisli-bataklik']!).toBeGreaterThan(BOSS_HP_BY_MAP['kadim-harabe']!);
+    /**
+     * **`M75` (S137): 5-6 arasındaki artış iddiası DÜŞTÜ, yerine
+     * ölçülen ilişki kondu.**
+     *
+     * HP'ler dalga baskısı eşiğinden türetilince harita 5 ve 6'nın
+     * eşikleri **3608 ve 3589** çıktı — aralarında %0,5 var. Ondan
+     * türeyen HP'ler 2345 ve 2333, yani aralarındaki 12'lik fark
+     * ölçümün kendi çözünürlüğü kadar. Orada bir artış iddia etmek
+     * **gürültüyü iddia etmek** olurdu.
+     *
+     * Yerine üstteki notun asıl söylediği bağlanıyor: yetenekli boss
+     * daha az **ham** HP taşır. İkisi de son düz bossun (harita 4)
+     * altında — ve bu ölçülmüş bir ilişki, tercih değil.
+     */
+    for (const id of ['kadim-harabe', 'sisli-bataklik']) {
+      expect(BOSS_HP_BY_MAP[id]!, id).toBeLessThan(BOSS_HP_BY_MAP['kar-gecidi']!);
+    }
   });
 
   /**
@@ -109,13 +124,33 @@ describe('Boss ölçeklemesi — zırh düşer, HP türetilir', () => {
    * sızmıyor**. Buradaki iki test o türetmenin kaydı.
    */
   it('yazılı HP’ler ÖLÇÜLEN değerler — regresyon kilidi', () => {
+    /**
+     * **`M75` (S137) — hepsi DALGA BASKISI eşiğinden yeniden türetildi.**
+     *
+     * Eski değerler `0,80 × tek düşman tavanı`ndan geliyordu ve `M71`
+     * o ölçütü reddetti: tahtalar `M7`'den beri üç katlandı, o tavan
+     * artık bir *dalganın* baskısını temsil etmiyor. Yeni ölçüt
+     * `M18`'in zaten niyet ettiği şey: **referans tahtanın gerçek
+     * dalgada öldürebildiği en büyük HP**, ikili aramayla ölçülüyor.
+     *
+     * Ölçülen eşikler (Havan'ın patlama yarıçapı 65 ile, yani kendi
+     * içinde tutarlı): 958 · 1474 · 2420 · 4319 · 3608 · 3589.
+     * Yazılı HP = `0,65 × eşik`. Oran taranıp seçildi: `0,60`
+     * harita 4'ü Zor eşiğinin altına düşürüyor, `0,70` ve `0,75`
+     * Kadim Harabe'de iki yeteneği birden 16'dan **23**'e çıkarıyor
+     * (yani yeteneklerini kullanan oyuncu haritayı kaybediyor).
+     * `0,65` üçünü de sağlayan tek değer.
+     *
+     * Harita 1 dokunulmadı: 700 §5'in belgelenmiş değeri ve öğretici
+     * harita zaten hiç sızdırmıyor.
+     */
     expect(BOSS_HP_BY_MAP).toEqual({
-      'degirmen-gecidi': 700, // §5'in belgelenmiş değeri (S65)
-      'tas-kopru': 993, // `M20` (S118) — altın çarpanı 2,2 olunca yeniden türetildi
-      'kul-ovasi': 1322,
-      'kar-gecidi': 3000,
-      'kadim-harabe': 1962,
-      'sisli-bataklik': 2100,
+      'degirmen-gecidi': 700, // §5'in belgelenmiş değeri (S65) — türetme 623 diyor
+      'tas-kopru': 958, // 0,65 × 1474
+      'kul-ovasi': 1573, // 0,65 × 2420
+      'kar-gecidi': 2807, // 0,65 × 4319
+      'kadim-harabe': 2345, // 0,65 × 3608
+      'sisli-bataklik': 2333, // 0,65 × 3589
     });
   });
 
