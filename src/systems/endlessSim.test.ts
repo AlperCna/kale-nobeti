@@ -4,7 +4,7 @@ import { ENDLESS_FIRST_WAVE } from '../data/endless';
 import { buildReferenceBoards } from './balanceChecks';
 import { simulateAllWaves } from './waveSim';
 import { measureCoverage } from '../util/coverage';
-import { MAP_1, MAP_5, COVERAGE_REFERENCE_RANGE } from '../data/maps';
+import { MAP_1, MAP_5, MAP_6, MAPS, COVERAGE_REFERENCE_RANGE } from '../data/maps';
 import { wavesFor } from '../data/waves';
 import { getEnemyForMap } from '../data/enemies';
 import type { EnemyId } from '../types/enemy';
@@ -76,10 +76,17 @@ function pencereOrtalamasi(m: MapDef, bas: number, son: number): number {
 }
 
 describe('sonsuz mod simülasyonu', () => {
+  /**
+   * **`M86`: liste elle yazılmıştı ve harita 6'yı saymıyordu.** İddia
+   * "sonsuz mod bir ödül" diyor ama yalnız iki haritada sınanıyordu;
+   * `M12`'de gelen altıncı harita (ve 2-4) hiç bakılmamıştı. Artık
+   * `MAPS` üzerinden **türetiliyor** — yeni harita kendiliğinden giriyor.
+   * Ölçülen dalga 11 can kaybı: `0 · 0 · 6 · 10 · 11 · 8`.
+   */
   it('ilk sonsuz dalga (11) tahtayı **anında** yıkmıyor', () => {
     // Dalga 10'u geçen bir tahta 11'de bir anda çökmemeli; sonsuz mod bir
     // ödül, bir ceza değil.
-    for (const m of [MAP_1, MAP_5]) {
+    for (const m of MAPS) {
       expect(canKaybi(m, ENDLESS_FIRST_WAVE), m.id).toBeLessThan(20);
     }
   });
@@ -94,6 +101,25 @@ describe('sonsuz mod simülasyonu', () => {
     expect(pencereOrtalamasi(MAP_1, 31, 40)).toBeGreaterThan(
       pencereOrtalamasi(MAP_1, 21, 30),
     );
+  });
+
+  /**
+   * **`M86` — son harita da sınanıyor, ama İDDİA AYNI DEĞİL.**
+   *
+   * İki kat şartı yalnız öğretici haritada tutuyor; geç haritalarda
+   * ilk on sonsuz dalga **zaten** acıtıyor (ölçüm, 11-20 ortalaması:
+   * Dğirmen 5,0 · Taş Köprü 6,9 · Kül Ovası 14,8 · Kar Geçidi 22,5 ·
+   * Kadim Harabe 23,9 · Sisli Bataklık 20,1), yani başlangıç yüksek
+   * olduğu için iki katına çıkmak için yer yok — Kar Geçidi 21-30'da
+   * 39,4'te, iki katı 45 olurdu. Geç haritalarda sınanan şey bu yüzden
+   * **kesin artış**, katsayı değil.
+   */
+  it('son haritada da zorluk her on dalgada ARTıYOR (M86)', () => {
+    const ilk = pencereOrtalamasi(MAP_6, 11, 20);
+    const orta = pencereOrtalamasi(MAP_6, 21, 30);
+    const son = pencereOrtalamasi(MAP_6, 31, 40);
+    expect(orta, `${ilk.toFixed(1)} → ${orta.toFixed(1)}`).toBeGreaterThan(ilk);
+    expect(son, `${orta.toFixed(1)} → ${son.toFixed(1)}`).toBeGreaterThan(orta);
   });
 
   it('**eğri ~40. dalgada DÜZLEŞİYOR — ve bu zararsız**', () => {

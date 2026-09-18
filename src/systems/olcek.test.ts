@@ -28,8 +28,8 @@
  * TIER 1 kural 11: Phaser'a dokunmaz.
  */
 import { describe, expect, it } from 'vitest';
-import { MAPS, MAP_1, COVERAGE_REFERENCE_RANGE } from '../data/maps';
-import { wavesFor, MAP1_WAVES } from '../data/waves';
+import { MAPS, COVERAGE_REFERENCE_RANGE } from '../data/maps';
+import { wavesFor } from '../data/waves';
 import { POOL_PREALLOC } from '../data/balance';
 import { buildReferenceBoards } from './balanceChecks';
 import { generateEndlessWave, endlessHpScale } from './endlessWaves';
@@ -52,17 +52,26 @@ describe('Ölçek — eşzamanlı düşman tepesi (CLAUDE.md 200 eşiği)', () =
     }
   });
 
+  /**
+   * **`M86`: yalnız harita 1 ölçülüyordu.** Sonsuz dalga üreticisi
+   * **kadroya** göre seçim yapıyor; dar kadrolu öğretici haritanın tepesi
+   * geniş kadrolu haritalarınkini temsil etmiyor (örümcek bölünmesi ve
+   * Tünelci yalnız geç kadrolarda). Liste `MAPS`'ten türetiliyor.
+   */
   it('sonsuz mod tepesi de havuzun altında — tavan bağlıyor', () => {
-    const k = measureCoverage(MAP_1.paths, MAP_1.buildSpots, COVERAGE_REFERENCE_RANGE);
-    const tahta = buildReferenceBoards(MAP_1, MAP1_WAVES, k, true)[9]!;
-    let enYuksek = 0;
-    for (const n of [11, 20, 30, 40]) {
-      const w = generateEndlessWave(n, MAP_1.enemyRoster, MAP_1.paths.length);
-      const harita = { ...MAP_1, hpMultiplier: MAP_1.hpMultiplier * endlessHpScale(n) };
-      enYuksek = Math.max(enYuksek, simulateWave(w, tahta, harita).peakEnemies);
+    for (const m of MAPS) {
+      const w10 = wavesFor(m.id);
+      const k = measureCoverage(m.paths, m.buildSpots, COVERAGE_REFERENCE_RANGE);
+      const tahta = buildReferenceBoards(m, w10, k, true)[9]!;
+      let enYuksek = 0;
+      for (const n of [11, 20, 30, 40]) {
+        const w = generateEndlessWave(n, m.enemyRoster, m.paths.length);
+        const harita = { ...m, hpMultiplier: m.hpMultiplier * endlessHpScale(n) };
+        enYuksek = Math.max(enYuksek, simulateWave(w, tahta, harita).peakEnemies);
+      }
+      expect(enYuksek, `${m.id} sonsuz tepe ${enYuksek}`).toBeLessThan(POOL_PREALLOC.enemy);
+      expect(enYuksek, `${m.id} sonsuz tepe ${enYuksek}`).toBeLessThan(IZGARA_ESIGI / 4);
     }
-    expect(enYuksek, `sonsuz tepe ${enYuksek}`).toBeLessThan(POOL_PREALLOC.enemy);
-    expect(enYuksek).toBeLessThan(IZGARA_ESIGI / 4);
   });
 
   it('havuz kapasitesinin kendisi eşiğin altında — sözleşme', () => {
