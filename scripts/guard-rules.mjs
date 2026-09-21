@@ -864,6 +864,85 @@ const sonuclar = [];
 }
 
 // ---------------------------------------------------------------------
+// 20 — Özel Phaser yapımı ÖLÜ modül taşımasın (`M101`)
+//
+// 19. kural "kullanılan bir şey yapımda var mı" diye soruyor; bu kural
+// tersini soruyor: **yapımdaki her şeyin bir kullanıcısı var mı.**
+// Dosyanın kendi varlık sebebi bu — "yalnız bu projenin gerçekten
+// kullandığı modülleri geri ekler" (TIER 1 kural 2, paket boyutu).
+//
+// `M101`'de ölçüldü: altı satırın (`Math.Linear`, `Math.Wrap`,
+// `Math.Distance`, `Math.Easing`, `Math.RandomDataGenerator`,
+// `Geom.Circle`) `src/` içinde **sıfır** okuyucusu vardı. Dosyanın
+// başlığı onları "taramada kullanıldığı görülen parçalar" diye
+// anlatıyordu — hepsi doğruydu bir zamanlar, bugün değil.
+//
+// **Kapsam:** yalnız `import X from '...'` biçiminde alınıp SADECE
+// `Phaser.A.B = X;` satırlarında geçen modüller. Yan etki import'ları
+// (`import 'phaser/src/.../XFactory'`) bu kuralın dışında — onlar
+// `scene.add.*` üstüne kayıt yapıyor, adlarıyla okunmuyorlar.
+//
+// **Muafiyet:** assignment satırının sonuna `// bekçi: <gerekçe>`
+// yazılırsa kural o satırı atlıyor. Bugün üç tane var ve üçü de
+// "adıyla okunmuyor ama fabrika/alt sınıf yoluyla gerekli" diyor.
+// Muafiyet listesi bekçide DEĞİL dosyanın kendisinde, çünkü gerekçe
+// orada okunmalı.
+//
+// Negatif doğrulama: `Phaser.Math.Wrap = Wrap;` geri konunca 19/20.
+// ---------------------------------------------------------------------
+{
+  const ozelYol = join(SRC, 'vendor', 'phaser-custom.js');
+  let ihlalVar = false;
+  let ozel = null;
+  try {
+    ozel = readFileSync(ozelYol, 'utf8');
+  } catch (e) {
+    taranamayan.push(`${relative('.', ozelYol).split(sep).join('/')} (${e.code ?? 'hata'})`);
+  }
+  if (ozel === null) {
+    ihlalVar = true;
+    ihlal('M101', ozelYol, 0, 'özel Phaser yapımı okunamadı — kural kör kalırdı');
+  } else {
+    const satirlar = ozel.split(String.fromCharCode(10));
+    /** `src/` (vendor hariç) içindeki tüm kod — `Phaser.A.B` aranacak yer. */
+    const kullanim = dosyalar
+      .filter((d) => !relative('.', d).split(sep).join('/').includes('/vendor/'))
+      .map((d) => readFileSync(d, 'utf8'))
+      .join(String.fromCharCode(10));
+    for (const [i, satir] of satirlar.entries()) {
+      const imp = /^import (\w+) from '(phaser\/src\/[^']+)'/.exec(satir);
+      if (imp === null) continue;
+      const ad = imp[1];
+      const gectigi = satirlar
+        .map((s, k) => ({ s, k }))
+        // `import` ve YORUM satırları sayılmıyor: modül yolu da adı
+        // içeriyor (`.../TileSpriteFactory`), dosyanın başlığındaki
+        // gerekçe tablosu da adı yazıyor. Sayılsalardı kural o modülü
+        // "başka işi de var" sanıp **sessizce** atlardı — S136 sınıfı.
+        .filter(({ s, k }) => k !== i && !/^import /.test(s)
+          && !/^\s*(\/\/|\/\*|\*)/.test(s)
+          && new RegExp(`(?<![A-Za-z0-9_$])${ad}(?![A-Za-z0-9_$])`).test(s));
+      // Ad alanı doldurmaktan BAŞKA bir işi varsa (alt sınıf, çağrı) bu
+      // kuralın konusu değil.
+      const atamalar = gectigi.filter(({ s }) => /^Phaser\.[\w.]+\s*=/.test(s));
+      if (atamalar.length === 0 || atamalar.length !== gectigi.length) continue;
+      for (const { s, k } of atamalar) {
+        if (s.includes('// bekçi:')) continue;
+        const hedef = /^(Phaser\.[\w.]+)\s*=/.exec(s)?.[1];
+        if (hedef === undefined) continue;
+        // `Phaser.Geom = { Rectangle: X }` biçimi: üyeyi ayrıca ara.
+        const aranan = /=\s*\{/.test(s) ? `${hedef}.${ad.replace(/^Geom/, '')}` : hedef;
+        if (kullanim.includes(aranan)) continue;
+        ihlalVar = true;
+        ihlal('M101', ozelYol, k + 1,
+          `\`${aranan}\` src/'te hiç okunmuyor — ölü modül (kaldır ya da \`// bekçi:\` gerekçesi yaz)`);
+      }
+    }
+  }
+  sonuclar.push(['M101 özel Phaser yapımı ölü modül taşımıyor', !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
 
 const gecen = sonuclar.filter(([, ok]) => ok).length;
 if (taranamayan.length > 0) {
