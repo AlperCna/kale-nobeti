@@ -76,6 +76,18 @@ describe('TutorialSystem — Y09, iki ipucu (S65, S69)', () => {
     expect(gosterilen).toEqual(['heal']);
   });
 
+  it('ability:upgradable → abilityUpgrade ipucu, yalnız ilk kez (M102)', () => {
+    // `Y09`'un iki şartı: sonucu değiştiriyor (`M100` ölçtü — geç
+    // haritalarda 1-3 can) ve kendiliğinden keşfedilemiyor: düğmede
+    // yalnız bir fiyat var, ne aldığını söyleyen hiçbir şey yok.
+    const bus = new EventBus();
+    const gosterilen: string[] = [];
+    new TutorialSystem(new MemoryStore(), true, (h) => gosterilen.push(h), bus);
+    bus.emit('ability:upgradable', {});
+    bus.emit('ability:upgradable', {});
+    expect(gosterilen).toEqual(['abilityUpgrade']);
+  });
+
   it('iki ipucu birbirinden bağımsız — biri görülse diğeri hâlâ tetiklenir', () => {
     const bus = new EventBus();
     const gosterilen: string[] = [];

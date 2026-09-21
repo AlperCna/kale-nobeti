@@ -793,6 +793,23 @@ tek eksende ve ekranda okunuyor.
 **kapalı** koşuyor (`YetenekKullanimi 'yok'`), yani rampa, Kısıt A/B, boss
 türetmesi ve zorluk tablosu bu eklemeden etkilenmiyor.
 
+**Ne kazandırıyor (`M100`'de ölçüldü):** referans tahtayla, yeteneğini
+kullanan oyuncunun can kaybı — yeteneksiz → L1 → L2 → L3 —
+Kar Geçidi **14 → 10 → 9 → 7**, Kadim Harabe **15 → 13 → 11 → 11**,
+Sisli Bataklık **18 → 10 → 10 → 9**. Yani kullanmak 2-8 can, yükseltmek
+1-3 can daha kazandırıyor: atıl altını görünür bir karşılığa çeviriyor
+ama haritayı çözmüyor — istenen buydu.
+
+**Takas satın almadan önce görünüyor (`M102`):** `M99` düğmeye yalnız bir
+**fiyat** koymuştu; oyuncu 1980 altını neye verdiğini ancak verdikten
+sonra görüyordu. S93'ün kule dalları için kurduğu cümle burada da geçerli
+— *görünmeyen bir takas seçim değil, zar atışıdır*. Yükseltme ilk kez
+alınabilir olduğunda öğretici ipucu (`Y09`'un ölçütleriyle) o anki iki
+takası yazıyor: `Meteor · Hasar 180 → 250`, `Takviye · 2 → 3 asker`.
+Sayılar `util/yetenekOzeti.ts` tarafından `data/abilities.ts`'ten
+**üretiliyor** (TIER 1 kural 1), yani bu tablodaki bir sayı değişirse
+oyuncunun okuduğu satır kendiliğinden doğru kalıyor.
+
 ## 9. Haritalar
 
 > **`M48` — bu tablo iki türlü eskimişti.** (1) **Üç harita eksikti:** M8

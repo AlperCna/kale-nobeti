@@ -103,6 +103,16 @@ export interface GameEvents {
    * istatistik bağlanacaksa doğru alan burada olur.
    */
   'ability:upgraded': { readonly id: AbilityId; readonly seviye: number };
+
+  /**
+   * Bir yükseltme **ilk kez** alınabilir oldu — `M102`.
+   *
+   * `TutorialSystem`'in tetiği; `wave:flyers` / `enemy:shielded` ile
+   * birebir aynı desen: sahne koşulu görüp olayı yayıyor, "ilk kez mi"
+   * kararını öğretici veriyor. Yük yok, çünkü ipucu metni o anki
+   * **iki** yeteneği birden anlatıyor (`util/yetenekOzeti.ts`).
+   */
+  'ability:upgradable': Record<string, never>;
   'purchase:denied': Record<string, never>;
 
   /**
