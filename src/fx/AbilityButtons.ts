@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import type { AbilityId } from '../types/ability';
-import { ABILITIES } from '../data/abilities';
+import { ABILITIES, YETENEK_SEVIYE_SAYISI } from '../data/abilities';
 import { createParchmentButton, addPressFeedback } from './ParchmentFrame';
 import { NUMBER_FONT_KEY } from './numberFont';
 import { METEOR_FRAME, TAKVIYE_FRAME } from '../data/spriteFrames';
@@ -17,6 +17,26 @@ const IKON_BOYUT = 40;
 const YUKSELT_BTN = 44;
 /** Yükseltme düğmesinin yetenek düğmesine göre dikey yeri. */
 const YUKSELT_DY = -(BTN / 2 + YUKSELT_BTN / 2 + 12);
+/**
+ * Seviye başının yarı genişliği ve merkezleri arası — `M100`.
+ *
+ * Ara ölçüyle bağlı: başın tam genişliği `2×PIM_R` artı kenar kalınlığı,
+ * yani ~11,5 px. Ara 13'ken üç dolu baş canlı turda **tek bir altın
+ * çubuğa** yapışıyordu ve seviye gözle sayılamıyordu. Bugünkü ölçü
+ * 6/17: başlar arası ~3,5 px boşluk, üç baş 47,5 px, düğme 64 px.
+ * Büyüklük alt sınırdan değil **okunurluktan** geliyor: portal trafiği
+ * 0,62-0,70 ölçeğe düşüyor (`CLAUDE.md` 640×360 şartı) ve 5 px'lik baş
+ * orada sayılamıyordu.
+ */
+const PIM_R = 6;
+const PIM_ARA = 17;
+/**
+ * Pimlerin dikey yeri: parşömen çerçevenin **mürekkep şeridi**.
+ * Çerçeve kalınlığı `cornerSize` (14), yani iç parşömen ±18 px ve
+ * şerit 18…32 px; pim yarıçapı 5, yani 20–30 arası tam şeridin içinde.
+ * Parşömenin içine konsaydı 40 px'lik ikonla çakışırdı.
+ */
+const PIM_Y = BTN / 2 - 7;
 
 /**
  * Etiketler `strings.ts` anahtarı — oyuncu geri bildirimi (2026-09-14):
@@ -41,6 +61,10 @@ interface Buton {
   /** Yükseltme düğmesi ve fiyatı — `M99`. */
   readonly yukseltKok: Phaser.GameObjects.Container;
   readonly yukseltFiyat: Phaser.GameObjects.BitmapText;
+  /** Seviye pimleri — `M100`. */
+  readonly seviyeGfx: Phaser.GameObjects.Graphics;
+  /** En son çizilen seviye; her karede yeniden çizmemek için. */
+  cizilenSeviye: number;
   /** Dinamik vurgu halkası — dolgu yok, yalnız kenar; `ParchmentFrame`'in
    * `Container` olması `setStrokeStyle` taşımıyor, o yüzden ayrı. */
   readonly halka: Phaser.GameObjects.Rectangle;
@@ -135,8 +159,24 @@ export class AbilityButtons {
         .setTint(INK);
       yukseltKok.add([yukseltCerceve, ok, yukseltFiyat]);
 
-      kok.add([cerceve, ikon, gfx, halka, yazi, yukseltKok]);
-      this.#butonlar.push({ id: def.id, kok, gfx, halka, parladi: true, yukseltKok, yukseltFiyat });
+      /**
+       * **Seviye pimleri** — `M100`. Dolum grafiğinden SONRA ekleniyor,
+       * yani bekleme karartmasının üstünde kalıyor.
+       */
+      const seviyeGfx = scene.add.graphics();
+
+      kok.add([cerceve, ikon, gfx, seviyeGfx, halka, yazi, yukseltKok]);
+      this.#butonlar.push({
+        id: def.id,
+        kok,
+        gfx,
+        halka,
+        parladi: true,
+        yukseltKok,
+        yukseltFiyat,
+        seviyeGfx,
+        cizilenSeviye: 1,
+      });
     });
   }
 
@@ -152,8 +192,15 @@ export class AbilityButtons {
      * (azami seviye ya da altın yetmiyor). `M99`.
      */
     yukseltmeBedeli: (id: AbilityId) => number | null = () => null,
+    /** Yürürlükteki yetenek seviyesi (1 tabanı) — `M100`. */
+    seviye: (id: AbilityId) => number = () => 1,
   ): void {
     for (const b of this.#butonlar) {
+      const sv = seviye(b.id);
+      if (sv !== b.cizilenSeviye) {
+        b.cizilenSeviye = sv;
+        this.#pimleriCiz(b.seviyeGfx, sv);
+      }
       const bedel = yukseltmeBedeli(b.id);
       if (bedel === null) {
         b.yukseltKok.setVisible(false);
@@ -199,6 +246,55 @@ export class AbilityButtons {
       if (b.id === secili) b.halka.setStrokeStyle(4, GOLD);
       else if (hazir && b.parladi) b.halka.setStrokeStyle(2, GOLD);
       else b.halka.setStrokeStyle(2, INK);
+    }
+  }
+
+  /**
+   * **Seviye pimleri** — `M100`. `M99` yükseltmeyi satılabilir yaptı ama
+   * oyuncunun aldığının **hiçbir kalıcı izi** yoktu: yükseltme düğmesi
+   * yalnız altın yeterken görünüyor, yani satın alışın hemen ardından
+   * (altın düştüğü için) kayboluyor ve ekranda 1404 altının nereye
+   * gittiğini söyleyen tek şey kalmıyordu.
+   *
+   * **Seviye 1'de hiç çizilmiyor.** Boş bir yol göstermek harita 1-3'te
+   * ulaşılmayan bir şey vadederdi — oradaki `+ yükseltme` oranı 1'in
+   * üstünde (`M100`: 1,47 · 1,45 · 1,37), yani ekonomi tahtayı zaten zor
+   * karşılıyor. Yükseltme düğmesinin kendisi de aynı gerekçeyle orada
+   * hiç doğmuyor.
+   *
+   * Bilgi **biçimle** de veriliyor (TIER 1 k.6): alınan seviye **dolu**
+   * baş, alınmayan **boş** çerçeve — yalnız renk değil.
+   */
+  #pimleriCiz(g: Phaser.GameObjects.Graphics, seviye: number): void {
+    g.clear();
+    if (seviye <= 1) return;
+    const sol = -((YETENEK_SEVIYE_SAYISI - 1) * PIM_ARA) / 2;
+    for (let i = 0; i < YETENEK_SEVIYE_SAYISI; i++) {
+      const cx = sol + i * PIM_ARA;
+      // Yol ilkelleri (`beginPath`/`lineTo`) — `fillPoints` DEĞİL: o
+      // `Phaser.Geom.Point` isterdi ve özel yapım onu taşımıyor
+      // (bekçi 19. kural). Aynı yoldan hem dolgu hem çerçeve çıkıyor.
+      /**
+       * **İki renk de TERS çevriliyor**, yalnız dolgu değil: alınan pim
+       * altın dolgu + mürekkep kenar, alınmayan mürekkep dolgu + altın
+       * kenar. Gerekçe canlı turda görüldü — pim dizisi çerçevenin
+       * hem mürekkep şeridine hem köşe **altın** bandına taşıyor
+       * (üç baş 47,5 px, orta şerit 36 px — sığmıyor). Tek renkli
+       * çizimde boş pim altın zeminde kayboluyordu; ters çevrilmiş çift
+       * her iki zeminde de okunuyor. TIER 1 k.6: fark **biçimde** de var
+       * (som ↔ oyuk), yalnız renkte değil.
+       */
+      const alindi = i < seviye;
+      g.fillStyle(alindi ? GOLD : INK, 1);
+      g.lineStyle(1.5, alindi ? INK : GOLD, 1);
+      g.beginPath();
+      g.moveTo(cx, PIM_Y - PIM_R);
+      g.lineTo(cx + PIM_R, PIM_Y);
+      g.lineTo(cx, PIM_Y + PIM_R);
+      g.lineTo(cx - PIM_R, PIM_Y);
+      g.closePath();
+      g.fillPath();
+      g.strokePath();
     }
   }
 }

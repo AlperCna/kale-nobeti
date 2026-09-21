@@ -226,6 +226,39 @@ try {
 }
 const D = JSON.parse(readFileSync(veriYolu, 'utf8'));
 
+/**
+ * Bekçi kurallarının adları — `M100`. §17'nin listesi elle yazılıydı ve
+ * on satır gösteriyordu; bekçi o gün on dokuz kural koşuyordu.
+ *
+ * Bekçiyi **koşturup** çıktısındaki kural adlarını okuyor. Bekçinin
+ * metnini taramak da denendi ve aynı tuzağa düştü: düzenli ifadedeki
+ * geri başvuru katmanlarda **0x01 baytına** dönüştü (18. kural
+ * başlığındaki sözcük-sınırı uyarısının ikizi). Koşturmak hem kesin
+ * hem ucuz — üstelik adlardaki çalışma zamanı sayıları (bulunan test
+ * dosyası sayısı gibi) da doğru geliyor.
+ *
+ * Bekçi kırmızı dönerse `execSync` fırlatıyor; çıktı yine okunuyor,
+ * çünkü belge kural **listesini** anlatıyor, sonucu değil.
+ */
+D.bekciler = (() => {
+  let cikti = '';
+  try {
+    cikti = execSync(`node ${JSON.stringify(join(import.meta.dirname, 'guard-rules.mjs'))}`,
+      { encoding: 'utf8' });
+  } catch (e) {
+    cikti = String(e.stdout ?? '');
+  }
+  // Satır ayracı `String.fromCharCode(10)` ile yazılı: bu dosyaya
+  // kaçış dizisi taşıyan katmanlar onu **gerçek** satır sonuna
+  // çeviriyor ve düzenli ifade kırılıyor (18. kuralın başındaki uyarı).
+  const adlar = cikti.split(String.fromCharCode(10))
+    .map((satir) => /^\s*[✓✗]\s+(.*\S)\s*$/.exec(satir))
+    .filter((m) => m !== null)
+    .map((m) => m[1]);
+  if (adlar.length === 0) throw new Error('bekçi kuralları okunamadı — §17 boş kalırdı');
+  return adlar;
+})();
+
 // ---------------------------------------------------------------- yardımcılar
 const n = (x) => (x === null || x === undefined ? '—' : String(x).replace('.', ','));
 /**
@@ -1043,22 +1076,24 @@ function olustur() {
   y(`\`npm run guard\` — TIER 1 kurallarının otomatik denetimi. Kaynak:`);
   y(`\`scripts/guard-rules.mjs\`. **Bekçiler kanıt değil, ağ**: hepsi düzenli`);
   y(`ifade sezgiseli ve her biri **kasıtlı bozmayla** doğrulandı.`, '');
-  y(tablo(['Kural', 'Ne kontrol ediyor'], [
-    ['k.8 ham `delta`', '`GameScene`\'de yalnız izin listesindeki üç satır'],
-    ['k.5 `any`', 'Hiç kullanılmıyor'],
-    ['M0 `PreloadScene`', 'En az 4 aşama fonksiyonu'],
-    ['k.7 `setText`', '`setText` çağıran dosya `Text` **üretmemeli**'],
-    ['k.11 Phaser', '`systems/`,`util/`,`data/`,`types/` çalışma zamanında Phaser almıyor'],
-    ['test varlığı', '`src/` altında en az bir `*.test.ts`'],
-    ['k.9 `Math.sqrt`', 'Yalnız `math.ts`'],
-    ['mim. `coverage`', '`measureCoverage` ile üretiliyor, elle yazılmıyor'],
-    ['k.8 duvar saati', 'Saf mantıkta `Date.now`/`performance.now` yok'],
-    ['**mim. sahne alanları**', 'Her değişebilir sahne alanı `init`/`preload`/`create` içinde **atanıyor**'],
-  ]), '');
-  y(`Son kural **dört kez çıkan** bir hatadan doğdu: alan başlatıcısı yalnız bir`);
-  y(`kez koşuyor, \`create()\` her yeniden başlatmada. Sızıntı çökme üretmiyor,`);
-  y(`**yanlış durum** olarak görünüyor. Kural beş tarihsel hataya karşı negatif`);
-  y(`doğrulandı ve yazıldığı anda **iki yeni hata** buldu.`, '');
+  /**
+   * Liste `M100`'e kadar **elle** yazılıydı ve on satır gösteriyordu;
+   * bekçi o gün on dokuz kural koşuyordu. TIER 2'nin tam tarif ettiği
+   * kusur: sistem büyüdü, onu *sayan* yer büyümedi. Artık bekçinin
+   * kendi `sonuclar.push([...])` satırlarından türetiliyor.
+   */
+  y(tablo(['#', 'Kural'], D.bekciler.map((ad, i) => [n(i + 1), ad])), '');
+  y(`Liste **türetilmiş**: üretici bekçiyi koşturup çıktısını okuyor, elle`);
+  y(`sayılmıyor. Bugün **${n(D.bekciler.length)}** kural var.`, '');
+  y(`Sahne alanları kuralı **dört kez çıkan** bir hatadan doğdu: alan`);
+  y(`başlatıcısı yalnız bir kez koşuyor, \`create()\` her yeniden başlatmada.`);
+  y(`Sızıntı çökme üretmiyor, **yanlış durum** olarak görünüyor. Kural beş`);
+  y(`tarihsel hataya karşı negatif doğrulandı ve yazıldığı anda **iki yeni`);
+  y(`hata** buldu.`, '');
+  y(`Sonuncusu (\`M100\`) başka bir kör noktayı kapatıyor: özel Phaser yapımı`);
+  y(`(\`src/vendor/phaser-custom.js\`) paket boyutu için modül eliyor, tipler`);
+  y(`ise tam pakete bakıyor — taşınmayan bir API typecheck'ten **yeşil**`);
+  y(`geçip tarayıcıda çöküyordu. \`M100\` buna canlı düştü (\`Phaser.Geom.Point\`).`, '');
 
   y('', '---', '', `_Üretildi: \`node scripts/kurallar.mjs\`_`, '');
   return b.join('\n');

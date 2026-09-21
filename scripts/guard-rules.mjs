@@ -796,6 +796,74 @@ const sonuclar = [];
 }
 
 // ---------------------------------------------------------------------
+// 19 — Özel Phaser yapımının **kapalı** ad uzayları (`M100`)
+//
+// `src/vendor/phaser-custom.js` Phaser'ın çekirdeğinden başlayıp yalnız
+// bu projenin kullandığı modülleri geri ekliyor (paket boyutu, `Y11`).
+// Tipler ise tam `phaser` paketinden geliyor. Sonuç: yapımın taşımadevam
+// bir API `npm run typecheck`'ten **yeşil** geçiyor, `node` testleri
+// Phaser çalıştırmadığı için onu da görmüyor, ve oyun o kod yolu
+// oynanınca tarayıcıda çöküyor. Dosyanın kendi “Nasıl kırılır” başlığı
+// bunu yazılı olarak söylüyordu ve tek çaresi **elle tam tur**du.
+//
+// `M100` bu tuzağa canlı düştü: seviye pimleri `Phaser.Geom.Point` ile
+// çiziliyordu, typecheck yeşildi, kapı 18/18'di ve düğme tarayıcıda her
+// karede `Point is not a constructor` atıyordu.
+//
+// **Kapsam — yalnız KAPALI ad uzayları.** Yapım iki biçimde yazıyor:
+//   `Phaser.Math.Clamp = Clamp;`        → EKLEME, altındaki çekirdek durur
+//   `Phaser.Geom = { Rectangle, ... };` → KAPALI, yüzey tam olarak bu
+// Kural yalnız ikincisini denetliyor, çünkü üyeleri **dosyanın
+// kendisinden türetilebilen** tek küme o (elle yazılmış liste yok — TIER 2).
+// Birinci biçimin boşlukları için elle tam tur hâlâ tek çare.
+//
+// Bilinen yanlış pozitif sınıfı: yalnız **tip** konumunda geçen
+// `Phaser.NS.Üye` (derlemede siliniyor, çalışma zamanı riski yok).
+// Bugün öyle bir kullanım yok; çıkarsa muafiyet buraya yazılır.
+// Negatif doğrulama: `Phaser.Geom.Point` ile 18/19, kaldırılınca 19/19.
+// ---------------------------------------------------------------------
+{
+  const ozelYol = join(SRC, 'vendor', 'phaser-custom.js');
+  let ozel = null;
+  try {
+    ozel = readFileSync(ozelYol, 'utf8');
+  } catch (e) {
+    taranamayan.push(`${relative('.', ozelYol).split(sep).join('/')} (${e.code ?? 'hata'})`);
+  }
+  let ihlalVar = false;
+  if (ozel === null) {
+    // Yapım dosyası okunamadıysa kural **sessizce yeşil dönemez** (S136).
+    ihlalVar = true;
+    ihlal('M100', ozelYol, 0, 'özel Phaser yapımı okunamadı — kural kör kalırdı');
+  } else {
+    /** Ad uzayı → taşıdığı üyeler. Yalnız `Phaser.NS = { ... }` biçimi. */
+    const kapali = new Map();
+    for (const e of ozel.matchAll(/^Phaser\.(\w+)\s*=\s*\{([^}]*)\}/gm)) {
+      const uyeler = new Set();
+      for (const u of e[2].matchAll(/(\w+)\s*:/g)) uyeler.add(u[1]);
+      kapali.set(e[1], uyeler);
+    }
+    // Sonradan eklenen alt üyeler de yüzeye dahil (`Phaser.Geom.Circle.X = ...`).
+    for (const e of ozel.matchAll(/^Phaser\.(\w+)\.(\w+)/gm)) {
+      if (kapali.has(e[1])) kapali.get(e[1]).add(e[2]);
+    }
+    for (const dosya of dosyalar) {
+      if (relative('.', dosya).split(sep).join('/').includes('/vendor/')) continue;
+      for (const h of kodSatirlari(readFileSync(dosya, 'utf8'))) {
+        for (const e of h.metin.matchAll(/(?<![A-Za-z0-9_$])Phaser\.(\w+)\.(\w+)/g)) {
+          const uyeler = kapali.get(e[1]);
+          if (uyeler === undefined || uyeler.has(e[2])) continue;
+          ihlalVar = true;
+          ihlal('M100', dosya, h.no,
+            `\`Phaser.${e[1]}.${e[2]}\` özel yapımda YOK — tarayıcıda çöker`);
+        }
+      }
+    }
+  }
+  sonuclar.push(['M100 özel Phaser yapımının kapalı yüzeyi', !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
 
 const gecen = sonuclar.filter(([, ok]) => ok).length;
 if (taranamayan.length > 0) {
