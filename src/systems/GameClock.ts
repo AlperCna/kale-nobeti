@@ -44,10 +44,30 @@ export const SABIT_ADIM_MS = 1000 / 60;
  *
  * Kare uzarsa biriktirici daha çok adım ister, adımlar kareyi daha da
  * uzatır ve oyun kilitlenir. Tavan aşılınca artık **atılıyor**: oyun
- * yavaşlar (slow motion) ama yanıt vermeye devam eder. 5, 3× hızda
- * 30 fps'e kadar (3 × 33,3 ms = 5,99 adım) yetiyor.
+ * yavaşlar (slow motion) ama yanıt vermeye devam eder.
+ *
+ * **`M92`: 5 → 7, çünkü 5 kendi gerekçesini karşılamıyordu.** Yazılı niyet
+ * “3× hızda 30 fps'e kadar yetsin” idi ama yanındaki aritmetik bunu
+ * çürütüyordu: 30 fps'te kare 33,3 ms, 3×'te 100 ms, yani **tam 6** adım
+ * gerekiyor. 5 ile o cihazda her karede bir adım düşüyordu — oyun
+ * sessizce ağır çekime giriyor ve oyun zamanı gerçek zamandan **geri
+ * kalıyor**. 5'in gerçek sınırı 3×'te 36 fps'ti (5 × 16,67 / 3 = 27,8 ms).
+ * Portalların trafiği ağırlıklı mobil ve 30 fps oralarda sıradan.
+ *
+ * **Neden 6 değil 7:** ölçüldü. 1000/30 × 3 kayan noktada tam 100 ms
+ * etmiyor (99,999…), yani bazı kareler 6 adımı **doldurmuyor** ve artık
+ * birikiyor; bir sonraki kare 7 adım istiyor. Tavan 6 iken o kare
+ * kırpılıyor ve — önemlisi — artık **sıfırlanıyor**, yani kayma kalıcı
+ * kayıba dönüşüyordu: beş saniyede 1250 ms (ölçüm `GameClock.test`).
+ * 7, o bir adımlık salınımı soğuruyor.
+ *
+ * Tavanın gerçek payı **oyunda ölçüldü** (Sisli Bataklık, 3×, 936 kare):
+ * kare başına ortalama 3,04 adım, **en çok 4**, tavana hiç değilmedi.
+ * Yani 6, 60 fps'te ölü bir sayı değil — yalnız yavaş cihazda konuşuyor.
+ * 30 fps'in **altında** hâlâ adım düşüyor; bu bilerek, çünkü tavanın
+ * kendisi ölüm sarmalı koruması.
  */
-export const KARE_BASINA_MAKS_ADIM = 5;
+export const KARE_BASINA_MAKS_ADIM = 7;
 
 export class GameClock {
   #scale: Speed = 1;

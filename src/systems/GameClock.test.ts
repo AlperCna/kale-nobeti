@@ -90,6 +90,42 @@ describe('GameClock', () => {
     }
   });
 
+  /**
+   * **`M92` — hızlı oynarken de zaman kaybolmuyor.** Üstteki S132 kilidi
+   * yalnız `1×` için koşuyordu; oysa tavan (`KARE_BASINA_MAKS_ADIM`) tam
+   * olarak **hızlı oynarken** konuşuyor: 3×'te bir kare 3 kat oyun zamanı
+   * istiyor ve tavan yetmezse fark sessizce düşüyor.
+   *
+   * Tavanın yazılı niyeti “3×'te 30 fps'e kadar”; bu test o niyeti
+   * bağlıyor. `M92`'ye kadar sayı 5'ti ve 30 fps × 3× tam 6 adım
+   * istediği için her karede bir adım kaybediliyordu — kimse bakmıyordu.
+   */
+  it('**3× hızda 30 fps’e kadar zaman kaybolmuyor** (M92)', () => {
+    for (const hz of [30, 45, 60, 90, 144]) {
+      const clock = new GameClock();
+      clock.setScale(3, sahteHedef());
+      const kare = 1000 / hz;
+      let adim = 0;
+      for (let i = 0; i < hz * 5; i += 1) adim += clock.tick(kare);
+
+      // Koşulan oyun zamanı + taşınan artık = geçen gerçek zaman × 3.
+      const gercek = kare * hz * 5 * 3;
+      expect(adim * SABIT_ADIM_MS + clock.birikim, `${hz} Hz ×3`).toBeCloseTo(gercek, 6);
+    }
+  });
+
+  /**
+   * Tavan bir **koruma**; 30 fps'in altında adım düşmesi bilerek. Bu test
+   * korumayı da bağlıyor: 6 sınırsız değil, yalnız niyetin sınırına kadar.
+   */
+  it('çok yavaş cihazda adım DÜŞÜYOR — ölüm sarmalı koruması (M92)', () => {
+    const clock = new GameClock();
+    clock.setScale(3, sahteHedef());
+    // 15 fps × 3× = 200 ms oyun zamanı = 12 adım; tavan 7.
+    expect(clock.tick(1000 / 15)).toBe(KARE_BASINA_MAKS_ADIM);
+    expect(clock.birikim).toBe(0);
+  });
+
   it('**2× adımı BÜYÜTMÜYOR, sayısını ikiye katlıyor** — kusurun kendisi', () => {
     const clock = new GameClock();
     clock.setScale(2, sahteHedef());
