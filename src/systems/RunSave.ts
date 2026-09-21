@@ -73,6 +73,15 @@ export interface RunData {
   /** Yetenek kimliği → kalan bekleme (sn). */
   readonly abilities: Readonly<Record<string, number>>;
   /**
+   * Yetenek kimliği → seviye (1 taban) — `M99`, S117'nin gider kalemi.
+   *
+   * **Steğe bağlı ve `RUN_VERSION` ARTMIYOR:** alan eksikse (bu sürümden
+   * önce yazılmış tur) seviyeler 1'e düşüyor, yani oyuncu turunu
+   * kaybetmiyor — en fazla yükseltmesini. Sürüm arttırmak bütün yarım
+   * turları çöpe atardı ve bedeli kazancından büyük olurdu.
+   */
+  readonly abilityLevels?: Readonly<Record<string, number>>;
+  /**
    * `RunStatsData`'nın kendisi değil, **şekli umursanmayan** bir kopya.
    *
    * Tip olarak bağlanmıyor çünkü bu dosya `RunStats`'a bağımlı olmamalı:
@@ -145,6 +154,22 @@ function gecerliRun(v: unknown): RunData | null {
     }
   }
 
+  /**
+   * `abilityLevels` **yoksa alan da yok**: eklenirse yazılan ile okunan
+   * tur birebir eşleşmez ve `RunSave`'in gidiş-dönüş testi — haklı
+   * olarak — kırılır. `targetMode`/`rally` ile aynı desen.
+   */
+  let abilityLevels: Record<string, number> | undefined;
+  if (typeof r.abilityLevels === 'object' && r.abilityLevels !== null) {
+    const toplanan: Record<string, number> = {};
+    for (const [id, seviye] of Object.entries(r.abilityLevels)) {
+      // Sınır denetimi `AbilitySystem.turdanGeriYukleSeviye`'de — orada
+      // azami seviye biliniyor. Burada yalnız şekil sınanıyor.
+      if (sayiMi(seviye) && seviye >= 1) toplanan[id] = seviye;
+    }
+    abilityLevels = toplanan;
+  }
+
   const stats: Record<string, number | boolean> = {};
   if (typeof r.stats === 'object' && r.stats !== null) {
     for (const [ad, deger] of Object.entries(r.stats)) {
@@ -161,6 +186,7 @@ function gecerliRun(v: unknown): RunData | null {
     lives: r.lives,
     spots,
     abilities,
+    ...(abilityLevels !== undefined ? { abilityLevels } : {}),
     stats,
   };
 }

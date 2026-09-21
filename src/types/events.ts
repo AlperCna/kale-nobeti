@@ -1,4 +1,5 @@
 import type { Speed } from './common';
+import type { AbilityId } from './ability';
 
 /**
  * Sistemler birbirini doğrudan çağırmaz, EventBus üzerinden haberleşir
@@ -93,6 +94,15 @@ export interface GameEvents {
    * Yetersiz altınla satın alma/yükseltme denendi (`#menuButonu`
    * devre dışıyken tıklandı). M6-T11 — `error.m4a`.
    */
+  /**
+   * Yetenek bir seviye yükseldi — `M99` (S117'nin gider kalemi).
+   *
+   * Ayrı bir olay, `tower:upgraded`'in yeniden kullanımı değil: o
+   * `spotIndex` taşıyor ve yeteneğin yapı noktası yok. Ses ikisinde de
+   * aynı (`tower_upgrade`) ama yükü **ayrı**; ileride başarım ya da
+   * istatistik bağlanacaksa doğru alan burada olur.
+   */
+  'ability:upgraded': { readonly id: AbilityId; readonly seviye: number };
   'purchase:denied': Record<string, never>;
 
   /**

@@ -236,6 +236,10 @@ export class HudScene extends Phaser.Scene {
       MARGIN + 40,
       this.scale.height - MARGIN - 46,
       (id) => this.#game().armAbility(id),
+      // `M99` — S117'nin gider kalemi; fiyat ve kesinti `GameScene`'de.
+      (id) => {
+        this.#game().yetenegiYukselt(id);
+      },
     );
     // `settings` doğrudan paylaşılan registry'den (`getSettings`) okunuyor,
     // `this.#game().settings`'ten DEĞİL. **Canlı testte yakalanan gerçek
@@ -316,7 +320,15 @@ export class HudScene extends Phaser.Scene {
       endless: game.isEndlessWave,
     });
     this.#telegraph?.show(game.upcomingWave);
-    this.#abilityButtons?.update((id) => game.abilities.progress(id), game.pendingAbility);
+    this.#abilityButtons?.update(
+      (id) => game.abilities.progress(id),
+      game.pendingAbility,
+      // Yükseltme düğmesi yalnız **alınabilirken** görünüyor (`M99`).
+      (id) => {
+        const bedel = game.yetenekYukseltmeBedeli(id);
+        return bedel !== null && game.gold >= bedel ? bedel : null;
+      },
+    );
 
     const boss = game.bossInfo;
     if (boss !== null) this.#bossBar?.show(boss.hp, boss.maxHp);

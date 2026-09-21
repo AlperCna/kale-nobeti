@@ -71,6 +71,8 @@ export class SoundSystem {
      */
     bus.on('barracks:placed', () => this.#cal('tower_place'));
     bus.on('tower:upgraded', () => this.#cal('tower_upgrade'));
+    // `M99` — yetenek yükseltmesi de bir yükseltme; aynı ses, ayrı olay.
+    bus.on('ability:upgraded', () => this.#cal('tower_upgrade'));
     bus.on('purchase:denied', () => this.#cal('error'));
 
     // `Y06` — `reason` yönü zaten söylüyor (`earn()` yalnız pozitif
