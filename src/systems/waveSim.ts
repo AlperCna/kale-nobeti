@@ -316,10 +316,26 @@ const MAX_SECONDS_PER_WAVE = (MAX_STEPS_PER_WAVE * SABIT_ADIM_MS) / 1000;
 const ERKEN_ESIK = 3;
 
 /**
- * Bir dalgayı referans tahtaya karşı çalıştırır.
+ * Bir dalgayı referans tahtaya karşı çalıştırır — **yalıtılmış** koşu.
  *
- * **Deterministik:** rastgelelik yok, aynı girdi aynı sonucu verir.
- * `waveSim.test.ts` bunu ayrı bir testle bağlıyor.
+ * Senaryo testleri (dal kimliği, hedefleme modu, ölçek) bunu kullanıyor:
+ * oradaki soru "bu dalga bu tahtaya karşı ne yapar", kampanyanın akışı
+ * değil.
+ *
+ * **`M97` — iki yanlılığı ölçüldü; kampanya tahmincisi değil.** Yalıtılmış
+ * koşu iki yönde birden sapıyor: **(1) kışla soğuk başlıyor** — askerler
+ * henüz toplanma noktasına yürümemiş, yani engelleme yok; kampanyada
+ * dalga sınırında yerlerindeler. **(2) artık yok** — sahada önceki
+ * dalgadan kimse kalmıyor, oysa `M16`'dan beri dalgalar üst üste biniyor.
+ * Birincisi sonucu kötüleştiriyor, ikincisi iyileştiriyor.
+ *
+ * Ölçülen örnek (Sisli Bataklık, dalga 6 elit dalgası, dalga-6 referans
+ * tahtası): bu fonksiyon **1 sızıntı / 2 can** diyor; aynı tahta `RunSave`
+ * ile gerçek oyuna yüklenip oynandığında **sıfır** can gidiyor. Fark
+ * kusur değil, yalıtılmış koşunun tanımı.
+ *
+ * Kampanyanın cevabı için `simulateAllWaves` (ya da `referansOlcum`)
+ * kullanılır — S109'un çifti orada bağlı.
  */
 function kosturDalgalar(
   waves: readonly Wave[],
