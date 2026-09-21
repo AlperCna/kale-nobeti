@@ -510,6 +510,11 @@ const KALICI_HUD = [
   // Sağ kenarda yer yok (üç cep de dolu), üst şeritte rozetin solunda.
   { ad: 'duraklat', x0: 996, y0: 24, x1: 1044, y1: 72 },
   { ad: 'yetenek', x0: 28, y0: 622, x1: 170, y1: 707 },
+  // `M99` yükseltme düğmeleri — yetenek düğmelerinin **üstünde**, 44×44.
+  // Yalnız alınabilirken görünüyor ama göründüğünde turun sonuna kadar
+  // duruyor — kalıcı sayılır. (60, 654) ve (138, 654) merkezli yetenek
+  // düğmelerinden 54 px yukarı: merkez y = 600.
+  { ad: 'yetenek yükseltme', x0: 38, y0: 578, x1: 160, y1: 622 },
   // `M8-T12` tam ekran düğmesi. İlk yerleşimi sağ kenarın **ortasıydı**
   // ve harita 2'nin kalesinin (1220, 360) tam üstüne düşüyordu; aşağıdaki
   // "kale HUD altında kalmıyor" testi o hatayı bir daha bırakmıyor.

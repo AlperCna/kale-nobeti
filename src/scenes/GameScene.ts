@@ -64,6 +64,7 @@ import { towerFrameKey } from '../data/spriteFrames';
 import { projectileLook } from '../data/projectileVisuals';
 import { getEnemy, getEnemyForMap, ENEMIES } from '../data/enemies';
 import { BALANCE, POOL_PREALLOC, MERMI_HIZI, MERMI_ISABET_YARICAPI } from '../data/balance';
+import { yetenekYukseltmeFiyati } from '../data/abilities';
 import { MUSIC_BASE_VOLUME } from '../data/audio';
 import { portal } from '../systems/Portal';
 import { haritaBasladi } from '../systems/olcum';
@@ -1045,6 +1046,7 @@ export class GameScene extends Phaser.Scene {
       lives: eco.lives,
       spots,
       abilities: this.abilities.beklemeler,
+      abilityLevels: this.abilities.seviyeKaydi(),
       stats: { ...this.#runStats?.data },
     });
   }
@@ -1108,6 +1110,9 @@ export class GameScene extends Phaser.Scene {
     this.#runStats?.geriYukle(tur.stats);
     this.#runStats?.altinTabaniniAyarla(gercekAltin);
     this.abilities.turdanGeriYukle(tur.abilities);
+    // `M99` — satın alınmış yükseltmeler de turun durumu. Alan eksikse
+    // (bu sürümden önce yazılmış tur) seviyeler 1'de kalıyor.
+    if (tur.abilityLevels !== undefined) this.abilities.turdanGeriYukleSeviye(tur.abilityLevels);
     this.#waves?.turdanGeriYukle(tur.waveIndex);
   }
 
@@ -1686,6 +1691,38 @@ export class GameScene extends Phaser.Scene {
 
   get pendingAbility(): AbilityId | null {
     return this.#pendingAbility;
+  }
+
+  /**
+   * **Yetenek yükseltmesi satın alır** — `M99`, S117'nin gider kalemi.
+   *
+   * Fiyatı `data/abilities.yetenekYukseltmeFiyati` veriyor (tek adres,
+   * `M79`'un `towers.maliyet` deseni): menüde yazan ile kesilen fiyat
+   * ayrışamasın. Yetersiz altında **sessizce geçmiyor**, yapı menüsüyle
+   * aynı geri bildirimi veriyor (`purchase:denied` → hata sesi).
+   *
+   * @returns Satın alındıysa `true`.
+   */
+  yetenegiYukselt(id: AbilityId): boolean {
+    const eco = this.#eco;
+    if (eco === undefined) return false;
+    const fiyat = yetenekYukseltmeFiyati(this.abilities.seviye(id), this.#map);
+    if (fiyat === null) return false; // azami seviye
+    if (!eco.spend(fiyat)) {
+      this.bus.emit('purchase:denied', {});
+      return false;
+    }
+    this.abilities.yukselt(id);
+    this.bus.emit('ability:upgraded', { id, seviye: this.abilities.seviye(id) });
+    return true;
+  }
+
+  /**
+   * Bir sonraki yükseltmenin fiyatı; azami seviyede `null`.
+   * HUD düğmeyi buna göre gösteriyor.
+   */
+  yetenekYukseltmeBedeli(id: AbilityId): number | null {
+    return yetenekYukseltmeFiyati(this.abilities.seviye(id), this.#map);
   }
 
   /** @returns Yetenek kullanıldıysa `true` — tık kule menüsüne gitmiyor. */

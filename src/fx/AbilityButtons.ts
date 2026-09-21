@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 import type { AbilityId } from '../types/ability';
 import { ABILITIES } from '../data/abilities';
-import { createParchmentButton } from './ParchmentFrame';
+import { createParchmentButton, addPressFeedback } from './ParchmentFrame';
+import { NUMBER_FONT_KEY } from './numberFont';
 import { METEOR_FRAME, TAKVIYE_FRAME } from '../data/spriteFrames';
 import type { StringKey } from '../data/strings';
 import { t } from '../util/i18n';
@@ -12,6 +13,10 @@ const INK = 0x14203a;
 /** Dokunmatik hedef en az 44×44 px (`CLAUDE.md` Platform). */
 const BTN = 64;
 const IKON_BOYUT = 40;
+/** Yükseltme düğmesi — dokunmatik alt sınırı (44) ile aynı. */
+const YUKSELT_BTN = 44;
+/** Yükseltme düğmesinin yetenek düğmesine göre dikey yeri. */
+const YUKSELT_DY = -(BTN / 2 + YUKSELT_BTN / 2 + 12);
 
 /**
  * Etiketler `strings.ts` anahtarı — oyuncu geri bildirimi (2026-09-14):
@@ -33,6 +38,9 @@ interface Buton {
   readonly id: AbilityId;
   readonly kok: Phaser.GameObjects.Container;
   readonly gfx: Phaser.GameObjects.Graphics;
+  /** Yükseltme düğmesi ve fiyatı — `M99`. */
+  readonly yukseltKok: Phaser.GameObjects.Container;
+  readonly yukseltFiyat: Phaser.GameObjects.BitmapText;
   /** Dinamik vurgu halkası — dolgu yok, yalnız kenar; `ParchmentFrame`'in
    * `Container` olması `setStrokeStyle` taşımıyor, o yüzden ayrı. */
   readonly halka: Phaser.GameObjects.Rectangle;
@@ -63,6 +71,8 @@ export class AbilityButtons {
     x: number,
     y: number,
     private readonly onSelect: (id: AbilityId) => void,
+    /** Yükseltmeyi satın al — `M99`. */
+    private readonly onUpgrade: (id: AbilityId) => void = () => {},
   ) {
     ABILITIES.forEach((def, i) => {
       const bx = x + i * (BTN + 14);
@@ -96,8 +106,37 @@ export class AbilityButtons {
         // haritanın hepsinde kontrastı garantiliyor.
         .setShadow(0, 2, '#14203A', 4, false, true);
 
-      kok.add([cerceve, ikon, gfx, halka, yazi]);
-      this.#butonlar.push({ id: def.id, kok, gfx, halka, parladi: true });
+      /**
+       * **Yükseltme düğmesi** — `M99`, S117'nin gider kalemi.
+       *
+       * Yalnız **alınabilirken** görünüyor (azami seviyede değil ve altın
+       * yetiyor). Gerekçe: harita 1-2'de fiyat hiç karşılanmıyor, yani
+       * orada düğme **hiç doğmuyor** ve HUD sade kalıyor; geç haritada ise
+       * tam kararın doğduğu anda beliriyor. Yapı menüsünün “sönük ama
+       * tıklanabilir” deseni burada uygun değil: o menü oyuncunun açtığı
+       * bir pencere, bu ise kalıcı HUD.
+       *
+       * Fiyat `BitmapText` — seviye atlayınca değişiyor, yani TIER 1
+       * kural 7'nin tam hedefi. Ok bir **üçgen** (biçim, renk değil — k.6).
+       */
+      const yukseltKok = scene.add.container(0, YUKSELT_DY).setVisible(false);
+      const yukseltCerceve = createParchmentButton(scene, 0, 0, YUKSELT_BTN, YUKSELT_BTN, 10);
+      addPressFeedback(yukseltCerceve);
+      yukseltCerceve.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () =>
+        this.onUpgrade(def.id),
+      );
+      const ok = scene.add.graphics();
+      ok.fillStyle(INK, 1);
+      ok.fillTriangle(-7, -2, 7, -2, 0, -13);
+      const yukseltFiyat = scene.add
+        .bitmapText(0, 6, NUMBER_FONT_KEY, '')
+        .setFontSize(16)
+        .setOrigin(0.5, 0.5)
+        .setTint(INK);
+      yukseltKok.add([yukseltCerceve, ok, yukseltFiyat]);
+
+      kok.add([cerceve, ikon, gfx, halka, yazi, yukseltKok]);
+      this.#butonlar.push({ id: def.id, kok, gfx, halka, parladi: true, yukseltKok, yukseltFiyat });
     });
   }
 
@@ -105,8 +144,26 @@ export class AbilityButtons {
    * @param progress `0`…`1` — `AbilitySystem.progress(id)`.
    * @param secili Tıkla-hedefle bekleyen yetenek.
    */
-  update(progress: (id: AbilityId) => number, secili: AbilityId | null): void {
+  update(
+    progress: (id: AbilityId) => number,
+    secili: AbilityId | null,
+    /**
+     * Bir sonraki yükseltmenin fiyatı — gösterilmeyecekse `null`
+     * (azami seviye ya da altın yetmiyor). `M99`.
+     */
+    yukseltmeBedeli: (id: AbilityId) => number | null = () => null,
+  ): void {
     for (const b of this.#butonlar) {
+      const bedel = yukseltmeBedeli(b.id);
+      if (bedel === null) {
+        b.yukseltKok.setVisible(false);
+      } else {
+        // `setText` yalnız değer değişince: seviye atlaması turda en çok
+        // iki kez oluyor, her karede yeniden yazmak boşuna iş olurdu.
+        const metin = String(bedel);
+        if (b.yukseltFiyat.text !== metin) b.yukseltFiyat.setText(metin);
+        b.yukseltKok.setVisible(true);
+      }
       const p = progress(b.id);
       const hazir = p >= 1;
 

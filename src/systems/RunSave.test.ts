@@ -31,6 +31,27 @@ describe('RunSave — yaz/oku turu', () => {
     expect(d.oku()).toEqual(t);
   });
 
+  /**
+   * **`M99` — yetenek seviyeleri de turun durumu.** S117'nin gider
+   * kalemi o haritanın altınıyla alınıyor; sekmesini kapatıp dönen
+   * oyuncu aldığı yükseltmeyi kaybetmemeli. Alan **isteğe bağlı**:
+   * eski kayıtlar (alan yokken yazılmış) yüklenmeye devam ediyor,
+   * `RUN_VERSION` artmıyor.
+   */
+  it('yetenek seviyeleri gidip geliyor; eski kayıt da yükleniyor', () => {
+    const d = new RunSave(new MemoryStore());
+    const t = { ...ornekTur(), abilityLevels: { meteor: 3, takviye: 2 } };
+    d.yaz(t);
+    expect(d.oku()?.abilityLevels).toEqual({ meteor: 3, takviye: 2 });
+
+    // Alan hiç yokken: tur yükleniyor, seviye alanı da yok.
+    const eski = new RunSave(new MemoryStore());
+    eski.yaz(ornekTur());
+    const okunan = eski.oku();
+    expect(okunan).not.toBeNull();
+    expect(okunan?.abilityLevels).toBeUndefined();
+  });
+
   it('hiç yazılmamışsa null', () => {
     expect(new RunSave(new MemoryStore()).oku()).toBeNull();
   });
