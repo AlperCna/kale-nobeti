@@ -39,7 +39,8 @@ export type HintId =
   | 'flyers'
   | 'shield'
   | 'burrow'
-  | 'heal';
+  | 'heal'
+  | 'abilityUpgrade';
 
 const HINT_IDS: readonly HintId[] = [
   'earlyStart',
@@ -49,6 +50,7 @@ const HINT_IDS: readonly HintId[] = [
   'shield',
   'burrow',
   'heal',
+  'abilityUpgrade',
 ];
 
 function gecerliHint(deger: unknown): deger is HintId {
@@ -111,6 +113,16 @@ export class TutorialSystem {
      * iyileştirme görünmüyordu, `M30`'a kadar hiçbir kanalı yoktu.
      */
     bus.on('enemy:healing', () => this.#tetikle('heal'));
+    /**
+     * `M102` — yetenek yükseltmesi ilk kez alınabilir oldu.
+     *
+     * `Y09`'un iki şartı: **sonucu değiştiriyor** — `M100` ölçtü, geç
+     * haritalarda 1-3 can — ve **kendiliğinden keşfedilemiyor**:
+     * düğmede yalnız bir fiyat var (`1980`), ne aldığını söyleyen
+     * hiçbir şey yok. S93'ün kule dalları için kurduğu cümlenin
+     * yetenek hâli: görünmeyen bir takas seçim değil, zar atışıdır.
+     */
+    bus.on('ability:upgradable', () => this.#tetikle('abilityUpgrade'));
   }
 
   /** `GameScene.create()`'in sonunda **bir kez** — ilk hazırlık aşaması için. */

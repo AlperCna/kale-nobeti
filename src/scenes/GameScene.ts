@@ -64,7 +64,8 @@ import { towerFrameKey } from '../data/spriteFrames';
 import { projectileLook } from '../data/projectileVisuals';
 import { getEnemy, getEnemyForMap, ENEMIES } from '../data/enemies';
 import { BALANCE, POOL_PREALLOC, MERMI_HIZI, MERMI_ISABET_YARICAPI } from '../data/balance';
-import { yetenekYukseltmeFiyati } from '../data/abilities';
+import { ABILITIES, yetenekYukseltmeFiyati } from '../data/abilities';
+import { yetenekIpucuMetni } from '../util/yetenekOzeti';
 import { MUSIC_BASE_VOLUME } from '../data/audio';
 import { portal } from '../systems/Portal';
 import { haritaBasladi } from '../systems/olcum';
@@ -201,6 +202,13 @@ const HINT_TEXT_KEY: Readonly<Record<HintId, StringKey>> = {
   shield: 'hintShield',
   burrow: 'hintBurrow',
   heal: 'hintHeal',
+  /**
+   * `M102` — bu ipucunun metni **tek başına yetmiyor**: altına o anki
+   * takasın sayıları ekleniyor (`util/yetenekOzeti.ts`). Harita yine
+   * de eksiksiz, çünkü `Record<HintId, StringKey>` eksik anahtarda
+   * derlenmiyor ve kural cümlesi buradan geliyor.
+   */
+  abilityUpgrade: 'hintAbilityUpgrade',
 };
 
 /**
@@ -241,6 +249,8 @@ export class GameScene extends Phaser.Scene {
   #infoPanel?: TowerInfoPanel;
   #hoveredSpot = -1;
   #mermiTepe = 0;
+  /** `M102` — yükseltme ipucu tur başına bir kez duyuruluyor. */
+  #yukseltmeDuyuruldu = false;
   readonly #towerBySpot = new Map<number, Tower>();
 
   // ------------------------------------------------------------ kışla (M5)
@@ -503,6 +513,7 @@ export class GameScene extends Phaser.Scene {
     this.#towerBySpot.clear();
     this.#hoveredSpot = -1;
     this.#mermiTepe = 0;
+    this.#yukseltmeDuyuruldu = false;
     this.#izBirikim = 0;
     this.#bossSahada = false;
     this.#soundSystem = undefined;
@@ -663,7 +674,14 @@ export class GameScene extends Phaser.Scene {
     this.#tutorial = new TutorialSystem(
       new LocalStore(),
       this.settings.state.hints,
-      (hint) => this.#tutorialHints?.show(t(HINT_TEXT_KEY[hint])),
+      (hint) =>
+        this.#tutorialHints?.show(
+          // `M102` — tek sapma: yükseltme ipucunun sayıları veriden
+          // türetiliyor, `strings.ts`'te yazılı değil (TIER 1 k.1).
+          hint === 'abilityUpgrade'
+            ? yetenekIpucuMetni((id) => this.abilities.seviye(id))
+            : t(HINT_TEXT_KEY[hint]),
+        ),
       this.bus,
     );
     this.#tutorial.start();
@@ -1153,8 +1171,31 @@ export class GameScene extends Phaser.Scene {
     }
     this.#araDegerleriCiz();
 
+    this.#yukseltmeAlinabilirMi();
+
     const devKare = devHooks();
     if (devKare !== undefined) devKare.gameFrames = (devKare.gameFrames ?? 0) + 1;
+  }
+
+  /**
+   * Bir yükseltme **ilk kez** alınabilir olduğunda olayı yayar (`M102`).
+   *
+   * Karede bir kez koşuyor ama bayrak yüzünden tur başına **bir kez**
+   * iş yapıyor; sonrası tek `if`. Olay yerine `gold:changed`'e
+   * bağlanabilirdi, ama alınabilirlik iki şeyden birden doğuyor
+   * (altın **ve** seviye) ve ikisini ayrı ayrı dinlemek aynı kararı
+   * iki yere yazmak olurdu — HUD de tam bu koşulu kendi çiziminde
+   * kullanıyor, tek fark orada her kare yeniden soruluyor.
+   */
+  #yukseltmeAlinabilirMi(): void {
+    if (this.#yukseltmeDuyuruldu) return;
+    for (const a of ABILITIES) {
+      const bedel = this.yetenekYukseltmeBedeli(a.id);
+      if (bedel === null || this.gold < bedel) continue;
+      this.#yukseltmeDuyuruldu = true;
+      this.bus.emit('ability:upgradable', {});
+      return;
+    }
   }
 
   /**

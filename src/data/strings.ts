@@ -406,6 +406,16 @@ const TR = {
    */
   hintHeal:
     'Çemberli düşman Şaman — çemberin içindeki herkesin canını sürekli tazeliyor. Önce onu düşür, kalabalık çok daha çabuk erir.',
+  /**
+   * `M102` — yükseltme düğmesi yalnız bir fiyat gösteriyordu.
+   *
+   * Cümlede **sayı yok**: takasın sayıları `util/yetenekOzeti.ts`
+   * tarafından `data/abilities.ts`'ten üretilip bunun altına
+   * ekleniyor (TIER 1 kural 1 — denge turunda metin kendiliğinden
+   * doğru kalıyor).
+   */
+  hintAbilityUpgrade:
+    'Yeteneğin üstündeki fiyat bir yükseltme — altın yeterken çıkıyor, harita bitince seviye sıfırlanıyor.',
 } as const;
 
 export type StringKey = keyof typeof TR;
@@ -630,5 +640,7 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     hintBurrow: 'A faded enemy is underground — towers cannot target it. Splash and burn still land; towers further along the path will catch it.',
     hintHeal:
       'The ringed enemy is a Shaman — it keeps restoring health to everyone inside the ring. Drop it first and the crowd melts far faster.',
+    hintAbilityUpgrade:
+      'The price above an ability is an upgrade — it appears once you can afford it, and the level resets when the map ends.',
   },
 };
