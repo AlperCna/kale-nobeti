@@ -160,7 +160,7 @@ ortanca düşman hızından alındı).
 | Şaman | 5 | 28,13 | 1,60 sn |
 | Trol | 8 | 45 | 1,00 sn |
 | Örümcek Ana | 6 | 33,75 | 1,33 sn |
-| tunelci | 3 | 16,88 | 2,67 sn |
+| Tünelci | 3 | 16,88 | 2,67 sn |
 | Ogre Şef (boss) | 25 | 140,63 | **anlık** (kural 9) |
 
 Boss formüle **girmiyor** — §4.4 kural 9 onu tek vuruşla ayrı tutuyor.
@@ -216,7 +216,7 @@ HP ve altın **harita çarpanıyla** ölçekleniyor; hız, zırh, direnç ölçe
 | Şaman | 130 | 42 | 0 | %40 | 15 | 5 | 1 can | — | `heal` hps=8 radius=90 |
 | Trol | 400 | 30 | 4 | %0 | 24 | 8 | 2 can | — | `regen` hps=6 |
 | Örümcek Ana | 150 | 50 | 0 | %20 | 18 | 6 | 2 can | — | `split` count=3 childId=orumcekYavrusu |
-| tunelci | 90 | 70 | 1 | %0 | 9 | 3 | 1 can | — | `burrow` fromFraction=0,15 toFraction=0,6 |
+| Tünelci | 90 | 70 | 1 | %0 | 9 | 3 | 1 can | — | `burrow` fromFraction=0,15 toFraction=0,6 |
 | Ogre Şef (boss) | 700 | 28 | 10 | %25 | 60 | 25 | 10 can | — | — |
 | Örümcek Yavrusu | 30 | 90 | 0 | %0 | 0 | 0 | 1 can | — | — |
 
@@ -293,7 +293,7 @@ değerlerdir) · `kisitB`’nin “boss hiçbir haritada sızmıyor”u · `kisi
 Zırh, direnç ve uçan çarpanı **uygulanmış** DPS. Yanma dalları sürekli
 hasarı da içeriyor. `—` = vuramıyor. Boss sütunu harita 1 zırhıyla.
 
-| Kademe | Goblin | Ork | Kurt | Harpi | Zırhlı | Şaman | Trol | Örümcek | tunelci | Ogre | Örümcek |
+| Kademe | Goblin | Ork | Kurt | Harpi | Zırhlı | Şaman | Trol | Örümcek | Tünelci | Ogre | Örümcek |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | Okçu T1 | 8,8 | 6,6 | 7,7 | 8,8 | 1,32 | 8,8 | 4,4 | 8,8 | 7,7 | 1,32 | 8,8 |
 | Okçu T2 | 18,2 | 15,6 | 16,9 | 18,2 | 7,8 | 18,2 | 13 | 18,2 | 16,9 | 5,2 | 18,2 |
@@ -530,15 +530,15 @@ Doğum penceresi `SPAWN_K = 24` (saniye × düşman). **Uydurulmadı,
 | Dalga | Bütçe | Puan | Adet | Aralık | Kompozisyon |
 |---|---|---|---|---|---|
 | **1** | 10 | 10 | 10 | 2,4 sn | 10× Goblin |
-| **2** | 12 | 12 | 8 | 3 sn | 6× Goblin, 2× tunelci |
-| **3** | 14 | 14 | 8 | 3 sn | 5× Goblin, 3× tunelci |
-| **4** _(nefes)_ | 15 | 15 | 9 | 2,67 sn | 3× tunelci, 6× Goblin |
-| **5** | 21 | 21 | 6 | 4 sn | 3× tunelci, 3× Zırhlı Ork |
-| **6** | 25 | 48 | 18 | 1,33 sn | 3× Kurt Binicisi, 2× tunelci, 2× Harpi, 2× Ork Savaşçı, 2× Trol, 7× Goblin |
-| **7** _(nefes)_ | 25 | 25 | 14 | 1,71 sn | 6× Goblin, 3× tunelci, 5× Ork Savaşçı |
-| **8** | 36 | 36 | 8 | 3 sn | 2× Trol, 4× tunelci, 2× Zırhlı Ork |
-| **9** | 43 | 44 | 9 | 2,67 sn | 3× Trol, 1× Şaman, 3× tunelci, 2× Harpi |
-| **10** | 52 | 53 | 8 | 3 sn | 1× Ogre Şef (boss), 4× tunelci, 1× Trol, 2× Zırhlı Ork |
+| **2** | 12 | 12 | 8 | 3 sn | 6× Goblin, 2× Tünelci |
+| **3** | 14 | 14 | 8 | 3 sn | 5× Goblin, 3× Tünelci |
+| **4** _(nefes)_ | 15 | 15 | 9 | 2,67 sn | 3× Tünelci, 6× Goblin |
+| **5** | 21 | 21 | 6 | 4 sn | 3× Tünelci, 3× Zırhlı Ork |
+| **6** | 25 | 48 | 18 | 1,33 sn | 3× Kurt Binicisi, 2× Tünelci, 2× Harpi, 2× Ork Savaşçı, 2× Trol, 7× Goblin |
+| **7** _(nefes)_ | 25 | 25 | 14 | 1,71 sn | 6× Goblin, 3× Tünelci, 5× Ork Savaşçı |
+| **8** | 36 | 36 | 8 | 3 sn | 2× Trol, 4× Tünelci, 2× Zırhlı Ork |
+| **9** | 43 | 44 | 9 | 2,67 sn | 3× Trol, 1× Şaman, 3× Tünelci, 2× Harpi |
+| **10** | 52 | 53 | 8 | 3 sn | 1× Ogre Şef (boss), 4× Tünelci, 1× Trol, 2× Zırhlı Ork |
 
 ---
 
@@ -712,13 +712,14 @@ Ayrık yolda **en zayıf kol** belirleyici — düşman hangi kolu seçeceğini 
 | Zırhlı Ork | 1360 | 4170 | %32,6 |
 | Şaman | 1105 | 4127 | %26,8 |
 | Trol | 3400 | 5789 | %58,7 |
-| tunelci | 765 | 2647 | %28,9 |
+| Tünelci | 765 | 2647 | %28,9 |
 | Ogre Şef (boss) | 2333 | 6125 | %38,1 |
 
 **ⓑ = Kışla ile doğrulanan.** Kısıt A yalnız **kulelerin** verebileceği
 hasarı topluyor (tanımı bu) — askerlerin DPS'i ve engellemenin kazandırdığı
-süre girmiyor. §5 Trol'ün cevabını açıkça kışla olarak verdiği için Kısıt A
-onu olduğundan **zor** gösteriyor; doğrulaması Kısıt B'de.
+süre girmiyor. §5 Trol'ün cevabını açıkça kışla olarak verdiği için, o
+eşiği geçerse Kısıt A onu olduğundan **zor** gösterir; doğrulaması Kısıt B'de.
+**Bugün hiçbir satır ⓑ almıyor** — kışla ile doğrulanan düşmanların hepsi eşiği kendi başına geçiyor.
 
 
 ### Kısıt B — başsız simülasyon
@@ -785,13 +786,16 @@ bu ikisi farklı düzeltmeler gerektiriyor:
 | 3 · Kül Ovası | Trol ×3 · Örümcek Yavrusu ×3 |
 | 4 · Kar Geçidi | Trol ×4 · Zırhlı Ork ×3 · Örümcek Yavrusu ×1 · Harpi ×1 · Şaman ×1 |
 | 5 · Kadim Harabe | Zırhlı Ork ×3 · Trol ×3 · Örümcek Yavrusu ×3 · Şaman ×2 · Kurt Binicisi ×1 |
-| 6 · Sisli Bataklık | tunelci ×9 · Ork Savaşçı ×5 · Trol ×2 |
+| 6 · Sisli Bataklık | Tünelci ×9 · Ork Savaşçı ×5 · Trol ×2 |
 
 **Kısıt A ile Kısıt B aynı şeyi ölçmüyor.** Kısıt A *tek* düşman için
 ("bir Ork Savaşçı öldürülebilir mi"), Kısıt B *dalga* için ("on bir tanesi
-aynı anda gelirse"). Ölçüm bunu net gösteriyor: harita 3'te en çok sızan
-**Ork Savaşçı** ama Kısıt A'da %39,9 ile rahat geçiyor; **Trol** ise Kısıt
-A'da kalıyor ama yalnız ×3 sızıyor. İkisi de gerekli.
+aynı anda gelirse").
+Ölçüm bunu net gösteriyor — **6 · Sisli Bataklık**:
+en çok sızan **Tünelci** (×9) Kısıt A'da
+%28,9 ile rahat geçiyor; Kısıt A'da en zorlanan
+**Trol** (%58,7) ise yalnız
+×2 sızıyor. İkisi de gerekli.
 
 **Boss hiçbir haritada sızmıyor** — türetmenin uçtan uca sağlaması.
 
@@ -918,9 +922,10 @@ ifade sezgiseli ve her biri **kasıtlı bozmayla** doğrulandı.
 | 18 | S117 kule fiyatı tek adresten (maliyet) |
 | 19 | M100 özel Phaser yapımının kapalı yüzeyi |
 | 20 | M101 özel Phaser yapımı ölü modül taşımıyor |
+| 21 | M103 data/systems/util ölü dışa aktarım taşımıyor |
 
 Liste **türetilmiş**: üretici bekçiyi koşturup çıktısını okuyor, elle
-sayılmıyor. Bugün **20** kural var.
+sayılmıyor. Bugün **21** kural var.
 
 Sahne alanları kuralı **dört kez çıkan** bir hatadan doğdu: alan
 başlatıcısı yalnız bir kez koşuyor, `create()` her yeniden başlatmada.

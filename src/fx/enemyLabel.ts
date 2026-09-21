@@ -13,7 +13,17 @@ import { t } from '../util/i18n';
  * TIER 1 kural 11: Phaser'a dokunmaz, `node`'da test edilir.
  */
 
-const AD_ANAHTARI: Readonly<Record<EnemyId, StringKey>> = {
+/**
+ * Kimlik → `strings.ts` anahtarı. **Dışa aktarılıyor** (`M103`): belge
+ * üreticisi (`scripts/kurallar.mjs`) düşman adlarını buradan çözüyor.
+ * Önceden orada **elle yazılmış** ikinci bir harita vardı ve `M12`'de
+ * gelen Tünelci'yi saymıyordu — belge on iki yerde ham kimlik
+ * (`tunelci`) basıyordu. Tek adres, TIER 2'nin “sayan liste” kuralı.
+ *
+ * `Record<EnemyId, StringKey>` olduğu için yeni bir düşman eklendiğinde
+ * derleyici duruyor — hatırlamak gerekmiyor.
+ */
+export const AD_ANAHTARI: Readonly<Record<EnemyId, StringKey>> = {
   goblin: 'enemyGoblin',
   orkSavasci: 'enemyOrkSavasci',
   kurtBinicisi: 'enemyKurtBinicisi',

@@ -943,6 +943,71 @@ const sonuclar = [];
 }
 
 // ---------------------------------------------------------------------
+// 21 — `data/`, `systems/`, `util/` ÖLÜ dışa aktarım taşımasın (`M103`)
+//
+// 20. kural aynı soruyu Phaser yapımına sordu; bu, projenin **kendi**
+// koduna soruyor. Gerekçe TIER 1 kural 1: denge verisinin adresi
+// `src/data` ve kimsenin okumadığı bir sabit, yetkili görünen ama
+// hiçbir şey yapmayan bir sayıdır.
+//
+// `M103` dördünü buldu ve dördü de farklı bir zarardı:
+//   `deriveBossHp`          `M18` (S113) **reddettiği** ölçütü hâlâ
+//                           çağrılmaya hazır tutuyordu — onu çağıran
+//                           biri reddedilmiş bir boss HP'si alırdı.
+//   `ceilingAApplies`       "bu düşman Kısıt A'dan muaf mı" kapısı;
+//                           hiçbir test onu sormuyordu.
+//   `stepBarracks`          `stepSoldiers`'ın çağrılmayan sarmalayıcısı.
+//   `REST_K_KULLANILMIYOR`  bir kararın `true` dönen sabit hâli.
+//
+// **Kapsam:** yalnız `export const` / `export function`. Tipler
+// dışarıda: derlemede siliniyorlar, yani çalışma zamanı tuzağı
+// üretmiyorlar.
+//
+// **Okuyucu havuzuna `scripts/*.mjs` de giriyor** — belge üreticisi
+// `src/data`'yı meşru biçimde okuyor (`KISLA_ILE_DOGRULANAN` yalnız
+// orada kullanılıyor) ve onu saymamak yanlış alarm üretirdi.
+//
+// **Muafiyet:** dışa aktarım satırında `// bekçi: <gerekçe>` (20. kuralın
+// deseni). Bugün hiç yok.
+//
+// Kör noktası yazılı: ad bir **satır içi** yorumda geçerse sayılır.
+// Satır başındaki yorumlar `kodSatirlari` ile eleniyor.
+// Negatif doğrulama: `export const OLU_SABIT = 1;` kondu → 20/21.
+// ---------------------------------------------------------------------
+{
+  const DISA_AKTARIM = /^export\s+(?:const|function)\s+(\w+)/;
+  const kodHavuzu = [];
+  for (const dosya of dosyalar) {
+    kodHavuzu.push(kodSatirlari(readFileSync(dosya, 'utf8')).map((h) => h.metin).join(' '));
+  }
+  try {
+    for (const ad of readdirSync(join(process.cwd(), 'scripts'))) {
+      if (!ad.endsWith('.mjs')) continue;
+      const tam = join(process.cwd(), 'scripts', ad);
+      kodHavuzu.push(kodSatirlari(readFileSync(tam, 'utf8')).map((h) => h.metin).join(' '));
+    }
+  } catch (e) {
+    taranamayan.push(`scripts/ (${e.code ?? 'hata'})`);
+  }
+  const havuz = kodHavuzu.join('\n');
+  let ihlalVar = false;
+  for (const dosya of dosyalar) {
+    const yol = relative('.', dosya).split(sep).join('/');
+    if (!/^src\/(data|systems|util)\//.test(yol) || yol.endsWith('.test.ts')) continue;
+    for (const h of kodSatirlari(readFileSync(dosya, 'utf8'))) {
+      const m = DISA_AKTARIM.exec(h.metin);
+      if (m === null || h.metin.includes('// bekçi:')) continue;
+      const kez = havuz.match(new RegExp(`(?<![A-Za-z0-9_$])${m[1]}(?![A-Za-z0-9_$])`, 'g'));
+      if ((kez?.length ?? 0) > 1) continue;
+      ihlalVar = true;
+      ihlal('M103', dosya, h.no,
+        `\`${m[1]}\` hiçbir yerde okunmuyor — ölü dışa aktarım (kaldır ya da \`// bekçi:\` gerekçesi yaz)`);
+    }
+  }
+  sonuclar.push(['M103 data/systems/util ölü dışa aktarım taşımıyor', !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
 
 const gecen = sonuclar.filter(([, ok]) => ok).length;
 if (taranamayan.length > 0) {

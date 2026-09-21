@@ -408,13 +408,8 @@ export function stepSoldiers(
 }
 
 /**
- * Bir kışlayı bir kare ilerletir — `stepSoldiers`'ın kışla sarmalayıcısı.
+ * **`stepBarracks` `M103`'te kaldırıldı.** `stepSoldiers`'ın bir satırlık
+ * sarmalayıcısıydı ve hiçbir yer çağırmıyordu — `GameScene` de `waveSim`
+ * de askerleri doğrudan `stepSoldiers` ile ilerletiyor. İki kapı açık
+ * kalsaydı biri bir gün öbüründen ayrışırdı.
  */
-export function stepBarracks(
-  bar: BarracksRuntime,
-  enemies: readonly BlockableEnemy[],
-  scaledDelta: number,
-  respawnSeconds: number,
-): BarracksStepResult {
-  return stepSoldiers(bar.soldiers, enemies, scaledDelta, respawnSeconds);
-}

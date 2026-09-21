@@ -708,38 +708,40 @@ export const BOSS_CEILING_RATIO = 0.8;
 /**
  * **Boss HP'si haritadan türetilir** — `700 × hpMultiplier` DEĞİL.
  *
- * ## Neden
- *
  * M7'de ölçüldü: `700 × hpMultiplier` harita 2'de 1120, harita 3'te 1820
  * ediyor ve o haritalarda **karşılanabilir hiçbir tahta** bu kadarını
- * indiremiyor. Kısıt A oranları %165 ve %282 çıkıyordu — yani boss
- * öldürülemez. Sebep basit: HP çarpanı 1,6/2,6 ile büyüyor ama savunma
- * öyle büyümüyor — ayrık yolda **en zayıf kol** yalnız noktaların bir
- * kısmını görüyor ve tavan harita 1'inkinin bile altına düşebiliyor.
+ * indiremiyor — Kısıt A oranları %165 ve %282, yani boss öldürülemez.
+ * `research/01` §12 bunu önceden söylemişti: *“boss HP'si `enemies.ts`
+ * içinde sabit olmasın; ölçülen kapsama + referans tahtadan türetilsin.”*
+ * Sonuç `data/bossScaling.ts` içinde ve her satırının yanında hangi
+ * ölçümün ürettiği yazılı.
  *
- * `research/01` §12 bunu önceden söylemişti: *"boss HP'si `enemies.ts`
- * içinde sabit olmasın; `balance.ts` içinde ölçülen kapsama + referans
- * tahtadan türetilsin."*
+ * ## `deriveBossHp` KALDIRILDI (`M103`)
+ *
+ * Buradaki `0,80 × ceilingAWeakestBranch(...)` bir **ölçüt**tü ve
+ * `M18` (S113) onu açıkça reddetti: statik tavan tek düşman / taban hız /
+ * yeteneksiz bir dünyayı ölçüyor, oyun artık o dünya değil. `M71` ve
+ * `M75` yerine **simülasyonla** ölçülen ölçütü koydu: referans tahtanın
+ * sürekli koşuda öldürebildiği en büyük HP, ikili aramayla.
+ *
+ * Fonksiyon o gün **silinmedi** ve `M103`'e kadar dışa aktarılmış,
+ * çağrılmaya hazır, kendini “türetme” diye tanıtan bir öksüz olarak
+ * durdu — onu çağıran biri **reddedilmiş** bir sayı alırdı. `M80`'in
+ * belge tarafında yakaladığı kusurun kod tarafındaki ikizi.
+ * Bugünkü türetmenin yaşadığı yer: `data/bossScaling.test.ts`.
  *
  * ## Döngüsellik yok
  *
- * Tavan boss'un **hızına ve savunmasına** bağlı, HP'sine değil. Yani
- * `ceilingA` hesaplanırken boss HP'si hiç kullanılmıyor.
+ * Tavan boss'un **hızına ve savunmasına** bağlı, HP'sine değil.
  *
  * ## Kısıt A boss için tautolojiye dönüyor — yerine ne var
  *
  * §12 uyarıyor: HP `0,80 × tavan` olarak tanımlanırsa `tavan > HP × 1,15`
  * testi `tavan > 0,92 × tavan` olur ve **her zaman** geçer. Bu yüzden boss
  * Kısıt A'dan çıkarılıyor ve yerine iki gerçek sağlama geliyor:
- * `bossAffordable` (tahta karşılanıyor mu) ve `BOSS_HP_BAND` regresyon
- * bandı — ikisi de `balanceChecks.test.ts` içinde.
- *
- * @param board Dalga 10 referans tahtası (muhafazakâr taban).
+ * `bossAffordable` (tahta karşılanıyor mu) ve regresyon bandı — ikisi de
+ * `bossScaling.test.ts` içinde.
  */
-export function deriveBossHp(map: MapDef, board: ReferenceBoard, boss: EnemyDef): number {
-  const tavan = ceilingAWeakestBranch(board, boss, map);
-  return Math.round(BOSS_CEILING_RATIO * tavan);
-}
 
 /**
  * Boss dalgasının tahtası **karşılanabiliyor mu** — türetmenin dayandığı
@@ -787,11 +789,10 @@ export function bossAffordable(
 export const KISLA_ILE_DOGRULANAN: readonly EnemyDef['id'][] = ['trol'];
 
 /**
- * Kısıt A'nın bu düşman için **anlamlı** olup olmadığı.
- *
- * `false` ise sayı yine hesaplanıyor ve raporlanıyor — gizlenmiyor — ama
- * eşiği geçmemesi tek başına bir kusur sayılmıyor; doğrulama Kısıt B'de.
+ * **`ceilingAApplies` `M103`'te kaldırıldı.** “Bu düşman Kısıt A'dan muaf
+ * mı” sorusunu soran bir kapıydı ve **hiçbir yer çağırmıyordu**:
+ * `balanceChecks.test.ts`'in kendi muafiyet kümesi ayrı (`ogreSef`,
+ * `orumcekYavrusu`) ve Trol orada muaf değil — geçmek zorunda, geçiyor da.
+ * Yukarıdaki liste yalnız belge üreticisi tarafından okunuyor (✓/✗ yerine
+ * ⓑ basmak için), yani karar **veri**de, kapıda değil.
  */
-export function ceilingAApplies(enemyId: EnemyDef['id']): boolean {
-  return !KISLA_ILE_DOGRULANAN.includes(enemyId);
-}
