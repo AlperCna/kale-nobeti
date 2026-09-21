@@ -123,6 +123,14 @@ ve `M29`'a kadar öyle kaldı.
   `onExhausted` tetikliyor.
   Eşiğe **9,5** kat pay var; ızgara gerekmiyor. Bu satırdaki sayı el yordamıyla
   yazılmaz, `peakEnemies` ile ölçülür.
+  **`M96` — eşik artık yalnız hesap değil, ölçüm:** iddia bugüne kadar
+  “200'e kadar naif tarama yeter” diye *hesaplanmıştı*; tarayıcıda
+  sınandı. Sisli Bataklık, dalga 10, tam tahta (14 kule + kışla) ve
+  havuz sınırına kadar **57 eşzamanlı düşman** (belgelenen en kötü hâlin
+  2,7 katı): kare süresi ortalama **16,79 ms**, ortanca 16,77, p95 17,08,
+  **en kötü 17,53** — yani 60 fps hiç düşmüyor ve bütçede kayda değer bir
+  diş izi yok. Karşılaştırma için normal koşu (10 düşman) birebir aynı:
+  16,81 / 17,28. Yani darboğaz düşman sayısı değil.
 - Yalnızca yatay yönlendirme (mobilde çevirme uyarısı platform tarafından yapılır)
 - Ses: Phaser'ın kendi ses sistemi
 - Kayıt: `KeyValueStore` arayüzü arkasında `localStorage`,
