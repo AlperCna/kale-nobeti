@@ -247,12 +247,19 @@ describe('Aile dengesi — M11 Faz 5 (S95)', () => {
     for (const m of [MAP_4, MAP_5, MAP_6]) {
       expect(canKaybi(m, 'buyu'), m.id).toBeLessThan(canKaybi(m));
     }
-    // Top — Sisli Bataklık'ta karışık tahtayı **geçiyor** (12'ye 13).
+    // Top — Sisli Bataklık'ta karışık tahtayı **geçiyor**.
     //
-    // **`M75` (S138): "açık ara birinci" iddiası düştü.** `M66`-`M75`
-    // arasında Top orada üçünü de geçiyordu; boss türetmesinden sonra
-    // Büyü 11 ile Top'un 12'sinin önüne geçti. Top ölü değil ve
-    // rekabetçi (karışık tahtadan iyi), ama artık **en iyisi değil**.
+    // **`M75` (S138): "açık ara birinci" iddiası düşmüştü** — boss
+    // türetmesinden sonra Büyü 11 ile Top'un 12'sinin önüne geçmişti.
+    // **`M91`: o cümle artık bayat.** `M81`/`M82` çarpanı ve `M84` elit
+    // dalgasından sonraki ölçüm (harita 6, can kaybı): karışık **18** ·
+    // Okçu **16** · Büyü **12** · Top **9**. Yani Top orada yeniden açık
+    // farkla birinci — ve `M81`/`M82`'de çarpan seçilirken bağlayıcı
+    // kısıtlardan biri tam olarak buydu (8,8 ve 9,0 bu evi kırıyordu).
+    //
+    // İddia yine de **"karışıktan ve Okçu'dan iyi"** ile bağlı kalıyor,
+    // "üçünün de üstünde" ile değil: S138'in ev tanımı *karışık tahtayı
+    // geçmek*, ve iki ailenin aynı haritada karışığı geçmesi serbest.
     expect(canKaybi(MAP_6, 'top')).toBeLessThan(canKaybi(MAP_6));
     expect(canKaybi(MAP_6, 'top')).toBeLessThan(canKaybi(MAP_6, 'okcu'));
   });
