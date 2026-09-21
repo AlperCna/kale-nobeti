@@ -8,11 +8,21 @@
  * hâlini temsil eden toplam DPS'tir; Kısıt A tavanı buradan çıkar
  * (`GAME-DESIGN.md` §6, `research/01-denge-matematigi.md` §4).
  *
- * **Kaynak ve geçicilik:** aşağıdaki DPS'ler `research/01` §4-§5'te elle
- * hesaplanmış değerlerdir. `M3-T07` bunları `towers.ts` + `enemies.ts`
- * üzerinden **algoritmayla üretecek** (S25 kararı) ve bu dosya o zaman
- * türetilmiş hâline geçecek. Şimdilik elle taşınıyorlar ki M1'de ölçülen
- * kapsama sayısı boşa gitmesin — sağlamalar bugünden test olarak koşuyor.
+ * **`M93` — başlık on taştır gerçekleşmiş bir geleceği anlatıyordu.**
+ * Eski hali şunu diyordu: *“`M3-T07` bunları algoritmayla üretecek (S25
+ * kararı) ve bu dosya o zaman türetilmiş hâline geçecek”*. S25 **kapandı**
+ * ama türetme buraya değil başka bir adrese gitti:
+ * `systems/balanceChecks.buildReferenceBoards` tahtayı ekonomiden
+ * türetiyor ve bütün denge sağlamaları onu kullanıyor. Yani **bugünün
+ * referans tahtası bu dosyada değil.**
+ *
+ * **Bu dosya ne peki:** `M1`/`M2`'nin ölçüm kaydı. Aşağıdaki DPS'ler
+ * `research/01` §4-§5'te elle hesaplanmış değerler ve tek okuyucuları
+ * kendi testi (`referenceBoards.test.ts`). O testler hâlâ gerçek bir şey
+ * sınıyor: **analitik tavan modelinin** (`ceilingA`) M1'de ölçülen kapsama
+ * sayılarıyla %5-10 içinde örtüştüğünü, ve “yol 450 px görülseydi”
+ * çelişkisinin nasıl çözüldüğünü. Silinmiyor çünkü o çelişkinin çözümü
+ * bir **kayıt**; ama artık “yarın türetilecek” demiyor.
  *
  * TIER 1 kural 11: Phaser'a dokunmaz.
  */
