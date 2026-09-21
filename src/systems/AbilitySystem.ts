@@ -12,7 +12,13 @@
 import type { AbilityDef, AbilityId, AbilityState } from '../types/ability';
 import type { BlockableEnemy, SoldierState } from '../types/barracks';
 import type { Vec2 } from '../types/common';
-import { ABILITIES, getAbility } from '../data/abilities';
+import {
+  ABILITIES,
+  getAbility,
+  meteorHasari,
+  takviyeAskerSayisi,
+  YETENEK_SEVIYE_SAYISI,
+} from '../data/abilities';
 import { applyDamage, kalkandanGecir } from './combat';
 import { spawnSoldier } from './BarracksSystem';
 import { SOLDIER_SPEED } from '../data/barracks';
@@ -27,6 +33,15 @@ export interface MeteorResult {
 
 export class AbilitySystem {
   readonly #durum = new Map<AbilityId, AbilityState>();
+  /**
+   * Yetenek seviyeleri (1 taban) — `M99`, S117'nin gider kalemi.
+   *
+   * `reset()` ile **1'e dönüyor**: yükseltme o haritanın altınıyla
+   * alınıyor ve bekleme sıfırlamasıyla (S49) aynı gerekçe — bir haritayı
+   * yeteneğini yükseltmeden bitiren oyuncu bir sonrakine avantajla
+   * girmemeli, “her harita kendi içinde dengeli” varsayımı bozulmasın.
+   */
+  readonly #seviye = new Map<AbilityId, number>();
 
   constructor() {
     this.reset();
@@ -42,7 +57,55 @@ export class AbilitySystem {
    */
   reset(): void {
     this.#durum.clear();
-    for (const a of ABILITIES) this.#durum.set(a.id, { id: a.id, cooldownLeft: 0 });
+    this.#seviye.clear();
+    for (const a of ABILITIES) {
+      this.#durum.set(a.id, { id: a.id, cooldownLeft: 0 });
+      this.#seviye.set(a.id, 1);
+    }
+  }
+
+  /** Yeteneğin bugünkü seviyesi (1 taban). */
+  seviye(id: AbilityId): number {
+    return this.#seviye.get(id) ?? 1;
+  }
+
+  /** Azami seviyede mi — menü düğmeyi buna göre gizliyor. */
+  azamiSeviyede(id: AbilityId): boolean {
+    return this.seviye(id) >= YETENEK_SEVIYE_SAYISI;
+  }
+
+  /**
+   * Bir seviye yükseltir. **Altını çağıran keser** — bu sınıf ekonomiyi
+   * bilmiyor (`EconomySystem`'e bağımlı olsaydı `waveSim` de onu kurmak
+   * zorunda kalırdı). Azami seviyedeyse `false`.
+   */
+  yukselt(id: AbilityId): boolean {
+    const s = this.seviye(id);
+    if (s >= YETENEK_SEVIYE_SAYISI) return false;
+    this.#seviye.set(id, s + 1);
+    return true;
+  }
+
+  /** Seviyelerin kayda yazılabilir hâli — `RunSave`. */
+  seviyeKaydi(): Record<string, number> {
+    const cikti: Record<string, number> = {};
+    for (const [id, s] of this.#seviye) cikti[id] = s;
+    return cikti;
+  }
+
+  /**
+   * Kaydedilmiş turdan seviyeleri geri yükler.
+   *
+   * Tanınmayan kimlik ve sınır dışı değer **yok sayılıyor** —
+   * `turdanGeriYukle`'nin bekleme tarafıyla aynı muhafazakâr kural:
+   * bozuk kayıt oyuncuya bedava seviye vermemeli.
+   */
+  turdanGeriYukleSeviye(seviyeler: Readonly<Record<string, number>>): void {
+    for (const [id, s] of Object.entries(seviyeler)) {
+      if (!this.#seviye.has(id as AbilityId)) continue;
+      if (!Number.isInteger(s) || s < 1 || s > YETENEK_SEVIYE_SAYISI) continue;
+      this.#seviye.set(id as AbilityId, s);
+    }
   }
 
   /**
@@ -134,7 +197,7 @@ export class AbilitySystem {
       if (e.def.flying && !def.hitsFlying) continue; // S48
       if (distSq(target, e) > yaricapKare) continue;
 
-      const r = applyDamage(def.damage, def.damageType, e.def);
+      const r = applyDamage(meteorHasari(this.seviye('meteor')), def.damageType, e.def);
       e.hp -= kalkandanGecir(r.dealt, e); // M10-T03
       if (e.hp < 0) e.hp = 0;
       hit++;
@@ -166,7 +229,8 @@ export class AbilitySystem {
     if (!this.#tuket(def)) return null;
 
     const cikanlar: SoldierState[] = [];
-    for (let i = 0; i < def.soldierCount; i++) {
+    const adet = takviyeAskerSayisi(this.seviye('takviye'));
+    for (let i = 0; i < adet; i++) {
       const s = acquire();
       if (s === null) break; // havuz doldu — sessizce kısılıyor, `new` yok
 
