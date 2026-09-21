@@ -182,6 +182,13 @@ const TR = {
   howTo4: 'Kule menüsünde hedefleme seç: ilk, son, güçlü, zayıf, yakın.',
   howTo5: 'Meteor ve Takviye bekleme süreli; dalga arasında değil, kalabalıkta kullan.',
   /**
+   * `M99` — S117'nin gider kalemi. Sayfa mekanik eklenince onu saymayan
+   * metinleri bırakmamalı (`M88`'in dersi): düğme yalnız alınabilirken
+   * göründüğü için oyuncu onu hiç görmeden geçebilir.
+   */
+  howTo11:
+    'Yeteneğin üstünde fiyat çıkarsa yükseltebilirsin: Meteor daha sert vurur, Takviye daha çok asker çağırır. Geç haritalarda altın tahtaya yetmekten fazlasını kazandırıyor.',
+  /**
    * **`M28` — eski kuralı öğretiyordu.** `M16`'dan önce erken basmak
    * bedelsizdi ve bu satır doğruydu; `M16` dalgaları üst üste bindirdi
    * ve ölçüm hep basmanın harita 5-6'yı geçilemez yaptığını söylüyor.
@@ -520,6 +527,8 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     howTo3: 'Enemies reaching the keep cost lives. Run out and the map is lost.',
     howTo4: 'Pick a targeting mode in the tower menu: first, last, strong, weak, near.',
     howTo5: 'Meteor and Reinforcements are on cooldown; save them for a crowd.',
+    howTo11:
+      'When a price appears above an ability you can upgrade it: Meteor hits harder, Reinforcements bring more soldiers. On later maps gold outgrows what the board can spend.',
     howTo6:
       'Ending the prep timer early earns gold — but the new wave arrives on top of whoever is still on the field. The button shows both numbers.',
     howTo7: 'The pause button up top — or ESC/space — stops the game; the menu also has restart and main menu.',

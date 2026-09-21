@@ -760,6 +760,39 @@ interface Wave { index: number; groups: WaveGroup[]; }
 Bekleme süreleri HUD'da dairesel dolum ile gösterilir; hazır olunca altın
 kenar bir kez parlar.
 
+### Yükseltme — `M99`, S117'nin gider kalemi
+
+Yukarıdaki değerler **seviye 1**. Her yetenek tur içinde iki kez
+yükseltilebiliyor; yükseltme **o haritanın altınıyla** alınıyor ve harita
+bitince sıfırlanıyor (beklemenin S49'daki kuralıyla aynı gerekçe).
+
+| Seviye | Meteor hasarı | Takviye askeri | Fiyat |
+|---|---|---|---|
+| 1 | 180 | 2 | — (başlangıç) |
+| 2 | 250 | 3 | `180 × altınçarpanı` |
+| 3 | 330 | 4 | `320 × altınçarpanı` |
+
+**Neden var:** S117 ölçtü — geç haritalarda gelirin yarısından fazlası
+harcanmadan kalıyor, çünkü tahtanın maliyeti nokta sayısıyla sınırlı ama
+gelir harita çarpanıyla büyüyor. `M79` fiyat çarpanını denedi ve ölçüm
+yalnız harita 4'ü geçirdi; bu ikinci kol.
+
+**Neden fiyat altın çarpanını izliyor:** gider kalemi gelirle aynı ölçekte
+büyümeli — `startGold`'un S72'de çarpanı izlemesiyle aynı gerekçe. Sonuç
+ölçüldü: Değirmen Geçidi'nde ilk yükseltme (180) koşarken elde kalan en
+çok altından (94) pahalı, yani orada **hiç görünmüyor**; Sisli
+Bataklık'ta dört yükseltmenin toplamı 11 000 ve atıl altın 11 974, yani
+neredeyse tamamını emiyor. Aradaki haritalarda **seçim** doğuyor (Kar
+Geçidi: dörtte ikisi).
+
+**Neden hasar, bekleme değil:** bekleme düşürmek yeteneğin *ne zaman*
+ateşlendiğini değiştirir ve ölçümü gürültülü yapar; hasar/asker sayısı
+tek eksende ve ekranda okunuyor.
+
+**Denge sayıları kıpırdamadı:** bütün referans ölçümler yetenekleri
+**kapalı** koşuyor (`YetenekKullanimi 'yok'`), yani rampa, Kısıt A/B, boss
+türetmesi ve zorluk tablosu bu eklemeden etkilenmiyor.
+
 ## 9. Haritalar
 
 > **`M48` — bu tablo iki türlü eskimişti.** (1) **Üç harita eksikti:** M8
