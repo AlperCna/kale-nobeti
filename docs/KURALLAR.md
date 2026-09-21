@@ -917,9 +917,10 @@ ifade sezgiseli ve her biri **kasıtlı bozmayla** doğrulandı.
 | 17 | platform vite base: './' (R15) |
 | 18 | S117 kule fiyatı tek adresten (maliyet) |
 | 19 | M100 özel Phaser yapımının kapalı yüzeyi |
+| 20 | M101 özel Phaser yapımı ölü modül taşımıyor |
 
 Liste **türetilmiş**: üretici bekçiyi koşturup çıktısını okuyor, elle
-sayılmıyor. Bugün **19** kural var.
+sayılmıyor. Bugün **20** kural var.
 
 Sahne alanları kuralı **dört kez çıkan** bir hatadan doğdu: alan
 başlatıcısı yalnız bir kez koşuyor, `create()` her yeniden başlatmada.

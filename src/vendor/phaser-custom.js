@@ -12,22 +12,27 @@
  *
  * `Y11`'in bulgusu doğru: çekirdek yalnız beş oyun nesnesi taşıyor
  * (`Graphics`, `Image`, `Layer`, `Sprite`, `Text`) ve bu proje yedi tane
- * daha kullanıyor. Aşağıdaki liste **taranarak** çıkarıldı, tahminle
- * değil — `.add.*` çağrıları ve `Phaser.*` referansları sayıldı:
+ * daha kullanıyor:
  *
- * | Geri eklenen | Neden | Kullanım |
- * |---|---|---|
- * | `Rectangle` | perde, panel zemini, şerit | `.add.rectangle` ×22 |
- * | `Container` | menü, yetenek, kartuş | `.add.container` ×14 |
- * | `Group` | TIER 1 kural 3 havuzları | `.add.group` ×6 |
- * | `BitmapText` | TIER 1 kural 7 değişen metin | `.add.bitmapText` ×2 |
- * | `Arc` | menzil/işaret çemberi | `.add.circle` ×1 |
- * | `TileSprite` | `ParchmentFrame` kenar dokusu | `.add.tileSprite` ×1 |
- * | `Particles` | §10 juice | `.add.particles` ×1 |
- * | `BitmapFontFile` | `load.bitmapFont` | Boot |
- * | `Geom.Rectangle` | `setInteractive` isabet alanı | 2 yer |
- * | `Display.Color` | `HexStringToColor` | 2 yer |
- * | `Math.Clamp` | çekirdek 5 fonksiyon taşıyor, bu yok | 4 yer |
+ * | Geri eklenen | Neden |
+ * |---|---|
+ * | `Rectangle` | perde, panel zemini, şerit |
+ * | `Container` | menü, yetenek, kartuş |
+ * | `Group` | TIER 1 kural 3 havuzları |
+ * | `BitmapText` | TIER 1 kural 7 değişen metin |
+ * | `Arc` | menzil/işaret çemberi |
+ * | `TileSprite` | `ParchmentFrame` kenar dokusu |
+ * | `Particles` | §10 juice |
+ * | `BitmapFontFile` | `load.bitmapFont` — sayı fontu |
+ * | `Geom.Rectangle` | `setInteractive` isabet alanı |
+ * | `Display.Color` | `HexStringToColor` |
+ * | `Math.Clamp` | çekirdek 5 Math fonksiyonu taşıyor, bu yok |
+ *
+ * **Kullanım sayıları bu tablodan `M101`'de kaldırıldı.** Elle
+ * yazılıyorlardı ve üçü birden bayatlamıştı (`.add.rectangle` 22
+ * diyordu, 23'tü; `.add.container` 14 diyordu, 16'ydı; `.add.bitmapText`
+ * 2 diyordu, 4'tü). Sayının söylediği tek şey "sıfır değil" zaten ve
+ * onu artık bekçinin 20. kuralı **her koşuda** doğruluyor.
  *
  * ## Bu dosya elle bakımlı bir kopya DEĞİL
  *
@@ -57,6 +62,27 @@
  * biçimindeki **eklemeler** çekirdeğin üstüne yazıyor, yani yüzeyleri
  * dosyadan türetilemiyor; oradaki boşluklar için tek çare hâlâ **elle
  * tam tur** — `Y11`'in "bitmedi sayılır eğer" maddesi bu.
+ *
+ * ## Ters yön: ölü modül (`M101`, bekçinin 20. kuralı)
+ *
+ * 19. kural "kullanılan bir şey yapımda var mı" diye soruyor; 20. kural
+ * tersini: **yapımdaki her şeyin bir okuyucusu var mı.** Dosyanın varlık
+ * sebebi bu (TIER 1 kural 2).
+ *
+ * `M101`'de ölçüldü ve **altı satırın sıfır okuyucusu** çıktı:
+ * `Math.Linear`, `Math.Wrap`, `Math.Distance`, `Math.Easing`,
+ * `Math.RandomDataGenerator`, `Geom.Circle`. Yukarıdaki "taramada
+ * kullanıldığı görülen parçalar" cümlesi onlar için artık doğru değildi.
+ * Kaldırıldılar; **kazanç 0,3 KB** — yani bu iş bayt için değil
+ * **sözleşme** için yapıldı: `Math.Easing` gibi modüller tween'in kendi
+ * `EaseMap`'i üzerinden zaten pakete giriyor, ad alanı satırı yalnız
+ * "burası kullanılıyor" diye yalan söylüyordu. Tarayıcıda doğrulandı:
+ * `Quad/Cubic/Back/Elastic/Bounce/Linear` yumuşatmalarının altısı da
+ * çalışıyor, konsol temiz.
+ *
+ * Adıyla okunmayan ama gerçekten gereken satırlar `// bekçi: <gerekçe>`
+ * taşıyor — muafiyet listesi bekçide değil **burada**, çünkü gerekçe
+ * satırın yanında okunmalı.
  *
  * Fabrika dosyaları (`*Factory.js`) `GameObjectFactory.register(...)`
  * çağrısını kendi içinde yapıyor — yani onları `import` etmek
@@ -114,38 +140,25 @@ import BitmapFontFile from 'phaser/src/loader/filetypes/BitmapFontFile';
 //  getirirdi.
 import GeomRectangle from 'phaser/src/geom/rectangle/Rectangle';
 import GeomRectangleContains from 'phaser/src/geom/rectangle/Contains';
-import GeomCircle from 'phaser/src/geom/circle/Circle';
-import GeomCircleContains from 'phaser/src/geom/circle/Contains';
 import Color from 'phaser/src/display/color';
 import Clamp from 'phaser/src/math/Clamp';
-import Linear from 'phaser/src/math/Linear';
-import Wrap from 'phaser/src/math/Wrap';
-import Distance from 'phaser/src/math/distance';
-import Easing from 'phaser/src/math/easing';
-import RandomDataGenerator from 'phaser/src/math/random-data-generator/RandomDataGenerator';
 
-Phaser.GameObjects.Shape = Shape;
+Phaser.GameObjects.Shape = Shape; // bekçi: Rectangle ve Arc bundan türüyor — taban sınıf
 Phaser.GameObjects.Rectangle = Rectangle;
 Phaser.GameObjects.Arc = Arc;
 Phaser.GameObjects.Container = Container;
 Phaser.GameObjects.Group = Group;
 Phaser.GameObjects.BitmapText = BitmapText;
-Phaser.GameObjects.TileSprite = TileSprite;
+Phaser.GameObjects.TileSprite = TileSprite; // bekçi: `.add.tileSprite` fabrikadan, adıyla okunmuyor
 Phaser.GameObjects.Particles = Particles;
 
-Phaser.Loader.FileTypes.BitmapFontFile = BitmapFontFile;
+Phaser.Loader.FileTypes.BitmapFontFile = BitmapFontFile; // bekçi: `.load.bitmapFont` dosya tipinden
 
-Phaser.Geom = { Rectangle: GeomRectangle, Circle: GeomCircle };
+Phaser.Geom = { Rectangle: GeomRectangle };
 Phaser.Geom.Rectangle.Contains = GeomRectangleContains;
-Phaser.Geom.Circle.Contains = GeomCircleContains;
 
 Phaser.Display.Color = Color;
 
 Phaser.Math.Clamp = Clamp;
-Phaser.Math.Linear = Linear;
-Phaser.Math.Wrap = Wrap;
-Phaser.Math.Distance = Distance;
-Phaser.Math.Easing = Easing;
-Phaser.Math.RandomDataGenerator = RandomDataGenerator;
 
 export default Phaser;
