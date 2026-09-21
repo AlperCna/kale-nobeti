@@ -180,6 +180,18 @@ Ayrıntı: `docs/research/04-varlik-paket-boyut.md`
   `FontFace` yüzleri `unicodeRange` ile ayrı ayrı kaydedilir
   (bkz. `src/scenes/BootScene.ts`).
 - Toplam doku sayısı ≤ 16 (Phaser multi-texture batching sınırı).
+  **`M95`'te ölçüldü ve cümle netleşti:** sayılan şey *bir karede çizilen
+  ayrı doku* — `textures.getTextureKeys().length` DEĞİL. O sayaç bugün
+  **379** diyor ve kural ihlal ediliyormuş gibi görünüyor; 372'si
+  `Phaser.GameObjects.Text`in kendi tuvali (her `Text` bir doku üretiyor —
+  TIER 1 kural 7'nin ölçülmüş gerekçesi). Gerçek resim dokusu **7**:
+  `atlas` · ziyaret edilen harita arka planları · `menu-bg` · `sayilar`
+  (bitmap font) · `kn-parcacik` (çalışma zamanında üretiliyor).
+  Oyun içinde görünür `Text` sayısı **8** (HUD 6 + Overlay 2), yani karede
+  ~15 ayrı doku — sınırın altında. **Ölçüm tuzağı:** geliştirme yapısında
+  kapsama göstergesi yapı noktası başına bir `Text` ekliyor (harita 4'te
+  +13) ve sayı 28'e çıkıyor; o katman yayında yok (`MapRenderer`
+  `import.meta.env.DEV`).
 
 ## Klasör yapısı
 
