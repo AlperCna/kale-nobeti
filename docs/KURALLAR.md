@@ -341,6 +341,30 @@ kısa sürede doluyor (2×'te yarısı, 3×'te üçte biri).
 HUD'da dairesel dolumla gösteriliyor; hazır olunca altın kenar bir kez parlıyor.
 Haritalar arası **sıfırlanıyor** (S49).
 
+
+### Yükseltme — S117'nin gider kalemi (`M99`)
+
+Her yetenek tur içinde **2 kez** yükseltilebiliyor;
+seviye harita bitince sıfırlanıyor (beklemeyle aynı kural).
+
+| Seviye | Meteor hasarı | Takviye askeri |
+|---|---|---|
+| 1 | 180 | 2 |
+| 2 | 250 | 3 |
+| 3 | 330 | 4 |
+
+Fiyat haritanın **altın çarpanını** izliyor — gider kalemi gelirle aynı
+ölçekte büyümeli (S72'nin `startGold` gerekçesi):
+
+| Harita | L2 | L3 | Dört yükseltme |
+|---|---|---|---|
+| 1 · Değirmen Geçidi | 180 | 320 | 1000 |
+| 2 · Taş Köprü | 396 | 704 | 2200 |
+| 3 · Kül Ovası | 684 | 1216 | 3800 |
+| 4 · Kar Geçidi | 1404 | 2496 | 7800 |
+| 5 · Kadim Harabe | 1836 | 3264 | 10200 |
+| 6 · Sisli Bataklık | 1980 | 3520 | 11000 |
+
 ---
 
 ## 10. Ekonomi
@@ -361,14 +385,22 @@ Kaynak: `src/data/balance.ts` · `GAME-DESIGN.md` §6
 **karşılamadığını** gösterdi — 12 nokta ×2,6 altınla tam yükseltilemiyor,
 tahta 3820'de takılıyor ve oyuncu 34 can kaybediyordu (20 canla kayıp).
 
-| Harita | HP çarpanı | Altın çarpanı | Fiyat çarpanı | Tahta maliyeti | maliyet/gelir | Can kaybı |
-|---|---|---|---|---|---|---|
-| 1 · Değirmen Geçidi | ×1 | ×1 | ×1 | 1350 | 0,84 | 0 / 20 ✓ |
-| 2 · Taş Köprü | ×1,6 | ×2,2 **←ayrıştı** | ×1 | 2940 | 0,83 | 0 / 20 ✓ |
-| 3 · Kül Ovası | ×2,8 | ×3,8 **←ayrıştı** | ×1 | 5100 | 0,78 | 9 / 20 ✓ |
-| 4 · Kar Geçidi | ×7,35 | ×7,8 **←ayrıştı** | ×1,4 | 7140 | 0,57 | 14 / 20 ✓ |
-| 5 · Kadim Harabe | ×10,05 | ×10,2 **←ayrıştı** | ×1 | 6440 | 0,4 | 15 / 20 ✓ |
-| 6 · Sisli Bataklık | ×8,5 | ×11 **←ayrıştı** | ×1 | 6440 | 0,35 | 18 / 20 ✓ |
+| Harita | HP çarpanı | Altın çarpanı | Fiyat çarpanı | Tahta maliyeti | maliyet/gelir | + yükseltme | Can kaybı |
+|---|---|---|---|---|---|---|---|
+| 1 · Değirmen Geçidi | ×1 | ×1 | ×1 | 1350 | 0,84 | 1,47 | 0 / 20 ✓ |
+| 2 · Taş Köprü | ×1,6 | ×2,2 **←ayrıştı** | ×1 | 2940 | 0,83 | 1,45 | 0 / 20 ✓ |
+| 3 · Kül Ovası | ×2,8 | ×3,8 **←ayrıştı** | ×1 | 5100 | 0,78 | 1,37 | 9 / 20 ✓ |
+| 4 · Kar Geçidi | ×7,35 | ×7,8 **←ayrıştı** | ×1,4 | 7140 | 0,57 | 1,19 | 14 / 20 ✓ |
+| 5 · Kadim Harabe | ×10,05 | ×10,2 **←ayrıştı** | ×1 | 6440 | 0,4 | 1,02 | 15 / 20 ✓ |
+| 6 · Sisli Bataklık | ×8,5 | ×11 **←ayrıştı** | ×1 | 6440 | 0,35 | 0,95 | 18 / 20 ✓ |
+
+**`+ yükseltme` sütunu `M100`'de eklendi** — `maliyet/gelir` yalnız
+**tahtayı** sayan bir orandı ve `M99` altına ikinci bir gider kalemi
+açtı. S117'nin “gelirin yarısından fazlası harcanmadan kalıyor” iddiası
+bu sütunla birlikte başka bir şey söylüyor: geç haritalarda harcanabilir
+gider artık gelirin **tamamına yakını**. Oran kolunun (fiyat çarpanı)
+kalan işi bu kadarıyla küçüldü — ama kapanmadı: yükseltme **seçime bağlı**,
+tahta ise zorunlu.
 
 Türetilebilir kural: **altın, haritanın noktalarını tam yükseltmeye
 yetmeli.** 3,8'de maliyet doyuyor (üstü fazladan kule almıyor), yani sayı

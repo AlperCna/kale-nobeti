@@ -485,10 +485,21 @@ yazılan blokların yanına `MAPS`'ten **türetilen** değişmezler kondu (M90).
 yazılmıyor; kaynağı `kisitB.test.ts`'in monotonluk testi ve
 `KURALLAR.md`'nin üretilen zorluk tablosu.
 
+**Gider kalemi ve ölçüm hijyeni (M91-M100).** `ROADMAP` otuz yedi taş
+geride kalmıştı (M91). Adım tavanı kendi gerekçesini karşılamıyordu (M92),
+bir dosya başlığı gerçekleşmiş bir geleceği anlatıyordu (M93). `M77`'nin
+2 canlık farkı bir kusur değil **ölçümün çözünürlüğü** çıktı (M94);
+sahne yeniden başlatma tarayıcıda sızıntısız (M95) ve “200 eşiği” hesap
+değil ölçüm oldu (M96). Elit dalganın bedeli can değil **kuyruk** (M97),
+belge dili oyunun dilini izlemiyordu (M98). **S117'nin ikinci kolu
+açıldı** — yetenek yükseltmesi (M99) — ve bedeli can cinsinden ölçülüp
+oran tablosuna **`+ yükseltme`** sütunu olarak kondu (M100).
+
 **Bugün açık duranlar:** S116'nın kalanı (dalga **1-8** hâlâ boş; 9-10
-değil), S117'nin harita 5-6 kolu (oran 0,40 · 0,35 — gider kalemi ya da
-S95 önce), ve `M77`'nin bıraktığı tek aile tahtalarındaki 2 canlık
-sim/oyun farkı.
+değil), S117'nin **oran** kolu (tahta tek başına hâlâ 0,40 · 0,35;
+yükseltmeyle birlikte 1,02 · 0,95 — ama yükseltme seçime bağlı, tahta
+zorunlu), ve `M77`'nin bıraktığı tek aile tahtalarındaki 2 canlık
+sim/oyun farkı — **`M94`'te çözünürlük olarak açıklandı**.
 
 ---
 
