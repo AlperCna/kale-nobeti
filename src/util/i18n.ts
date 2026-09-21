@@ -27,6 +27,25 @@ let mevcut: Locale = DEFAULT_LOCALE;
 /** Yalnız `systems/Settings.ts` çağırır — bkz. `mevcut` yorumu. */
 export function setLocale(locale: Locale): void {
   mevcut = locale;
+  belgeDiliniYaz(locale);
+}
+
+/**
+ * `<html lang>` de etkin dili izliyor — `M98`.
+ *
+ * `index.html` sayfayı `lang="tr"` ile açıyor ve oyuncu İngilizce'ye
+ * geçince belge **yalan söylüyordu**: ekran okuyucu Türkçe sesle
+ * İngilizce metin okuyor, tarayıcı da “bu sayfayı çevir?” diye soruyor.
+ * Tek yazıcı burada, çünkü etkin dilin adresi zaten burası —
+ * `Settings`'in iki çağrı yeri (kurucu ve `set`) kendiliğinden kapsıyor.
+ *
+ * `document` koruması kural 11'in komşusu: bu dosya `node`'da test
+ * ediliyor ve orada DOM yok (`util/storage.ts`'in gizli sekme
+ * korumasıyla aynı gerekçe).
+ */
+function belgeDiliniYaz(locale: Locale): void {
+  if (typeof document === 'undefined') return;
+  document.documentElement.lang = locale;
 }
 
 export function getLocale(): Locale {

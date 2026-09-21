@@ -77,4 +77,38 @@ describe('i18n', () => {
       expect(value, `en.${key} boş`).not.toBe('');
     }
   });
+
+  /**
+   * **`<html lang>` etkin dili izliyor** — `M98`.
+   *
+   * `index.html` sayfayı `lang="tr"` ile açıyor; oyuncu İngilizce'ye
+   * geçince belge yalan söylüyordu (ekran okuyucu Türkçe sesle İngilizce
+   * metin okur, tarayıcı gereksiz yere çeviri önerir).
+   *
+   * Test `node` ortamında koşuyor ve orada `document` yok — sahte bir
+   * belge kurulup sonra geri alınıyor. İki dal da sınanıyor: belge varken
+   * yazıyor, yokken **çökmeden** geçiyor.
+   */
+  it('setLocale `<html lang>`i de yazıyor (M98)', () => {
+    const oncekiDil = getLocale();
+    const kok = { lang: 'tr' };
+    const genel = globalThis as { document?: unknown };
+    const oncekiBelge = genel.document;
+    try {
+      genel.document = { documentElement: kok };
+      setLocale('en');
+      expect(kok.lang).toBe('en');
+      setLocale('tr');
+      expect(kok.lang).toBe('tr');
+
+      // Belge yokken sessizce geçiyor (node testleri, başsız koşu).
+      delete genel.document;
+      expect(() => setLocale('en')).not.toThrow();
+      expect(getLocale()).toBe('en');
+    } finally {
+      if (oncekiBelge === undefined) delete genel.document;
+      else genel.document = oncekiBelge;
+      setLocale(oncekiDil);
+    }
+  });
 });
