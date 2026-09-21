@@ -44,8 +44,19 @@
  * Bir modül eksik kalırsa `npm run typecheck` **YEŞİL** geçer — tipler
  * `phaser/types`'tan geliyor, çalışma zamanından değil — ve oyun
  * tarayıcıda o kod yolu oynanınca çöker. Testler de göremez (`node`
- * ortamı Phaser çalıştırmıyor, S08). Tek gerçek sağlaması **elle tam
- * tur**; `Y11`'in "bitmedi sayılır eğer" maddesi bu.
+ * ortamı Phaser çalıştırmıyor, S08).
+ *
+ * `M100` buna **canlı düştü**: yetenek seviye pimleri `Phaser.Geom.Point`
+ * ile çiziliyordu, typecheck yeşildi, kapı 18/18'di ve düğme tarayıcıda
+ * her karede `Point is not a constructor` atıyordu. Bekçiye 19. kural
+ * o gün kondu: aşağıda `Phaser.NS = { ... }` biçiminde yazılan
+ * **kapalı** ad uzaylarının yüzeyi bu dosyadan türetiliyor ve `src/`
+ * o yüzeyin dışına çıkarsa kapı kırmızı dönüyor.
+ *
+ * Kural yalnız **kapalı** ad uzaylarını görüyor. `Phaser.Math.Clamp = ...`
+ * biçimindeki **eklemeler** çekirdeğin üstüne yazıyor, yani yüzeyleri
+ * dosyadan türetilemiyor; oradaki boşluklar için tek çare hâlâ **elle
+ * tam tur** — `Y11`'in "bitmedi sayılır eğer" maddesi bu.
  *
  * Fabrika dosyaları (`*Factory.js`) `GameObjectFactory.register(...)`
  * çağrısını kendi içinde yapıyor — yani onları `import` etmek

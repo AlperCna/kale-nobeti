@@ -493,7 +493,11 @@ sahne yeniden başlatma tarayıcıda sızıntısız (M95) ve “200 eşiği” h
 değil ölçüm oldu (M96). Elit dalganın bedeli can değil **kuyruk** (M97),
 belge dili oyunun dilini izlemiyordu (M98). **S117'nin ikinci kolu
 açıldı** — yetenek yükseltmesi (M99) — ve bedeli can cinsinden ölçülüp
-oran tablosuna **`+ yükseltme`** sütunu olarak kondu (M100).
+oran tablosuna **`+ yükseltme`** sütunu olarak kondu (M100 Faz 1).
+Satın alınanın ekranda izi yoktu; seviye pimleri kondu ve onları çizerken
+özel Phaser yapımının kör noktasına **canlı düşüldü** — bekçinin 19.
+kuralı o boşluğu kapattı ve §17'nin elle yazılı bekçi tablosu türetildi
+(M100 Faz 2).
 
 **Bugün açık duranlar:** S116'nın kalanı (dalga **1-8** hâlâ boş; 9-10
 değil), S117'nin **oran** kolu (tahta tek başına hâlâ 0,40 · 0,35;

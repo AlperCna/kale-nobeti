@@ -896,23 +896,41 @@ oyun durumunda öldürülemeyen boss); kural o yüzden var.
 `scripts/guard-rules.mjs`. **Bekçiler kanıt değil, ağ**: hepsi düzenli
 ifade sezgiseli ve her biri **kasıtlı bozmayla** doğrulandı.
 
-| Kural | Ne kontrol ediyor |
+| # | Kural |
 |---|---|
-| k.8 ham `delta` | `GameScene`'de yalnız izin listesindeki üç satır |
-| k.5 `any` | Hiç kullanılmıyor |
-| M0 `PreloadScene` | En az 4 aşama fonksiyonu |
-| k.7 `setText` | `setText` çağıran dosya `Text` **üretmemeli** |
-| k.11 Phaser | `systems/`,`util/`,`data/`,`types/` çalışma zamanında Phaser almıyor |
-| test varlığı | `src/` altında en az bir `*.test.ts` |
-| k.9 `Math.sqrt` | Yalnız `math.ts` |
-| mim. `coverage` | `measureCoverage` ile üretiliyor, elle yazılmıyor |
-| k.8 duvar saati | Saf mantıkta `Date.now`/`performance.now` yok |
-| **mim. sahne alanları** | Her değişebilir sahne alanı `init`/`preload`/`create` içinde **atanıyor** |
+| 1 | k.8  ham delta yalnız GameClock/GameScene |
+| 2 | k.5  any kullanılmıyor |
+| 3 | M0   PreloadScene 4 aşama (8) |
+| 4 | k.7  setText yalnız Text üretmeyen dosyada |
+| 5 | k.11 saf mantıkta runtime Phaser yok |
+| 6 | test src/ altında test dosyası (65) |
+| 7 | k.9  Math.sqrt yalnız math.ts |
+| 8 | mim. coverage measureCoverage ile üretiliyor |
+| 9 | k.8  saf mantıkta duvar saati yok |
+| 10 | mim. sahne alanları create() içinde sıfırlanıyor |
+| 11 | k.3  HAVUZ_ALANLARI → resetForPool() tam eşleşiyor |
+| 12 | i18n scenes/+fx/ içinde Türkçe metin sabiti yok (sezgisel) |
+| 13 | platform yazı boyutu ≥ 16px (scenes/+fx/) |
+| 14 | k.10 localStorage yalnız util/storage.ts |
+| 15 | platform console yalnız DEV korumalı |
+| 16 | platform dokunmatik hedef ≥ 44px (çözülebilen ölçüler) |
+| 17 | platform vite base: './' (R15) |
+| 18 | S117 kule fiyatı tek adresten (maliyet) |
+| 19 | M100 özel Phaser yapımının kapalı yüzeyi |
 
-Son kural **dört kez çıkan** bir hatadan doğdu: alan başlatıcısı yalnız bir
-kez koşuyor, `create()` her yeniden başlatmada. Sızıntı çökme üretmiyor,
-**yanlış durum** olarak görünüyor. Kural beş tarihsel hataya karşı negatif
-doğrulandı ve yazıldığı anda **iki yeni hata** buldu.
+Liste **türetilmiş**: üretici bekçiyi koşturup çıktısını okuyor, elle
+sayılmıyor. Bugün **19** kural var.
+
+Sahne alanları kuralı **dört kez çıkan** bir hatadan doğdu: alan
+başlatıcısı yalnız bir kez koşuyor, `create()` her yeniden başlatmada.
+Sızıntı çökme üretmiyor, **yanlış durum** olarak görünüyor. Kural beş
+tarihsel hataya karşı negatif doğrulandı ve yazıldığı anda **iki yeni
+hata** buldu.
+
+Sonuncusu (`M100`) başka bir kör noktayı kapatıyor: özel Phaser yapımı
+(`src/vendor/phaser-custom.js`) paket boyutu için modül eliyor, tipler
+ise tam pakete bakıyor — taşınmayan bir API typecheck'ten **yeşil**
+geçip tarayıcıda çöküyordu. `M100` buna canlı düştü (`Phaser.Geom.Point`).
 
 
 ---

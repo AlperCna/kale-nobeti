@@ -328,6 +328,8 @@ export class HudScene extends Phaser.Scene {
         const bedel = game.yetenekYukseltmeBedeli(id);
         return bedel !== null && game.gold >= bedel ? bedel : null;
       },
+      // `M100` — satın alınan seviyenin kalıcı izi.
+      (id) => game.abilities.seviye(id),
     );
 
     const boss = game.bossInfo;
