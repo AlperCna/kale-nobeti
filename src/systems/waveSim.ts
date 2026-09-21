@@ -414,6 +414,33 @@ function kosturDalgalar(
    * R17'nin tam tarifi: aynı kuralın dört kopyası, er geç dört farklı
    * oyun. Çare tek adres.
    */
+  /**
+   * **Ölüm hunisi — ve sim ile oyunun ölçülen tek farkı** (`M94`).
+   *
+   * Burada ceset **anında** havuza dönüyor; oyunda (`Particles.olumEfekti`)
+   * 180-200 ms'lik bir ölüm tween'i bitene kadar havuzda kalıyor. Bu fark
+   * davranış değil **geri dönüşüm sırası** üretiyor: ceset geç serbest
+   * kalınca sonraki doğumlar başka havuz yuvalarını alıyor ve aktif liste
+   * başka sıraya giriyor. Bütün tüketiciler `alive`/`hp<=0` sınıyor
+   * (`BarracksSystem`'in kendi notu), yani ölü düşman hedef olmuyor —
+   * değişen şey yalnız sıra.
+   *
+   * **Ölçüldü (`M94`), iki pertürbasyon:** aktif liste **ters çevrildiğinde**
+   * harita 4-5 birebir aynı kalıyor, harita 6'da karışık 18 → 16 ve Okçu
+   * 16 → 17. Ceset **180 ms gecikmeyle** bırakıldığında: harita 4 karışık
+   * 14 → 13 ve Büyü 10 → 11, harita 5 Okçu 18 → 17, harita 6 Büyü 12 → 13.
+   * Yani etki **±1-2 can** ve yönü sistematik değil; tek aile tahtalarına
+   * özgü de değil.
+   *
+   * **Sonuç bir SAYI:** geç haritalarda ölçümün çözünürlüğü **±2 can**.
+   * `M77`'nin oyunda gördüğü 2 canlık fark bu bandın içinde — yani ayrı bir
+   * kusur değil. Denge kararı alırken pay bu bandın üstünde tutulmalı
+   * (S130'un “iddia kare süresinin şansına dayanmasın” dersinin ikizi).
+   *
+   * Gecikme sim'e **eklenmedi**: bütün denge sayıları anında bırakmayla
+   * türetildi ve kazancı (±1 can) bedelinden (hepsini yeniden türetmek)
+   * küçük.
+   */
   const oldur = (e: SimEnemy): void => {
     if (!e.alive) return;
     e.alive = false;
