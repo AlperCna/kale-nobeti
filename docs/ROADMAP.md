@@ -430,9 +430,65 @@ canlandırıldı: başarım `threshold`'ları (kod sabit yazıyordu),
 `BALANCE.activityRatio`, `MapDef.background` (değerlerinin yarısı
 yanlıştı).
 
-**Açık duran denge soruları:** S116 (baskı son iki dalgada yoğunlaşıyor),
-S117 (geç haritalarda gelirin yarısından fazlası harcanmıyor), S120,
-S127. Hepsinin ölçümü ve denenip elenen kolları `OPEN-QUESTIONS.md`'de.
+**Açık duran denge soruları (M53'teki hal):** S116, S117, S120, S127.
+Bugünkü durumları aşağıdaki özette.
+
+
+---
+
+## M54 sonrası — özet (`M91`'de yazıldı)
+
+> Üstteki özet `M53`'te yazıldı ve **otuz yedi taş** geride kaldı.
+> Aynı kural: taş taş ayrıntı `OPEN-QUESTIONS.md` ile git geçmişinde,
+> burası temalara göre.
+
+**Ölçüm krizi ve çözümü (M54-M68).** Uçtan uca doğrulama simülasyonun
+gerçek oyundan **iyimser** olduğunu gösterdi (S129) ve dört hipotez tek
+tek elendi — ama her eleme kendi kusurunu buldu: ölçüm düzeneği (M57),
+yapısal ayrışma (M58), sayısal kararsızlık (M59: simülasyon tavanının
+birimi adım değil **saniye**ymiş; M60: referans ölçüm tek bir kare
+süresine borçluymuş), kare süresi (M63: harita 5'in çukuru bir eşik değil
+**kuyruk**; M64: sabit adımlı biriktirici; M65: ara değer üretimi). Gerçek
+sebep başkaydı: simülasyon Örümcek Ana'yı **hiç böldürmüyordu** (M66).
+S129 `M68`'de tamamen kapandı — üç haritada da simülasyon oyunla birebir.
+Yan ürün: referans tahta Okçu'nun tek cevabını (Kundakçı) hiç
+kurmuyormuş (M61) ve harita 6 çarpandan değil **kadrodan** zorlaştırıldı
+(M62, sahibin isteği).
+
+**Boss ve aile (M69-M78).** §7 “boss dalgası zirvedir” diyordu, ölçüm
+tersini buldu (S135) — boss HP'leri **dalga baskısı eşiğinden** türetildi
+(`0,65 × eşik`, M75) ve bossun payını ölçen sağlama eklendi (M74). Sektör
+standardı iki kurala indirildi — *her kulenin en iyi olduğu bir senaryo
+olmalı*, *hiçbir tehdidin tek anahtarı olmamalı* — ve her aileye bir **ev**
+verildi (M76), oyunda doğrulandı (M77).
+
+**Fiyat, rampa, ölçüm dürüstlüğü (M79-M85).** `MapDef.costMultiplier` +
+fiyatın tek adresi + bekçi 18. kuralı (M79). **Belge, testlerin S109'da
+reddettiği ölçümü basıyordu** (M80) — üretici kanonik adrese bağlandı.
+Zorluk rampası kampanyanın **son haritasını saymıyordu** (M81); seçim
+`M82`'de noktaya değil **banda** göre yapıldı (mermi hızı taramasının yan
+bulgusu). Odaklanma kaybı varsayım olmaktan çıkıp **ölçüm** oldu (M83:
+gerçek kayıp %25 değil %3-13). S116'nın “bütün baskı 10. dalgada” iddiası
+**yarı ölçüm kusuru** çıktı (M84: sızıntı doğduğu dalgaya değil sızdığı
+ana yazılıyordu). S95'in makası da aynı şüpheyle sınandı — **değil**,
+gerçek (M85).
+
+**Arayüz ve belge hijyeni (M86-M90).** Sonsuz modun listeleri harita 6'yı
+saymıyordu ve `CLAUDE.md`'nin iki sayısı bayattı (M86). **Dokunmatikte
+duraklatma yoktu** — menü vardı, kapısı yalnız ESC'ti (M87). “Nasıl
+oynanır” bir kuralı haritasız anlatıyordu (M88). Arayüz kromunun yarısı
+geri bildirimsizdi — tıklama sesi üretilmiş ama çağıran yoktu (M89). Son
+haritanın “sayılar ölçüldü” kaydı hiç yazılmamıştı ve harita başına elle
+yazılan blokların yanına `MAPS`'ten **türetilen** değişmezler kondu (M90).
+
+**Ölçülen rampa (bugün):** `0 · 0 · 9 · 14 · 15 · 18`. Bu satır elle
+yazılmıyor; kaynağı `kisitB.test.ts`'in monotonluk testi ve
+`KURALLAR.md`'nin üretilen zorluk tablosu.
+
+**Bugün açık duranlar:** S116'nın kalanı (dalga **1-8** hâlâ boş; 9-10
+değil), S117'nin harita 5-6 kolu (oran 0,40 · 0,35 — gider kalemi ya da
+S95 önce), ve `M77`'nin bıraktığı tek aile tahtalarındaki 2 canlık
+sim/oyun farkı.
 
 ---
 
