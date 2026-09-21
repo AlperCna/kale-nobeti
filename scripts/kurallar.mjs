@@ -52,7 +52,7 @@ import { ENEMIES, getEnemyForMap } from './data/enemies';
 import { BOSS_ARMOR_BY_MAP, BOSS_HP_BY_MAP } from './data/bossScaling';
 import { MAPS, COVERAGE_REFERENCE_RANGE } from './data/maps';
 import { wavesFor, budget, wavePoints, waveEnemyCount, spawnDelayFor } from './data/waves';
-import { ABILITIES } from './data/abilities';
+import { ABILITIES, YETENEK_SEVIYE_SAYISI, METEOR_HASAR, TAKVIYE_ASKER, yetenekYukseltmeFiyati } from './data/abilities';
 // Y03 Adım 3 / S76: dal adları artık strings.ts anahtarı. Doküman
 // Türkçe, o yüzden burada açıkça tr sözlüğünden çözülüyor — etkin
 // dilden (t()) DEĞİL, yoksa doküman oyuncunun diline göre değişirdi.
@@ -197,6 +197,9 @@ it('dokum', () => {
   const veri = {
     kuleler, kisla, dusmanlar, matris, haritalar, zorluk,
     yetenekler: ABILITIES.map((a) => ({ ...a })),
+    yetenekSeviye: { sayi: YETENEK_SEVIYE_SAYISI, meteor: [...METEOR_HASAR], takviye: [...TAKVIYE_ASKER],
+      fiyat: MAPS.map((m) => ({ id: m.id,
+        basamaklar: Array.from({ length: YETENEK_SEVIYE_SAYISI - 1 }, (_, i) => yetenekYukseltmeFiyati(i + 1, m)) })) },
     blok: { ...BLOCK }, soldierSpeed: SOLDIER_SPEED, meleeK: +MELEE_DPS_PER_POINT.toFixed(4),
     balance: { startLives: BALANCE.startLives, sellRefund: BALANCE.sellRefund, damageFloor: BALANCE.damageFloor,
       prepSeconds: BALANCE.prepSeconds, earlyBonusFrom: BALANCE.earlyBonusFrom,
@@ -759,6 +762,16 @@ function olustur() {
   y(`kısa sürede doluyor (2×'te yarısı, 3×'te üçte biri).`);
   y(`HUD'da dairesel dolumla gösteriliyor; hazır olunca altın kenar bir kez parlıyor.`);
   y(`Haritalar arası **sıfırlanıyor** (S49).`, '');
+  y('', `### Yükseltme — S117'nin gider kalemi (\`M99\`)`, '');
+  y(`Her yetenek tur içinde **${n(D.yetenekSeviye.sayi - 1)} kez** yükseltilebiliyor;`);
+  y(`seviye harita bitince sıfırlanıyor (beklemeyle aynı kural).`, '');
+  y(tablo(['Seviye', 'Meteor hasarı', 'Takviye askeri'],
+    D.yetenekSeviye.meteor.map((h, i) => [n(i + 1), n(h), n(D.yetenekSeviye.takviye[i])])), '');
+  y(`Fiyat haritanın **altın çarpanını** izliyor — gider kalemi gelirle aynı`);
+  y(`ölçekte büyümeli (S72'nin \`startGold\` gerekçesi):`, '');
+  y(tablo(['Harita', ...D.yetenekSeviye.meteor.slice(1).map((_, i) => `L${i + 2}`), 'Dört yükseltme'],
+    D.yetenekSeviye.fiyat.map((f) => [HARITA_ADI[f.id], ...f.basamaklar.map((x) => n(x)),
+      n(f.basamaklar.reduce((t, x) => t + 2 * x, 0))])), '');
 
   // ---------------------------------------------------------------- 10
   y('---', '', '## 10. Ekonomi', '');
@@ -775,12 +788,23 @@ function olustur() {
   y(`"altın/HP oranı düşmesin"di; ölçüm eşitliğin harita 3'te bu gerekçeyi`);
   y(`**karşılamadığını** gösterdi — 12 nokta ×2,6 altınla tam yükseltilemiyor,`);
   y(`tahta 3820'de takılıyor ve oyuncu 34 can kaybediyordu (20 canla kayıp).`, '');
-  y(tablo(['Harita', 'HP çarpanı', 'Altın çarpanı', 'Fiyat çarpanı', 'Tahta maliyeti', 'maliyet/gelir', 'Can kaybı'],
+  /** `M100` — haritanın **dört** yetenek yükseltmesinin toplamı. */
+  const yukseltmeGideri = (id) => (D.yetenekSeviye.fiyat.find((f) => f.id === id)?.basamaklar ?? [])
+    .reduce((t, x) => t + 2 * x, 0);
+  y(tablo(['Harita', 'HP çarpanı', 'Altın çarpanı', 'Fiyat çarpanı', 'Tahta maliyeti', 'maliyet/gelir', '+ yükseltme', 'Can kaybı'],
     D.haritalar.map((m) => [HARITA_ADI[m.id], `×${n(m.hpMultiplier)}`,
       `×${n(m.goldMultiplier)}${m.goldMultiplier !== m.hpMultiplier ? ' **←ayrıştı**' : ''}`,
       `×${n(m.costMultiplier)}`, n(m.tahta10?.maliyet),
       n(+((m.tahta10?.maliyet ?? 0) / m.altinMuhafazakar).toFixed(2)),
+      n(+(((m.tahta10?.maliyet ?? 0) + yukseltmeGideri(m.id)) / m.altinMuhafazakar).toFixed(2)),
       `${n(m.canKaybi)} / 20${m.canKaybi < 20 ? ' ✓' : ' ✗'}`])), '');
+  y(`**\`+ yükseltme\` sütunu \`M100\`'de eklendi** — \`maliyet/gelir\` yalnız`);
+  y(`**tahtayı** sayan bir orandı ve \`M99\` altına ikinci bir gider kalemi`);
+  y(`açtı. S117'nin “gelirin yarısından fazlası harcanmadan kalıyor” iddiası`);
+  y(`bu sütunla birlikte başka bir şey söylüyor: geç haritalarda harcanabilir`);
+  y(`gider artık gelirin **tamamına yakını**. Oran kolunun (fiyat çarpanı)`);
+  y(`kalan işi bu kadarıyla küçüldü — ama kapanmadı: yükseltme **seçime bağlı**,`);
+  y(`tahta ise zorunlu.`, '');
   y(`Türetilebilir kural: **altın, haritanın noktalarını tam yükseltmeye`);
   y(`yetmeli.** 3,8'de maliyet doyuyor (üstü fazladan kule almıyor), yani sayı`);
   y(`seçilmedi — tam yükseltme noktası olarak **ölçüldü**.`, '');

@@ -368,6 +368,14 @@ function kosturDalgalar(
   erken: ErkenPolitika = 'hic',
   /** Yalnız ölçüm — bkz. `SimGozlemci`. Simülasyonun davranışına dokunmaz. */
   gozlemci?: SimGozlemci,
+  /**
+   * Oyuncunun yetenek **seviyesi** — `M100` (S117'nin gider kalemi).
+   *
+   * Taban `1`, yani bugüne kadarki bütün ölçümler birebir aynı kalıyor.
+   * `yetenekKullanimi` `'yok'` iken hiçbir anlamı yok (yetenek sistemi
+   * kurulmuyor bile). Sorusu şu: **yükseltmeyi alan oyuncu ne kazanıyor?**
+   */
+  yetenekSeviyesi = 1,
 ): SimResult[] {
   const dogumCarpani = map.hpMultiplier * hpScale;
   const bus = new EventBus();
@@ -697,6 +705,12 @@ function kosturDalgalar(
    * çalışmıyor, yani bugünkü bütün ölçümler birebir aynı kalıyor.
    */
   const oyuncuYetenekleri = yetenekKullanimi === 'yok' ? null : new AbilitySystem();
+  if (oyuncuYetenekleri !== null) {
+    for (let i = 1; i < yetenekSeviyesi; i++) {
+      oyuncuYetenekleri.yukselt('meteor');
+      oyuncuYetenekleri.yukselt('takviye');
+    }
+  }
   /** Takviye'nin geçici askerleri — kışla askerleriyle aynı kurallar (S47). */
   const gecicAskerler: SoldierState[] = [];
   const METEOR_YARICAP_KARE = METEOR.radius * METEOR.radius;
@@ -902,6 +916,8 @@ export function simulateAllWaves(
   erken: ErkenPolitika = 'hic',
   /** Yalnız ölçüm — bkz. `SimGozlemci`. */
   gozlemci?: SimGozlemci,
+  /** Oyuncunun yetenek seviyesi — `M100`; taban 1. */
+  yetenekSeviyesi = 1,
 ): SimResult[] {
   return kosturDalgalar(
     waves,
@@ -912,5 +928,6 @@ export function simulateAllWaves(
     yetenekKullanimi,
     erken,
     gozlemci,
+    yetenekSeviyesi,
   );
 }

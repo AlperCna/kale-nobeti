@@ -51,7 +51,7 @@ import type { MapDef } from '../types/map';
  * `SABIT_ADIM_MS` ve `waveSim` de onu aynı sabitten alıyor. Ortalanacak
  * bir bant kalmadı — tek koşu artık oyunun kendisi.
  */
-function canKaybi(m: MapDef, kullanim: YetenekKullanimi): number {
+function canKaybi(m: MapDef, kullanim: YetenekKullanimi, seviye = 1): number {
   const w = wavesFor(m.id);
   const k = measureCoverage(m.paths, m.buildSpots, COVERAGE_REFERENCE_RANGE);
   // S109 — tahta ile simülasyon aynı oyuncuyu varsayıyor (`referansOlcum`).
@@ -63,6 +63,8 @@ function canKaybi(m: MapDef, kullanim: YetenekKullanimi): number {
     1,
     kullanim,
     REFERANS_POLITIKA,
+    undefined,
+    seviye,
   );
   let can = 0;
   for (const r of sim) {
@@ -299,5 +301,57 @@ describe('Yeteneklerin katkısı — M11 Faz 4', () => {
     const varsayilan = simulateAllWaves(w, tahtalar, MAP_4);
     const acikca = simulateAllWaves(w, tahtalar, MAP_4, undefined, 1, 'yok');
     expect(varsayilan.map((r) => r.leakedCount)).toEqual(acikca.map((r) => r.leakedCount));
+  });
+});
+
+/**
+ * **Yükseltme ne kazandırıyor?** — `M100`, S117'nin gider kalemi.
+ *
+ * `M99` altına bir gider kalemi açtı: geç haritalarda atıl kalan geliri
+ * yetenek yükseltmesine çeviriyor. Soru tasarım sorusu: bunun **bedeli
+ * can cinsinden ne**? Kaydedilmemiş bir güç artışı, sessizce geç
+ * haritaları çözebilirdi.
+ *
+ * Ölçülen (can kaybı, `ikisi` kullanımı):
+ *
+ * | Harita | yetenek yok | L1 | L2 | L3 |
+ * |---|---|---|---|---|
+ * | Kar Geçidi | 14 | 10 | 9 | **7** |
+ * | Kadim Harabe | 15 | 13 | 11 | **11** |
+ * | Sisli Bataklık | 18 | 10 | 10 | **9** |
+ *
+ * Yani yeteneği **kullanmak** 2-8 can, **yükseltmek** 1-3 can daha
+ * kazandırıyor. Atıl altını (harita 6'da 11 974) görünür bir
+ * karşılığa çeviriyor ama haritayı çözmüyor.
+ */
+describe('yetenek seviyesinin değeri (M100)', () => {
+  const GEC = [MAP_4, MAP_5, MAP_6];
+
+  it('yükseltme TOPLAMDA kazandırıyor', () => {
+    const l1 = GEC.reduce((t, m) => t + canKaybi(m, 'ikisi', 1), 0);
+    const l3 = GEC.reduce((t, m) => t + canKaybi(m, 'ikisi', 3), 0);
+    // Ölçüm: 33 → 27. Tek harita yerine toplam, çünkü geç haritalarda
+    // ölçümün çözünürlüğü ±2 can (S145) ve tek satır gürültüye açık.
+    expect(l3, `L1 ${l1} → L3 ${l3}`).toBeLessThan(l1);
+  });
+
+  it('hiçbir haritada yükseltme ZARAR vermiyor (±2 pay içinde)', () => {
+    for (const m of GEC) {
+      const l1 = canKaybi(m, 'ikisi', 1);
+      const l3 = canKaybi(m, 'ikisi', 3);
+      expect(l3, `${m.id}: ${l1} → ${l3}`).toBeLessThanOrEqual(l1 + 2);
+    }
+  });
+
+  /**
+   * **Seviye, yeteneksiz ölçüme SIZAMAZ.** Bütün denge sayıları
+   * (`referansOlcum`) yetenekleri kapalı koşuyor; seviye kolu oraya
+   * sızsaydı rampa, Kısıt A/B ve boss türetmesi bu özellikten
+   * etkilenirdi. Bu test o sınırı bağlıyor.
+   */
+  it('`yok` kullanımında seviyenin HİÇBİR etkisi yok', () => {
+    for (const m of GEC) {
+      expect(canKaybi(m, 'yok', 3), m.id).toBe(canKaybi(m, 'yok', 1));
+    }
   });
 });
