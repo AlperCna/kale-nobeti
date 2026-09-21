@@ -5,11 +5,19 @@ import { addPressFeedback } from '../fx/ParchmentFrame';
 import type { StringKey } from '../data/strings';
 
 const INK = 0x14203a;
-const UST = 108;
-/** Satırlar arası nefes. */
-const SATIR_ARALIGI = 12;
+const UST = 100;
+/**
+ * Satırlar arası nefes.
+ *
+ * **`M99`: 12 → 9.** On birinci satır (yetenek yükseltmesi) eklenince
+ * sayfa alt şeride taşıyordu: son paragraf “← Geri” bağlantısına ve tam
+ * ekran düğmesine giriyordu — canlı ekran görüntüsünde görüldü. Akış
+ * yerleşimi üst üste binmeyi engelliyor ama sayfa **sığmayı** kendiliğinden
+ * çözmüyor; aralık daraltıldı.
+ */
+const SATIR_ARALIGI = 9;
 /** Bölümler arası nefes — başlığın üstünde. */
-const BOLUM_ARALIGI = 18;
+const BOLUM_ARALIGI = 14;
 
 /**
  * Sayfa **bölümlere ayrılıyor** — `M87`.
@@ -22,7 +30,7 @@ const BOLUM_ARALIGI = 18;
 const BOLUMLER: readonly { readonly baslik: StringKey; readonly satirlar: readonly StringKey[] }[] =
   [
     { baslik: 'howToSecBasics', satirlar: ['howTo1', 'howTo3', 'howTo6', 'howTo7'] },
-    { baslik: 'howToSecTowers', satirlar: ['howTo2', 'howTo4', 'howTo5', 'howTo8'] },
+    { baslik: 'howToSecTowers', satirlar: ['howTo2', 'howTo4', 'howTo5', 'howTo11', 'howTo8'] },
     // `M28` — `M12` (yeraltı geçişi) ve `M13` (çağıran boss) bu sayfaya hiç
     // girmemişti; `M10`'un iki mekaniği `howTo8/9` ile eklenip sonrakiler
     // atlanmıştı.
