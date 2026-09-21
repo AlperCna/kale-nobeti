@@ -60,6 +60,10 @@ import { ABILITIES, YETENEK_SEVIYE_SAYISI, METEOR_HASAR, TAKVIYE_ASKER, yetenekY
 // dizesinin içinde yaşıyor, ters tırnak onu erken kapatıyor.)
 import { STRINGS } from './data/strings';
 const dalAdi = (k) => (k === undefined ? null : STRINGS.tr[k]);
+// M103 — düşman adları da aynı adresten. Önceden bu betikte elle
+// yazılmış bir harita vardı ve Tünelci'yi (M12) saymıyordu.
+// (Ters tırnak YOK — yukarıdaki not.)
+import { AD_ANAHTARI } from './fx/enemyLabel';
 import { BALANCE, POOL_PREALLOC, MERMI_HIZI, MERMI_ISABET_YARICAPI, SPAWN_K } from './data/balance';
 import { EFFECT_SCALE, DEFAULT_SETTINGS, reducedMotionDefaults } from './systems/Settings';
 import { SHAKE_MIN_SEC, SHAKE_MAX_SEC } from './fx/ScreenShake';
@@ -200,6 +204,13 @@ it('dokum', () => {
     yetenekSeviye: { sayi: YETENEK_SEVIYE_SAYISI, meteor: [...METEOR_HASAR], takviye: [...TAKVIYE_ASKER],
       fiyat: MAPS.map((m) => ({ id: m.id,
         basamaklar: Array.from({ length: YETENEK_SEVIYE_SAYISI - 1 }, (_, i) => yetenekYukseltmeFiyati(i + 1, m)) })) },
+    // Boss işareti de türetiliyor: §5'e göre sızan can normalde 1-2,
+    // bossta 10 — yani en büyük leakDamage bossu veriyor.
+    dusmanAdi: (() => {
+      const enBuyuk = Math.max(...ENEMIES.map((e) => e.leakDamage));
+      return Object.fromEntries(ENEMIES.map((e) => [e.id,
+        STRINGS.tr[AD_ANAHTARI[e.id]] + (e.leakDamage === enBuyuk ? ' (boss)' : '')]));
+    })(),
     blok: { ...BLOCK }, soldierSpeed: SOLDIER_SPEED, meleeK: +MELEE_DPS_PER_POINT.toFixed(4),
     balance: { startLives: BALANCE.startLives, sellRefund: BALANCE.sellRefund, damageFloor: BALANCE.damageFloor,
       prepSeconds: BALANCE.prepSeconds, earlyBonusFrom: BALANCE.earlyBonusFrom,
@@ -335,11 +346,14 @@ const HARITA_ADI = Object.fromEntries(
     return [m.id, `${i + 1} · ${ad}`];
   }),
 );
-const DUSMAN_ADI = {
-  goblin: 'Goblin', orkSavasci: 'Ork Savaşçı', kurtBinicisi: 'Kurt Binicisi', harpi: 'Harpi',
-  zirhliOrk: 'Zırhlı Ork', saman: 'Şaman', trol: 'Trol', orumcekAna: 'Örümcek Ana',
-  orumcekYavrusu: 'Örümcek Yavrusu', ogreSef: 'Ogre Şef (boss)',
-};
+/**
+ * **`M103`: türetiliyor, elle yazılmıyor.** Burası on düşman yazan bir
+ * nesneydi; `M12` Tünelci'yi ekledi ve bu liste büyümedi, yani belge
+ * oyuncunun “Tünelci” gördüğü yerde ham kimlik (`tunelci`) basıyordu —
+ * Kısıt A tablosunda, sızıntı kırılımında ve dalga bileşimlerinde.
+ * Kaynak artık oyunun kendi adresi (`fx/enemyLabel.AD_ANAHTARI`).
+ */
+const DUSMAN_ADI = D.dusmanAdi;
 const KULE_ADI = { okcu: 'Okçu', top: 'Top', buyu: 'Büyü' };
 
 const b = [];
@@ -948,10 +962,21 @@ function olustur() {
         `${yuzde(k.oran)}${k.oran > 87 ? (D.kislaIle.includes(k.id) ? ' ⓑ' : ' ✗') : ''}`,
       ])), '');
   }
+  /**
+   * `M103` — bu paragraf **koşulsuz** basılıyordu ve ⓑ'yi yürürlükteki
+   * bir muafiyet gibi anlatıyordu. Ölçüm: hiçbir satır bugün ⓑ almıyor
+   * (Trol en çok %77,8, eşik %87). İşaret duruyor çünkü liste bir denge
+   * turunda yeniden gerekebilir, ama metin artık **olduğunu** söylüyor.
+   */
+  const bMarkali = D.haritalar.flatMap((m) =>
+    m.kisitA.filter((k) => k.oran > 87 && D.kislaIle.includes(k.id)).map((k) => k.id));
   y(`**ⓑ = Kışla ile doğrulanan.** Kısıt A yalnız **kulelerin** verebileceği`);
   y(`hasarı topluyor (tanımı bu) — askerlerin DPS'i ve engellemenin kazandırdığı`);
-  y(`süre girmiyor. §5 Trol'ün cevabını açıkça kışla olarak verdiği için Kısıt A`);
-  y(`onu olduğundan **zor** gösteriyor; doğrulaması Kısıt B'de.`, '');
+  y(`süre girmiyor. §5 Trol'ün cevabını açıkça kışla olarak verdiği için, o`);
+  y(`eşiği geçerse Kısıt A onu olduğundan **zor** gösterir; doğrulaması Kısıt B'de.`);
+  y(bMarkali.length === 0
+    ? `**Bugün hiçbir satır ⓑ almıyor** — kışla ile doğrulanan düşmanların hepsi eşiği kendi başına geçiyor.`
+    : `Bugün ⓑ alan: ${[...new Set(bMarkali)].map((id) => DUSMAN_ADI[id] ?? id).join(', ')}.`, '');
 
   y('', `### Kısıt B — başsız simülasyon`, '');
   y(`Dalgayı gerçekten çalıştırıp **sızan HP'yi ölçüyor.** Formül değil,`);
@@ -994,11 +1019,46 @@ function olustur() {
     D.haritalar.map((m) => [HARITA_ADI[m.id],
       Object.entries(m.kisitB.kirilim).sort((a, b) => b[1] - a[1])
         .map(([id, adet]) => `${DUSMAN_ADI[id] ?? id} ×${adet}`).join(' · ') || '**hiç yok**'])), '');
+  /**
+   * `M103` — bu cümlenin **iki sayısı da elle yazılıydı ve ikisi de
+   * bayattı**: "Ork Savaşçı %39,9" diyordu, ölçüm %19,3; "Trol Kısıt
+   * A'da kalıyor" diyordu, Trol %48,6 ile geçiyor. İddia (iki kısıt
+   * ayrı şeyi ölçüyor) doğruydu, kanıtı uydurma olmuştu. Artık ölçümden
+   * türüyor: **en çok sızan** düşmanın Kısıt A oranı ile **Kısıt A'da
+   * en zorlanan** düşmanın sızıntısı yan yana konuyor.
+   */
+  const enCok = (m) => Object.entries(m.kisitB.kirilim).sort((a, b) => b[1] - a[1])[0];
+  const enZor = (m) => [...m.kisitA]
+    .filter((k) => k.id !== 'ogreSef' && k.oran !== null)
+    .sort((a, b) => b.oran - a.oran)[0];
+  // İkisinin **aynı** düşman çıktığı harita örnek olamaz: cümle
+  // "A'da rahat geçen çok sızıyor, A'da zorlanan az sızıyor" diyor.
+  // En çok sızıntısı olan, bu şartı sağlayan harita seçiliyor.
+  const ornekHarita = D.haritalar
+    .filter((m) => {
+      const s = enCok(m);
+      const z = enZor(m);
+      return s !== undefined && z !== undefined && s[0] !== z.id;
+    })
+    .sort((a, b) => enCok(b)[1] - enCok(a)[1])[0];
   y(`**Kısıt A ile Kısıt B aynı şeyi ölçmüyor.** Kısıt A *tek* düşman için`);
   y(`("bir Ork Savaşçı öldürülebilir mi"), Kısıt B *dalga* için ("on bir tanesi`);
-  y(`aynı anda gelirse"). Ölçüm bunu net gösteriyor: harita 3'te en çok sızan`);
-  y(`**Ork Savaşçı** ama Kısıt A'da %39,9 ile rahat geçiyor; **Trol** ise Kısıt`);
-  y(`A'da kalıyor ama yalnız ×3 sızıyor. İkisi de gerekli.`, '');
+  y(`aynı anda gelirse").`);
+  if (ornekHarita !== undefined) {
+    const oranOf = (id) => ornekHarita.kisitA.find((k) => k.id === id)?.oran;
+    const sizan = enCok(ornekHarita);
+    const zorlanan = enZor(ornekHarita);
+    const ad = (id) => DUSMAN_ADI[id] ?? id;
+    // Harita adı **ek almadan** yazılıyor: "Sisli Bataklık'nde" gibi bir
+    // ek türetmek Türkçe ünlü uyumu demek ve üretici onu bilmiyor.
+    y(`Ölçüm bunu net gösteriyor — **${HARITA_ADI[ornekHarita.id]}**:`);
+    y(`en çok sızan **${ad(sizan[0])}** (×${n(sizan[1])}) Kısıt A'da`);
+    y(`${yuzde(oranOf(sizan[0]))} ile rahat geçiyor; Kısıt A'da en zorlanan`);
+    y(`**${ad(zorlanan.id)}** (${yuzde(zorlanan.oran)}) ise yalnız`);
+    y(`×${n(ornekHarita.kisitB.kirilim[zorlanan.id] ?? 0)} sızıyor. İkisi de gerekli.`, '');
+  } else {
+    y(`Bu turda hiçbir haritada sızıntı ölçülmedi — karşılaştırma yapılamıyor.`, '');
+  }
   y(`**Boss hiçbir haritada sızmıyor** — türetmenin uçtan uca sağlaması.`, '');
   y('', `### Referans tahta — türetiliyor, uydurulmuyor`, '');
   y(`"Dalga N'de makul bir oyuncunun sahip olacağı kule dizilimi." Ekonomiden`);

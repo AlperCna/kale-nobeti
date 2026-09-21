@@ -282,9 +282,13 @@ export const SPAWN_K = 24;
  * hazırlık süresini uzatır ve bonus formülünün tavanı dalgadan dalgaya
  * değişir — §6'nın "dalga 10'da gerçek bir karar" dediği denge bozulur.
  *
- * **Açık sayı kazanıyor.** Hazırlık her dalgada 20 sn. `REST_K` M3'te
- * **kullanılmıyor**; §7'nin o satırı §6 tarafından geçersizleştirilmiş
- * sayılıyor. S28'in bu yarısı böyle kapandı.
+ * **Açık sayı kazanıyor.** Hazırlık her dalgada 20 sn (`BALANCE.prepSeconds`).
+ * §7'nin o satırı §6 tarafından geçersizleştirilmiş sayılıyor. S28'in bu
+ * yarısı böyle kapandı.
+ *
+ * **`M103`:** bu karar M3'ten beri `export const REST_K_KULLANILMIYOR = true`
+ * diye **kod** olarak duruyordu ve hiçbir yer onu okumuyordu. Bir kararın
+ * kaydı yorumdur; `true` dönen bir sabit değil. Sabit kaldırıldı, gerekçe
+ * yerinde kaldı.
  */
-export const REST_K_KULLANILMIYOR = true;
 
