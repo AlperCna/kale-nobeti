@@ -31,6 +31,15 @@ const KILITLI_KONTUR_ALFA = 0.35;
 /** Dokunmatik hedef en az 44×44 px (`CLAUDE.md` Platform). */
 const KART_W = 300;
 const KART_H = 190;
+/**
+ * Sonsuz mod düğmesi — `M107`. Yükseklik 44 (Platform dokunmatik alt
+ * sınırı). Yeri ölçüldu: bilgi şeridi `y+34` merkezli ve 26 yüksek
+ * (alt kenarı `y+47`), kartın alt kenarı `y+95`. `y+68` merkez, yani
+ * şeritten 3 px aşağıda başlıyor ve altta 5 px pay kalıyor.
+ */
+const SONSUZ_DY = 68;
+const SONSUZ_W = 150;
+const SONSUZ_H = 44;
 const KART_ARA_X = 24;
 /** Yıldız yuvaları arası adım — bant genişliği de buna bağlı. */
 const YILDIZ_ADIM = 36;
@@ -275,6 +284,43 @@ export class LevelSelectScene extends Phaser.Scene {
         this.scene.start('Game', { mapId: m.id });
         this.scene.launch('Hud');
       });
+
+      /**
+       * **Sonsuz mod düğmesi** — `M107`.
+       *
+       * Sonsuz mod yalnız **kazanma ekranında** teklif ediliyordu
+       * (`GameOverScene.sonsuzTeklifi`, `!kaybetti` şartıyla). Yani
+       * rekorunu kırmak isteyen oyuncunun haritayı **yeniden kazanması**
+       * gerekiyordu — üstelik bu kart onun sonsuz rekorunu zaten
+       * **gösteriyordu**. Var olan bir modun reklamı yapılıp kapısı
+       * kapalıydı.
+       *
+       * Yalnız **bitirilmiş** haritada (`yildiz > 0`, `SaveSystem`'in
+       * kendi `isCompleted` ölçütü): ilk kez oynayanın karşısına
+       * anlamadığı bir mod çıkmasın.
+       *
+       * `stopPropagation` şart: kartın kendisi de bir düğme ve alttaki
+       * dinleyici kampanyayı başlatırdı (`fx/BuildMenu`'nün aynı deseni).
+       */
+      if (yildiz > 0) {
+        const sonsuzBtn = createParchmentButton(this, x, y + SONSUZ_DY, SONSUZ_W, SONSUZ_H, 10);
+        addPressFeedback(sonsuzBtn);
+        sonsuzBtn.on(
+          Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN,
+          (_p: unknown, _lx: number, _ly: number, olay: Phaser.Types.Input.EventData) => {
+            olay.stopPropagation();
+            this.scene.start('Game', { mapId: m.id, endless: true });
+            this.scene.launch('Hud');
+          },
+        );
+        this.add
+          .text(x, y + SONSUZ_DY, t('endlessStart'), {
+            fontFamily: 'Spectral, serif',
+            fontSize: '16px', // Platform: minimum 16 px
+            color: '#14203A',
+          })
+          .setOrigin(0.5);
+      }
     });
 
     const geri = this.add
