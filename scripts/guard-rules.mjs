@@ -1080,6 +1080,53 @@ const sonuclar = [];
 }
 
 // ---------------------------------------------------------------------
+// 23 — Hareket, hareket AYARINI izlesin (TIER 1 kural 6, `M105`)
+//
+// Kural 6: *"ekran sarsıntısı ve parçacık yoğunluğu ayarlardan
+// kapatılabilir olmalı. `prefers-reduced-motion` saygı görür."*
+// `Settings.reducedMotionDefaults()` o tercihte `screenShake: false` ve
+// `effects: 'low'` veriyor — ama bunu **okumayan** bir tween o tercihi
+// hiç görmüyor.
+//
+// `M105`'te sayıldı: tween kuran 8 dosyanın **5'i** ayarı hiç
+// okumuyordu — gülle nabzı (`repeat: -1`, sahadaki her mermide sürekli),
+// boss pankartının büyümesi, başarım şeridinin kayması, yetenek
+// düğmesinin hazır-olma nabzı ve kayıt uyarısının kayması. Yani
+// "hareketi azalt" diyen oyuncuya oyun beşini de tam güçte oynatıyordu.
+//
+// **Kural sezgisel:** tween kuran dosya, **kod** satırlarında hareket
+// ayarına dair bir ad geçirmeli (`effectScale`, `screenShake`,
+// `hareketOlcegi`, `olcek`). Yorumda geçmesi saymıyor — `Tower.ts`
+// ayarı yalnız bir `@param` notunda anıyor olsaydı kural onu yakalardı.
+// Gerçekten hareketsiz bir tween varsa satırına `// bekçi:` yazılır.
+//
+// Ölçmediği şey: adı geçirip **kullanmayan** dosya. Bu sınıfı otomatik
+// ayırmanın yolu yok; kural ağ, kanıt değil (§17'nin kendi cümlesi).
+// Negatif doğrulama: `Projectile.ts`'ten `hareketOlcegi` kaldırıldı → 22/23.
+// ---------------------------------------------------------------------
+{
+  const AYAR_ADLARI = ['effectScale', 'screenShake', 'hareketOlcegi', 'olcek'];
+  let ihlalVar = false;
+  for (const dosya of dosyalar) {
+    const yol = relative('.', dosya).split(sep).join('/');
+    if (yol.endsWith('.test.ts')) continue;
+    const kod = kodSatirlari(readFileSync(dosya, 'utf8'));
+    const tweenSatirlari = kod.filter(
+      (h) => /\btweens\s*\.\s*add\s*\(/.test(h.metin) && !h.metin.includes('// bekçi:'),
+    );
+    if (tweenSatirlari.length === 0) continue;
+    const govde = kod.map((h) => h.metin).join('\n');
+    if (AYAR_ADLARI.some((a) => govde.includes(a))) continue;
+    ihlalVar = true;
+    for (const h of tweenSatirlari) {
+      ihlal('M105', dosya, h.no,
+        'tween var ama dosya hareket ayarını hiç okumuyor (k.6) — ölçeğe bağla ya da `// bekçi:` yaz');
+    }
+  }
+  sonuclar.push(['M105 hareket, hareket ayarını izliyor (k.6)', !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
 
 const gecen = sonuclar.filter(([, ok]) => ok).length;
 if (taranamayan.length > 0) {

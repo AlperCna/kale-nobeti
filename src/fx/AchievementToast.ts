@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import type { Settings } from '../systems/Settings';
 import { t } from '../util/i18n';
 import { createParchmentFrame } from './ParchmentFrame';
 import { getAchievement } from '../data/achievements';
@@ -39,8 +40,15 @@ export class AchievementToast {
   readonly #kuyruk: string[] = [];
   #calisiyor = false;
 
-  constructor(scene: Phaser.Scene) {
+  readonly #settings: Settings;
+
+  /**
+   * @param settings `M105` — hareket ölçeği. `0` iken şerit kayarak
+   *   değil **hedefinde** beliriyor; başarım metni yine okunuyor.
+   */
+  constructor(scene: Phaser.Scene, settings: Settings) {
     this.#scene = scene;
+    this.#settings = settings;
   }
 
   show(id: string): void {
@@ -88,11 +96,14 @@ export class AchievementToast {
         .setOrigin(0.5),
     );
 
+    // `M105` — kayma mesafesi ayara bağlı; 0'da şerit hedefinde doğuyor.
+    const olcek = this.#settings.effectScale;
+    kap.x = hedefX + (baslangicX - hedefX) * olcek;
     this.#scene.tweens.add({
       targets: kap,
       x: hedefX,
       duration: KAYMA_MS,
-      ease: 'Back.easeOut',
+      ease: olcek > 0.5 ? 'Back.easeOut' : 'Quad.easeOut',
       onComplete: () => {
         this.#scene.time.delayedCall(SURE_MS, () => {
           this.#scene.tweens.add({

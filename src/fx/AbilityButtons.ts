@@ -97,6 +97,11 @@ export class AbilityButtons {
     private readonly onSelect: (id: AbilityId) => void,
     /** Yükseltmeyi satın al — `M99`. */
     private readonly onUpgrade: (id: AbilityId) => void = () => {},
+    /**
+     * Hareket ölçeği (`Settings.effectScale`) — `M105`. Kullanım anında
+     * soruluyor, çünkü oyuncu ayarı tur ortasında değiştirebiliyor.
+     */
+    private readonly hareketOlcegi: () => number = () => 1,
   ) {
     ABILITIES.forEach((def, i) => {
       const bx = x + i * (BTN + 14);
@@ -233,13 +238,22 @@ export class AbilityButtons {
         // §8: hazır olunca altın kenar **bir kez** parlar.
         b.parladi = true;
         b.halka.setStrokeStyle(4, GOLD);
-        b.kok.scene.tweens.add({
-          targets: b.halka,
-          scale: { from: 1.12, to: 1 },
-          duration: 260,
-          ease: 'Quad.easeOut',
-          onComplete: () => b.halka.setStrokeStyle(2, GOLD),
-        });
+        // `M105` — nabız genliği hareket ayarına bağlı. 0'da hiç
+        // büyüme yok; **bilgi kaybolmuyor** çünkü hazır olma zaten kenar
+        // kalınlığıyla da söyleniyor (TIER 1 k.6: yalnız harekete
+        // dayanmasın).
+        const olcek = this.hareketOlcegi();
+        if (olcek <= 0) {
+          b.halka.setStrokeStyle(2, GOLD);
+        } else {
+          b.kok.scene.tweens.add({
+            targets: b.halka,
+            scale: { from: 1 + 0.12 * olcek, to: 1 },
+            duration: 260,
+            ease: 'Quad.easeOut',
+            onComplete: () => b.halka.setStrokeStyle(2, GOLD),
+          });
+        }
       }
 
       // Seçili yetenek belirgin: kalın altın kenar.

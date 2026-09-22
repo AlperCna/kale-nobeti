@@ -747,7 +747,7 @@ export class GameScene extends Phaser.Scene {
       });
       // Görünüm `fire`'dan sonra (konum/hedef dolu), `activate`'ten önce.
       const gorunum = projectileLook(kule.def.id, tier.effect?.kind, kule.tierIndex);
-      m?.setLook(gorunum);
+      m?.setLook(gorunum, this.settings.effectScale);
       m?.activate();
 
       // `M8-T08` — geri tepme + namlu parıltısı. İkisi de **aynı yönü**
@@ -838,7 +838,7 @@ export class GameScene extends Phaser.Scene {
     // `M8-T07` — el içi başarımlar. Bant `Game` sahnesinde duruyor
     // (HUD'da değil): duraklatmada `Game` donuyor, yani bant da donuyor
     // ve oyuncu duraklattığı anda kayan bir bildirimle karşılaşmıyor.
-    this.#achievementToast = new AchievementToast(this);
+    this.#achievementToast = new AchievementToast(this, this.settings);
     this.#achievements = new AchievementSystem(new LocalStore(), this.bus, (id) => {
       this.#achievementToast?.show(id);
     });
@@ -847,7 +847,7 @@ export class GameScene extends Phaser.Scene {
     // gerçekten sahaya çıkınca: telgrafta zaten yazıyor, bant "işte
     // şimdi" demeli. Doğum anını yakalamanın tek yeri `wave:started`
     // değil — boss refakatinden 8 sn sonra geliyor (BOSS_REFAKAT_GECIKMESI).
-    this.#bossBanner = new BossBanner(this);
+    this.#bossBanner = new BossBanner(this, this.settings);
     this.#occupancy = new SpotOccupancy(this.#map.buildSpots.length);
 
     // `Y01` adım 3 — yapı/yükseltme/satış/kışla menüsü. Geri çağrım
@@ -1840,7 +1840,7 @@ export class GameScene extends Phaser.Scene {
     // `Overlay` `Menu.create()`'te başlatılıyor, yani `Game`'e gelindiğinde
     // her zaman ayakta. Yine de savunmacı: doğrudan test için `Game`
     // sahnesi tek başına başlatılabiliyor (`__game.scene.start('Game')`).
-    if (overlay.scene.isActive()) gosterKayitUyarisi(overlay);
+    if (overlay.scene.isActive()) gosterKayitUyarisi(overlay, this.settings.effectScale);
   }
 
   #havuzDoldu(ad: string, kapasite: number): void {

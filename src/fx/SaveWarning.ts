@@ -56,9 +56,12 @@ const VERMILION = 0xb03a2e;
  * Renk tek başına taşımıyor: vermilyon kontur **ve** açık bir cümle var.
  * Metin `strings.ts`'te, iki dilde.
  */
-export function gosterKayitUyarisi(scene: Phaser.Scene): void {
+export function gosterKayitUyarisi(scene: Phaser.Scene, hareketOlcegi = 1): void {
   const merkez = scene.scale.width / 2;
-  const baslangicY = -YUKSEKLIK;
+  // `M105` — kayma mesafesi hareket ayarına bağlı. 0'da uyarı yerinde
+  // beliriyor; **mesajın kendisi hiçbir kademede kaybolmuyor** — kural 10
+  // “oyuncuya bir kez bildirilir” diyor, “bildirim kayarak gelir” demiyor.
+  const baslangicY = UST + (-YUKSEKLIK - UST) * hareketOlcegi;
 
   const kap = scene.add.container(merkez, baslangicY).setDepth(900);
   kap.add(createParchmentFrame(scene, 0, 0, GENISLIK, YUKSEKLIK, 18));

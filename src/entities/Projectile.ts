@@ -82,7 +82,7 @@ export class Projectile extends Phaser.GameObjects.Arc implements ProjectileStat
    * ÖNCE: konum ve hedef dolu olmalı ki ok hedefe dönük çizilsin. Havuz
    * sıfırlaması ölçeği, rengi ve açıyı geri alıyor (kural 3).
    */
-  setLook(look: ProjectileLook): void {
+  setLook(look: ProjectileLook, hareketOlcegi = 1): void {
     this.setFillStyle(look.color);
     this.setScale(look.scaleX, look.scaleY);
     if (look.rotateToTarget && this.target !== null) {
@@ -96,11 +96,16 @@ export class Projectile extends Phaser.GameObjects.Arc implements ProjectileStat
     // ömre göre ayarlamak yerine sonsuz döngü kuruluyor ve `resetForPool`
     // (`killTweensOf` + `setScale(1)`) onu **kesin** olarak kapatıyor —
     // kural 3'ün "sıfırlanmayan durum" tuzağına düşmemek için tek yol bu.
-    if (look.arc === true) {
+    // `M105` — nabız genliği hareket ayarına bağlı. Bu tween `repeat: -1`
+    // ile sürüklü çalışıyor, yani `prefers-reduced-motion` tercihinin en
+    // doğrudan hedefi: sahadaki her gülle sürekli nabız atıyordu.
+    // 0'da tween hiç kurulmuyor — merminin uçuşu ve isabeti değişmiyor.
+    if (look.arc === true && hareketOlcegi > 0) {
+      const tepe = 1 + (ARC_TEPE - 1) * hareketOlcegi;
       this.scene.tweens.add({
         targets: this,
-        scaleX: look.scaleX * ARC_TEPE,
-        scaleY: look.scaleY * ARC_TEPE,
+        scaleX: look.scaleX * tepe,
+        scaleY: look.scaleY * tepe,
         duration: ARC_MS,
         yoyo: true,
         repeat: -1,
