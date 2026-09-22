@@ -16,6 +16,8 @@ import { enemySummary } from './enemyLabel';
  */
 
 const ICON = 22;
+/** Dokunma hedefi — Platform alt sınırı; `SPACING` 74 olduğu için çakışmıyor. */
+const HEDEF = 44;
 const SPACING = 74;
 const INK = 0x14203a;
 /** Şeridin arkasındaki koyu bant — ikon + sayı açık zeminde (harita 1 çimeni) okunsun. */
@@ -103,13 +105,26 @@ export class WaveTelegraph {
           })
           .setOrigin(0, 0)
           .setVisible(false);
-        kare.setInteractive({ useHandCursor: true });
+        /**
+         * **Dokunma hedefi ikonun kendisi değil** — `M113`.
+         *
+         * İkon 22×22 çiziliyor ve Platform alt sınırı 44×44. İkonlar
+         * arası adım `SPACING` (74), yani 44'lük bir hedef komşusuyla
+         * **çakışmıyor** — burada şart tam karşılanabiliyor (kule
+         * panelinin ikon şeridinde adım dar olduğu için karşılanamıyor,
+         * S166'daki ölçülmüş istisna). Görünüş değişmiyor: hedef
+         * ikonun arkasında görünmez bir dikdörtgen.
+         */
+        const hedef = this.#scene.add
+          .rectangle(bx, 0, HEDEF, HEDEF, 0x000000, 0)
+          .setInteractive({ useHandCursor: true });
+        this.#kap.add(hedef);
         const goster = (): void => {
           for (const o of this.#ozetler) o.setVisible(false);
           ozet.setVisible(true);
         };
-        kare.on(Phaser.Input.Events.POINTER_OVER, goster);
-        kare.on(Phaser.Input.Events.POINTER_OUT, () => ozet.setVisible(false));
+        hedef.on(Phaser.Input.Events.POINTER_OVER, goster);
+        hedef.on(Phaser.Input.Events.POINTER_OUT, () => ozet.setVisible(false));
         /**
          * **`M112` — dokunmatikte imleç yok.**
          *
@@ -120,7 +135,7 @@ export class WaveTelegraph {
          * Dokunuşta özet açık kalıyor; başka bir ikona dokunmak
          * öncekini kapatıyor (`goster` hepsini gizleyip birini açıyor).
          */
-        kare.on(Phaser.Input.Events.POINTER_DOWN, goster);
+        hedef.on(Phaser.Input.Events.POINTER_DOWN, goster);
         this.#ozetler.push(ozet);
         this.#kap.add(ozet);
       }
