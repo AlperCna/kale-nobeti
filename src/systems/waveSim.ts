@@ -665,8 +665,11 @@ function kosturDalgalar(
    * `wave:started` her dalgada yayılıyor ve `index` **1 tabanlı**;
    * tahta dizisi 0 tabanlı.
    */
+  /** En son kurulan tahta — `M108`'in seviye kapısı bunu okuyor. */
+  let sonTahta: ReferenceBoard | null = null;
   const tahtayiHazirla = (waveIndex: number): void => {
     const b = tahtaAl(waveIndex);
+    sonTahta = b;
     kuleleriUygula(b);
     kislalariUygula(b);
   };
@@ -674,6 +677,7 @@ function kosturDalgalar(
   bus.on('wave:started', ({ index }) => {
     suankiDalga = index;
     tahtayiHazirla(index - 1);
+    seviyeKapisi();
   });
   bus.on('wave:ended', () => {
     sonuclar.push({
@@ -705,12 +709,33 @@ function kosturDalgalar(
    * çalışmıyor, yani bugünkü bütün ölçümler birebir aynı kalıyor.
    */
   const oyuncuYetenekleri = yetenekKullanimi === 'yok' ? null : new AbilitySystem();
-  if (oyuncuYetenekleri !== null) {
+  /**
+   * **Seviye kapısı** — `M108`.
+   *
+   * `M100` seviyeyi turun **başında** uyguluyordu ve o zaman doğruydu:
+   * yükseltme altın yeterken alınabiliyordu. `M107` kapıyı değiştirdi —
+   * yükseltme artık yalnız **bütün yapı noktaları doluyken** alınabiliyor
+   * (açılış tuzağı, S161). Simülasyon o kapıyı bilmeyince `M100`'ün
+   * ölçtüğü kazanç oyunun **veremeyeceği** bir üst sınır oluyordu.
+   *
+   * Kapı simülasyonda da aynı şekilde okunuyor: tahtadaki yapı sayısı
+   * nokta sayısına ulaştığı **ilk** dalgada seviyeler uygulanıyor.
+   * (Altın şartı modellenmiyor — referans tahta zaten önceden türetilmiş
+   * bir harcama planı; bu yüzden sonuç hâlâ bir **üst** sınır, ama
+   * oyunun verebileceği üst sınır.)
+   */
+  const seviyeKapisi = (): void => {
+    if (oyuncuYetenekleri === null || yetenekSeviyesi <= 1) return;
+    if (oyuncuYetenekleri.seviye('meteor') >= yetenekSeviyesi) return;
+    const b = sonTahta;
+    if (b === null) return;
+    if (b.towers.length + (b.barracks?.length ?? 0) < map.buildSpots.length) return;
     for (let i = 1; i < yetenekSeviyesi; i++) {
       oyuncuYetenekleri.yukselt('meteor');
       oyuncuYetenekleri.yukselt('takviye');
     }
-  }
+  };
+  seviyeKapisi();
   /** Takviye'nin geçici askerleri — kışla askerleriyle aynı kurallar (S47). */
   const gecicAskerler: SoldierState[] = [];
   const METEOR_YARICAP_KARE = METEOR.radius * METEOR.radius;

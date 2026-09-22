@@ -804,12 +804,17 @@ tek eksende ve ekranda okunuyor.
 **kapalı** koşuyor (`YetenekKullanimi 'yok'`), yani rampa, Kısıt A/B, boss
 türetmesi ve zorluk tablosu bu eklemeden etkilenmiyor.
 
-**Ne kazandırıyor (`M100`'de ölçüldü):** referans tahtayla, yeteneğini
-kullanan oyuncunun can kaybı — yeteneksiz → L1 → L2 → L3 —
-Kar Geçidi **14 → 10 → 9 → 7**, Kadim Harabe **15 → 13 → 11 → 11**,
-Sisli Bataklık **18 → 10 → 10 → 9**. Yani kullanmak 2-8 can, yükseltmek
-1-3 can daha kazandırıyor: atıl altını görünür bir karşılığa çeviriyor
-ama haritayı çözmüyor — istenen buydu.
+**Ne kazandırıyor (`M100`, `M108`'de kapıdan sonra yeniden ölçüldü):**
+referans tahtayla, yeteneğini kullanan oyuncunun can kaybı — yeteneksiz
+→ L1 → L2 → L3 — Kar Geçidi **14 → 10 → 9 → 7**, Kadim Harabe
+**15 → 13 → 10 → 10**, Sisli Bataklık **18 → 10 → 10 → 11**.
+
+Yani yeteneği **kullanmak** 2-8 can kazandırıyor. **Yükseltmenin**
+kazancı ise yalnız **toplamda** okunabiliyor (33 → 28); tek harita
+S145'in **±2 can** ölçüm çözünürlüğünün altında kalıyor — Sisli
+Bataklık'ta L3 (11) L1'in (10) bir can üstünde bile çıkıyor. Atıl
+altını görünür bir karşılığa çeviriyor ama haritayı çözmüyor —
+istenen buydu.
 
 **Takas satın almadan önce görünüyor (`M102`):** `M99` düğmeye yalnız bir
 **fiyat** koymuştu; oyuncu 1980 altını neye verdiğini ancak verdikten

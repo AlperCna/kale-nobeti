@@ -312,17 +312,36 @@ describe('Yeteneklerin katkısı — M11 Faz 4', () => {
  * can cinsinden ne**? Kaydedilmemiş bir güç artışı, sessizce geç
  * haritaları çözebilirdi.
  *
- * Ölçülen (can kaybı, `ikisi` kullanımı):
+ * ## `M108` — tablo kapıdan SONRA yeniden ölçüldü
+ *
+ * `M100` seviyeyi turun **başında** uyguluyordu ve o zaman doğruydu.
+ * `M107` kapıyı değiştirdi (yükseltme yalnız **tahta doluyken**
+ * alınabiliyor, S161) ve simülasyon onu bilmeyince bu tablo oyunun
+ * **veremeyeceği** bir üst sınır gösteriyordu. Kapı `waveSim`'e de
+ * kondu; aşağıdaki sayılar **kapılı** ölçüm.
+ *
+ * Ölçülen (can kaybı, `ikisi` kullanımı; noktalar üç haritada da
+ * **dalga 4**'te doluyor):
  *
  * | Harita | yetenek yok | L1 | L2 | L3 |
  * |---|---|---|---|---|
  * | Kar Geçidi | 14 | 10 | 9 | **7** |
- * | Kadim Harabe | 15 | 13 | 11 | **11** |
- * | Sisli Bataklık | 18 | 10 | 10 | **9** |
+ * | Kadim Harabe | 15 | 13 | 10 | **10** |
+ * | Sisli Bataklık | 18 | 10 | 10 | **11** |
  *
- * Yani yeteneği **kullanmak** 2-8 can, **yükseltmek** 1-3 can daha
- * kazandırıyor. Atıl altını (harita 6'da 11 974) görünür bir
- * karşılığa çeviriyor ama haritayı çözmüyor.
+ * Kapı tabloyu **çok az** oynattı (iki hücre 1, biri 2) çünkü tahta
+ * zaten dalga 4'te doluyor ve yeteğin değeri asıl 5-10 arasında
+ * birikiyor. Üç hareket de S145'in **±2 can** çözünürlüğünün içinde.
+ *
+ * **Ama iddia daraltıldı:** “yükseltmek her haritada 1-3 can
+ * kazandırır” artık **yanlış** — Sisli Bataklık'ta L3 (11), L1'in
+ * (10) bir can üstünde. Doğru cümle **toplamda**: 33 → 28. Tek
+ * harita çözünürlüğün altında kalıyor, alttaki testler de zaten
+ * toplama ve ±2 payına bakıyor.
+ *
+ * Yeteneği **kullanmak** yine 2-8 can kazandırıyor (yeteneksiz sütunu
+ * kapıdan etkilenmiyor). Atıl altını görünür bir karşılığa çeviriyor
+ * ama haritayı çözmüyor.
  */
 describe('yetenek seviyesinin değeri (M100)', () => {
   const GEC = [MAP_4, MAP_5, MAP_6];
