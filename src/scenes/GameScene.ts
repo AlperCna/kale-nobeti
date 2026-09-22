@@ -259,6 +259,8 @@ export class GameScene extends Phaser.Scene {
   #rallyGfx?: Phaser.GameObjects.Graphics;
   /** `M10-T03` — kalkan halkaları. Tek `Graphics`, her karede yeniden çiziliyor. */
   #kalkanGfx?: Phaser.GameObjects.Graphics;
+  /** `M106` — hasar tabanına düşen sayıların kalkan işareti. */
+  #emildiGfx?: Phaser.GameObjects.Graphics;
   /** Sürüklenen toplanma noktasının kışlası; `-1` = sürükleme yok. */
   #draggingRally = -1;
   /**
@@ -664,6 +666,10 @@ export class GameScene extends Phaser.Scene {
     // (`EnemyHealthBar` gibi) bu kadar seyrek bir süs için fazla
     // makine olurdu.
     this.#kalkanGfx = this.add.graphics();
+    // `M106` — hasar tabanı kalkanı. Aynı desen: tek `Graphics`, her
+    // karede yeniden çiziliyor. Sayıların **üstünde** durmalı, o yüzden
+    // havuz yaratıldıktan sonra ekleniyor (sahne çizim sırası).
+    this.#emildiGfx = this.add.graphics();
     // `Y01` adım 1 — juice katmanı `fx/Particles.ts`'e taşındı.
     this.#efektler = new Particles(this, this.settings, this.clock, enemyPool, enemyHealthBars);
 
@@ -1260,6 +1266,9 @@ export class GameScene extends Phaser.Scene {
     this.#towers?.update(sd, dusmanlar);
     this.#projectiles?.update(sd, dusmanlar);
     this.#damageTexts?.update(sd);
+    // `M106` — işaretler güncellemeden SONRA: konum ve alfa o karede
+    // kesinleşmiş oluyor, yoksa işaret sayının bir kare gerisinde kalırdı.
+    if (this.#emildiGfx !== undefined) this.#damageTexts?.ciz(this.#emildiGfx);
     this.#altinUcusu?.update(sd);
     // `true` yalnız hattın GÖRÜNDÜĞÜ karede — öğretici bir kez tetiklensin.
     if (this.#mapRenderer?.updateFlyerHint(this.#waves?.upcomingWave) === true) {

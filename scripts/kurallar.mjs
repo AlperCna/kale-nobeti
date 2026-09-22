@@ -654,7 +654,10 @@ function olustur() {
   y(`**Hasar tabanı: \`${n(D.balance.damageFloor)}\`** — hiçbir vuruş tamamen emilmez, ham hasarın`);
   y(`en az bu oranı geçer. Gerekçe: "oyuncu tamamen yanlış kule kurduğunda oyun`);
   y(`kilitlenmez, sadece verimsizleşir. Ceza var ama duvar yok."`, '');
-  y(`Tabana düşen vuruş ekranda **gri** çiziliyor — oyuncu kulesinin işe`);
+  y(`Tabana düşen vuruş ekranda **gri** ve yanında bir **kalkan** işaretiyle`);
+  y(`çiziliyor (İşaret \`M106\`'da eklendi: \`DamageText\`'in kendi tablosu onu`);
+  y(`vadediyordu ama kod yalnız rengi değiştiriyordu — TIER 1 kural 6 bilginin`);
+  y(`yalnız renge dayanmamasını istiyor.) — oyuncu kulesinin işe`);
   y(`yaramadığını görmeli. Örnek: Okçu T2 (10 hasar) harita 1 boss'una`);
   y(`(zırh ${n(D.haritalar[0].bossZirh)}) saniyede 10 değil **${n(D.dpsOrnek.okcuT2Boss)}** veriyor.`, '');
 

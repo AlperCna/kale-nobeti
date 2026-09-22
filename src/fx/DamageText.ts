@@ -11,13 +11,33 @@ import { NUMBER_FONT_KEY } from './numberFont';
  * yüklüyor (`research/02` §1). Havuzlamak bu cezayı kaldırmaz.
  *
  * **İki renk** (`GAME-DESIGN.md` §3) — kritik vuruş v1'den çıkarıldı (S56):
- * | Durum | Renk | Boyut |
- * | tabana düşmüş | gri + kalkan | %80 |
- * | normal | parşömen | %100 |
+ * | Durum | Renk | Boyut | İşaret |
+ * | tabana düşmüş | gri | %80 | **kalkan** |
+ * | normal | parşömen | %100 | — |
+ *
+ * ## `M106` — kalkan bu tabloda vardı, ekranda YOKTU
+ *
+ * Tablo `M106`'ya kadar “gri + kalkan” yazıyordu ama kod yalnız
+ * `setTint(GREY)` ve `setScale(0.8)` yapıyordu; kalkan hiç
+ * çizilmemişti. Yani §3'ün *“oyuncu kulesinin işe yaramadığını
+ * görmeli”* sözü pratikte **renge** kalıyordu: ayrı ayrı süzülen iki
+ * sayıda %80 ölçek farkı karşılaştırma noktası olmadan okunmuyor.
+ * TIER 1 kural 6 bilginin yalnız renge dayanmamasını istiyor.
+ *
+ * İşaret **tek bir `Graphics`**'e her karede yeniden çiziliyor
+ * (`ciz`) — `fx/EnemyStatus` ve `GameScene.#kalkanlariCiz` ile aynı
+ * desen. Havuzlanan nesneye şekil eklenseydi sahibi olmayan bir durum
+ * daha doğardı (kural 3).
  */
 
 const PARCHMENT = 0xe4d3a8;
 const GREY = 0x9aa0a6;
+/** Kalkan işaretinin mürekkep konturu — açık zeminde de okunsun. */
+const INK = 0x14203a;
+/** İşaret ölçüleri: yarı genişlik, yarı yükseklik, sayıya uzaklık. */
+const ISARET_W = 3.5;
+const ISARET_H = 4.5;
+const ISARET_ARA = 5;
 
 /** Süzülme yüksekliği ve süresi. Yalnız görsel; denge sayısı değil. */
 const RISE_PX = 34;
@@ -38,6 +58,12 @@ export class DamageText extends Phaser.GameObjects.BitmapText implements Poolabl
   /** Kalan ömür, ms. `scaledDelta` ile azalıyor — 2× hızda da doğru. */
   #left = 0;
   #startY = 0;
+  /**
+   * Vuruş hasar tabanına düştü mü (`M106`). Kalkan işaretini çizen
+   * `DamageTextSystem.ciz` bunu okuyor. `resetForPool` sıfırlıyor —
+   * havuza dönen nesne durum taşımamalı (kural 3).
+   */
+  emildi = false;
 
   constructor(scene: Phaser.Scene) {
     super(scene, 0, 0, NUMBER_FONT_KEY, '');
@@ -53,6 +79,7 @@ export class DamageText extends Phaser.GameObjects.BitmapText implements Poolabl
     this.setPosition(x, y);
     this.#startY = y;
     this.#left = LIFETIME_MS;
+    this.emildi = floored;
     this.setTint(floored ? GREY : PARCHMENT);
     this.setScale(floored ? 0.8 : 1);
     this.setAlpha(1);
@@ -73,6 +100,7 @@ export class DamageText extends Phaser.GameObjects.BitmapText implements Poolabl
   resetForPool(): void {
     this.#left = 0;
     this.#startY = 0;
+    this.emildi = false;
     this.setActive(false).setVisible(false);
     this.setPosition(0, 0);
     this.setAlpha(1);
@@ -104,6 +132,38 @@ export class DamageTextSystem {
   update(scaledDelta: number): void {
     for (const t of this.pool.activeItems()) {
       if (t.step(scaledDelta)) this.pool.release(t);
+    }
+  }
+
+  /**
+   * **Kalkan işareti** — `M106`. Tabana düşen her sayının soluna küçük
+   * bir kalkan çiziyor: bilgi renkten başka bir kanalda da taşınsın
+   * (TIER 1 kural 6).
+   *
+   * Durum tutmuyor; `clear()` + canlı havuzdan yeniden türetme
+   * (`fx/EnemyStatus`'ın gerekçesi birebir geçerli). Sayı sönümlenirken
+   * işaret de sönüyor — alfa nesnenin kendisinden okunuyor, ikinci bir
+   * yerde hesaplanmıyor.
+   */
+  ciz(g: Phaser.GameObjects.Graphics): void {
+    g.clear();
+    for (const t of this.pool.activeItems()) {
+      if (!t.emildi) continue;
+      // Sayının origin'i (0.5, 1): sol kenarı `x - width/2`, tabanı `y`.
+      const cx = t.x - t.width / 2 - ISARET_ARA;
+      const cy = t.y - t.height / 2;
+      const a = t.alpha;
+      g.fillStyle(GREY, a);
+      g.lineStyle(1, INK, a);
+      g.beginPath();
+      g.moveTo(cx - ISARET_W, cy - ISARET_H);
+      g.lineTo(cx + ISARET_W, cy - ISARET_H);
+      g.lineTo(cx + ISARET_W, cy + ISARET_H * 0.2);
+      g.lineTo(cx, cy + ISARET_H);
+      g.lineTo(cx - ISARET_W, cy + ISARET_H * 0.2);
+      g.closePath();
+      g.fillPath();
+      g.strokePath();
     }
   }
 
