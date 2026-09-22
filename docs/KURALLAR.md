@@ -928,9 +928,10 @@ ifade sezgiseli ve her biri **kasıtlı bozmayla** doğrulandı.
 | 21 | M103 data/systems/util ölü dışa aktarım taşımıyor |
 | 22 | M104 her olayın yayanı ve dinleyeni var |
 | 23 | M105 hareket, hareket ayarını izliyor (k.6) |
+| 24 | M114 dokunma hedefi ölçülü nesnede |
 
 Liste **türetilmiş**: üretici bekçiyi koşturup çıktısını okuyor, elle
-sayılmıyor. Bugün **23** kural var.
+sayılmıyor. Bugün **24** kural var.
 
 Sahne alanları kuralı **dört kez çıkan** bir hatadan doğdu: alan
 başlatıcısı yalnız bir kez koşuyor, `create()` her yeniden başlatmada.
