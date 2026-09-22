@@ -25,6 +25,8 @@ const GENISLIK = 420;
  * 22 px pay. Başlığın üst kenarı `-184 - 16 = -200`, aynı pay.
  */
 const YUKSEKLIK = 440;
+/** Kapatma düğmesi — Platform dokunmatik alt sınırı (44×44). */
+const KAPAT_BTN = 44;
 const BASLIK_Y = -184;
 const ILK_SATIR_Y = -114;
 
@@ -85,6 +87,37 @@ export class SettingsPanel {
       })
       .setOrigin(0.5);
     this.#kok.add([arka, baslik]);
+
+    /**
+     * **Kapatma düğmesi** — `M107`.
+     *
+     * Panelin hiçbir kapatma denetimi yoktu: menüde dişliye **tekrar**
+     * basmak kapatıyordu (keşfedilebilirliği düşük), dışarıya tıklamak
+     * kapatmıyordu, ve **oyun içinde** panel duraklatma menüsünün
+     * üstünü tamamen örtüyordu — oradan çıkmanın tek yolu **oyunu
+     * devam ettirmekti**, yani “ayarı değiştirip duraklatma menüsüne
+     * dönmek” imkânsızdı.
+     *
+     * `M10`'da alınan oyuncu geri bildiriminin aynısı (*“popuplar
+     * kapanmıyor veya kapatamıyorum”*); ipucu balonuna o zaman **×**
+     * eklenmişti, bu panele eklenmemişti.
+     *
+     * 44×44 — Platform dokunmatik alt sınırı. Sağ üst köşe: başlık
+     * ortada ve ilk satır `-114`'te, yani çakışma yok.
+     */
+    const kapatKok = scene.add.container(GENISLIK / 2 - 32, -YUKSEKLIK / 2 + 32);
+    const kapatCerceve = createParchmentButton(scene, 0, 0, KAPAT_BTN, KAPAT_BTN, 10);
+    addPressFeedback(kapatCerceve);
+    kapatCerceve.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => this.setVisible(false));
+    const kapatIsaret = scene.add
+      .text(0, 0, '×', {
+        fontFamily: '"Grenze Gotisch", serif',
+        fontSize: '30px',
+        color: '#14203A',
+      })
+      .setOrigin(0.5);
+    kapatKok.add([kapatCerceve, kapatIsaret]);
+    this.#kok.add(kapatKok);
 
     /**
      * `Y03` Adım 3 — dil **en üstte**: diğer dört satırın metnini de o
