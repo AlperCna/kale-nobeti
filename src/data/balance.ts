@@ -214,10 +214,10 @@ export const BALANCE = {
    * +10-12 getiriyor.
    *
    * Çarpan **taranarak** bulundu, seçilmedi: çalışan kompozisyonlar
-   * harita 4'te 43, harita 5'te 50 puan. %15 payı ikisini birden
-   * kapsayan çarpan aralığı `[1,74 · 2,02]`; **1,8** onun ortası ve
-   * her iki haritayı da rahat içeride bırakıyor (−%4,4 ve +%11,1).
-   * 2,0'ın üstü harita 4'ü dışarı atıyor, 1,7'nin altı harita 5'i.
+   * harita 4'te **48**, harita 5'te **47** puan (`M119`'da 43 ve 50'ydi;
+   * `M120` Kolay'ın rampasını düzeltirken harita 4'ü yeniden türetti).
+   * %15 payı ikisini birden kapsayan çarpan aralığı `[1,67 · 2,21]`;
+   * **1,8** ikisini de rahat içeride bırakıyor (+%6,7 ve +%4,4).
    *
    * Hangi haritanın hangi çarpanı aldığı **tek adreste**:
    * `waves.ELIT_CARPANI`.

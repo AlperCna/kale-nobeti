@@ -481,7 +481,8 @@ geri bildirimsizdi — tıklama sesi üretilmiş ama çağıran yoktu (M89). Son
 haritanın “sayılar ölçüldü” kaydı hiç yazılmamıştı ve harita başına elle
 yazılan blokların yanına `MAPS`'ten **türetilen** değişmezler kondu (M90).
 
-**Ölçülen rampa (bugün):** `0 · 2 · 9 · 13 · 14 · 17`. Son sayı `M118`'e
+**Ölçülen rampa (bugün):** `0 · 2 · 9 · 12 · 14 · 17`; Kolay'ınki
+`0 · 0 · 2 · 4 · 5 · 8` ve `M120`'den beri o da bağlı. Son sayı `M118`'e
 kadar **18**'di; Trol'e büyü direnci konunca (S95) 17 oldu. Dördüncü ve
 beşinci sayılar `M119`'da 14·15 → **13·14** oldu: harita 4-5'in baskısı
 finalden orta oyuna taşındı (S116). İkinci sayı
