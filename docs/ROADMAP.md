@@ -503,9 +503,29 @@ Satın alınanın ekranda izi yoktu; seviye pimleri kondu ve onları çizerken
 kuralı o boşluğu kapattı ve §17'nin elle yazılı bekçi tablosu türetildi
 (M100 Faz 2).
 
+**Aile dengesi (M118).** S95'i çözmek istendi; ilk iş korumanın ne
+ölçtüğüne bakmak oldu ve iki elle yazılmış liste çıktı. Harita listesi
+altı haritanın **beşini** sayıyordu — harita 1 hiç denetlenmemişti ve
+oyunun en büyük aile farkı tam orada (karışık 0 · Okçu 10 · Top 9;
+ikisi de tasarımın kendisi, çünkü o haritada hiçbir aile T3'e
+ulaşamıyor). "Baskın değil" iddiası ise **Top'un adını** taşıyordu ve
+bir daha genelleştirilmemişti: ölçüm baskın ailenin artık **Büyü**
+olduğunu gösterdi (altı haritanın dördünde referans tahtayı geçiyor,
+en kötüsü 13'e karşı referansın 18'i). Kök sebep kadroda — on bir
+düşmanın altısı zırhlı, yalnız üçü büyü dirençli, ve en ağır üç birimin
+üçü de zırhlıyken üçünün de direnci sıfırdı. Trol'e **%15 büyü direnci**
+kondu (§5'in karşı-oyun tablosu onu zaten "yoğun tek hedef"e veriyordu);
+Okçu ve Top birebir değişmedi, zincir kıpırdamadı. Koruma da yeniden
+şekillendi: listeler `MAPS`/`TOWERS`'tan türüyor ve iki yeni iddia var.
+
 **Bugün açık duranlar:** S116'nın kalanı — artık **harita 4-5** demek:
-harita 2, 3 ve 6'nın orta oyunu elit dalgasıyla sonuçlu (`M21`/`M84`/`M117`),
-4-5'te duvar S95 (elit ağırlığı Okçu tahtasını eşiğin üstüne atıyor) —,
+harita 2, 3 ve 6'nın orta oyunu elit dalgasıyla sonuçlu (`M21`/`M84`/`M117`).
+**`M118`'de duvarın S95 olmadığı ölçüldü:** elit dalgası konunca
+referans tahtanın *kendisi* haritayı kaybediyor (Kar Geçidi **25**,
+Kadim Harabe **27**; sınır 20), yani sorun aile değil **can payı** —
+referans tahta zaten 14 ve 15 kaybediyor. O iki haritada S116'nın çaresi
+baskı eklemek değil **taşımak**: bütçe-nötr bir elit dalgası, dalga
+10'dan alıp dalga 6'ya vermek. Ölçülmedi, sıradaki turun işi. Ayrıca
 S117'nin **oran** kolu (tahta tek başına hâlâ 0,40 · 0,35;
 yükseltmeyle birlikte 1,02 · 0,95 — ama yükseltme seçime bağlı, tahta
 zorunlu), ve `M77`'nin bıraktığı tek aile tahtalarındaki 2 canlık
