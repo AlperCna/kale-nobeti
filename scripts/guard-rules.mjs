@@ -1198,6 +1198,64 @@ const sonuclar = [];
 }
 
 // ---------------------------------------------------------------------
+// 25 — `strings.ts` ÖLÜ oyuncu metni taşımasın (`M122`)
+//
+// 21. kural aynı soruyu `export`lara soruyor ama metin anahtarları
+// **nesne alanı**, yani ona görünmüyorlar. İki ayrı zarar veriyorlar:
+//
+//   1. Her anahtar **iki** çeviri demek — `STRINGS` tipi
+//      `Record<Locale, Record<StringKey, string>>` ve derleyici eşitliği
+//      zorluyor. Ölü bir anahtar iki dilde birden bakım yükü.
+//   2. Asıl sebep bu değil: yazılıp **bağlanmamış** bir metin, `M31`'in
+//      "yarım kalmış takas" sınıfının imzası. `saveFailed` (TIER 1
+//      kural 10: "kayıt başarısızsa oyuncuya bir kez bildirilir")
+//      bağlanmamış olsaydı kural sessizce tutulmamış olurdu — o bağlıydı,
+//      ama bunu ancak bir tarama söyleyebilir.
+//
+// `M122` ikisini buldu: `speed` ('Hız' — hız düğmesi yalnız `1×` yazıyor,
+// etiket hiç kullanılmadı) ve `achLocked` ('Kilitli' — başarım ekranı
+// kilidi **dolu/boş yıldız karesiyle** anlatıyor, yani metin fazlalık ve
+// TIER 1 kural 6 zaten sağlanıyor).
+//
+// **Tarama neden literal eşleşmesi:** `t(key: StringKey)` her çağrıda
+// sabit alıyor; projede dinamik anahtar kurulumu yok (arandı). Kırılırsa
+// bu kural yanlış alarm üretir — o gün çözüm `// bekçi:` değil, dinamik
+// kurulumun kendisini sorgulamak.
+//
+// **Havuza testler de giriyor:** bir anahtarı yalnız test çağırıyorsa ölü
+// değil, kapsanmış demektir (21. kuralın havuz kararı).
+// Negatif doğrulama: `olsun: 'x'` kondu → 24/25.
+// ---------------------------------------------------------------------
+{
+  const BT = String.fromCharCode(96);
+  const STR_YOLU = 'src/data/strings.ts';
+  let ihlalVar = false;
+  try {
+    const metin = readFileSync(STR_YOLU, 'utf8');
+    const satirlar = metin.split(String.fromCharCode(10));
+    const trBas = satirlar.findIndex((l) => l.startsWith('const TR'));
+    const trSon = satirlar.findIndex((l, i) => i > trBas && l.startsWith('} as const'));
+    const havuz = dosyalar
+      .filter((d) => !relative('.', d).split(sep).join('/').endsWith(STR_YOLU))
+      .map((d) => readFileSync(d, 'utf8'))
+      .join(String.fromCharCode(10));
+    for (let i = trBas + 1; i < trSon; i++) {
+      const l = satirlar[i] ?? '';
+      const m = /^ +([A-Za-z0-9_]+): '/.exec(l);
+      if (m === null || l.includes('// bekçi:')) continue;
+      const ad = m[1];
+      if (havuz.includes("'" + ad + "'") || havuz.includes('"' + ad + '"')) continue;
+      ihlalVar = true;
+      ihlal('M122', STR_YOLU, i + 1,
+        BT + ad + BT + ' metnini hiçbir yer göstermiyor — ölü oyuncu metni (kaldır ya da bağla)');
+    }
+  } catch (e) {
+    taranamayan.push(STR_YOLU + ' (' + (e.code ?? 'hata') + ')');
+  }
+  sonuclar.push(['M122 strings.ts ölü oyuncu metni taşımıyor', !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
 
 const gecen = sonuclar.filter(([, ok]) => ok).length;
 if (taranamayan.length > 0) {
