@@ -167,10 +167,15 @@ export class TowerInfoPanel {
         .image(bx, SATIRLAR.ikonlar, 'atlas', enemyFrameKey(e.id))
         .setDisplaySize(ICON, ICON)
         .setInteractive({ useHandCursor: true });
-      ikon.on(Phaser.Input.Events.POINTER_OVER, () => {
+      const sec = (): void => {
         this.#seciliDusman = i;
         this.#dpsYaz();
-      });
+      };
+      ikon.on(Phaser.Input.Events.POINTER_OVER, sec);
+      // `M112` — dokunmatikte imleç yok: “seçili düşmana karşı DPS”
+      // satırı yalnız fareyle değişiyordu. `WaveTelegraph`'ın aynı kusuru,
+      // aynı turda, aynı çözüm.
+      ikon.on(Phaser.Input.Events.POINTER_DOWN, sec);
       this.#ikonlar.push(halka);
       this.#kap.add([halka, ikon]);
     });

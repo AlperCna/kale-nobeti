@@ -104,11 +104,23 @@ export class WaveTelegraph {
           .setOrigin(0, 0)
           .setVisible(false);
         kare.setInteractive({ useHandCursor: true });
-        kare.on(Phaser.Input.Events.POINTER_OVER, () => {
+        const goster = (): void => {
           for (const o of this.#ozetler) o.setVisible(false);
           ozet.setVisible(true);
-        });
+        };
+        kare.on(Phaser.Input.Events.POINTER_OVER, goster);
         kare.on(Phaser.Input.Events.POINTER_OUT, () => ozet.setVisible(false));
+        /**
+         * **`M112` — dokunmatikte imleç yok.**
+         *
+         * Bu özet `M8-T02`'den beri yalnız **üzerine gelmeyle** açılıyordu,
+         * yani portal trafiğinin büyük kısmı (dokunmatik) “bu düşman
+         * nedir” cevabına **hiç** ulaşamıyordu. `M87`'nin duraklatma
+         * düğmesiyle aynı sınıf: kanal vardı, kapısı yalnız fareydi.
+         * Dokunuşta özet açık kalıyor; başka bir ikona dokunmak
+         * öncekini kapatıyor (`goster` hepsini gizleyip birini açıyor).
+         */
+        kare.on(Phaser.Input.Events.POINTER_DOWN, goster);
         this.#ozetler.push(ozet);
         this.#kap.add(ozet);
       }
