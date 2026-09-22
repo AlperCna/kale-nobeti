@@ -224,6 +224,19 @@ export class PreloadScene extends Phaser.Scene {
    * zaten `queueGame` çağırıyor ve kartlar çizilmeden önce yükleme
    * bitiyor. Yine de doğru gerekçeyle durmak, yanlış gerekçeyle doğru
    * sonuca varmaktan iyi.
+   *
+   * **`M123`: "konsol temiz" İDDİASI ÇÜRÜDÜ — ama sebep bu yarış değil.**
+   * Ölçüldü (tarayıcı, soğuk açılış, üretim yolunun aynısı): konsolda
+   * her açılışta bir Phaser hatası var — `Texture key already in use:
+   * atlas`. Yarış **değil**: `queueAtlas` sayaçla izlendi ve tur başına
+   * **tek kez** çağrılıyor (`Menu`, `exists=false`), kod tabanında tek
+   * bir `load.atlas` var. Atlas da doğru yükleniyor — 36 kare, tek
+   * kaynak, her şey çiziliyor. Yani hata **zararsız ama gerçek** ve
+   * platform kuralını ("yayın yapısında konsol çıktısı bulunmaz")
+   * deliyor. Kök sebep özel Phaser yapımının dosya tipi katmanında
+   * görünüyor (`MultiFile` üyesinin dokuyu bir kez, `addAtlas`'ın ikinci
+   * kez eklemesi) ve ayrı bir işe bırakıldı. Yukarıdaki yarış gerekçesi
+   * kendi başına hâlâ geçerli, yalnız "konsol temiz" cümlesi değil.
    */
   static queueHud(scene: Phaser.Scene): void {
     PreloadScene.queueAtlas(scene);
