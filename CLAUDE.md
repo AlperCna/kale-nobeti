@@ -110,19 +110,21 @@ ve `M29`'a kadar öyle kaldı.
   alan sayısı artardı (kural 3); ve `simulateWave` başsız kalabiliyor —
   fizik olsaydı test bir Phaser dünyası ayağa kaldırmak zorundaydı.
   **Eşik:** aynı anda düşman sayısı 200'ü aşarsa naif `O(n·m)` mesafe
-  taraması yetmez, uzamsal ızgara gerekir. **Ölçülen** pay (`M29`,
-  `SimResult.peakEnemies`, altı harita × on dalga): en kalabalık tek dalga
-  23 düşman, sahadaki eşzamanlı tepe **21** — ve bu 21, oyuncunun her
-  dalgayı mümkün olan en erken anda başlattığı (`ErkenPolitika 'hemen'`,
-  `M16` örtüşmesi sonuna kadar) en kötü hâl. Örtüşmesiz tepe **15**.
-  `M68`'de bir kez ölçüldü (18/15) ve `M86`'da **yeniden**: `M84`'ün elit
-  dalgası Sisli Bataklık'ın 6. dalgasına dokuz birim ekledi ve tepe
-  18 → **21** oldu (örtüşmesiz değişmedi). Yani bu satır bir dalga verisi
-  değiştiren her turda yeniden ölçülür. Havuz kapasitesi 60, yani **2,9**
-  kat pay; `Pool` sessizce büyümüyor, dolduğunda `acquire` null döndürüp
-  `onExhausted` tetikliyor.
-  Eşiğe **9,5** kat pay var; ızgara gerekmiyor. Bu satırdaki sayı el yordamıyla
-  yazılmaz, `peakEnemies` ile ölçülür.
+  taraması yetmez, uzamsal ızgara gerekir. **Ölçülen** pay
+  (`SimResult.peakEnemies`, altı harita × on dalga): sahadaki eşzamanlı
+  tepe **23**, oyuncunun her dalgayı mümkün olan en erken anda başlattığı
+  (`ErkenPolitika 'hemen'`, `M16` örtüşmesi sonuna kadar) en kötü hâlde.
+  Örtüşmesiz tepe **16**. Havuz kapasitesi 60, yani **2,6** kat pay;
+  `Pool` sessizce büyümüyor, dolduğunda `acquire` null döndürüp
+  `onExhausted` tetikliyor. Eşiğe **8,7** kat pay var; ızgara gerekmiyor.
+  **`M121` — bu satırın bakımı artık ELLE DEĞİL.** Buraya kadar
+  *"bu satır bir dalga verisi değiştiren her turda yeniden ölçülür"*
+  yazıyordu; `M68` (18/15) ve `M86` (21/15) sözü tuttu, ama
+  `M117`/`M119`/`M120` dalga verisini değiştirip ölçümü **atladı** ve
+  sayı 21'de kaldı (gerçek 23). Elle tutulan söz bu projede tutulmuyor:
+  kural `systems/erkenPolitika.test.ts` içinde, havuz kapasitesine ve
+  200 eşiğine karşı **bağlandı**. Buradaki sayılar o testin ölçtüğü
+  şeyin okunabilir kopyası; çelişirlerse doğru olan testtir.
   **`M96` — eşik artık yalnız hesap değil, ölçüm:** iddia bugüne kadar
   “200'e kadar naif tarama yeter” diye *hesaplanmıştı*; tarayıcıda
   sınandı. Sisli Bataklık, dalga 10, tam tahta (14 kule + kışla) ve
