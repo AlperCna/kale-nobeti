@@ -202,3 +202,50 @@ function uiTiklamaSesi(scene: Phaser.Scene): void {
   if (olcek <= 0) return;
   scene.sound.play(UI_CLICK, { volume: olcek });
 }
+
+/** Geri bağlantısının dokunma hedefi — Platform alt sınırı (44 px). */
+const GERI_HEDEF_H = 44;
+const GERI_HEDEF_W = 200;
+
+/**
+ * **"← Geri" bağlantısı** — `M112`.
+ *
+ * Üç sahne (seviye seçim, başarımlar, nasıl oynanır) aynı satırı ayrı
+ * ayrı kuruyordu ve üçünde de dokunma hedefi **metnin kendisi**ydi:
+ * ölçüldü, **62×19 px**. `CLAUDE.md` Platform kuralı 44×44 istiyor ve
+ * bu üç ekranda geri dönmenin **tek yolu** o satır — yani kuralın en
+ * çok tuttuğu yerde tutmuyordu.
+ *
+ * Görünüş değişmiyor: hedef, metnin arkasına konan **görünmez** bir
+ * dikdörtgen. Metni büyütmek sayfanın ritmini bozardı; hedefi
+ * büyütmek oyuncunun gördüğü hiçbir şeyi değiştirmiyor.
+ *
+ * Bekçinin 16. kuralı bunu göremiyordu: hedef bir `Text`in kendi
+ * sınırlarından geliyordu, çözülebilir bir ölçü sabiti yoktu.
+ * Ölçüm tarayıcıda yapıldı (`getBounds`), `M95`/`M96` deseni.
+ */
+export function createBackLink(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  metin: string,
+  onPress: () => void,
+): Phaser.GameObjects.Text {
+  const hedef = scene.add
+    .rectangle(x, y, GERI_HEDEF_W, GERI_HEDEF_H, 0x000000, 0)
+    .setInteractive({ useHandCursor: true });
+  const yazi = scene.add
+    .text(x, y, metin, {
+      fontFamily: 'Spectral, serif',
+      fontSize: '18px',
+      color: '#8A7250',
+    })
+    .setOrigin(0.5);
+  hedef.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, onPress);
+  addPressFeedback(yazi);
+  // Basma geri bildirimi **yazıda**, olay hedefte: oyuncu metnin
+  // büyüdüğünü görüyor, tıklama alanı ise görünmez dikdörtgen.
+  hedef.on('pointerover', () => yazi.setScale(1.03));
+  hedef.on('pointerout', () => yazi.setScale(1));
+  return yazi;
+}

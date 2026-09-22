@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { t } from '../util/i18n';
 import { PreloadScene } from './PreloadScene';
-import { addPressFeedback } from '../fx/ParchmentFrame';
+import { addPressFeedback, createBackLink } from '../fx/ParchmentFrame';
 import type { StringKey } from '../data/strings';
 
 const INK = 0x14203a;
@@ -101,15 +101,6 @@ export class HowToScene extends Phaser.Scene {
       y += BOLUM_ARALIGI;
     }
 
-    const geri = this.add
-      .text(width / 2, height - 42, t('back'), {
-        fontFamily: 'Spectral, serif',
-        fontSize: '18px',
-        color: '#8A7250',
-      })
-      .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true })
-      .on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => this.scene.start('Menu'));
-    addPressFeedback(geri);
+    createBackLink(this, width / 2, height - 42, t('back'), () => this.scene.start('Menu'));
   }
 }

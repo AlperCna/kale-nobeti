@@ -6,7 +6,7 @@ import { SaveSystem } from '../systems/SaveSystem';
 import { LocalStore } from '../util/storage';
 import { t } from '../util/i18n';
 import { PreloadScene } from './PreloadScene';
-import { createParchmentButton, addPressFeedback } from '../fx/ParchmentFrame';
+import { createParchmentButton, addPressFeedback, createBackLink } from '../fx/ParchmentFrame';
 import { getSettings } from '../systems/Settings';
 import { EndlessRecords } from '../systems/EndlessRecords';
 import { DIFFICULTY } from '../data/difficulty';
@@ -323,16 +323,7 @@ export class LevelSelectScene extends Phaser.Scene {
       }
     });
 
-    const geri = this.add
-      .text(width / 2, height - 42, t('back'), {
-        fontFamily: 'Spectral, serif',
-        fontSize: '18px',
-        color: '#8A7250',
-      })
-      .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true })
-      .on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => this.scene.start('Menu'));
-    addPressFeedback(geri);
+    createBackLink(this, width / 2, height - 42, t('back'), () => this.scene.start('Menu'));
   }
 
   /**
