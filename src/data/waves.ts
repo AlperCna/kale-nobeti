@@ -97,9 +97,11 @@ export function budget(n: number, elitCarpani = 1): number {
  * **1,8** (`balance.eliteFactorHafif`) ikisini birden çalıştırıyor.
  *
  * Sonuç (doğum dalgasına göre, referans tahta):
- * Kar Geçidi `…0 0 0 14` → **`0 0 0 0 0 0 2 0 6 5`** (final %57 → %38),
+ * Kar Geçidi `…0 0 0 14` → **`0 0 0 0 0 0 4 0 4 4`** (final %57 → %33),
  * Kadim Harabe `…0 0 0 15` → **`0 0 0 0 0 3 0 0 8 3`** (final %53 → %21).
- * Üç aile de 20'nin altında (17 · 17 · 19) ve rampa `0·2·9·13·14·17`.
+ * Üç aile de 20'nin altında (17 · 18 · 18) ve rampa `0·2·9·12·14·17`.
+ * (Kar Geçidi'nin sayıları `M120`'de bir kez daha türetildi — Kolay'ın
+ * rampası ters dönmüştü; gerekçe o haritanın dalga 9 başlığında.)
  */
 export const ELIT_CARPANI: Readonly<Record<string, number>> = {
   // `M117` (S116) — harita 2 içeri alındı. Yukarıdaki "harita 1-2 öğrenme
@@ -115,8 +117,8 @@ export const ELIT_CARPANI: Readonly<Record<string, number>> = {
   // bu iki haritada işe yaramıyor (hızı 30, dalga 6'da doğan Trol
   // dalga 9'a kadar yolda ve bedeli oraya yazılıyor), oysa **Örümcek
   // Ana** bölününce 90 hızlı yavru veriyor ve baskı dalganın içinde
-  // düşüyor. Profil: harita 4 `0×10` → orta oyunda **2**, harita 5
-  // `0×10` → orta oyunda **4**.
+  // düşüyor. Profil (1-8 arası can): harita 4 `0×10` → **4**, harita 5
+  // `0×10` → **3**.
   'kar-gecidi': BALANCE.eliteFactorHafif,
   'kadim-harabe': BALANCE.eliteFactorHafif,
   'sisli-bataklik': BALANCE.eliteFactor,
@@ -557,7 +559,12 @@ export const MAP4_WAVES: readonly Wave[] = [
     // türetiyor, birleştirmek ölçülen zamanlamayı değiştirirdi.
     ['orumcekAna', 2],
     ['harpi', 2],
-  ]), // ELİT, 43 ≈ bütçe 45 (×1,8). ÖRÜMCEK ANA orta oyuna taşındı.
+    // `M120`: Şaman eklendi (43 → 48). Gerekçe aşağıdaki dalga 9 notunda —
+    // Örümcek Ana **Normal**'i, Trol **Kolay**'ı besliyor ve ikisi ters
+    // yönlü; bu Şaman, dalga 9'da Ana'dan Trol'e geçerken kaybedilen
+    // Normal baskısını geri veriyor.
+    ['saman', 1],
+  ]), // ELİT, 48 ≈ bütçe 45 (×1,8). ÖRÜMCEK ANA orta oyuna taşındı.
   dalgaKur(7, [
     ['goblin', 4],
     ['orkSavasci', 6],
@@ -569,13 +576,42 @@ export const MAP4_WAVES: readonly Wave[] = [
     ['kurtBinicisi', 2],
     ['harpi', 1],
   ]), // 38 ≈ bütçe 36
+  /**
+   * **`M120` — KOLAY'IN RAMPASI DÜZELTİLDİ.** `M119` finalden bir Trol
+   * alınca Kolay'da harita 4 **0** cana düştü ve harita 3'ün (2) altına
+   * indi — Kolay profili `0 0 2 0 5 8` olmuştu.
+   *
+   * Mekanizma ölçüldü: **Kolay'da (×0,8 HP) yalnız Trol hayatta kalıyor**
+   * — harita 3'te 1, harita 5'te 2, harita 6'da 1 sızan var, hepsi Trol.
+   * `M119` öncesi harita 4'ün geç oyununda dört Trol vardı (d9'da iki,
+   * d10'da iki), sonra üçe düştü ve eşik altında kaldı.
+   *
+   * **Denenip elenenler (hepsi ölçüldü):** Trol'ü finale geri koymak —
+   * mono-Büyü 19 → **30**, çünkü `M118` Trol'e %15 büyü direnci verdi ve
+   * boss dalgasında iki Trol o tahtayı bitiriyor · Kolay'ın `hpScale`'ini
+   * oynatmak — 0,78'den 0,88'e kadar **hiçbir değerde** harita 4 harita
+   * 3'ü geçmiyor, yani kusur eşik gürültüsü değil yapısal · kalkanlı Ork
+   * Savaşçı (kalkan `hpScale`'den etkilenmiyor, Kolay'da orantılı olarak
+   * daha sert) — işe yarıyor ama mono tahtaları 26-32'ye atıyor · Kurt
+   * Binicisi — her şeyi kolaylaştırıyor, Kolay yine 0.
+   *
+   * **İşleyen kol, iki ters yönlü kaldıraç:** Örümcek Ana **Normal**'i
+   * besliyor (yavruları orada sızıyor, Kolay'da ölüyor), Trol **Kolay**'ı
+   * besliyor (tek tanklı birim). Dalga 9'da Ana ↔ Trol takası Kolay'ı
+   * kaldırıp Normal'i düşürüyor; kaybedilen Normal baskısı elit dalgaya
+   * bir Şaman olarak geri konuyor. Harpi 2 → 1: iki kanalda birden hava
+   * yükü mono-Top'u 20'ye atıyordu (§4.2, taban kademeler uçana vuramaz).
+   *
+   * Sonuç: Kolay `0 0 2 0 5 8` → **`0 0 2 4 5 8`** (artan), Normal
+   * 13 → 12 (taban 12), üç aile 17 · 18 · 18.
+   */
   dalgaKur(9, [
-    ['trol', 2],
-    ['orumcekAna', 2],
+    ['trol', 3],
     ['saman', 1],
-    ['zirhliOrk', 1],
-    ['harpi', 2],
-  ]), // 43 = bütçe 43
+    ['zirhliOrk', 2],
+    ['harpi', 1],
+    ['goblin', 6],
+  ]), // 46 ≈ bütçe 43 (+%7)
   dalgaKur(
     10,
     [

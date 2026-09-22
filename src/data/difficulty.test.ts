@@ -173,6 +173,36 @@ describe('DIFFICULTY — M8-T11 (S80)', () => {
     }
   });
 
+  /**
+   * **`M120` — KOLAY'IN RAMPASI ARTIK BAĞLI.**
+   *
+   * `kisitB` rampanın monotonluğunu **yalnız Normal'de** ölçüyordu;
+   * Kolay'ın şekli hiçbir yerde bağlı değildi ve `M119`'da sessizce
+   * ters döndü — harita 4 **0** cana düşüp harita 3'ün (2) altına indi.
+   * Kusur "hiçbir liste onu saymıyordu" sınıfının bir örneği daha
+   * (CLAUDE.md TIER 2), bu kez sayılan şey harita ya da aile değil
+   * **zorluk seviyesi**.
+   *
+   * İddia Normal'inkinden **gevşek**: yalnız azalmama aranıyor, kesin
+   * artış değil. Gerekçe ölçüldü — ×0,8 HP'de sızıntı bir eşik olayı
+   * (haritaların çoğunda sıfır, sızan da neredeyse hep **Trol**), yani
+   * Kolay'da kesin artış istemek gürültüye sağlama koymak olurdu.
+   *
+   * Ölçülen: `0 · 0 · 2 · 4 · 5 · 8`.
+   */
+  it('Kolay rampası da AZALMIYOR — zorluk seviyeleri arası şekil korunuyor', () => {
+    const kayip = MAPS.map((m) => canKaybi(m, DIFFICULTY.kolay.hpScale));
+    for (let i = 1; i < kayip.length; i++) {
+      expect(kayip[i]!, `harita ${i + 1}: ${kayip.join(' → ')}`).toBeGreaterThanOrEqual(
+        kayip[i - 1]!,
+      );
+    }
+    // Öğretici harita Kolay'da da bedava.
+    expect(kayip[0]).toBe(0);
+    // Son harita gerçekten bir şey istiyor — Kolay "hiç kaybetme" değil.
+    expect(kayip[kayip.length - 1]!).toBeGreaterThan(0);
+  });
+
   it('Kolay yıldız kaydetmiyor, diğer ikisi kaydediyor', () => {
     expect(DIFFICULTY.kolay.recordStars).toBe(false);
     expect(DIFFICULTY.normal.recordStars).toBe(true);

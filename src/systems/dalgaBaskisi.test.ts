@@ -96,7 +96,7 @@ describe('dalga baskısı — doğum dalgasına göre (S116)', () => {
    *
    * | Harita | profil | 1-8 | final payı |
    * |---|---|---|---|
-   * | Kar Geçidi | `0 0 0 0 0 0 2 0 6 5` | 2 | %38 |
+   * | Kar Geçidi | `0 0 0 0 0 0 4 0 4 4` | 4 | %33 |
    * | Kadim Harabe | `0 0 0 0 0 3 0 0 8 3` | 3 | %21 |
    * | Sisli Bataklık | `0 0 0 2 0 1 0 0 5 9` | 3 | %53 |
    *
