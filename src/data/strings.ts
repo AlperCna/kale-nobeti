@@ -201,7 +201,7 @@ const TR = {
    * göründüğü için oyuncu onu hiç görmeden geçebilir.
    */
   howTo11:
-    'Yeteneğin üstünde fiyat çıkarsa yükseltebilirsin: Meteor daha sert vurur, Takviye daha çok asker çağırır. Geç haritalarda altın tahtaya yetmekten fazlasını kazandırıyor.',
+    'Bütün yapı noktaları dolunca yeteneklerin üstünde fiyat çıkar: Meteor daha sert vurur, Takviye daha çok asker çağırır. Önce tahta, sonra yetenek — geç haritalarda altın tahtaya yetmekten fazlasını kazandırıyor.',
   /**
    * **`M28` — eski kuralı öğretiyordu.** `M16`'dan önce erken basmak
    * bedelsizdi ve bu satır doğruydu; `M16` dalgaları üst üste bindirdi
@@ -429,7 +429,7 @@ const TR = {
    * doğru kalıyor).
    */
   hintAbilityUpgrade:
-    'Yeteneğin üstündeki fiyat bir yükseltme — altın yeterken çıkıyor, harita bitince seviye sıfırlanıyor.',
+    'Tahtan doldu — artık yetenek yükseltebilirsin. Fiyat altın yeterken çıkıyor, harita bitince seviye sıfırlanıyor.',
 } as const;
 
 export type StringKey = keyof typeof TR;
@@ -553,7 +553,7 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     howTo4: 'Pick a targeting mode in the tower menu: first, last, strong, weak, near.',
     howTo5: 'Meteor and Reinforcements are on cooldown; save them for a crowd.',
     howTo11:
-      'When a price appears above an ability you can upgrade it: Meteor hits harder, Reinforcements bring more soldiers. On later maps gold outgrows what the board can spend.',
+      'Once every build spot is taken, a price appears above your abilities: Meteor hits harder, Reinforcements bring more soldiers. Board first, then abilities — on later maps gold outgrows what the board can spend.',
     howTo6:
       'Ending the prep timer early earns gold — but the new wave arrives on top of whoever is still on the field. The button shows both numbers.',
     howTo7: 'The pause button up top — or ESC/space — stops the game; the menu also has restart and back to maps.',
@@ -656,6 +656,6 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     hintHeal:
       'The ringed enemy is a Shaman — it keeps restoring health to everyone inside the ring. Drop it first and the crowd melts far faster.',
     hintAbilityUpgrade:
-      'The price above an ability is an upgrade — it appears once you can afford it, and the level resets when the map ends.',
+      'Your board is full — you can upgrade abilities now. The price shows when you can afford it, and the level resets when the map ends.',
   },
 };

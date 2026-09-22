@@ -777,6 +777,17 @@ harcanmadan kalıyor, çünkü tahtanın maliyeti nokta sayısıyla sınırlı a
 gelir harita çarpanıyla büyüyor. `M79` fiyat çarpanını denedi ve ölçüm
 yalnız harita 4'ü geçirdi; bu ikinci kol.
 
+**Ne zaman açılıyor (`M107`):** yükseltme yalnız **bütün yapı noktaları
+doluyken** görünüyor. Sebebi ölçüldü: `startGold` ile fiyatın ikisi de
+altın çarpanıyla ölçekleniyor, yani oranları her haritada aynı (0,64) ve
+yükseltme turun **ilk saniyesinde** altı haritanın altısında da
+alınabiliyordu — harita 1'de 280 altının 180'ini tek kule kurmadan
+harcamak demek. Kapı yeni bir sayı getirmiyor; §6'nın kule yükseltmeleri
+için zaten kullandığı **yer kıtlığı** gerekçesinin aynısı: tahta dolmadan
+yükseltme tahtayla yarışır, dolduktan sonra S117'nin emmek istediği
+**atıl** altın olur. Ölçülen pencere (referans tahtanın noktaları
+doldurduğu dalga): **7 · 3 · 4 · 4 · 4 · 4**.
+
 **Neden fiyat altın çarpanını izliyor:** gider kalemi gelirle aynı ölçekte
 büyümeli — `startGold`'un S72'de çarpanı izlemesiyle aynı gerekçe. Sonuç
 ölçüldü: Değirmen Geçidi'nde ilk yükseltme (180) koşarken elde kalan en
