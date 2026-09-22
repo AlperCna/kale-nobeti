@@ -212,6 +212,28 @@ Bu liste yazıldı ki sonradan "neden sahne testi yok" sorulmasın.
 E16 ve E17 **portal kabul şartı** — atlanırsa yayın reddedilir
 (`research/05` §1, §2).
 
+### E6b — `M115`'te yeniden ölçüldü
+
+`M95` bu sağlamayı bir kez koşturmuştu; o günden sonra `bus`'a **üç
+yeni dinleyici** eklendi (`M102`'nin `ability:upgradable` tetikleyicisi,
+`M104`'ün `game:paused` dinleyicisi, `M111`'in `ability:upgraded`
+başarımı). Yenileri de aynı kuralı tutuyor mu diye tekrar ölçüldü.
+
+`Game` sahnesi **dört kez** üst üste yeniden başlatıldı ve her turda
+sayılar **birebir aynı** kaldı:
+
+| Olay | Dinleyici |
+|---|---|
+| `game:paused` | 1 |
+| `ability:upgradable` | 1 |
+| `ability:upgraded` | 2 |
+| `tower:placed` · `enemy:killed` | 3 |
+| `gold:changed` · `life:lost` · `wave:started` | 2 |
+| `devHooks.shutdownListeners()` | 12 |
+
+Yani `TutorialHints.destroy()`'un `off` çağrısı ve diğer iki kayıt
+sahne ömrüyle birlikte temizleniyor — sızıntı yok.
+
 ### E6 ve E6b neden ikiz
 
 İkisi de **sessiz birikme** sınıfından: ne çökme üretiyorlar ne hata
