@@ -190,7 +190,14 @@ const TR = {
   howToSecBasics: 'Temel',
   howToSecTowers: 'Kuleler ve yetenekler',
   howToSecEnemies: 'Düşmanlar',
-  howTo1: 'Altın dairelere dokunup kule kur. Her ailenin işi farklı:',
+  /**
+   * `M110` — cümle **iki nokta** ile bitiyordu ve arkasından liste
+   * gelmiyordu: `M87` sayfayı üç başlığa bölünce aile listesi
+   * (`howTo2`) **bir sonraki başlığın** altına taşındı, iki nokta
+   * yerinde kaldı. Oyuncu “şimdi liste gelecek” diye okuyup boşa
+   * çıkıyordu. Liste doğru yerde (Kuleler başlığı); cümle kapatıldı.
+   */
+  howTo1: 'Altın dairelere dokunup kule kur. Her ailenin işi farklı.',
   howTo2: 'Okçu hızlı ve ucuz · Top alan hasarı · Büyü zırhı delen · Kışla yolu tıkar',
   howTo3: 'Düşman kaleye varırsa can gider. Can biterse harita kaybedilir.',
   howTo4: 'Kule menüsünde hedefleme seç: ilk, son, güçlü, zayıf, yakın.',
@@ -452,8 +459,17 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     wave: 'wave',
     waves: 'waves',
     startWave: 'Start wave',
-    victory: 'The castle stands',
-    defeat: 'The castle has fallen',
+    /**
+     * `M110` — önceden **“castle”**tı ve oyunun merkez ismi İngilizcede
+     * **iki türlü** söyleniyordu: burada *castle*, başka dört yerde
+     * *keep* (`tagline`, `howTo3`, `modeFirstDesc`, `achFirstWin`).
+     * En kötüsü kazanma ekranında **aynı anda** görünüyorlardı:
+     * başlık “The castle stands”, yanındaki başarım şeridi
+     * “The Keep Stands” — Türkçede ikisi de “Kale ayakta”.
+     * Çoğunluk ve marka dili *keep*; ikisi de ona çevrildi.
+     */
+    victory: 'The keep stands',
+    defeat: 'The keep has fallen',
     livesLeft: 'lives left',
     backToLevels: 'Maps',
     levelSelect: 'Select Level',
@@ -547,7 +563,7 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     howToSecBasics: 'Basics',
     howToSecTowers: 'Towers and abilities',
     howToSecEnemies: 'Enemies',
-    howTo1: 'Tap a gold circle to build a tower. Each family does a different job:',
+    howTo1: 'Tap a gold circle to build a tower. Each family does a different job.',
     howTo2: 'Archer fast and cheap · Cannon splash · Magic pierces armour · Barracks blocks the road',
     howTo3: 'Enemies reaching the keep cost lives. Run out and the map is lost.',
     howTo4: 'Pick a targeting mode in the tower menu: first, last, strong, weak, near.',
