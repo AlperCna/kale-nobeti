@@ -248,9 +248,11 @@ describe('M7/M8 — 60 dalga: bütçe, kadro, giriş', () => {
 
   /**
    * **`M21`: hedef `budgetFor`'dan geliyor, `budget`'tan değil.**
-   * Dalga 6 elit dalgası taşıyan haritalarda (`ELIT_DALGALI_HARITALAR`)
-   * bütçe ×2,2; düz `budget(n)` kullanmak o dalgayı %104 sapmış
-   * gösteriyordu. Kural tek adreste (`waves.budgetFor`).
+   * Dalga 6 elit dalgası taşıyan haritalarda bütçe büyüyor; düz
+   * `budget(n)` kullanmak o dalgayı %104 sapmış gösteriyordu. Kural
+   * tek adreste (`waves.budgetFor`). **`M119`: çarpan artık harita
+   * başına** (`waves.ELIT_CARPANI`) — harita 4-5 için 2,2 ölçümle
+   * elendi, 1,8 kullanılıyor.
    */
   it('her dalga bütçesine %15 pay içinde — §7', () => {
     for (const { map, waves } of HARITALAR) {

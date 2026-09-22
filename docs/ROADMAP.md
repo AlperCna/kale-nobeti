@@ -481,8 +481,10 @@ geri bildirimsizdi — tıklama sesi üretilmiş ama çağıran yoktu (M89). Son
 haritanın “sayılar ölçüldü” kaydı hiç yazılmamıştı ve harita başına elle
 yazılan blokların yanına `MAPS`'ten **türetilen** değişmezler kondu (M90).
 
-**Ölçülen rampa (bugün):** `0 · 2 · 9 · 14 · 15 · 17`. Son sayı `M118`'e
-kadar **18**'di; Trol'e büyü direnci konunca (S95) 17 oldu. İkinci sayı
+**Ölçülen rampa (bugün):** `0 · 2 · 9 · 13 · 14 · 17`. Son sayı `M118`'e
+kadar **18**'di; Trol'e büyü direnci konunca (S95) 17 oldu. Dördüncü ve
+beşinci sayılar `M119`'da 14·15 → **13·14** oldu: harita 4-5'in baskısı
+finalden orta oyuna taşındı (S116). İkinci sayı
 `M117`'ye kadar **0**'dı: Taş Köprü'ye S116 için elit dalgası kondu ve
 harita ilk kez can kaybettiriyor — hepsi **orta oyunda**, final sıfır.
 `0 → 0 → 9` uçurumu böylece `0 → 2 → 9` oldu. Bu satır elle
@@ -518,14 +520,21 @@ kondu (§5'in karşı-oyun tablosu onu zaten "yoğun tek hedef"e veriyordu);
 Okçu ve Top birebir değişmedi, zincir kıpırdamadı. Koruma da yeniden
 şekillendi: listeler `MAPS`/`TOWERS`'tan türüyor ve iki yeni iddia var.
 
-**Bugün açık duranlar:** S116'nın kalanı — artık **harita 4-5** demek:
-harita 2, 3 ve 6'nın orta oyunu elit dalgasıyla sonuçlu (`M21`/`M84`/`M117`).
-**`M118`'de duvarın S95 olmadığı ölçüldü:** elit dalgası konunca
-referans tahtanın *kendisi* haritayı kaybediyor (Kar Geçidi **25**,
-Kadim Harabe **27**; sınır 20), yani sorun aile değil **can payı** —
-referans tahta zaten 14 ve 15 kaybediyor. O iki haritada S116'nın çaresi
-baskı eklemek değil **taşımak**: bütçe-nötr bir elit dalgası, dalga
-10'dan alıp dalga 6'ya vermek. Ölçülmedi, sıradaki turun işi. Ayrıca
+**S116 KAPANDI (M119).** `M118` duvarın S95 olmadığını ölçmüştü —
+tam elit dalgası konunca referans tahtanın *kendisi* haritayı
+kaybediyordu (25 ve 27 can). Çare "taşımak"tı ve **bütçe-nötr taşıma da
+çürüdü**: dalga 10'un iki Trol'ü dalga 6'ya alınınca orta oyun baskısı
+**sıfır** kaldı ve toplam düştü. Asıl sebep birimdi — Trol'ün hızı 30,
+dalga 6'da doğan Trol dalga 9'a kadar yolda ve bedeli oraya yazılıyor.
+**Örümcek Ana** ölünce 90 hızlı üç yavru veriyor ve baskı dalganın
+içinde düşüyor. Çarpan da harita başına oldu (2,2 → **1,8**, tek adres
+`waves.ELIT_CARPANI`) ve kompozisyon üç aileye dengelendi. Sonuç:
+Kar Geçidi'nin final payı %57 → **%38**, Kadim Harabe'nin %53 → **%21**;
+altı haritanın altısında da orta oyun sonuçlu. `dalgaBaskisi`'nin
+"1-8 arası en fazla 3 can" testi — kusurun kendisini ölçüyordu —
+**tersine çevrildi**.
+
+**Bugün açık duranlar:**
 S117'nin **oran** kolu (tahta tek başına hâlâ 0,40 · 0,35;
 yükseltmeyle birlikte 1,02 · 0,95 — ama yükseltme seçime bağlı, tahta
 zorunlu), ve `M77`'nin bıraktığı tek aile tahtalarındaki 2 canlık
