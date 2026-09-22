@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { generateEndlessWave, endlessHpScale } from './endlessWaves';
 import { ENDLESS_FIRST_WAVE } from '../data/endless';
 import { buildReferenceBoards } from './balanceChecks';
+import type { ReferenceBoard } from '../types/board';
 import { simulateAllWaves } from './waveSim';
 import { measureCoverage } from '../util/coverage';
 import { MAP_1, MAP_5, MAP_6, MAPS, COVERAGE_REFERENCE_RANGE } from '../data/maps';
@@ -42,11 +43,22 @@ function canKaybi(m: MapDef, n: number): number {
   const elle = wavesFor(m.id);
   const kaps = measureCoverage(harita.paths, harita.buildSpots, COVERAGE_REFERENCE_RANGE);
   const tahtalar = buildReferenceBoards(harita, elle, kaps, true);
-  const son = tahtalar[tahtalar.length - 1]!;
+  return canKaybiTahtayla(m, n, tahtalar[tahtalar.length - 1]!);
+}
 
+/**
+ * Aynı ölçüm, ama tahta **dışarıdan** veriliyor — `M109`.
+ *
+ * `canKaybi` her zaman dalga 10 tahtasını kuruyor; bu sürüm sonsuz
+ * dalgaların gelirini de sayan bir tahtayla karşılaştırma yapabilmek
+ * için. İki yol aynı gövdeyi paylaşıyor ki ölçüm farkı yalnız
+ * **tahtadan** gelsin.
+ */
+function canKaybiTahtayla(m: MapDef, n: number, tahta: ReferenceBoard): number {
+  const harita = sonsuzHarita(m, n);
   const dalga: Wave = generateEndlessWave(n, harita.enemyRoster, harita.paths.length);
   // `simulateAllWaves` dalga başına bir tahta bekliyor.
-  const sim = simulateAllWaves([dalga], [son], harita);
+  const sim = simulateAllWaves([dalga], [tahta], harita);
 
   let can = 0;
   for (const r of sim) {
@@ -139,6 +151,72 @@ describe('sonsuz mod simülasyonu', () => {
     const cokGec = pencereOrtalamasi(MAP_1, 71, 80);
     expect(Math.abs(cokGec - doyum) / doyum, `41-50:${doyum} 71-80:${cokGec}`).toBeLessThan(0.15);
     expect(doyum).toBeGreaterThan(BASLANGIC_CANI);
+  });
+
+  /**
+   * **`M109` — sonsuz modda gelirin karşılığı var mı?**
+   *
+   * Yukarıdaki bütün ölçümler tahtayı **dondurup** dalgayı büyütüyor ve
+   * bunun gerekçesi yazılı (tek değişkenle zorluk ölçmek). Ama o
+   * dondurma bir soruyu da gördürmemiş: **gerçek oyuncunun tahtası
+   * dalga 11'den sonra büyüyor mu?**
+   *
+   * Ölçüldü — dalga 10 tahtası ile dokuz sonsuz dalganın gelirini de
+   * sayan dalga 19 tahtasının **kümülatif bedeli**:
+   *
+   * | Harita | d10 | d19 |
+   * |---|---|---|
+   * | Değirmen Geçidi | 1680 | **3510** |
+   * | Taş Köprü | 3820 | **4400** |
+   * | Kül Ovası | 5100 | 5100 |
+   * | Kar Geçidi | 7140 | 7140 |
+   * | Kadim Harabe | 6440 | 6440 |
+   * | Sisli Bataklık | 6440 | 6440 |
+   *
+   * Harita 3-6'da tahta dalga 10'da **doymuş**: dokuz dalgalık gelir
+   * onu **tek kuruş** değiştirmiyor. Sonuç simülasyonda da birebir
+   * görünüyor — tahtayı büyütmek can kaybını aynı bırakıyor
+   * (124/189/212/169), harita 1-2'de ise **33 → 0** ve **56 → 25**
+   * düşürüyor.
+   *
+   * Yani geç haritalarda sonsuz mod, gücü **sabit** bir oyuncuyla
+   * dalga başına %8 büyüyen bir eğrinin yarışı — bir geri sayım.
+   * S117'nin “gelir tahtaya yetmekten fazlasını kazandırıyor” bulgusunun
+   * en saf hali; `M99`'un yetenek yükseltmesi orada tek gider kalemi ve
+   * o da dört alımda tükeniyor. **Tasarım kararı sahibinde** (S163);
+   * bu testler yalnız ölçümü sabitliyor.
+   */
+  it('doymuş tahtada sonsuz gelirin KARŞILIĞI YOK (M109)', () => {
+    // Ölçüt harita numarası değil, **ölçümün kendisi**: tahta d10 ile
+    // d19 arasında hiç değişmediyse o harita "doymuş" sayılıyor.
+    // Elle harita listesi yazmak `M86`'nın bayatlattığı şey.
+    const DENEK = 19;
+    let doymusSayisi = 0;
+    for (const m of MAPS) {
+      const kaps = measureCoverage(m.paths, m.buildSpots, COVERAGE_REFERENCE_RANGE);
+      const elle = wavesFor(m.id);
+      const uzun: Wave[] = [...elle];
+      for (let k = ENDLESS_FIRST_WAVE; k <= DENEK; k++) {
+        uzun.push(generateEndlessWave(k, m.enemyRoster, m.paths.length));
+      }
+      const d10 = buildReferenceBoards(m, elle, kaps, true);
+      const d19 = buildReferenceBoards(m, uzun, kaps, true);
+      const donukBedel = d10[d10.length - 1]!.cumulativeCost;
+      const buyuyenBedel = d19[d19.length - 1]!.cumulativeCost;
+      const donukCan = canKaybi(m, DENEK);
+      const buyuyenCan = canKaybiTahtayla(m, DENEK, d19[d19.length - 1]!);
+      if (buyuyenBedel === donukBedel) {
+        doymusSayisi += 1;
+        // Doymuş tahta: dokuz dalgalık gelir hiçbir şey satın almıyor,
+        // yani sonuç da **birebir** aynı olmak zorunda.
+        expect(buyuyenCan, `${m.id} doymuş ama sonuç değişti`).toBe(donukCan);
+      } else {
+        // Doymamış tahta: gelirin bir karşılığı olmalı.
+        expect(buyuyenCan, `${m.id} büyüyen tahta işe yaramadı`).toBeLessThanOrEqual(donukCan);
+      }
+    }
+    // Boşa koşan döngü sağlaması (S136): bulgu **var**.
+    expect(doymusSayisi, 'hiçbir harita doymuyorsa bu test bir şey söylemiyor').toBeGreaterThan(0);
   });
 
   it('otuz sonsuz dalganın simülasyonu 2 sn’nin altında', () => {
