@@ -23,6 +23,7 @@ import {
   MAP4_WAVES,
   MAP5_WAVES,
   MAP6_WAVES,
+  FINAL_ZIRVE_MUAF,
 } from '../data/waves';
 import { buildReferenceBoards } from './balanceChecks';
 import { simulateAllWaves } from './waveSim';
@@ -116,9 +117,22 @@ describe('Kısıt B — düşman kırılımı', () => {
       const son = pw[9] ?? 0;
       const erkenEnCok = Math.max(...pw.slice(0, 9));
       const etiket = `${m.id}: ${pw.join(' ')}`;
+      /**
+       * `M117` — muafiyet **veride** (`FINAL_ZIRVE_MUAF`), testte değil.
+       *
+       * Taş Köprü'ye S116 için elit dalgası konunca kural kırıldı ve
+       * finali büyütmek **işe yaramadı** (bütçe 52 → 78'de bile final 0
+       * sızdırıyor — dalga 10 tahtası tamamlanmış, dalga 6'daki kuruluyor).
+       * Sahibi öğrenme yayında S116'yı öncelikli seçti; gerekçe listenin
+       * başında. Liste dışındaki her harita kuralı **aynen** taşıyor.
+       */
+      if (FINAL_ZIRVE_MUAF.includes(m.id)) continue;
       expect(son, etiket).toBeGreaterThanOrEqual(erkenEnCok);
       if (pw.reduce((a, b) => a + b, 0) > 0) expect(son, etiket).toBeGreaterThan(erkenEnCok);
     }
+    // Muafiyet **sessizce büyümesin**: bugün tek harita, ve bu sayı
+    // büyüyecekse bilerek büyümeli (S136'nın “boşa koşan test” dersi).
+    expect(FINAL_ZIRVE_MUAF).toHaveLength(1);
   });
 
   it('harita 1: HİÇ sızıntı yok', () => {
