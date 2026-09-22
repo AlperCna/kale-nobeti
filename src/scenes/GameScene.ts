@@ -1772,7 +1772,42 @@ export class GameScene extends Phaser.Scene {
    * HUD düğmeyi buna göre gösteriyor.
    */
   yetenekYukseltmeBedeli(id: AbilityId): number | null {
+    if (!this.#tahtaDolu) return null;
     return yetenekYukseltmeFiyati(this.abilities.seviye(id), this.#map);
+  }
+
+  /**
+   * **Yapı noktalarının hepsi dolu mu** — `M107`, yükseltmenin kapısı.
+   *
+   * ## Neden bir kapı gerekti
+   *
+   * Ölçüldü: `startGold` ile yükseltme fiyatının **ikisi de**
+   * `goldMultiplier` ile ölçekleniyor, yani oranları her haritada aynı
+   * (0,64) ve yükseltme turun **ilk saniyesinde** altı haritanın
+   * **altısında** da alınabilir durumdaydı. Harita 1'de bu, 280 altının
+   * 180'ini tek kule kurmadan harcamak demek — ve `M102`'nin ipucu tam o
+   * anda “yükseltebilirsin” diye açılıyordu. Öğretici haritada, ilk
+   * kuleden önce.
+   *
+   * `data/abilities.ts` bunun tersini yazıyordu (*“harita 1'de hiç
+   * görünmüyor”*); o ölçüm dalga içindeki **atıl** altına bakıyor,
+   * açılış anına bakmıyordu.
+   *
+   * ## Neden bu kapı
+   *
+   * Yeni bir sayı uydurulmadı (TIER 2): kapı **canlı tahtadan**
+   * türetiliyor ve §6'nın kule yükseltmeleri için zaten kullandığı
+   * gerekçenin aynısı — *“yükseltme **yer kıtlığı** yüzünden
+   * mantıklıdır”*. Tahta dolmadan yükseltme, tahtayla yarışan bir
+   * gider; dolduktan sonra S117'nin emmek istediği **atıl** altın.
+   *
+   * Ölçülen pencere (referans tahtanın noktaları doldurduğu dalga,
+   * `spotsFullAtWave`): **7 · 3 · 4 · 4 · 4 · 4**. Yani harita 1'de
+   * yükseltme neredeyse hiç doğmuyor — `abilities.ts`'in iddiası artık
+   * **doğru**.
+   */
+  get #tahtaDolu(): boolean {
+    return this.#towerBySpot.size + this.#barracksBySpot.size >= this.#map.buildSpots.length;
   }
 
   /** @returns Yetenek kullanıldıysa `true` — tık kule menüsüne gitmiyor. */

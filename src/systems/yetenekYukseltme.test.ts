@@ -207,6 +207,30 @@ describe('yetenek yükseltmesi — etki', () => {
     expect(s.seviye('takviye')).toBe(1);
   });
 
+  /**
+   * **`M107` — açılış tuzağının ölçümü.**
+   *
+   * `startGold` ile fiyatın **ikisi de** `goldMultiplier` ile
+   * ölçekleniyor, yani yükseltme turun ilk saniyesinde **her** haritada
+   * alınabilir durumdaydı — harita 1'de 280 altının 180'ini tek kule
+   * kurmadan harcamak demek. Kapı `GameScene.#tahtaDolu`'ya kondu.
+   *
+   * Bu test kapının kendisini değil (o Phaser tarafında, sahnede
+   * doğrulandı) **gerekçesini** bağlıyor: oran her haritada aynı ve
+   * açılış altını fiyatı her zaman karşılıyor. Biri bunu “yalnız
+   * harita 1'in sorunu” sanmasın.
+   */
+  it('açılış altını fiyatı ALTI HARİTADA DA karşılıyor — kapının sebebi', () => {
+    const oranlar = MAPS.map((m) => {
+      const fiyat = yetenekYukseltmeFiyati(1, m);
+      expect(fiyat, m.id).not.toBeNull();
+      expect(m.startGold, `${m.id} açılışta alınabiliyor`).toBeGreaterThanOrEqual(fiyat!);
+      return +(fiyat! / m.startGold).toFixed(2);
+    });
+    // İkisi de aynı çarpanla ölçeklendiği için oran değişmiyor.
+    expect(new Set(oranlar).size, `oranlar: ${oranlar.join(' ')}`).toBe(1);
+  });
+
   it('bozuk kayıt bedava seviye VERMİYOR', () => {
     const s = new AbilitySystem();
     s.turdanGeriYukleSeviye({ meteor: 99, takviye: 0, yokBoyleYetenek: 3 });

@@ -83,6 +83,21 @@ export const ABILITIES: readonly AbilityDef[] = [METEOR, TAKVIYE];
  * Yani eğri kendiliğinden doğru şekli alıyor: erken haritada yok, geç
  * haritada atıl altını **emiyor**.
  *
+ * ## `M107` — yukarıdaki “erken haritada yok” iddiası YARIM doğruydu
+ *
+ * Tablo dalga içindeki **atıl** altına bakıyor ve turun **ilk anını**
+ * kaçırıyordu. Ölçüldü: `startGold` ile fiyatın ikisi de
+ * `goldMultiplier` ile ölçeklendiği için oranları her haritada aynı
+ * (0,64) ve yükseltme açılışta **altı haritanın altısında** da
+ * alınabiliyordu — harita 1'de 280 altının 180'ini tek kule kurmadan
+ * harcamak demek.
+ *
+ * Kapı `GameScene.#tahtaDolu`'ya kondu: yükseltme yalnız **bütün yapı
+ * noktaları doluyken** alınabiliyor (§6'nın kule yükseltmeleri için
+ * kullandığı “yer kıtlığı” gerekçesinin aynısı; yeni sayı yok).
+ * Ölçülen pencere (`spotsFullAtWave`): **7 · 3 · 4 · 4 · 4 · 4**.
+ * Yukarıdaki iddia artık doğru.
+ *
  * ## Referans ölçümler NEDEN kayma dedi
  *
  * Bütün denge sayıları (`referansOlcum`) yetenekleri **kapalı** koşuyor
