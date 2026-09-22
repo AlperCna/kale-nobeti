@@ -1127,6 +1127,77 @@ const sonuclar = [];
 }
 
 // ---------------------------------------------------------------------
+// 24 — Dokunma hedefi ÖLÇÜLÜ bir nesnede olsun (`M114`)
+//
+// Platform kuralı 44×44 px istiyor. 16. kural bunu ancak **çözülebilen
+// ölçülerde** görüyor: `rectangle(x, y, 44, 44)` gibi sayı taşıyan
+// çağrılarda. Hedef bir `Image` ya da `Text`in **kendi sınırlarından**
+// geliyorsa ortada denetlenecek bir sayı yok ve kural kör kalıyor.
+//
+// `M112`/`M113` üç örneği birden ölçtü (tarayıcıda, `getBounds`):
+//   "← Geri" bağlantısı   62×19  (üç ekranda geri dönmenin tek yolu)
+//   dalga telgrafı ikonu  22×22
+//   kule paneli ikonu     20×20
+// Üçü de `setInteractive`'i doğrudan bir `image`/`text` zincirine
+// takıyordu — yani hepsinin ortak imzası **aynıydı**.
+//
+// Kural o imzayı yasaklıyor: `setInteractive` çağrısının bulunduğu
+// deyim, ölçüsü **açıkça yazılmış** bir nesneye bağlanmalı
+// (`rectangle(...)`, `Geom.Rectangle`, `setSize(...)`) ve bir
+// `image`/`text`/`bitmapText` üretimi içermemeli. Ölçünün 44 olup
+// olmadığına 16. kural bakıyor; bu kural yalnız **bakılabilir**
+// olmasını sağlıyor.
+//
+// Sezgisel: deyim penceresi, `setInteractive` satırından geriye doğru
+// ilk `;` ya da blok başına kadar. Gerçekten ölçüsüz bir hedef
+// gerekiyorsa satıra `// bekçi:` yazılır. Bugün hiç yok.
+// Negatif doğrulama: `WaveTelegraph`'ta hedef ikona geri takıldı → 23/24.
+// ---------------------------------------------------------------------
+{
+  const OLCULU = ['.rectangle(', 'Geom.Rectangle', 'setSize('];
+  const URETIM = ['.image(', '.text(', '.bitmapText('];
+  let ihlalVar = false;
+  for (const dosya of dosyalar) {
+    if (relative('.', dosya).endsWith('.test.ts')) continue;
+    const kod = kodSatirlari(readFileSync(dosya, 'utf8'));
+    for (const [i, h] of kod.entries()) {
+      if (!h.metin.includes('setInteractive')) continue;
+      if (h.metin.includes('// bekçi:')) continue;
+      // Deyim penceresi: geriye doğru, `;` ile biten satırdan sonrası.
+      const pencere = [h.metin];
+      for (let k = i - 1; k >= 0 && i - k <= 8; k--) {
+        const onceki = kod[k]?.metin ?? '';
+        if (onceki.trimEnd().endsWith(';')) break;
+        pencere.unshift(onceki);
+      }
+      // İleri de bakılıyor: `setInteractive(` çok satırlı olabiliyor ve
+      // isabet alanı (`new Phaser.Geom.Rectangle(...)`) **sonraki**
+      // satırda duruyor (`ParchmentFrame`, `TutorialHints`).
+      if (!h.metin.trimEnd().endsWith(';')) {
+        for (let k = i + 1; k < kod.length && k - i <= 8; k++) {
+          const sonraki = kod[k]?.metin ?? '';
+          pencere.push(sonraki);
+          if (sonraki.trimEnd().endsWith(';')) break;
+        }
+      }
+      const govde = pencere.join(' ');
+      if (URETIM.some((u) => govde.includes(u))) {
+        ihlalVar = true;
+        ihlal('M114', dosya, h.no,
+          'dokunma hedefi `image`/`text` üstünde — ölçüsü yazılı bir nesneye taşı (k. platform 44×44)');
+        continue;
+      }
+      if (!OLCULU.some((o) => govde.includes(o))) {
+        ihlalVar = true;
+        ihlal('M114', dosya, h.no,
+          'dokunma hedefinin ölçüsü görünmüyor — `rectangle`/`setSize`/`Geom.Rectangle` kullan');
+      }
+    }
+  }
+  sonuclar.push(['M114 dokunma hedefi ölçülü nesnede', !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
 
 const gecen = sonuclar.filter(([, ok]) => ok).length;
 if (taranamayan.length > 0) {

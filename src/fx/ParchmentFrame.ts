@@ -249,3 +249,4 @@ export function createBackLink(
   hedef.on('pointerout', () => yazi.setScale(1));
   return yazi;
 }
+
