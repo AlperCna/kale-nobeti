@@ -907,7 +907,7 @@ ifade sezgiseli ve her biri **kasıtlı bozmayla** doğrulandı.
 | 3 | M0   PreloadScene 4 aşama (8) |
 | 4 | k.7  setText yalnız Text üretmeyen dosyada |
 | 5 | k.11 saf mantıkta runtime Phaser yok |
-| 6 | test src/ altında test dosyası (66) |
+| 6 | test src/ altında test dosyası (67) |
 | 7 | k.9  Math.sqrt yalnız math.ts |
 | 8 | mim. coverage measureCoverage ile üretiliyor |
 | 9 | k.8  saf mantıkta duvar saati yok |
@@ -923,9 +923,10 @@ ifade sezgiseli ve her biri **kasıtlı bozmayla** doğrulandı.
 | 19 | M100 özel Phaser yapımının kapalı yüzeyi |
 | 20 | M101 özel Phaser yapımı ölü modül taşımıyor |
 | 21 | M103 data/systems/util ölü dışa aktarım taşımıyor |
+| 22 | M104 her olayın yayanı ve dinleyeni var |
 
 Liste **türetilmiş**: üretici bekçiyi koşturup çıktısını okuyor, elle
-sayılmıyor. Bugün **21** kural var.
+sayılmıyor. Bugün **22** kural var.
 
 Sahne alanları kuralı **dört kez çıkan** bir hatadan doğdu: alan
 başlatıcısı yalnız bir kez koşuyor, `create()` her yeniden başlatmada.

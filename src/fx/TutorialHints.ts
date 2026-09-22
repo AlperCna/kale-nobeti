@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import { createParchmentFrame } from './ParchmentFrame';
+import { DuraklatilabilirSayac, type ZamanOrtami } from '../util/duraklatilabilirSayac';
+import type { EventBus } from '../systems/EventBus';
 
 /**
  * `Y09` — öğretici ipucu balonu. `systems/TutorialSystem`'in `onShow`
@@ -29,6 +31,16 @@ import { createParchmentFrame } from './ParchmentFrame';
  *
  * Süre metnin uzunluğundan türüyor: tek satırlık ipucuyla üç satırlık
  * ipucunun okunma süresi aynı değil.
+ *
+ * ## `M104` — duvar saati DURAKLATMAYI da görmüyordu
+ *
+ * Yukarıdaki gerekçe (oyun hızına bağlı olmasın) doğruydu ama yarım
+ * kalmıştı: `setTimeout` duraklatmada da işliyor. Tarayıcıda ölçüldü —
+ * balon ekrandayken duraklatıp 11 sn sonra devam edilince balon **yok**,
+ * perdenin arkasında süresi dolmuş. Bir popup'ı okumak için duraklamak
+ * en doğal tepki ve ipucu bir kez gösterilip "görüldü" diye
+ * kaydedildiği için oyuncu onu bir daha hiç görmüyordu. Sayaç artık
+ * `util/duraklatilabilirSayac.ts` ve `game:paused` olayını dinliyor.
  */
 
 const GENISLIK = 480;
@@ -49,14 +61,42 @@ const DIKEY_PAY = 24;
 /** Balonun üst kenarı: geri sayım (48) + erken başlat butonu (82+26=108) + 8. */
 const UST_BOSLUK = 116;
 
+/**
+ * Duvar saati ortamı — `scene.time` **DEĞİL** (dosya başlığındaki gerekçe:
+ * o 2×/3× hızda ölçekleniyor, okuma süresi ölçeklenmemeli).
+ */
+const ZAMAN: ZamanOrtami<ReturnType<typeof setTimeout>> = {
+  simdi: () => Date.now(),
+  zamanla: (f, ms) => setTimeout(f, ms),
+  iptal: (k) => clearTimeout(k),
+};
+
 export class TutorialHints {
   readonly #scene: Phaser.Scene;
   #kok?: Phaser.GameObjects.Container;
-  /** `setTimeout` kimliği — `#kapat` temizliyor, yoksa ölü nesneye ateşlerdi. */
-  #sayac?: ReturnType<typeof setTimeout>;
+  /**
+   * Okuma süresi — `M104`'ten beri **duraklatılabilir**. Önce düz bir
+   * `setTimeout`tu ve duraklatmayı görmüyordu: balon perdenin arkasında
+   * süresini doldurup kayboluyordu, üstelik ipucu “görüldü” diye
+   * kaydedildiği için bir daha hiç görünmüyordu. Tarayıcıda ölçüldü.
+   */
+  readonly #sayac = new DuraklatilabilirSayac(ZAMAN);
+  /** `game:paused` dinleyicisi — `destroy()` kaldırıyor (mimari kural). */
+  readonly #bus?: EventBus;
+  readonly #duraklatDinleyici = (yuk: { readonly paused: boolean }): void => {
+    if (yuk.paused) this.#sayac.duraklat();
+    else this.#sayac.surdur();
+  };
 
-  constructor(scene: Phaser.Scene) {
+  /**
+   * @param bus Verilirse balon `game:paused` olayını dinliyor. `M104`'e
+   *   kadar o olayın **hiçbir dinleyicisi yoktu** — HUD yayıyor,
+   *   kimse duymuyordu.
+   */
+  constructor(scene: Phaser.Scene, bus?: EventBus) {
     this.#scene = scene;
+    this.#bus = bus;
+    bus?.on('game:paused', this.#duraklatDinleyici);
   }
 
   show(text: string): void {
@@ -122,19 +162,17 @@ export class TutorialHints {
       OKUMA_EN_COK_MS,
       Math.max(OKUMA_EN_AZ_MS, OKUMA_TABAN_MS + text.length * OKUMA_KARAKTER_MS),
     );
-    this.#sayac = setTimeout(() => this.#kapat(), sure);
+    this.#sayac.basla(sure, () => this.#kapat());
   }
 
   /** Sahne kapanışında çağrılıyor — bekleyen sayaç ölü nesneye ateşlemesin. */
   destroy(): void {
+    this.#bus?.off('game:paused', this.#duraklatDinleyici);
     this.#kapat();
   }
 
   #kapat(): void {
-    if (this.#sayac !== undefined) {
-      clearTimeout(this.#sayac);
-      this.#sayac = undefined;
-    }
+    this.#sayac.iptal();
     this.#kok?.destroy(true);
     this.#kok = undefined;
   }

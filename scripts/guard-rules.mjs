@@ -1008,6 +1008,78 @@ const sonuclar = [];
 }
 
 // ---------------------------------------------------------------------
+// 22 — Her olayın bir YAYANI ve bir DİNLEYENİ olsun (`M104`)
+//
+// 20. ve 21. kural "taşınan her şeyin okuyucusu var mı" diye soruyor;
+// bu, aynı soruyu `EventBus`'a soruyor. CLAUDE.md'nin mimari kuralı
+// *"sistemler birbirini doğrudan çağırmaz, EventBus üzerinden
+// haberleşir"* diyor — yani dinleyicisiz bir olay, olmayan bir kanalı
+// varmış gibi gösteriyor.
+//
+// `M104`'te üçü birden çıktı ve üçü de farklı sonuç verdi:
+//   `game:paused`   dinleyicisizdi ve bu bir **kusuru gizliyordu**:
+//                   ipucu balonunun duvar saati duraklatmayı görmüyor,
+//                   balon perdenin arkasında süresini doldurup
+//                   kayboluyordu (tarayıcıda ölçüldü). Dinleyici eklendi.
+//   `speed:changed` hızın gerçek kanalı doğrudan `clock.setScale`
+//                   çağrısıydı; olay onu yalnız tekrarlıyordu. Kaldırıldı.
+//   `save:failed`   bilerek dinleyicisiz bir seam — `// bekçi:` taşıyor.
+//
+// **Kapsam:** `src/types/events.ts` içindeki `'ad:ad':` satırları.
+// Yayan/dinleyen aranırken **testler sayılmıyor**: bir olayı yalnız
+// testin yayması, oyunda o kanalın çalıştığı anlamına gelmez.
+//
+// Kör noktası: olay adı bir değişkene alınıp öyle yayılırsa
+// (`bus.emit(ad, ...)`) bu kural göremez. Bugün öyle bir kullanım yok.
+// Negatif doğrulama: `game:paused` dinleyicisi kaldırılınca 21/22.
+// ---------------------------------------------------------------------
+{
+  const olayYolu = join(SRC, 'types', 'events.ts');
+  let ihlalVar = false;
+  let kaynak = null;
+  try {
+    kaynak = readFileSync(olayYolu, 'utf8');
+  } catch (e) {
+    taranamayan.push(`${relative('.', olayYolu).split(sep).join('/')} (${e.code ?? 'hata'})`);
+  }
+  if (kaynak === null) {
+    ihlalVar = true;
+    ihlal('M104', olayYolu, 0, 'olay sözleşmesi okunamadı — kural kör kalırdı');
+  } else {
+    /** Oyun kodu (testler ve sözleşmenin kendisi hariç), yorumsuz. */
+    const oyunSatirlari = [];
+    for (const dosya of dosyalar) {
+      const yol = relative('.', dosya).split(sep).join('/');
+      if (yol.endsWith('.test.ts') || yol === 'src/types/events.ts') continue;
+      for (const h of kodSatirlari(readFileSync(dosya, 'utf8'))) oyunSatirlari.push(h.metin);
+    }
+    const bildirim = /^\s{2}'([a-z]+:[a-zA-Z]+)':/;
+    let sayi = 0;
+    for (const h of kodSatirlari(kaynak)) {
+      const m = bildirim.exec(h.metin);
+      if (m === null) continue;
+      sayi += 1;
+      if (h.metin.includes('// bekçi:')) continue;
+      const anahtar = `'${m[1]}'`;
+      const yayan = oyunSatirlari.some((s) => s.includes(anahtar) && /\.emit\s*\(/.test(s));
+      const dinleyen = oyunSatirlari.some(
+        (s) => s.includes(anahtar) && /\.(on|once)\s*\(/.test(s),
+      );
+      if (yayan && dinleyen) continue;
+      ihlalVar = true;
+      const eksik = !yayan && !dinleyen ? 'yayanı da dinleyeni de' : !yayan ? 'yayanı' : 'dinleyeni';
+      ihlal('M104', olayYolu, h.no,
+        `\`${m[1]}\` olayının ${eksik} yok — ölü kanal (bağla, kaldır ya da \`// bekçi:\` yaz)`);
+    }
+    if (sayi === 0) {
+      ihlalVar = true;
+      ihlal('M104', olayYolu, 0, 'hiç olay bulunamadı — kural sessizce yeşil dönerdi (S136)');
+    }
+  }
+  sonuclar.push(['M104 her olayın yayanı ve dinleyeni var', !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
 
 const gecen = sonuclar.filter(([, ok]) => ok).length;
 if (taranamayan.length > 0) {
