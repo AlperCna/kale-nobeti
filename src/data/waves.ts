@@ -22,7 +22,7 @@ import { getEnemy } from './enemies';
  * @throws Dalga numarası 1'den küçükse — sessizce 0 dönmek dalga üretimini
  *   boş bırakır ve hata çok sonra ortaya çıkar.
  */
-export function budget(n: number, elit = false): number {
+export function budget(n: number, elitCarpani = 1): number {
   if (!Number.isInteger(n) || n < 1) {
     throw new Error(`budget: dalga numarası ≥ 1 tam sayı olmalı, ${n} geldi`);
   }
@@ -31,7 +31,7 @@ export function budget(n: number, elit = false): number {
     BALANCE.budgetBase *
       Math.pow(BALANCE.budgetGrowth, n - 1) *
       (nefes ? BALANCE.breatherFactor : 1) *
-      (elit ? BALANCE.eliteFactor : 1),
+      elitCarpani,
   );
 }
 
@@ -73,17 +73,55 @@ export function budget(n: number, elit = false): number {
  * (+1 Trol ikisinde de toplamı düşürüyor: 14 → 14 ve 15 → 13.)
  * Sebep S95'in alanı: 12-15 noktalı tahtada tek aileye zorlanan Okçu
  * zaten 17-18'de duruyor, elit dalgası onu eşiğin üstüne atıyor.
+ *
+ * ## `M119` — HARİTA 4 VE 5 İÇERİ ALINDI. Yukarıdaki iki blok bayat.
+ *
+ * Üstteki ölçümler **doğruydu ama iki varsayımı vardı** ve ikisi de
+ * yanlış çıktı.
+ *
+ * **(1) "Elit birim Trol'dür" — hayır.** Trol'ün hızı **30**, yani
+ * dalga 6'da doğan Trol dalga 9'a kadar yolda; bedeli oraya yazılıyor
+ * ve orta oyun boş kalıyor (yukarıdaki *"ağırlık orta oyuna hiç
+ * yazılmıyor"* gözlemi tam olarak bu). Ölçüldü: dalga 6'ya taşınan iki
+ * Trol **sıfır** can ediyor, dördü ise 11 — arada oyun yok, çünkü
+ * bedelin düştüğü yer dalga değil **kuyruk**. `M117`'nin dersi
+ * ("elit birim haritanın kendi ağır birimi olabilir") burada ikinci kez
+ * genişledi: birim **hızlı** da olmalı. Örümcek Ana ölünce **90 hızlı**
+ * üç yavru veriyor ve baskı dalganın İÇİNDE düşüyor.
+ *
+ * **(2) "Çarpan 2,2'dir" — o iki harita için hayır.** 2,2 dalga 6'yı 55
+ * puana çıkarıyor ve o ağırlıkta **referans tahtanın kendisi** haritayı
+ * kaybediyor (Kar Geçidi 25, Kadim Harabe 27 can). Yani duvar tek
+ * başına S95 değildi — `M118`'in ölçümü: o iki haritanın **can payı**
+ * yok, zaten 14 ve 15 kaybediyorlar. Çarpan tarandı ve
+ * **1,8** (`balance.eliteFactorHafif`) ikisini birden çalıştırıyor.
+ *
+ * Sonuç (doğum dalgasına göre, referans tahta):
+ * Kar Geçidi `…0 0 0 14` → **`0 0 0 0 0 0 2 0 6 5`** (final %57 → %38),
+ * Kadim Harabe `…0 0 0 15` → **`0 0 0 0 0 3 0 0 8 3`** (final %53 → %21).
+ * Üç aile de 20'nin altında (17 · 17 · 19) ve rampa `0·2·9·13·14·17`.
  */
-export const ELIT_DALGALI_HARITALAR: readonly string[] = [
+export const ELIT_CARPANI: Readonly<Record<string, number>> = {
   // `M117` (S116) — harita 2 içeri alındı. Yukarıdaki "harita 1-2 öğrenme
   // yayı, kadrolarında Trol yok" notu doğruydu ama **eksikti**: elit
   // birimin Trol olması şart değil, haritanın **kendi** ağır birimi
   // yetiyor. Taş Köprü'de o birim Zırhlı Ork ve dalga 3 onu zaten
   // tanıtıyor. Ölçüm: profil `0×10` → `0 0 0 0 0 2 0 0 0 0`.
-  'tas-kopru',
-  'kul-ovasi',
-  'sisli-bataklik',
-];
+  'tas-kopru': BALANCE.eliteFactor,
+  'kul-ovasi': BALANCE.eliteFactor,
+  // `M119` (S116) — harita 4-5 **hafif** çarpanla içeri alındı. Tam
+  // çarpan ölçülerek elendi (gerekçe `balance.eliteFactorHafif`), ama
+  // 1,8'de ikisi de çalışıyor. Birim seçimi de ölçüme dayanıyor: Trol
+  // bu iki haritada işe yaramıyor (hızı 30, dalga 6'da doğan Trol
+  // dalga 9'a kadar yolda ve bedeli oraya yazılıyor), oysa **Örümcek
+  // Ana** bölününce 90 hızlı yavru veriyor ve baskı dalganın içinde
+  // düşüyor. Profil: harita 4 `0×10` → orta oyunda **2**, harita 5
+  // `0×10` → orta oyunda **4**.
+  'kar-gecidi': BALANCE.eliteFactorHafif,
+  'kadim-harabe': BALANCE.eliteFactorHafif,
+  'sisli-bataklik': BALANCE.eliteFactor,
+};
+
 
 /**
  * **Finalin zirve olma kuralından muaf haritalar** — `M117` (S135 × S116).
@@ -126,8 +164,9 @@ export const BUYUK_REFAKATLI_HARITALAR: readonly string[] = ['kul-ovasi'];
  * iki ayrı kural yazmak sessizce ayrışırdı.
  */
 export function budgetFor(mapId: string, n: number): number {
-  if (ELIT_DALGALI_HARITALAR.includes(mapId) && BALANCE.eliteWaves.includes(n as 6)) {
-    return budget(n, true);
+  const elit = ELIT_CARPANI[mapId];
+  if (elit !== undefined && BALANCE.eliteWaves.includes(n as 6)) {
+    return budget(n, elit);
   }
   // Boss dalgası — gerekçe `balance.bossWaveFactor` (S135). `M84`: artık
   // elit bayrağından AYRI bir liste.
@@ -508,7 +547,17 @@ export const MAP4_WAVES: readonly Wave[] = [
     ['harpi', 2],
     ['saman', 1],
     ['orkSavasci', 1],
-  ]), // 25 = bütçe 25 — elit dalgası DIŞARIDA, gerekçe waves.ts başlığında
+    // `M119` (S116) ELİT (hafif). Birim **Örümcek Ana**, Trol değil:
+    // ölçüldü, Trol'ün hızı 30 ve dalga 6'da doğan Trol dalga 9'a kadar
+    // yolda — bedeli oraya yazılıyor, orta oyun boş kalıyor. Ana ölünce
+    // **90 hızlı** yavru veriyor, yani baskı dalganın İÇİNDE düşüyor.
+    // Harpi ikinci kanal: Top'un taban kademeleri uçana vuramıyor (§4.2),
+    // böylece dalga tek bir aileyi değil **kompozisyonu** sınıyor.
+    // İkinci harpi grubu ayrı duruyor — `dalgaKur` `startAt`'i gruptan
+    // türetiyor, birleştirmek ölçülen zamanlamayı değiştirirdi.
+    ['orumcekAna', 2],
+    ['harpi', 2],
+  ]), // ELİT, 43 ≈ bütçe 45 (×1,8). ÖRÜMCEK ANA orta oyuna taşındı.
   dalgaKur(7, [
     ['goblin', 4],
     ['orkSavasci', 6],
@@ -531,12 +580,13 @@ export const MAP4_WAVES: readonly Wave[] = [
     10,
     [
       ['ogreSef', 1],
-      ['trol', 2],
+      // `M119`: iki Trol yerine **bir** — taşınan ağırlığın karşılığı.
+      ['trol', 1],
       ['zirhliOrk', 2],
       ['saman', 1],
     ],
     BOSS_REFAKAT_GECIKMESI_SN,
-  ), // 54 ≈ bütçe 52
+  ), // 46 ≈ bütçe 52 (−%11,5)
 ];
 
 /**
@@ -575,7 +625,19 @@ export const MAP5_WAVES: readonly Wave[] = [
     ['zirhliOrk', 3],
     ['harpi', 1, 1],
     ['saman', 2, 1],
-  ]), // 25 = bütçe 25 — elit dalgası DIŞARIDA, gerekçe waves.ts başlığında
+    // `M119` (S116) ELİT (hafif). Harita 4'ten farklı bir karışım ve
+    // sebebi ölçüm: saf Örümcek Ana burada Okçu'yu 20'ye atıyor (yavru
+    // onun bilinen zayıflığı), saf Trol hiç sızmıyor. Yük üç aileye
+    // **dağıtılıyor** — Şaman büyü direnciyle (%40) Büyü'yü, Harpi
+    // uçarak Top'u, Örümcek Ana yavrularıyla Okçu'yu sınıyor.
+    ['saman', 2, 1],
+    ['orumcekAna', 1],
+    ['harpi', 2, 1],
+  ]), // ELİT, 47 ≈ bütçe 45 (×1,8). Yük üç aileye dağıtılmış.
+  // Üçüncü harpi **ölçülerek** çıkarıldı: 50 puanda harita 15'te kalıyor
+  // ama Meteor ve Takviye orada **sıfır** can kurtarıyor (15/15/15) —
+  // yani karar katmanı ölüyor. 47'de toplam 14 ve yetenekler geri
+  // geliyor (12/12/11). `yetenekKatkisi` bunu bağlıyor.
   dalgaKur(7, [
     ['goblin', 6],
     ['orkSavasci', 6, 1],
@@ -599,11 +661,11 @@ export const MAP5_WAVES: readonly Wave[] = [
     [
       ['ogreSef', 1], // 0. kapı
       ['trol', 2, 1], // 1. kapı — refakat AYRI kapıdan
-      ['orumcekAna', 1, 1],
+      // `M119`: Örümcek Ana finalden alındı, orta oyuna verildi.
       ['zirhliOrk', 1, 1],
     ],
     BOSS_REFAKAT_GECIKMESI_SN,
-  ), // 51 ≈ bütçe 52
+  ), // 45 ≈ bütçe 52 (−%13,5)
 
 ];
 

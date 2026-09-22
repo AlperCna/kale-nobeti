@@ -78,15 +78,38 @@ describe('dalga baskısı — doğum dalgasına göre (S116)', () => {
   });
 
   /**
-   * İddianın daraltılmış hali: **1-8 hâlâ büyük ölçüde boş** — altı
-   * haritanın toplamında en yükseği Sisli Bataklık'ın 3 canı. Bu bir
-   * kabul değil, S116'nın açık kalan kısmının ölçüsü — düzeldiğinde bu
-   * test bilinçli olarak gevşetilir.
+   * **`M119` — İDDİA TERSİNE ÇEVRİLDİ, gevşetilmedi.**
+   *
+   * Buraya kadar bu test *"1-8 arası en fazla 3 can"* diyordu ve kendi
+   * yorumu niyetini yazıyordu: *"bu bir kabul değil, S116'nın açık
+   * kalan kısmının ölçüsü — düzeldiğinde bu test bilinçli olarak
+   * gevşetilir."* Yani testin ölçtüğü şey **kusurun kendisiydi**.
+   *
+   * `M119` harita 4-5'e de elit dalgası koyunca kusur kapandı. Bir
+   * tavanı gevşetmek yerine **taban** kondu: geç haritaların üçünde de
+   * 1-8 arasında gerçek can gitmeli. Tavan zaten başka korumalarda —
+   * rampa bandı (`kisitB`), aile eşiği (`aileDengesi`) ve finalin
+   * zirve olması (S135) toplamı üç yandan sınırlıyor; buradaki 3 sayısı
+   * onlara hiçbir şey eklemiyordu.
+   *
+   * Ölçülen (doğum dalgasına göre, referans tahta):
+   *
+   * | Harita | profil | 1-8 | final payı |
+   * |---|---|---|---|
+   * | Kar Geçidi | `0 0 0 0 0 0 2 0 6 5` | 2 | %38 |
+   * | Kadim Harabe | `0 0 0 0 0 3 0 0 8 3` | 3 | %21 |
+   * | Sisli Bataklık | `0 0 0 2 0 1 0 0 5 9` | 3 | %53 |
+   *
+   * Öğrenme yayı ayrı tutuluyor: harita 1 **bedava** (rampanın alt ucu,
+   * `kisitB` de bunu bağlıyor), harita 2-3'ün orta oyunu 2'şer can.
    */
-  it('S116 açık kalan kısım: 1-8 arası en fazla 3 can', () => {
-    for (const m of MAPS) {
-      const ilkSekiz = dogumaGore(m).slice(0, 8).reduce((x, y) => x + y, 0);
-      expect(ilkSekiz, `${m.id}: [${dogumaGore(m).join(' ')}]`).toBeLessThanOrEqual(3);
+  it('S116 KAPANDI: geç haritaların üçünde de 1-8 arası GERÇEK baskı var', () => {
+    for (const m of MAPS.slice(3)) {
+      const d = dogumaGore(m);
+      const ilkSekiz = d.slice(0, 8).reduce((x, y) => x + y, 0);
+      expect(ilkSekiz, `${m.id}: [${d.join(' ')}]`).toBeGreaterThan(0);
     }
+    // Öğretici harita bedava kalmalı — baskı oraya sızmamalı.
+    expect(dogumaGore(MAPS[0]!).reduce((x, y) => x + y, 0)).toBe(0);
   });
 });

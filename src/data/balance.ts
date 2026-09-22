@@ -194,11 +194,35 @@ export const BALANCE = {
    * **tek sert birime** (Trol) verilince orta oyun canlanıyor ve final
    * sabit kalıyor (Kar Geçidi: orta 0 → 4, final 12 → 12).
    *
-   * Yalnız kadrosunda elit olan haritalarda geçerli — bkz.
-   * `waves.ELIT_DALGALI_HARITALAR`.
+   * Hangi haritanın elit dalgası taşıdığı ve **hangi çarpanla**
+   * taşıdığı tek adreste: `waves.ELIT_CARPANI`. `M119`'a kadar burada
+   * *"yalnız kadrosunda elit (Trol) olan haritalar"* yazıyordu; iki kez
+   * yanlış çıktı — `M117` birimin Trol olmasının şart olmadığını,
+   * `M119` elit birimin **hızlı** da olması gerektiğini ölçtü
+   * (Trol'ün hızı 30, bedeli dalgaya değil kuyruğa yazılıyor).
    */
   eliteWaves: [6],
   eliteFactor: 2.2,
+  /**
+   * **Hafif elit çarpanı — `M119` (S116), harita 4-5.**
+   *
+   * 2,2 o iki haritada **ölçülerek elendi**: dalga 6'yı 55 puana
+   * çıkarmak referans tahtanın *kendisine* haritayı kaybettiriyor
+   * (Kar Geçidi **25**, Kadim Harabe **27** can; sınır 20). Sebep
+   * `M118`'de yazıldı — o iki harita zaten 14 ve 15 kaybediyor, yani
+   * 20'ye 5-6 canlık payları var ve tam elit dalgası tek başına
+   * +10-12 getiriyor.
+   *
+   * Çarpan **taranarak** bulundu, seçilmedi: çalışan kompozisyonlar
+   * harita 4'te 43, harita 5'te 50 puan. %15 payı ikisini birden
+   * kapsayan çarpan aralığı `[1,74 · 2,02]`; **1,8** onun ortası ve
+   * her iki haritayı da rahat içeride bırakıyor (−%4,4 ve +%11,1).
+   * 2,0'ın üstü harita 4'ü dışarı atıyor, 1,7'nin altı harita 5'i.
+   *
+   * Hangi haritanın hangi çarpanı aldığı **tek adreste**:
+   * `waves.ELIT_CARPANI`.
+   */
+  eliteFactorHafif: 1.8,
   /**
    * **Boss dalgasının bütçe çarpanı — `M70` (S135).**
    *
@@ -226,7 +250,8 @@ export const BALANCE = {
    * 113 (elit çarpanı 2,2) → d10 15 ve toplam 20 (bandın dışı).
    * `79 / 52 ≈ 1,52`; 1,5 alındı.
    *
-   * `eliteFactor` gibi yalnız `ELIT_DALGALI_HARITALAR` için geçerli.
+   * `eliteFactor` gibi yalnız elit dalgası taşıyan haritalar için
+   * geçerli — liste `waves.ELIT_CARPANI`'den türüyor.
    */
   bossWaveFactor: 1.5,
   /** §7 — bütçe tabanı ve büyüme oranı. */
