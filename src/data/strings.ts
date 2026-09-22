@@ -41,7 +41,14 @@ const TR = {
   victory: 'Kale ayakta',
   defeat: 'Kale düştü',
   livesLeft: 'kalan can',
-  backToMenu: 'Ana menü',
+  /**
+   * `M107` — etiket **“Ana menü”**ydü ama dört çağırı yeri de
+   * `scene.start('LevelSelect')` yapıyor; `HudScene`'in kendi yorumu bile
+   * “seviye seçime gitmek” diyor. Varış yeri doğru (yenilgiden sonra
+   * harita listesi), bayat olan **etiketti**. Anahtar adı da düzeltildi:
+   * `backToMenu` yeni bir çağırı yerinde yine yalan söylerdi.
+   */
+  backToLevels: 'Haritalar',
   levelSelect: 'Seviye Seç',
   locked: 'Kilitli',
   back: '← Geri',
@@ -201,7 +208,7 @@ const TR = {
    * anlatıyordu: dokunmatikte klavye yok, yani oyuncuya “duraklatamazsın”
    * demiş oluyordu. CLAUDE.md TIER 2'nin “oyuncu metinleri” sınıfı.
    */
-  howTo7: 'Üstteki duraklatma düğmesi — ya da ESC/boşluk — oyunu durdurur; menüde yeniden başlat ve ana menü de var.',
+  howTo7: 'Üstteki duraklatma düğmesi — ya da ESC/boşluk — oyunu durdurur; menüde yeniden başlat ve haritalara dönüş de var.',
   /** `M10` — sinerji oyuncuya başka hiçbir yerde görünmüyor. */
   howTo8: 'Yavaşlatılmış düşman fiziksel hasardan daha çok etkilenir: Buz kulesi, Okçu ve Top ile birlikte çalışır.',
   /**
@@ -441,7 +448,7 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     victory: 'The castle stands',
     defeat: 'The castle has fallen',
     livesLeft: 'lives left',
-    backToMenu: 'Main menu',
+    backToLevels: 'Maps',
     levelSelect: 'Select Level',
     locked: 'Locked',
     back: '← Back',
@@ -541,7 +548,7 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
       'When a price appears above an ability you can upgrade it: Meteor hits harder, Reinforcements bring more soldiers. On later maps gold outgrows what the board can spend.',
     howTo6:
       'Ending the prep timer early earns gold — but the new wave arrives on top of whoever is still on the field. The button shows both numbers.',
-    howTo7: 'The pause button up top — or ESC/space — stops the game; the menu also has restart and main menu.',
+    howTo7: 'The pause button up top — or ESC/space — stops the game; the menu also has restart and back to maps.',
     howTo8: 'Slowed enemies take more physical damage: the Frost tower pairs with Archer and Cannon.',
     howTo9: 'A blue ring is a frost shield; nothing reaches health until it breaks.',
     howTo10:
