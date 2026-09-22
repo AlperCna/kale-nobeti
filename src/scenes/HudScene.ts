@@ -717,7 +717,7 @@ export class HudScene extends Phaser.Scene {
       this.scene.launch('Hud');
     });
     buton(t('settingsButton'), () => this.#settingsPanel?.setVisible(true));
-    buton(t('backToMenu'), () => {
+    buton(t('backToLevels'), () => {
       // `M9-T01` — menüye dönüş de kesinti. Zaten duraklatmadayız ve
       // `Portal` yinelenen `stop`'u yutuyor; yine de açıkça yazılıyor
       // ki "menüye dönerken olay gitti mi" sorusu koda bakarak

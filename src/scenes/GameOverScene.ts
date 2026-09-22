@@ -367,7 +367,7 @@ export class GameOverScene extends Phaser.Scene {
       if (d.mapId !== undefined) {
         this.#buton(x, sonraki(), 220, 56, t('retry'), false, () => d.haritayaGec(d.mapId!));
       }
-      this.#buton(x, sonraki(), 220, 56, t('backToMenu'), false, d.anaMenuyeDon);
+      this.#buton(x, sonraki(), 220, 56, t('backToLevels'), false, d.anaMenuyeDon);
       return birincil;
     }
 
@@ -378,12 +378,12 @@ export class GameOverScene extends Phaser.Scene {
       const buyukMu = d.kaybetti;
       this.#buton(x, sonraki(), buyukMu ? 260 : 220, buyukMu ? 64 : 56, t('retry'), buyukMu, birincil);
       sonsuzTeklifi();
-      this.#buton(x, sonraki(), 220, 56, t('backToMenu'), false, d.anaMenuyeDon);
+      this.#buton(x, sonraki(), 220, 56, t('backToLevels'), false, d.anaMenuyeDon);
       return birincil;
     }
 
     // `mapId` yok (teorik — `HudScene` her zaman veriyor). Tek çıkış.
-    this.#buton(x, sonraki(), 260, 64, t('backToMenu'), true, d.anaMenuyeDon);
+    this.#buton(x, sonraki(), 260, 64, t('backToLevels'), true, d.anaMenuyeDon);
     return d.anaMenuyeDon;
   }
 
