@@ -559,7 +559,24 @@ export class GameScene extends Phaser.Scene {
 
     // Arka plan da bir kez — yol/yapı noktaları onun ÜSTÜNE çiziliyor
     // (P01 brifi: arka plan kendi yolunu çizmiyor, oyun kodu çiziyor).
-    this.add.image(this.scale.width / 2, this.scale.height / 2, `bg-${this.#map.id}`);
+    /**
+     * **Arka plan KRİTİK DEĞİL ama korumasız da değil** — `M124`.
+     *
+     * `Y14`'ün kararı: atlas ve sayı fontu kritik, geri kalanı (müzik,
+     * geç ses efektleri, arka planlar) *"sessizce eksik kalabilir"*.
+     * Ölçüldü (`queueLazy`'nin yolu bilerek bozulup tarayıcıda koşuldu):
+     * sessiz **değildi**. Korumasız `add.image` Phaser'ın `__MISSING`
+     * dokusunu çiziyor — haritanın ortasında 32×32'lik yeşil bir hata
+     * kutusu, yani oyuncuya hata ayıklama artığı.
+     *
+     * Geri kalan her şey o ölçümde doğru çıktı: mürekkep zemin, yol,
+     * yapı noktaları, HUD, oynanış. Yani eksik arka plan gerçekten
+     * sessiz kalabiliyor — yalnız bu tek kutu engelliyordu.
+     */
+    const arkaPlan = `bg-${this.#map.id}`;
+    if (this.textures.exists(arkaPlan)) {
+      this.add.image(this.scale.width / 2, this.scale.height / 2, arkaPlan);
+    }
     // Harita **bir kez** çiziliyor. `update`'te yeniden çizmek her karede
     // yeni geometri üretmek demek; Graphics'in maliyeti orada.
     // `Y01` adım 2 — çizim `fx/MapRenderer.ts`'e taşındı.
