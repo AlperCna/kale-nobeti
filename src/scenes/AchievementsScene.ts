@@ -16,9 +16,22 @@ const SUTUN = 2;
  * (52 / 150) liste `y = 410`'da bitiyordu ve altında 230 px boşluk
  * kalıyordu — canlı ekran görüntüsünde blok yukarı yapışık duruyordu.
  */
-const SATIR_Y = 58;
+const SATIR_Y = 54;
 const SUTUN_W = 560;
-const UST = 190;
+/**
+   * `M111` — on yedinci başarım için yeniden ölçüldü (eski: `UST` 190,
+   * `SATIR_Y` 58). Bir satır başlık+açıklamayla **40 px**; satır
+   * `UST + i × SATIR_Y`'de, alttaki “öldürülen” satırı `720 - 74 = 646`
+   * merkezli (üst kenarı ~637).
+   *
+   * Eski ölçüyle 9 satır son satırı 654'e koyuyor, alt kenarı 673 —
+   * öldürülen satırıyla **36 px çakışıyordu**; testin “17+ çakışır”
+   * notu doğruydu. Yeni ölçüyle son satır 604, alt kenar 623 — 14 px
+   * pay. Satır arası boşluk 18 → 14 px.
+   *
+   * Bugünkü tavan **18**: 172 + 8×54 + 19 = 623 ≤ 630.
+   */
+const UST = 172;
 
 /**
  * Başarım listesi — `M8-T07`.

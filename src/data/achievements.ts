@@ -35,7 +35,7 @@ export interface AchievementDef {
 }
 
 /**
- * On altı başarım (`M8-T07`'de on iki, `M23`'te dört eklendi).
+ * On yedi başarım (`M8-T07` on iki, `M23` dört, `M111` bir).
  *
  * Seçim ölçütü ROADMAP'in "ucuz dönüş sebebi" notu: her biri **oyuncunun
  * zaten yapacağı** bir şeyi işaretliyor ya da bir kere denemeye değer bir
@@ -55,6 +55,11 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'allStars', kind: 'runEnd', threshold: -1, title: 'achAllStars', desc: 'achAllStarsDesc' },
   { id: 'flawless', kind: 'runEnd', threshold: 0, title: 'achFlawless', desc: 'achFlawlessDesc' },
   { id: 'noSell', kind: 'runEnd', threshold: 0, title: 'achNoSell', desc: 'achNoSellDesc' },
+  // `M111` — `M99`'un gider kaleminin başarım karşılığı; `firstTier3`
+  // ile aynı biçim (tek olay, tek bayrak). Eşik `AchievementSystem`'de
+  // `YETENEK_SEVIYE_SAYISI`'ndan okunuyor, burada değil — `threshold`
+  // `flag` türünde zaten anlamsız (bkz. alanın kendi notu).
+  { id: 'abilityMax', kind: 'flag', threshold: 1, title: 'achAbilityMax', desc: 'achAbilityMaxDesc' },
   { id: 'endless20', kind: 'runEnd', threshold: 20, title: 'achEndless20', desc: 'achEndless20Desc' },
   /**
    * **`M23` — dört başarım oyunun `M8` sonrası katmanlarına işaret ediyor.**

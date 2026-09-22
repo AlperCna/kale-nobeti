@@ -165,6 +165,13 @@ const TR = {
   achFlawlessDesc: 'Bir haritayı hiç can kaybetmeden bitir.',
   achNoSell: 'Sözünden Dönme',
   achNoSellDesc: 'Bir haritayı hiç kule satmadan bitir.',
+  /**
+   * `M111` — `M99`'un yetenek yükseltmesinin başarım karşılığı.
+   * `firstTier3`'ün (“Usta İşi”) yetenek tarafındaki ikizi: oyuncu
+   * atıl altınını sonuna kadar bir yeteneğe döktü mü.
+   */
+  achAbilityMax: 'Sonuna Kadar',
+  achAbilityMaxDesc: 'Bir yeteneği son seviyeye yükselt.',
   achEndless20: 'Bitmeyen Gece',
   achEndless20Desc: 'Sonsuz modda 20. dalgaya ulaş.',
   achLocked: 'Kilitli',
@@ -543,6 +550,8 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     achFlawlessDesc: 'Complete a map without losing a life.',
     achNoSell: 'No Take-Backs',
     achNoSellDesc: 'Complete a map without selling a tower.',
+    achAbilityMax: 'All the Way',
+    achAbilityMaxDesc: 'Upgrade an ability to its last level.',
     achEndless20: 'The Long Night',
     achEndless20Desc: 'Reach wave 20 in endless mode.',
     achLocked: 'Locked',
