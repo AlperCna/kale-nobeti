@@ -70,36 +70,84 @@ export class HowToScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     /**
-     * **Akış yerleşimi, sabit aralık değil.** Eskiden her satır
-     * `UST + i * SATIR_Y` ile konuyordu; iki satıra taşan paragraflar
-     * (erken başlatma, Tünelci) 46 px'lik aralığı aşıp bir sonrakine
-     * yaklaşıyordu. Şimdi her metnin ölçülen yüksekliği kadar iniliyor.
+     * **İKİ SÜTUN — `M123`. Tek sütun okunur bir satır uzunluğuna
+     * SIĞMIYORDU.**
+     *
+     * Ölçüldü: `wordWrap` 1080 px ve 20 px Spectral ile satırlar **120
+     * karaktere** çıkıyordu; tipografinin okunur bandı 45-75. Sarmayı
+     * daraltmak tek başına çözmüyor çünkü sayfa zaten kapasitede — 900
+     * px'te taban 683'e çıkıp "← Geri" bağlantısının (678) altına
+     * giriyor. Punto ile birlikte on iki birleşim tarandı; **hiçbiri**
+     * iki dilde birden hem ≤80 karakter hem ≤660 taban vermiyor
+     * (en iyisi 18 px / 620 px: 76 karakter ama taban 704).
+     *
+     * İki sütun ikisini birden çözüyor: taban **550**, en uzun satır
+     * **60** karakter, punto 20'de kalıyor ve 128 px pay açılıyor.
+     * Desen projede zaten var (`AchievementsScene`), ve iki sütun sola
+     * hizalı metin §2'nin el yazması dilinin kendi biçimi.
+     *
+     * **Bölümlerin sütuna dağılımı ELLE YAZILMIYOR:** yükseklikler
+     * ölçülüp en yüksek sütunu asgariye indiren bölme noktası
+     * seçiliyor. Bir satır eklendiğinde denge kendiliğinden yeniden
+     * kuruluyor — `M99`'un "on birinci satır sayfayı taşırdı" olayının
+     * tekrarı bu yüzden imkânsız.
      */
-    let y = UST;
-    for (const bolum of BOLUMLER) {
-      const baslik = this.add
-        .text(width / 2, y, t(bolum.baslik), {
-          fontFamily: '"Grenze Gotisch", serif',
-          fontSize: '24px',
-          color: '#D4A032',
-        })
-        .setOrigin(0.5, 0);
-      y += baslik.height + 10;
+    const KENAR = 90;
+    const ARALIK = 60;
+    const SUTUN_W = (width - 2 * KENAR - ARALIK) / 2;
 
-      for (const k of bolum.satirlar) {
-        const satir = this.add
-          .text(width / 2, y, t(k), {
-            fontFamily: 'Spectral, serif',
-            fontSize: '20px',
-            color: '#E4D3A8',
-            align: 'center',
-            wordWrap: { width: width - 200 },
-          })
-          .setOrigin(0.5, 0);
-        y += satir.height + SATIR_ARALIGI;
+    // 1. geçiş — nesneleri kur ve bölüm yüksekliklerini ÖLÇ.
+    const olculen = BOLUMLER.map((bolum) => {
+      const baslik = this.add.text(0, 0, t(bolum.baslik), {
+        fontFamily: '"Grenze Gotisch", serif',
+        fontSize: '24px',
+        color: '#D4A032',
+      });
+      const satirlar = bolum.satirlar.map((k) =>
+        this.add.text(0, 0, t(k), {
+          fontFamily: 'Spectral, serif',
+          fontSize: '20px',
+          color: '#E4D3A8',
+          align: 'left',
+          wordWrap: { width: SUTUN_W },
+        }),
+      );
+      const yukseklik =
+        baslik.height +
+        10 +
+        satirlar.reduce((toplam, s) => toplam + s.height + SATIR_ARALIGI, 0) +
+        BOLUM_ARALIGI;
+      return { baslik, satirlar, yukseklik };
+    });
+
+    // 2. geçiş — en yüksek sütunu asgariye indiren bölme noktası.
+    const toplam = olculen.reduce((a, b) => a + b.yukseklik, 0);
+    let enIyi = 0;
+    let enIyiFark = Number.POSITIVE_INFINITY;
+    let birikim = 0;
+    for (let k = 1; k <= olculen.length; k++) {
+      birikim += olculen[k - 1]?.yukseklik ?? 0;
+      const fark = Math.max(birikim, toplam - birikim);
+      if (fark < enIyiFark) {
+        enIyiFark = fark;
+        enIyi = k;
       }
-      y += BOLUM_ARALIGI;
     }
+
+    // 3. geçiş — yerleştir.
+    const sutunX = [KENAR, KENAR + SUTUN_W + ARALIK];
+    const y = [UST, UST];
+    olculen.forEach((bolum, i) => {
+      const s = i < enIyi ? 0 : 1;
+      const x = sutunX[s] ?? KENAR;
+      bolum.baslik.setPosition(x + SUTUN_W / 2, y[s] ?? UST).setOrigin(0.5, 0);
+      y[s] = (y[s] ?? UST) + bolum.baslik.height + 10;
+      for (const satir of bolum.satirlar) {
+        satir.setPosition(x, y[s] ?? UST).setOrigin(0, 0);
+        y[s] = (y[s] ?? UST) + satir.height + SATIR_ARALIGI;
+      }
+      y[s] = (y[s] ?? UST) + BOLUM_ARALIGI;
+    });
 
     createBackLink(this, width / 2, height - 42, t('back'), () => this.scene.start('Menu'));
   }
