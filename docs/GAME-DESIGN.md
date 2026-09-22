@@ -1184,12 +1184,41 @@ matrisi karar verecek.
 |---|---|---|
 | Duraklatma ve hızlandırma | M0 — mimari karar | `GameClock`, §1 |
 | **3× hız** | M9 — küratörlük cilası | `GameClock.setScale` dokümanı |
-| **Sonsuz mod** | M8-T06 | `systems/endlessWaves.ts`, `EndlessRecords.ts` |
-| **Başarımlar (12 adet)** | M8-T07 | `data/achievements.ts`, `AchievementToast` |
+| **Sonsuz mod** | M8-T06 | `systems/endlessWaves.ts`, `EndlessRecords.ts` · bkz. aşağı |
+| **Başarımlar** | M8-T07 | `data/achievements.ts`, `AchievementToast` |
 | **Tur ortası kayıt** | M10 — "Devam et" | `systems/RunSave.ts` |
 | **Buz kalkanı** (harita 4) | M10 | `data/enemies.ts`, `combat.kalkandanGecir` |
 | **Boss ikinci evresi** (harita 5) | M10 | `EnemyAbilitySystem` `enrage` |
 | **Kule sinerjisi** | M10 | `combat.yavaslatmaSinerjisi` |
+
+(*“Başarımlar” satırında `M109`'a kadar **12 adet** yazıyordu; gerçek
+sayı **16**. Sayı kaldırıldı — elle yazılan sayan liste yine bayatlamıştı,
+ve bu tablo zaten “nerede” sorusunu cevaplıyor, “kaç tane” sorusunu
+değil.*)
+
+### Sonsuz modda gelirin karşılığı — `M109`'da ölçüldü
+
+Sonsuz modun zorluk eğrisi `M8`'de ölçülmüştü ama hep **donmuş** bir
+tahtayla; “gerçek oyuncunun tahtası dalga 11'den sonra büyüyor mu” diye
+sorulmamıştı. Dalga 10 tahtası ile dokuz sonsuz dalganın gelirini de sayan
+dalga 19 tahtasının kümülatif bedeli:
+
+| Harita | d10 | d19 | Dalga 11-19 can kaybı (donuk → büyüyen) |
+|---|---|---|---|
+| Değirmen Geçidi | 1680 | **3510** | 33 → **0** |
+| Taş Köprü | 3820 | **4400** | 56 → **25** |
+| Kül Ovası | 5100 | 5100 | 124 → 124 |
+| Kar Geçidi | 7140 | 7140 | 189 → 189 |
+| Kadim Harabe | 6440 | 6440 | 212 → 212 |
+| Sisli Bataklık | 6440 | 6440 | 169 → 169 |
+
+Harita 3-6'da tahta dalga 10'da **doymuş**: dokuz dalgalık gelir onu tek
+kuruş değiştirmiyor ve sonuç **birebir** aynı kalıyor. Yani geç
+haritalarda sonsuz mod, gücü sabit bir oyuncuyla dalga başına %8 büyüyen
+bir eğrinin yarışı — bir geri sayım. S117'nin bulgusunun en saf hâli;
+`M99`'un yetenek yükseltmesi orada tek gider kalemi ve o da dört alımda
+tükeniyor. **Karar sahibinde** (S163); ölçüm `endlessSim.test.ts`'te
+sabitli.
 
 Üçü de listede "yok" yazarken kodda vardı; bu tabloyu okuyan biri artık
 ikisi arasında kalmıyor. Hız satırının M0'da kurulmasının gerekçesi
