@@ -114,6 +114,13 @@ const TR = {
   mapKadimHarabe: 'Kadim Harabe',
   mapSisliBataklik: 'Sisli Bataklık',
   endlessMode: 'Sonsuz moda devam',
+  /**
+   * `M107` — seviye seçimdeki kısa eylem etiketi. `endlessMode`
+   * (“Sonsuz moda devam”) oradaki 140 px'lik düğmeye sığmıyor ve
+   * “devam” kelimesi de yanlış: kazanma ekranında **aynı turu**
+   * sürdürüyor, burada **yeni** bir sonsuz tur başlıyor.
+   */
+  endlessStart: 'Sonsuz mod',
   endlessReached: 'Ulaşılan dalga',
   endlessBest: 'En iyi',
   endlessNewRecord: 'Yeni rekor!',
@@ -481,6 +488,7 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     mapKadimHarabe: 'Ancient Ruin',
     mapSisliBataklik: 'Misty Marsh',
     endlessMode: 'Continue endless',
+    endlessStart: 'Endless',
     endlessReached: 'Wave reached',
     endlessBest: 'Best',
     endlessNewRecord: 'New record!',
