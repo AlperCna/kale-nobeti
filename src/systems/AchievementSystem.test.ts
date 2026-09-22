@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BALANCE } from '../data/balance';
 import { AchievementSystem } from './AchievementSystem';
+import { YETENEK_SEVIYE_SAYISI } from '../data/abilities';
 import type { RunEndContext } from './AchievementSystem';
 import { EventBus } from './EventBus';
 import { SaveSystem } from './SaveSystem';
@@ -32,10 +33,22 @@ describe('AchievementSystem — tanımlar', () => {
     expect(new Set(ACHIEVEMENTS.map((a) => a.id)).size).toBe(ACHIEVEMENTS.length);
   });
 
-  it('on altı başarım var (`M8-T07` on iki, `M23` dört ekledi)', () => {
-    // 16, `AchievementsScene`'in iki sütuna sığdırabildiği tavan:
-    // 8 satır × 58 px, üst 190, alt bilgi ~640. 17+ çakışır.
-    expect(ACHIEVEMENTS).toHaveLength(16);
+  it('on yedi başarım var (`M8-T07` on iki, `M23` dört, `M111` bir)', () => {
+    /**
+     * **Tavan ekranın kendisi** — `AchievementsScene` iki sütun çiziyor
+     * ve altındaki “öldürülen” satırı sabit yerde.
+     *
+     * `M111`'e kadar ölçüler `UST 190` / `SATIR_Y 58`'di ve tavan **16**
+     * idi: 9 satır son satırı 654'e koyuyor, alt kenarı 673 oluyor ve
+     * öldürülen satırıyla (üst kenar ~637) **36 px çakışıyordu**.
+     * On yedinci başarım için ölçü yeniden yapıldı: `UST 172` /
+     * `SATIR_Y 54` ile son satır 604, alt kenar 623 — 14 px pay.
+     *
+     * **Yeni tavan 18.** On dokuzuncu başarım ekranı yine taşırır;
+     * o gün ya üçüncü sütun ya kaydırma gerekir.
+     */
+    expect(ACHIEVEMENTS.length, 'ekran tavanı 18').toBeLessThanOrEqual(18);
+    expect(ACHIEVEMENTS).toHaveLength(17);
   });
 
   it('tanımsız kimlik YAZILMIYOR — kurcalanmış kayıt sızmasın', () => {
@@ -294,6 +307,23 @@ describe('M23 başarımları — oyunun derinliğine işaret', () => {
 
     bus.emit('enemy:burrowed', {});
     expect(sys.has('sawBurrow')).toBe(true);
+  });
+
+  /**
+   * `M111` — “Sonuna Kadar” yalnız **son** seviyede açılıyor.
+   *
+   * Eşik `YETENEK_SEVIYE_SAYISI`'ndan okunuyor, başarım tanımındaki
+   * `threshold`'dan değil: seviye sayısı bir denge turunda değişirse
+   * başarım kendiliğinden takip etsin, iki adres ayrışmasın.
+   */
+  it('Sonuna Kadar — ara seviye AÇMIYOR, son seviye açıyor', () => {
+    const { bus, sys } = kur();
+    for (let sv = 2; sv < YETENEK_SEVIYE_SAYISI; sv++) {
+      bus.emit('ability:upgraded', { id: 'meteor', seviye: sv });
+      expect(sys.has('abilityMax'), `seviye ${sv}`).toBe(false);
+    }
+    bus.emit('ability:upgraded', { id: 'takviye', seviye: YETENEK_SEVIYE_SAYISI });
+    expect(sys.has('abilityMax')).toBe(true);
   });
 
   /**

@@ -19,6 +19,7 @@ import type { EventBus } from './EventBus';
 import type { KeyValueStore } from '../util/storage';
 import { SAVE_KEY } from '../util/storage';
 import { ACHIEVEMENTS } from '../data/achievements';
+import { YETENEK_SEVIYE_SAYISI } from '../data/abilities';
 
 /** El bitince değerlendirilen durum. */
 export interface RunEndContext {
@@ -161,6 +162,15 @@ export class AchievementSystem {
       // başarım oyuncuya o denemeyi öneriyor.
       this.#yetenekler.add(id);
       if (this.#yetenekler.size === 2) this.unlock('bothAbilities');
+    });
+    /**
+     * `M111` — yetenek son seviyeye çıktı mı. `M99` gider kalemini
+     * açtı, `M107` kapıyı (“tahta dolunca”) koydu; başarım o zincirin
+     * oyuncuya görünen ucu. Eşik `data/abilities.ts`'ten okunuyor —
+     * seviye sayısı değişirse başarım kendiliğinden takip ediyor.
+     */
+    bus.on('ability:upgraded', ({ seviye }) => {
+      if (seviye >= YETENEK_SEVIYE_SAYISI) this.unlock('abilityMax');
     });
     bus.on('targeting:opened', () => this.unlock('targetingUsed'));
     bus.on('enemy:burrowed', () => this.unlock('sawBurrow'));
