@@ -344,7 +344,7 @@ ayrık yollu haritalarda ilerleme yüzdesi karşılaştırılabilir değildir.
 | Harpi | 70 | 75 | 0 | 0 | 9 | 3 | 1 | **Uçar** — yolu takip etmez, engellenemez |
 | Zırhlı Ork | 160 | 38 | 8 | 0 | 12 | 4 | 1 | — |
 | Şaman | 130 | 42 | 0 | 0,4 | 15 | 5 | 1 | Yakındakilere 8 HP/sn iyileştirme (yarıçap 90) |
-| Trol | 400 | 30 | 4 | 0 | 24 | 8 | 2 | 6 HP/sn yenilenme |
+| Trol | 400 | 30 | 4 | 0,15 | 24 | 8 | 2 | 6 HP/sn yenilenme |
 | Örümcek Ana | 150 | 50 | 0 | 0,2 | 18 | 6 | 2 | Ölünce 3× yavru |
 | Tünelci | 90 | 70 | 1 | 0 | 9 | 3 | 1 | **Yeraltı geçişi** — yolun %15-%60 arasında hedeflenemez |
 | **Ogre Şef** (boss) | 700 | 28 | 10 | 0,25 | 60 | 25 | 10 | — |
@@ -514,6 +514,15 @@ menzilinden geçmeli (8 noktalı haritada ≥ 3). `util/coverage.ts` ile ölçü
 
 **Yeni mekanikler oyuncuya söyleniyor (`M15`).** Dalga telgrafı düşmanı **haritaya göre** çözüyor — eskiden temel tanımı gösteriyordu ve harita 6'nın bossunu "zırh 10, yetenek yok" diye yazıyordu (S106). Yeraltı geçişi ayrıca bir öğretici ipucu alıyor (`hintBurrow`), buz kalkanıyla aynı ölçütle: sonucu değiştiriyor ve kendiliğinden keşfedilemiyor. **Çağırmaya ipucu verilmedi** — olay görünür (ekrana yandaş geliyor) ve telgraf zaten "yandaş çağırır" diyor.
 | **Ogre Şef çağırma** (harita 6, `M13`) | Canının her çeyreğinde 2 Ork Savaşçı doğuruyor — boss'u dilimlemek ekrana gövde getiriyor; alan hasarı öbeği topluyor |
+
+**Trol satırı `M118`'e kadar tabloyla çelişiyordu (S95).** Tablo Trol'ü
+*"yoğun tek hedef"*e, yani Keskin Nişancı'ya veriyor; ölçüm ise en iyi
+cevabın **Büyü** olduğunu gösterdi. Sebep kadroda: on bir düşmanın altısı
+zırhlı, yalnız üçü büyü dirençli, ve en ağır üç birimin (Zırhlı Ork ·
+Ogre Şef · Trol) üçü de zırhlıyken üçünün de direnci sıfırdı — yani
+kampanya fiziksel hasarı iki katı cezalandırıyordu. Trol'e **%15 büyü
+direnci** konuldu (`enemies.ts`'teki tarama notu). Zırhlı Ork'a
+dokunulmadı bilerek: onu Büyü'ye veren **bu tablonun kendisi**.
 
 **Hedefleme modları ölçüldü (`M11` Faz 4, S94).** Yedi senaryoda, metrik
 can kaybı: `weakest` 4 · `last` 3 · `first` 3 · `closest` 1 kazandı;
@@ -897,9 +906,9 @@ düzeltildi:
 | 1 · Değirmen Geçidi | 1 | 1 | 0 | 0 |
 | 2 · Taş Köprü | 1,6 | 2,2 | 2 | 0 |
 | 3 · Kül Ovası | 2,8 | 3,8 | 9 | 2 |
-| 4 · Kar Geçidi | 7,35 | 7,8 | 14 | 3 |
-| 5 · Kadim Harabe | 10,05 | 10,2 | 15 | 6 |
-| 6 · Sisli Bataklık | 8,5 | 11 | 18 | 7 |
+| 4 · Kar Geçidi | 7,35 | 7,8 | 14 | 2 |
+| 5 · Kadim Harabe | 10,05 | 10,2 | 15 | 7 |
+| 6 · Sisli Bataklık | 8,5 | 11 | 17 | 8 |
 <!-- /ÜRETİLEN:rampa -->
 
   **`M14` (S101): dört çarpan yeniden türetildi.** Erken başlatma bonusu

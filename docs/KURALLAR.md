@@ -217,7 +217,7 @@ HP ve altın **harita çarpanıyla** ölçekleniyor; hız, zırh, direnç ölçe
 | Harpi | 70 | 75 | 0 | %0 | 9 | 3 | 1 can | **evet** | — |
 | Zırhlı Ork | 160 | 38 | 8 | %0 | 12 | 4 | 1 can | — | — |
 | Şaman | 130 | 42 | 0 | %40 | 15 | 5 | 1 can | — | `heal` hps=8 radius=90 |
-| Trol | 400 | 30 | 4 | %0 | 24 | 8 | 2 can | — | `regen` hps=6 |
+| Trol | 400 | 30 | 4 | %15 | 24 | 8 | 2 can | — | `regen` hps=6 |
 | Örümcek Ana | 150 | 50 | 0 | %20 | 18 | 6 | 2 can | — | `split` count=3 childId=orumcekYavrusu |
 | Tünelci | 90 | 70 | 1 | %0 | 9 | 3 | 1 can | — | `burrow` fromFraction=0,15 toFraction=0,6 |
 | Ogre Şef (boss) | 700 | 28 | 10 | %25 | 60 | 25 | 10 can | — | — |
@@ -306,10 +306,10 @@ hasarı da içeriyor. `—` = vuramıyor. Boss sütunu harita 1 zırhıyla.
 | Top T2 | 18,7 | 17,6 | 18,15 | **—** | 14,3 | 18,7 | 16,5 | 18,7 | 18,15 | 13,2 | 18,7 |
 | Top T3a Havan | 23,4 | 22,5 | 22,95 | 11,7 | 19,8 | 23,4 | 21,6 | 23,4 | 22,95 | 18,9 | 23,4 |
 | Top T3b Barut Fıçısı | 23,4 | 21,6 | 22,5 | 11,7 | 16,2 | 23,4 | 19,8 | 23,4 | 22,5 | 14,4 | 23,4 |
-| Büyü T1 | 9,8 | 9,8 | 9,8 | 9,8 | 9,8 | 5,88 | 9,8 | 7,84 | 9,8 | 7,35 | 9,8 |
-| Büyü T2 | 18 | 18 | 18 | 18 | 18 | 10,8 | 18 | 14,4 | 18 | 13,5 | 18 |
-| Büyü T3a Yıldırım | 27,3 | 27,3 | 27,3 | 27,3 | 27,3 | 16,38 | 27,3 | 21,84 | 27,3 | 20,47 | 27,3 |
-| Büyü T3b Buz | 6,4 | 6,4 | 6,4 | 6,4 | 6,4 | 3,84 | 6,4 | 5,12 | 6,4 | 4,8 | 6,4 |
+| Büyü T1 | 9,8 | 9,8 | 9,8 | 9,8 | 9,8 | 5,88 | 8,33 | 7,84 | 9,8 | 7,35 | 9,8 |
+| Büyü T2 | 18 | 18 | 18 | 18 | 18 | 10,8 | 15,3 | 14,4 | 18 | 13,5 | 18 |
+| Büyü T3a Yıldırım | 27,3 | 27,3 | 27,3 | 27,3 | 27,3 | 16,38 | 23,2 | 21,84 | 27,3 | 20,47 | 27,3 |
+| Büyü T3b Buz | 6,4 | 6,4 | 6,4 | 6,4 | 6,4 | 3,84 | 5,44 | 5,12 | 6,4 | 4,8 | 6,4 |
 
 ---
 
@@ -395,7 +395,7 @@ tahta 3820'de takılıyor ve oyuncu 34 can kaybediyordu (20 canla kayıp).
 | 3 · Kül Ovası | ×2,8 | ×3,8 **←ayrıştı** | ×1 | 5100 | 0,78 | 1,37 | 9 / 20 ✓ |
 | 4 · Kar Geçidi | ×7,35 | ×7,8 **←ayrıştı** | ×1,4 | 7140 | 0,57 | 1,19 | 14 / 20 ✓ |
 | 5 · Kadim Harabe | ×10,05 | ×10,2 **←ayrıştı** | ×1 | 6440 | 0,4 | 1,02 | 15 / 20 ✓ |
-| 6 · Sisli Bataklık | ×8,5 | ×11 **←ayrıştı** | ×1 | 6440 | 0,35 | 0,95 | 18 / 20 ✓ |
+| 6 · Sisli Bataklık | ×8,5 | ×11 **←ayrıştı** | ×1 | 6440 | 0,35 | 0,95 | 17 / 20 ✓ |
 
 **`+ yükseltme` sütunu `M100`'de eklendi** — `maliyet/gelir` yalnız
 **tahtayı** sayan bir orandı ve `M99` altına ikinci bir gider kalemi
@@ -557,9 +557,9 @@ referans tahtaya, tavana ve boss türetmesine hiç girmiyor — hiçbir düşman
 
 | Seviye | HP çarpanı | Başlangıç canı | Yıldız | 1 | 2 | 3 | 4 | 5 | 6 |
 |---|---|---|---|---|---|---|---|---|---|
-| kolay | ×0,8 | 20 | **kaydedilmiyor** | 0 / 20 ✓ | 0 / 20 ✓ | 2 / 20 ✓ | 3 / 20 ✓ | 6 / 20 ✓ | 7 / 20 ✓ |
-| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 2 / 20 ✓ | 9 / 20 ✓ | 14 / 20 ✓ | 15 / 20 ✓ | 18 / 20 ✓ |
-| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 2 / 12 ✓ | 9 / 12 ✓ | 14 / 12 ✗ | 15 / 12 ✗ | 18 / 12 ✗ |
+| kolay | ×0,8 | 20 | **kaydedilmiyor** | 0 / 20 ✓ | 0 / 20 ✓ | 2 / 20 ✓ | 2 / 20 ✓ | 7 / 20 ✓ | 8 / 20 ✓ |
+| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 2 / 20 ✓ | 9 / 20 ✓ | 14 / 20 ✓ | 15 / 20 ✓ | 17 / 20 ✓ |
+| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 2 / 12 ✓ | 9 / 12 ✓ | 14 / 12 ✗ | 15 / 12 ✗ | 17 / 12 ✗ |
 
 Hücreler: referans tahtanın kaybettiği can / o seviyenin canı.
 
@@ -666,7 +666,7 @@ Ayrık yolda **en zayıf kol** belirleyici — düşman hangi kolu seçeceğini 
 | Harpi | 196 | 820 | 848 / 820 | %23,9 |
 | Zırhlı Ork | 448 | 1673 | 1673 / 1822 | %26,8 |
 | Şaman | 364 | 1632 | 1632 / 1649 | %22,3 |
-| Trol | 1120 | 2304 | 2304 / 2471 | %48,6 |
+| Trol | 1120 | 2227 | 2227 / 2349 | %50,3 |
 | Örümcek Ana | 420 | 1432 | 1432 / 1483 | %29,3 |
 | Örümcek Yavrusu | 84 | 829 | 829 / 878 | %10,1 |
 | Ogre Şef (boss) | 1573 | 2431 | 2431 / 2517 | %64,7 |
@@ -682,7 +682,7 @@ Ayrık yolda **en zayıf kol** belirleyici — düşman hangi kolu seçeceğini 
 | Harpi | 515 | 1439 | %35,7 |
 | Zırhlı Ork | 1176 | 2999 | %39,2 |
 | Şaman | 956 | 2850 | %33,5 |
-| Trol | 2940 | 4108 | %71,6 |
+| Trol | 2940 | 3947 | %74,5 |
 | Örümcek Ana | 1103 | 2522 | %43,7 |
 | Örümcek Yavrusu | 221 | 1472 | %15 |
 | Ogre Şef (boss) | 2807 | 4281 | %65,6 |
@@ -698,7 +698,7 @@ Ayrık yolda **en zayıf kol** belirleyici — düşman hangi kolu seçeceğini 
 | Harpi | 704 | 1786 | 1786 / 1925 | %39,4 |
 | Zırhlı Ork | 1608 | 3770 | 3770 / 3992 | %42,7 |
 | Şaman | 1307 | 3615 | 3615 / 3667 | %36,1 |
-| Trol | 4020 | 5165 | 5165 / 5432 | %77,8 |
+| Trol | 4020 | 4980 | 4980 / 5180 | %80,7 |
 | Örümcek Ana | 1508 | 3185 | 3185 / 3282 | %47,3 |
 | Örümcek Yavrusu | 302 | 1852 | 1852 / 1935 | %16,3 |
 | Ogre Şef (boss) | 2345 | 5412 | 5412 / 5570 | %43,3 |
@@ -714,7 +714,7 @@ Ayrık yolda **en zayıf kol** belirleyici — düşman hangi kolu seçeceğini 
 | Harpi | 595 | 2067 | %28,8 |
 | Zırhlı Ork | 1360 | 4170 | %32,6 |
 | Şaman | 1105 | 4127 | %26,8 |
-| Trol | 3400 | 5789 | %58,7 |
+| Trol | 3400 | 5591 | %60,8 |
 | Tünelci | 765 | 2647 | %28,9 |
 | Ogre Şef (boss) | 2333 | 6125 | %38,1 |
 
@@ -741,10 +741,10 @@ aşan hasar. Kalkanın yuttuğu kayıp sayılmıyor: o gerçek bir mekanik.
 |---|---|---|---|---|
 | 1 · Değirmen Geçidi | 11714 | 178 | 1330 | **%87,1** |
 | 2 · Taş Köprü | 22696 | 186 | 1114 | **%94,3** |
-| 3 · Kül Ovası | 37188 | 366 | 1200 | **%95,8** |
-| 4 · Kar Geçidi | 63192 | 814 | 1657 | **%96,1** |
-| 5 · Kadim Harabe | 83166 | 967 | 1611 | **%96,9** |
-| 6 · Sisli Bataklık | 69039 | 1044 | 1482 | **%96,3** |
+| 3 · Kül Ovası | 37328 | 405 | 1098 | **%96** |
+| 4 · Kar Geçidi | 63270 | 687 | 1574 | **%96,4** |
+| 5 · Kadim Harabe | 83298 | 1143 | 1465 | **%96,9** |
+| 6 · Sisli Bataklık | 70314 | 1039 | 1446 | **%96,5** |
 
 Öğretici haritada kayıp en yüksek — çünkü orada atış başına hasar
 düşmanın canının büyük bir kısmı ve aşırı öldürme baskın. Geç haritalarda
@@ -757,10 +757,10 @@ Simülasyon **canlı oyunla aynı kodu** kullanıyor: aynı
 |---|---|---|---|
 | 1 · Değirmen Geçidi | **0** | 0 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:0 |
 | 2 · Taş Köprü | **2** | 54 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:2 d8:0 d9:0 d10:0 |
-| 3 · Kül Ovası | **6** | 1240 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:1 d9:0 d10:5 |
-| 4 · Kar Geçidi | **10** | 7622 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:10 |
-| 5 · Kadim Harabe | **12** | 9866 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:12 |
-| 6 · Sisli Bataklık | **16** | 7614 | d1:0 d2:0 d3:0 d4:0 d5:2 d6:0 d7:1 d8:0 d9:0 d10:13 |
+| 3 · Kül Ovası | **6** | 1540 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:1 d9:0 d10:5 |
+| 4 · Kar Geçidi | **10** | 7763 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:10 |
+| 5 · Kadim Harabe | **12** | 10567 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:12 |
+| 6 · Sisli Bataklık | **15** | 7478 | d1:0 d2:0 d3:0 d4:0 d5:2 d6:0 d7:1 d8:0 d9:0 d10:12 |
 
 
 **Baskı hangi dalgadan geliyor?** Üstteki dağılım sızıntıyı **sızdığı ana**
@@ -776,7 +776,7 @@ tablo aynı canı düşmanın **doğduğu** dalgaya yazıyor (`M84`):
 | 3 · Kül Ovası | d1:0 d2:0 d3:0 d4:0 d5:0 d6:2 d7:0 d8:0 d9:0 d10:7 | **%78** |
 | 4 · Kar Geçidi | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:6 d10:8 | **%57** |
 | 5 · Kadim Harabe | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:7 d10:8 | **%53** |
-| 6 · Sisli Bataklık | d1:0 d2:0 d3:0 d4:2 d5:0 d6:1 d7:0 d8:0 d9:6 d10:9 | **%50** |
+| 6 · Sisli Bataklık | d1:0 d2:0 d3:0 d4:2 d5:0 d6:1 d7:0 d8:0 d9:5 d10:9 | **%53** |
 
 
 **Hangi düşman sızıyor** — toplam sayı *neyin* sızdığını söylemiyor ve
@@ -789,15 +789,15 @@ bu ikisi farklı düzeltmeler gerektiriyor:
 | 3 · Kül Ovası | Trol ×3 · Örümcek Yavrusu ×3 |
 | 4 · Kar Geçidi | Trol ×4 · Zırhlı Ork ×3 · Örümcek Yavrusu ×1 · Harpi ×1 · Şaman ×1 |
 | 5 · Kadim Harabe | Zırhlı Ork ×3 · Trol ×3 · Örümcek Yavrusu ×3 · Şaman ×2 · Kurt Binicisi ×1 |
-| 6 · Sisli Bataklık | Tünelci ×9 · Ork Savaşçı ×5 · Trol ×2 |
+| 6 · Sisli Bataklık | Tünelci ×8 · Ork Savaşçı ×5 · Trol ×2 |
 
 **Kısıt A ile Kısıt B aynı şeyi ölçmüyor.** Kısıt A *tek* düşman için
 ("bir Ork Savaşçı öldürülebilir mi"), Kısıt B *dalga* için ("on bir tanesi
 aynı anda gelirse").
 Ölçüm bunu net gösteriyor — **6 · Sisli Bataklık**:
-en çok sızan **Tünelci** (×9) Kısıt A'da
+en çok sızan **Tünelci** (×8) Kısıt A'da
 %28,9 ile rahat geçiyor; Kısıt A'da en zorlanan
-**Trol** (%58,7) ise yalnız
+**Trol** (%60,8) ise yalnız
 ×2 sızıyor. İkisi de gerekli.
 
 **Boss hiçbir haritada sızmıyor** — türetmenin uçtan uca sağlaması.
