@@ -481,7 +481,10 @@ geri bildirimsizdi — tıklama sesi üretilmiş ama çağıran yoktu (M89). Son
 haritanın “sayılar ölçüldü” kaydı hiç yazılmamıştı ve harita başına elle
 yazılan blokların yanına `MAPS`'ten **türetilen** değişmezler kondu (M90).
 
-**Ölçülen rampa (bugün):** `0 · 0 · 9 · 14 · 15 · 18`. Bu satır elle
+**Ölçülen rampa (bugün):** `0 · 2 · 9 · 14 · 15 · 18`. İkinci sayı
+`M117`'ye kadar **0**'dı: Taş Köprü'ye S116 için elit dalgası kondu ve
+harita ilk kez can kaybettiriyor — hepsi **orta oyunda**, final sıfır.
+`0 → 0 → 9` uçurumu böylece `0 → 2 → 9` oldu. Bu satır elle
 yazılmıyor; kaynağı `kisitB.test.ts`'in monotonluk testi ve
 `KURALLAR.md`'nin üretilen zorluk tablosu.
 
@@ -499,8 +502,10 @@ Satın alınanın ekranda izi yoktu; seviye pimleri kondu ve onları çizerken
 kuralı o boşluğu kapattı ve §17'nin elle yazılı bekçi tablosu türetildi
 (M100 Faz 2).
 
-**Bugün açık duranlar:** S116'nın kalanı (dalga **1-8** hâlâ boş; 9-10
-değil), S117'nin **oran** kolu (tahta tek başına hâlâ 0,40 · 0,35;
+**Bugün açık duranlar:** S116'nın kalanı — artık **harita 4-5** demek:
+harita 2, 3 ve 6'nın orta oyunu elit dalgasıyla sonuçlu (`M21`/`M84`/`M117`),
+4-5'te duvar S95 (elit ağırlığı Okçu tahtasını eşiğin üstüne atıyor) —,
+S117'nin **oran** kolu (tahta tek başına hâlâ 0,40 · 0,35;
 yükseltmeyle birlikte 1,02 · 0,95 — ama yükseltme seçime bağlı, tahta
 zorunlu), ve `M77`'nin bıraktığı tek aile tahtalarındaki 2 canlık
 sim/oyun farkı — **`M94`'te çözünürlük olarak açıklandı**.

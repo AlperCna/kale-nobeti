@@ -895,7 +895,7 @@ düzeltildi:
 | Harita | HP çarpanı | Altın çarpanı | Normal = Zor | Kolay (×0,80) |
 |---|---|---|---|---|
 | 1 · Değirmen Geçidi | 1 | 1 | 0 | 0 |
-| 2 · Taş Köprü | 1,6 | 2,2 | 0 | 0 |
+| 2 · Taş Köprü | 1,6 | 2,2 | 2 | 0 |
 | 3 · Kül Ovası | 2,8 | 3,8 | 9 | 2 |
 | 4 · Kar Geçidi | 7,35 | 7,8 | 14 | 3 |
 | 5 · Kadim Harabe | 10,05 | 10,2 | 15 | 6 |
@@ -1076,7 +1076,7 @@ hiçbir tahta bunu indiremezdi (M7'de ölçüldü: Kısıt A oranı %165 ve %282
 | Harita | Zırh | Boss HP | Tavanın oranı (ölçülen) |
 |---|---|---|---|
 | 1 · Değirmen Geçidi | 10 | 700 | %87,7 |
-| 2 · Taş Köprü | 5 | 958 | %71,7 |
+| 2 · Taş Köprü | 5 | 958 | %59,7 |
 | 3 · Kül Ovası | 2 | 1573 | %64,7 |
 | 4 · Kar Geçidi | 2 | 2807 | %65,6 |
 | 5 · Kadim Harabe | 2 | 2345 | %43,3 |

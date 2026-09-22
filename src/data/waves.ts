@@ -74,7 +74,38 @@ export function budget(n: number, elit = false): number {
  * Sebep S95'in alanı: 12-15 noktalı tahtada tek aileye zorlanan Okçu
  * zaten 17-18'de duruyor, elit dalgası onu eşiğin üstüne atıyor.
  */
-export const ELIT_DALGALI_HARITALAR: readonly string[] = ['kul-ovasi', 'sisli-bataklik'];
+export const ELIT_DALGALI_HARITALAR: readonly string[] = [
+  // `M117` (S116) — harita 2 içeri alındı. Yukarıdaki "harita 1-2 öğrenme
+  // yayı, kadrolarında Trol yok" notu doğruydu ama **eksikti**: elit
+  // birimin Trol olması şart değil, haritanın **kendi** ağır birimi
+  // yetiyor. Taş Köprü'de o birim Zırhlı Ork ve dalga 3 onu zaten
+  // tanıtıyor. Ölçüm: profil `0×10` → `0 0 0 0 0 2 0 0 0 0`.
+  'tas-kopru',
+  'kul-ovasi',
+  'sisli-bataklik',
+];
+
+/**
+ * **Finalin zirve olma kuralından muaf haritalar** — `M117` (S135 × S116).
+ *
+ * S135 *"boss dalgası haritanın zirvesi"* diyor ve `kisitB` bunu her
+ * harita için bağlıyor. Taş Köprü'ye elit dalgası konunca kural kırıldı
+ * ve **ikinci kol da işe yaramadı**: harita `BUYUK_REFAKATLI_HARITALAR`'a
+ * alınıp refakat 31 → 53 puana (bütçe 52 → 78) çıkarıldığında final yine
+ * **0** sızdırdı. Dalga 10 tahtası 78 puanı da yiyor.
+ *
+ * Sebep yapısal: dalga 6'da tahta henüz **kurulurken**, dalga 10'da
+ * **tamamlanmış**. Elit dalgasının ortada işe yaramasının sebebi ile
+ * finalin baskıya kapalı olmasının sebebi aynı şey. Yani iki kural,
+ * tahtanın bütçeyi aştığı bir haritada aynı anda sağlanamıyor.
+ *
+ * **Karar (sahibi, `M117`):** öğrenme yayında S116 öncelikli — oyuncunun
+ * ikinci haritada bir kararının sonucunu görmesi, finalin zirve olmasından
+ * önemli. Muafiyet **liste** olarak duruyor ki kapsamı tek yerden okunsun
+ * ve geç haritalara sessizce sızmasın; `kisitB` listedekiler dışında
+ * kuralı aynen uyguluyor.
+ */
+export const FINAL_ZIRVE_MUAF: readonly string[] = ['tas-kopru'];
 
 /**
  * **Büyük refakatli haritalar** — dalga 10 bütçesi `bossWaveFactor` kadar
@@ -297,12 +328,34 @@ export const MAP2_WAVES: readonly Wave[] = [
     ['kurtBinicisi', 3, 1],
     ['zirhliOrk', 2],
   ]), // 21 = bütçe 21
+  /**
+   * **ELİT dalgası** — `M117` (S116). Elit birim haritanın **kendi** ağır
+   * birimi: dalga 3 Zırhlı Ork'u tanıtıyor (*"Büyü'yü gerekli kılıyor"*),
+   * dalga 6 onu yığıyor. İki kola bölünüyor ki bir şeridi boş bırakan
+   * tahta cezasını görsün.
+   *
+   * **Sızan şey Zırhlı Ork DEĞİL — Harpi (ölçüldü).** Zırhlı duvar
+   * kuleleri **meşgul ediyor**, o sırada iki Harpi geçiyor. Yani dalga
+   * "zırha karşı ne aldın" sorusunu tek başına sormuyor; **yük
+   * altında kapsaman yetiyor mu** diye soruyor ve cevabı uçan tarafta
+   * alıyor. Bu, dalganın ikinci dersini (Harpi dalga 6'da kadroda) ilk
+   * kez **sonuçlu** hale getiriyor.
+   *
+   * **Goblinler bilerek duruyor ve sayıları ölçüldü.** Aynı bütçe
+   * tamamen zırhlı orka verilince (`zirhliOrk×8`, 54 puan) sızıntı
+   * **0**'a düşüyor: baskıyı yaratan şey yalnız ağırlık değil, kulelerin
+   * **meşgul edilmesi**. Tarama (hepsi bütçe içinde):
+   * `4g+7z → 1` · **`6g+7z → 2`** · `8g+7z → 1` · `4g+8z → 1`.
+   * Monoton değil — S145'in ±2 çözünürlüğü; 6+7 bandın ortası.
+   */
   dalgaKur(6, [
-    ['goblin', 4],
+    ['goblin', 6],
     ['orkSavasci', 3, 1],
     ['saman', 2],
     ['harpi', 2, 1],
-  ]), // 26 ≈ bütçe 25. ŞAMAN tanıtılıyor: hedefleme modunu gerekli kılıyor.
+    ['zirhliOrk', 4],
+    ['zirhliOrk', 3, 1],
+  ]), // ELİT, 56 ≈ bütçe 55. ŞAMAN tanıtılıyor: hedefleme modunu gerekli kılıyor.
   dalgaKur(7, [
     ['goblin', 6],
     ['orkSavasci', 5, 1],
