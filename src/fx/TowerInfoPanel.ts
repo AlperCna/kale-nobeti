@@ -51,6 +51,10 @@ const VERMILION = 0xb03a2e;
 
 const SOL_PAY = PANEL_IC_PAY;
 const ICON = 20;
+/** İkonlar arası **azami** adım; kadro sığmazsa küçülüyor (`M113`). */
+const IKON_ADIM = 30;
+/** Dokunma hedefinin yüksekliği — Platform alt sınırı. */
+const IKON_HEDEF_H = 44;
 /** Değer kolonunun sağ kenarı — sayılar sağa dayalı. */
 const W = PANEL_W;
 /** Son satır (ikon şeridi, y=236) + yarı ikon + alt band. */
@@ -156,28 +160,61 @@ export class TowerInfoPanel {
      */
     this.#etkinDps = sayi(SATIRLAR.dps - 6, GOLD, 0.9);
 
-    // Düşman ikonu şeridi — **S42: o haritanın kadrosu.** Hepsini
-    // listelemek oyuncuya henüz görmediği düşmanları gösterirdi.
+    /**
+     * Düşman ikonu şeridi — **S42: o haritanın kadrosu.** Hepsini
+     * listelemek oyuncuya henüz görmediği düşmanları gösterirdi.
+     *
+     * ## `M113` — adım artık TÜRETİLİYOR
+     *
+     * Adım sabit **30 px**ti ve on ikonlu kadroda şerit panelin
+     * dışına taşıyordu. Ölçüldü (harita 3-4-5, canlı): son ikonun
+     * sağ kenarı **1280**, panelin sağ kenarı 1268 — **12 px taşma**,
+     * ve 1280 ekranın kenarı, yani boss ikonu parşömenin dışında
+     * tuvalin sınırına yapışık duruyordu. Harita 6'da kadro dokuz
+     * olduğu için görünmüyordu; bu yüzden `M8`'den beri fark
+     * edilmemişti.
+     *
+     * Adım artık kadro sayısından türetiliyor: sığdığı sürece 30,
+     * sığmadığında iç genişliğe bölünüyor. Yeni bir düşman kadroya
+     * girdiğinde şerit kendiliğinden sığıyor — elle bir sayı ayarlamak
+     * gerekmiyor (TIER 2).
+     *
+     * ## Dokunma hedefi
+     *
+     * Hedef artık ikonun kendisi değil, arkasındaki **görünmez
+     * dikdörtgen**: genişlik = adım (yan yana iki hedef çakışmasın),
+     * yükseklik = Platform alt sınırı **44**. Dikey şart tam
+     * karşılanıyor; yatayda adım 44'ün altında kalıyor çünkü on ikon
+     * 256 px'lik iç genişliğe 44'er piksele sığmıyor — **ölçülmüş
+     * istisna** (S166), sessiz ihlal değil.
+     */
+    const icGenislik = W - 2 * SOL_PAY;
+    const adim =
+      roster.length > 1
+        ? Math.min(IKON_ADIM, Math.floor((icGenislik - ICON) / (roster.length - 1)))
+        : IKON_ADIM;
     roster.forEach((e, i) => {
-      const bx = SOL_PAY + ICON / 2 + i * 30;
+      const bx = SOL_PAY + ICON / 2 + i * adim;
+      const hedef = scene.add
+        .rectangle(bx, SATIRLAR.ikonlar, adim, IKON_HEDEF_H, 0x000000, 0)
+        .setInteractive({ useHandCursor: true });
       const halka = scene.add
         .rectangle(bx, SATIRLAR.ikonlar, ICON + 6, ICON + 6, 0x000000, 0)
         .setStrokeStyle(2, GOLD);
       const ikon = scene.add
         .image(bx, SATIRLAR.ikonlar, 'atlas', enemyFrameKey(e.id))
-        .setDisplaySize(ICON, ICON)
-        .setInteractive({ useHandCursor: true });
+        .setDisplaySize(ICON, ICON);
       const sec = (): void => {
         this.#seciliDusman = i;
         this.#dpsYaz();
       };
-      ikon.on(Phaser.Input.Events.POINTER_OVER, sec);
+      hedef.on(Phaser.Input.Events.POINTER_OVER, sec);
       // `M112` — dokunmatikte imleç yok: “seçili düşmana karşı DPS”
       // satırı yalnız fareyle değişiyordu. `WaveTelegraph`'ın aynı kusuru,
       // aynı turda, aynı çözüm.
-      ikon.on(Phaser.Input.Events.POINTER_DOWN, sec);
+      hedef.on(Phaser.Input.Events.POINTER_DOWN, sec);
       this.#ikonlar.push(halka);
-      this.#kap.add([halka, ikon]);
+      this.#kap.add([hedef, halka, ikon]);
     });
   }
 
