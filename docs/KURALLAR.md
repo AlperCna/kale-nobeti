@@ -66,7 +66,10 @@ Kaynak: `src/systems/combat.ts` · `GAME-DESIGN.md` §3
 en az bu oranı geçer. Gerekçe: "oyuncu tamamen yanlış kule kurduğunda oyun
 kilitlenmez, sadece verimsizleşir. Ceza var ama duvar yok."
 
-Tabana düşen vuruş ekranda **gri** çiziliyor — oyuncu kulesinin işe
+Tabana düşen vuruş ekranda **gri** ve yanında bir **kalkan** işaretiyle
+çiziliyor (İşaret `M106`'da eklendi: `DamageText`'in kendi tablosu onu
+vadediyordu ama kod yalnız rengi değiştiriyordu — TIER 1 kural 6 bilginin
+yalnız renge dayanmamasını istiyor.) — oyuncu kulesinin işe
 yaramadığını görmeli. Örnek: Okçu T2 (10 hasar) harita 1 boss'una
 (zırh 10) saniyede 10 değil **5,2** veriyor.
 
