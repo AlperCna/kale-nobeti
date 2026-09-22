@@ -481,7 +481,8 @@ geri bildirimsizdi — tıklama sesi üretilmiş ama çağıran yoktu (M89). Son
 haritanın “sayılar ölçüldü” kaydı hiç yazılmamıştı ve harita başına elle
 yazılan blokların yanına `MAPS`'ten **türetilen** değişmezler kondu (M90).
 
-**Ölçülen rampa (bugün):** `0 · 2 · 9 · 14 · 15 · 18`. İkinci sayı
+**Ölçülen rampa (bugün):** `0 · 2 · 9 · 14 · 15 · 17`. Son sayı `M118`'e
+kadar **18**'di; Trol'e büyü direnci konunca (S95) 17 oldu. İkinci sayı
 `M117`'ye kadar **0**'dı: Taş Köprü'ye S116 için elit dalgası kondu ve
 harita ilk kez can kaybettiriyor — hepsi **orta oyunda**, final sıfır.
 `0 → 0 → 9` uçurumu böylece `0 → 2 → 9` oldu. Bu satır elle

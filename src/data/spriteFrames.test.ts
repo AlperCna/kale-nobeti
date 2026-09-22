@@ -12,6 +12,8 @@ import {
   FRAME_CARTOUCHE,
 } from './spriteFrames';
 import type { TowerId, TierIndex } from '../types/tower';
+import { TOWERS } from './towers';
+import { KISLA } from './barracks';
 import type { EnemyId } from '../types/enemy';
 
 /**
@@ -24,7 +26,10 @@ import type { EnemyId } from '../types/enemy';
 describe('spriteFrames.ts — atlas.json ile eşleşme', () => {
   const kareler = new Set(Object.keys(atlasJson.frames));
 
-  const AILELER: readonly TowerId[] = ['okcu', 'top', 'buyu', 'kisla'];
+  // `M118` — elle sayılmıyor: aileler `TOWERS`'tan, kışla ayrı bir
+  // dosyada olduğu için tek elle yazılan ad o. Dördüncü bir kule ailesi
+  // eklenirse bu liste kendiliğinden büyür (CLAUDE.md TIER 2).
+  const AILELER: readonly TowerId[] = [...TOWERS.map((t) => t.id), KISLA.id];
   const KADEMELER: readonly TierIndex[] = [0, 1, 2, 3];
 
   it.each(AILELER.flatMap((aile) => KADEMELER.map((kademe) => [aile, kademe] as const)))(

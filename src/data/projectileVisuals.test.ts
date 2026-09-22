@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { TOWERS } from './towers';
 import { projectileLook } from './projectileVisuals';
 
 describe('projectileVisuals — oyuncu geri bildirimi: mermiler aileye göre ayrışsın', () => {
@@ -41,7 +42,7 @@ describe('projectileVisuals — oyuncu geri bildirimi: mermiler aileye göre ayr
     });
 
     it('büyüme en-boy oranını bozmuyor — okun oku, güllenin yuvarlağı kalıyor', () => {
-      for (const aile of ['okcu', 'top', 'buyu'] as const) {
+      for (const aile of TOWERS.map((t) => t.id)) {
         const t1 = projectileLook(aile, undefined, 0);
         const t3 = projectileLook(aile, undefined, 2);
         expect(t3.scaleX / t3.scaleY).toBeCloseTo(t1.scaleX / t1.scaleY, 5);

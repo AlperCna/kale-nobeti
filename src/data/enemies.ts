@@ -105,7 +105,41 @@ export const TROL: EnemyDef = {
   hp: 400,
   speed: 30,
   armor: 4,
-  magicResist: 0,
+  /**
+   * **`M118` (S95): 0 → 0,15.** `// GEÇİCİ — S38` (direnç dokümanda yok).
+   *
+   * Sebep tek bir düşman değil **kadronun asimetrisi**: on bir düşmanın
+   * **altısı zırhlı**, yalnız **üçü** büyü dirençli — ve en ağır üç
+   * birimin (Zırhlı Ork 8 · Ogre Şef 10 · Trol 4) üçü de zırhlı, üçünün
+   * de direnci **sıfırdı**. Yani kampanya fiziksel hasarı iki katı
+   * cezalandırıyordu. Ölçülen sonucu: mono-Büyü tahtası referans
+   * tahtayı altı haritanın **dördünde** geçiyor ve en kötü haritası
+   * **13**, referansın **18**'i — "hangi aileyi kuracağım" sorusunun
+   * varsayılan cevabı vardı. `M11` Faz 5'in Top'ta çözdüğü kusurun ta
+   * kendisi, başka ailede.
+   *
+   * **Neden Trol, neden Zırhlı Ork değil:** §5'in karşı-oyun tablosu
+   * Zırhlı Ork'u **Büyü'ye** veriyor (tasarımın kendi anahtarı, ona
+   * dokunmak karşı-oyunu bozar) ama Trol'ü *"Kışla ile tut + yoğun tek
+   * hedef"*e veriyor — yani Keskin Nişancı'ya. Ölçüm tersini
+   * söylüyordu: Trol'ün en iyi cevabı Büyü'ydü, çünkü 400 HP'lik en
+   * tank gövde büyüye **vergisiz** geliyordu. 0,15 tabloyu yazdığı
+   * hâle getiriyor.
+   *
+   * **Tarama (mono-Büyü kaç haritada referansı geçiyor / Büyü'nün en
+   * kötüsü):** 0 → 4 / 13 · 0,08 → 3 / 15 · 0,10 → 2 / 15 ·
+   * **0,12-0,18 → 2 / 17 (plato)** · 0,20 → 3 / 17 · 0,22 → 3 / **25**
+   * (Kül Ovası kopuyor). Platonun içinden **0,15**, çünkü rampayı en az
+   * oynatan nokta o: `0·2·9·14·15·18` → `0·2·9·14·15·17` (0,12'de 16,
+   * 0,10'da 15). Okçu ve Top **birebir değişmedi** — beklenen, fiziksel
+   * hasar bu direnci hiç görmüyor.
+   *
+   * **Zincir kıpırdamadı:** boss HP'leri `ceilingA`'dan türüyor ve
+   * `ceilingA` **boss için** hesaplanıyor, Trol için değil; 1133 testin
+   * hepsi (kisitB · difficulty · bossScaling · yetenekKatkisi) ilk
+   * koşuda yeşil kaldı.
+   */
+  magicResist: 0.15,
   gold: 24,
   points: 8,
   leakDamage: 2,

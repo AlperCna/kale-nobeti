@@ -30,9 +30,10 @@
  * TIER 1 kural 11: Phaser'a dokunmaz.
  */
 import { describe, expect, it } from 'vitest';
-import { MAP_2, MAP_3, MAP_4, MAP_5, MAP_6, COVERAGE_REFERENCE_RANGE } from '../data/maps';
+import { MAPS, COVERAGE_REFERENCE_RANGE } from '../data/maps';
 import { wavesFor } from '../data/waves';
 import { getEnemyForMap } from '../data/enemies';
+import { TOWERS } from '../data/towers';
 import { buildReferenceBoards } from './balanceChecks';
 import { simulateAllWaves } from './waveSim';
 import { REFERANS_ERKEN_BONUSU, REFERANS_POLITIKA } from './referansOlcum';
@@ -91,20 +92,100 @@ function canKaybi(m: MapDef, tekAile?: TowerId): number {
  * Bataklık'ta **29 can** kaybettiriyordu (sınır 20, Top 6, Büyü 5) ve
  * tahtası bossu bile sızdırıyordu, ama hiçbir test bakmıyordu.
  */
-const HARITALAR = [MAP_2, MAP_3, MAP_4, MAP_5, MAP_6];
-const AILELER: readonly TowerId[] = ['okcu', 'top', 'buyu'];
+/**
+ * **`M118` (S95): İKİ LİSTE DE TÜRETİLİYOR — elle sayılmıyor.**
+ *
+ * Üstteki `M22` notu listeyi bir kez büyüttü ama listeyi **elle
+ * yazılı** bıraktı, ve elle sayılan liste bu projede sessizce yalan
+ * söylüyor (CLAUDE.md TIER 2). Ölçüldü: liste altı haritanın **beşini**
+ * sayıyordu — **harita 1 hiç denetlenmemişti** ve orada oyunun en büyük
+ * aile farkı duruyor (karışık **0**, Okçu **10**, Top **9**).
+ *
+ * Harita 1'in ölçülen tablosu artık kayıtta ve iki kategorik delik
+ * gösteriyor — **ikisi de kusur değil, tasarımın kendisi:**
+ * - Okçu T2 bossa **5,2** DPS veriyor (Top 13,2 · Büyü 13,5), çünkü
+ *   zırh 10 vuruş başına düşüyor ve T2'nin hasarı 14. §4.1'in yazılı
+ *   kimliği: *"Zırha karşı zayıf."*
+ * - Top T1/T2 harpiye **0,0** DPS veriyor (`airMultiplier: 0`), yani
+ *   mono-Top tahtası harpiyi hedefleyemiyor bile. Harita 1'de hiçbir
+ *   aile T3'e ulaşamıyor (ekonomi birimi, çarpan 1,0), yani iki deliğin
+ *   T3'teki cevapları (Kundakçı · Barut Fıçısı) burada yok. Dalga 6
+ *   harpiyi **uçan kavramını öğretmek için** tanıtıyor; 9 can tam olarak
+ *   o dersin bedeli.
+ *
+ * İkisi de 20 eşiğinin altında — "ceza var ama duvar yok" (§3).
+ */
+const HARITALAR = MAPS;
+const AILELER: readonly TowerId[] = TOWERS.map((t) => t.id);
 
 describe('Aile dengesi — M11 Faz 5 (S95)', () => {
   it('**hiçbir aile her haritada karışık tahtadan iyi değil**', () => {
     for (const aile of AILELER) {
       const kazandigi = HARITALAR.filter((m) => canKaybi(m, aile) < canKaybi(m)).length;
-      expect(kazandigi, `${aile} ${kazandigi}/4 haritada karışıktan iyi`).toBeLessThan(
+      expect(kazandigi, `${aile} ${kazandigi}/${HARITALAR.length} karışıktan iyi`).toBeLessThan(
         HARITALAR.length,
       );
     }
   });
 
-  it('Top artık BASKIN değil — karışık tahta çoğu haritada daha iyi', () => {
+  /**
+   * **`M118` (S95) — "baskın değil" artık ÜÇ AİLENİN kuralı.**
+   *
+   * Alttaki iddia `M11` Faz 5'te yazıldı ve **Top'un adını taşıyor**,
+   * çünkü o gün baskın olan Top'tu. Aradan geçen her denge turunda
+   * (M18 · M47 · M66 · M75 · M81 · M84 · M117) tablo değişti ama iddia
+   * hep Top'a baktı. Ölçüldü: bugün baskın aile **Büyü** ve ona bakan
+   * hiçbir test yoktu — karışık tahtayı altı haritanın **dördünde**
+   * geçiyor ve en kötü haritası **13**, referans tahtanın **18**'i.
+   * Yani "yalnız Büyü kur" modelin oynadığı oyundan **her ölçüte göre**
+   * daha güvenliydi ve oyunun en üstteki kararının hazır bir cevabı
+   * vardı.
+   *
+   * S114 · S119 · S128 · M26 · M67 ile aynı sınıf, **altıncı kez**:
+   * sistem doğru, onu *numaralayan* eski yer güncellenmiyor. Bu kez
+   * numaralanan şey harita değil **aile**.
+   *
+   * Eşik elle seçilmedi, harita sayısından türüyor: bir aile
+   * haritaların yarısından fazlasında referans tahtayı geçiyorsa
+   * "hangi aileyi kuracağım" sorusunun varsayılan bir cevabı var
+   * demektir.
+   */
+  it('hiçbir aile haritaların YARISINDAN fazlasında karışık tahtayı geçmiyor', () => {
+    const sinir = Math.floor(HARITALAR.length / 2);
+    for (const aile of AILELER) {
+      const kazandigi = HARITALAR.filter((m) => canKaybi(m, aile) < canKaybi(m)).length;
+      expect(kazandigi, `${aile} ${kazandigi}/${HARITALAR.length}`).toBeLessThanOrEqual(sinir);
+    }
+  });
+
+  /**
+   * **En kötü hâl ölçütü — sayma ölçütünün göremediği.**
+   *
+   * Yukarıdaki sayma ölçütü gürültüye duyarlı (bir haritada 1 canlık
+   * fark bir "ev" sayılıyor, oysa ölçüm çözünürlüğü ±2). Bu ölçüt
+   * kampanyanın tamamına bakıyor: bir ailenin **en kötü haritası**
+   * referans tahtanınkinden iyiyse, o aileyi kurmak modelin oynadığı
+   * oyundan düpedüz daha az riskli demektir.
+   *
+   * `M118`'de ikisi birden ihlal ediliyordu: Büyü 13 ve Top 17,
+   * referans tahta 18.
+   */
+  it('hiçbir ailenin EN KÖTÜ haritası referans tahtanınkinden iyi değil', () => {
+    const karisikEnKotu = Math.max(...HARITALAR.map((m) => canKaybi(m)));
+    for (const aile of AILELER) {
+      const enKotu = Math.max(...HARITALAR.map((m) => canKaybi(m, aile)));
+      expect(enKotu, `${aile} en kötü ${enKotu} / karışık ${karisikEnKotu}`).toBeGreaterThanOrEqual(
+        karisikEnKotu,
+      );
+    }
+  });
+
+  /**
+   * Top'un **tarihsel ve daha dar** sınırı. Üstteki genel kural 3'e izin
+   * veriyor, bu 2'de tutuyor — gevşetilmedi, çünkü `M11` Faz 5'te
+   * baskın olan aile buydu ve koruma o ölçümün kendisi.
+   */
+  it('Top artık BASKIN değil — tarihsel DAHA DAR sınır korunuyor', () => {
     // Faz 5 öncesi Top dört haritanın dördünde de karışıktan iyiydi.
     const topIyi = HARITALAR.filter((m) => canKaybi(m, 'top') < canKaybi(m)).length;
     expect(topIyi).toBeLessThanOrEqual(2);
@@ -237,30 +318,44 @@ describe('Aile dengesi — M11 Faz 5 (S95)', () => {
    * boss türetmesi uygulanırken iki sonucu sahibine önceden ölçülük
    * olarak söylendi ve onaylandı. İkincisi `yetenekKatkisi`'nde.
    * Açık kol **S138** olarak kayıtlı: Okçu'ya bir ev geri verilmeli mi?
+   *
+   * **`M118`: bu satır bayat** — S138 `M76`'da kapandı (Yıldırım'ın
+   * zincir sönümü 0,7 → 0,45) ve Okçu evini geri aldı. Silinmiyor,
+   * çünkü altındaki testin neden dört kez yeniden yazıldığını
+   * anlatıyor; düzeltmesi hemen altında.
+   *
+   * ## `M118` (S95) — ÖLÇÜLEN TABLO, altı harita
+   *
+   * Karışık sütunu aynı zamanda **rampanın kendisi**.
+   *
+   * | harita | karışık | Okçu | Top | Büyü |
+   * |---|---|---|---|---|
+   * | Değirmen Geçidi | 0 | 10 | 9 | 0 |
+   * | Taş Köprü | 2 | **1** | 3 | **0** |
+   * | Kül Ovası | 9 | **6** | 8 | 13 |
+   * | Kar Geçidi | 14 | 17 | 15 | 17 |
+   * | Kadim Harabe | 15 | 18 | 17 | 15 |
+   * | Sisli Bataklık | 17 | **16** | **9** | **13** |
+   *
+   * Ev sayısı **Okçu 3 · Top 2 · Büyü 2**; en kötü hâller
+   * **18 · 17 · 17**, referans tahta **17**. `M76` öncesi Okçu evsizdi,
+   * `M118` öncesi Büyü dört eve ve 13'lük bir en kötüye sahipti.
    */
   it('her ailenin parladığı bir harita var', () => {
-    // Okçu — Kül Ovası'nda karışık tahtadan **geri kalmıyor** (6'ya 6).
-    expect(canKaybi(MAP_3, 'okcu')).toBeLessThanOrEqual(canKaybi(MAP_3));
-    // Büyü — üç zor haritanın üçünde de karışık tahtadan iyi. S110'un
-    // kapanışı `M75`'te genişledi: boss türetmesinden sonra Büyü **tek
-    // ev sahibi aile** oldu (S138).
-    for (const m of [MAP_4, MAP_5, MAP_6]) {
-      expect(canKaybi(m, 'buyu'), m.id).toBeLessThan(canKaybi(m));
+    // **`M118`: iddia artık TÜRETİLİYOR.** Yukarıdaki üç not bu testin
+    // dört kez (M18 · M66 · M75 · M91) yeniden yazıldığını gösteriyor ve
+    // sebebi hep aynı: hangi ailenin hangi haritada parladığı **elle
+    // pinlenmişti**, oysa testin adı zaten "bir harita var" diyor — yani
+    // niyet varoluşsal, adres değil. Pinlenmiş adres her denge turunda
+    // bayatlıyor; varoluşsal iddia bayatlamıyor.
+    //
+    // İddia aynı zamanda **sıkılaştı**: `M75` Okçu'yu "geri kalmıyor"a
+    // (`<=`) çekmişti çünkü evi kaybolmuştu (S138). `M118`'den sonra üç
+    // ailenin üçü de en az bir haritada **kesin** öne geçiyor, yani
+    // eşitlik payına gerek kalmadı (S138 zaten `M76`'da kapanmıştı).
+    for (const aile of AILELER) {
+      const evler = HARITALAR.filter((m) => canKaybi(m, aile) < canKaybi(m)).map((m) => m.id);
+      expect(evler.length, `${aile} hiçbir haritada karışık tahtayı geçmiyor`).toBeGreaterThan(0);
     }
-    // Top — Sisli Bataklık'ta karışık tahtayı **geçiyor**.
-    //
-    // **`M75` (S138): "açık ara birinci" iddiası düşmüştü** — boss
-    // türetmesinden sonra Büyü 11 ile Top'un 12'sinin önüne geçmişti.
-    // **`M91`: o cümle artık bayat.** `M81`/`M82` çarpanı ve `M84` elit
-    // dalgasından sonraki ölçüm (harita 6, can kaybı): karışık **18** ·
-    // Okçu **16** · Büyü **12** · Top **9**. Yani Top orada yeniden açık
-    // farkla birinci — ve `M81`/`M82`'de çarpan seçilirken bağlayıcı
-    // kısıtlardan biri tam olarak buydu (8,8 ve 9,0 bu evi kırıyordu).
-    //
-    // İddia yine de **"karışıktan ve Okçu'dan iyi"** ile bağlı kalıyor,
-    // "üçünün de üstünde" ile değil: S138'in ev tanımı *karışık tahtayı
-    // geçmek*, ve iki ailenin aynı haritada karışığı geçmesi serbest.
-    expect(canKaybi(MAP_6, 'top')).toBeLessThan(canKaybi(MAP_6));
-    expect(canKaybi(MAP_6, 'top')).toBeLessThan(canKaybi(MAP_6, 'okcu'));
   });
 });
