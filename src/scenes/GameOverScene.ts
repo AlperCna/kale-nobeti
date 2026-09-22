@@ -260,7 +260,7 @@ export class GameOverScene extends Phaser.Scene {
     // `init`'te değil: `init` sahne çizilmeden koşuyor ve tween'in
     // tutunacağı bir görüntü listesi henüz yok.
     if (this.#acilanBasarimlar.length > 0) {
-      const bant = new AchievementToast(this);
+      const bant = new AchievementToast(this, getSettings(this));
       for (const id of this.#acilanBasarimlar) bant.show(id);
     }
 

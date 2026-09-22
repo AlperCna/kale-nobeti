@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import type { Settings } from '../systems/Settings';
 import { t } from '../util/i18n';
 import { createParchmentFrame } from './ParchmentFrame';
 
@@ -23,8 +24,16 @@ export class BossBanner {
   readonly #scene: Phaser.Scene;
   #acik = false;
 
-  constructor(scene: Phaser.Scene) {
+  readonly #settings: Settings;
+
+  /**
+   * @param settings `M105` — hareket ölçeği kullanım anında okunuyor
+   *   (`fx/Particles`'ın deseni). `0` iken pankart **yerinde
+   *   beliriyor**: bilgi duruyor, hareket gidiyor (TIER 1 kural 6).
+   */
+  constructor(scene: Phaser.Scene, settings: Settings) {
     this.#scene = scene;
+    this.#settings = settings;
   }
 
   /**
@@ -51,7 +60,11 @@ export class BossBanner {
         .setOrigin(0.5),
     );
 
-    kap.setScale(0.7).setAlpha(0);
+    // `M105` — giriş **büyümesinin** genliği ayara bağlı. 0'da pankart
+    // tam boyunda başlıyor, yalnız saydamlık açılıyor; “azalt” tercihi
+    // bilgiyi değil hareketi kaldırmalı.
+    const olcek = this.#settings.effectScale;
+    kap.setScale(1 - 0.3 * olcek).setAlpha(0);
     sarsintiyiTetikle?.();
 
     this.#scene.tweens.add({
@@ -59,7 +72,7 @@ export class BossBanner {
       scale: 1,
       alpha: 1,
       duration: GIRIS_MS,
-      ease: 'Back.easeOut',
+      ease: olcek > 0.5 ? 'Back.easeOut' : 'Quad.easeOut',
       onComplete: () => {
         this.#scene.time.delayedCall(SURE_MS, () => {
           this.#scene.tweens.add({

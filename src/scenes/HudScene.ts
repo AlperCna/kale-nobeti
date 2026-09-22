@@ -240,6 +240,8 @@ export class HudScene extends Phaser.Scene {
       (id) => {
         this.#game().yetenegiYukselt(id);
       },
+      // `M105` — hazır olma nabzı hareket ayarını izliyor.
+      () => getSettings(this).effectScale,
     );
     // `settings` doğrudan paylaşılan registry'den (`getSettings`) okunuyor,
     // `this.#game().settings`'ten DEĞİL. **Canlı testte yakalanan gerçek
