@@ -670,7 +670,7 @@ export class GameScene extends Phaser.Scene {
     // `Y09` — öğretici. `SaveData`'nın (`progress`) versiyonuna dokunmuyor,
     // aynı anahtarın kendi `tutorial` alanını kullanıyor (bkz.
     // `TutorialSystem`'in başlık yorumu).
-    this.#tutorialHints = new TutorialHints(this);
+    this.#tutorialHints = new TutorialHints(this, this.bus);
     this.#tutorial = new TutorialSystem(
       new LocalStore(),
       this.settings.state.hints,

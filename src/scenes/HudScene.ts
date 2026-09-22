@@ -637,8 +637,11 @@ export class HudScene extends Phaser.Scene {
     const game = this.scene.get('Game') as GameScene;
     // `Phaser.Scene` yapısal olarak `ClockTarget`i karşılıyor:
     // tweens.timeScale, time.timeScale, anims.globalTimeScale.
+    // `M104`: burada bir `speed:changed` olayı da yayılıyordu ve
+    // hiçbir dinleyicisi yoktu — hızın gerçek kanalı yukarıdaki
+    // doğrudan çağrı. Kaldırıldı; bir tüketici doğarsa olay da
+    // gerekçesiyle geri gelir.
     game.clock.setScale(this.#speed, game);
-    game.bus.emit('speed:changed', { scale: this.#speed });
   }
 
   // -------------------------------------------------------------------

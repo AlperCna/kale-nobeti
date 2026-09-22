@@ -1,12 +1,15 @@
-import type { Speed } from './common';
 import type { AbilityId } from './ability';
 
 /**
  * Sistemler birbirini doğrudan çağırmaz, EventBus üzerinden haberleşir
  * (CLAUDE.md Mimari kurallar).
  *
- * İlk beş olay CLAUDE.md'de listeli. Son ikisi M0'da eklendi ve **S06'da
- * onaylandı** — M0 ve M1 boyunca kullanımda kaldılar, geçici değiller.
+ * İlk beş olay CLAUDE.md'de listeli.
+ *
+ * **Her olayın en az bir yayanı ve en az bir dinleyeni olmak zorunda**
+ * (bekçi 22. kuralı, `M104`). Gerekçe ölçüldü: `game:paused` yayılıp
+ * hiç dinlenmiyordu ve bu bir kusuru gizliyordu. Dinleyicisiz durması
+ * gereken bir olay varsa satırına `// bekçi: <gerekçe>` yazılır.
  */
 /**
  * `gold:changed`'in **neden** yayıldığı — `Y06`: `SoundSystem` bunu
@@ -70,9 +73,19 @@ export interface GameEvents {
    */
   'enemy:burrowed': Record<string, never>;
 
-  /** S06 onaylandı. HUD hız butonu yayıyor. */
-  'speed:changed': { readonly scale: Speed };
-  /** S06 onaylandı. ESC/boşluk duraklatması yayıyor. */
+  /**
+   * Duraklatma durumu değişti. S06 onayladı; HUD yayıyor.
+   *
+   * **`M104`'e kadar hiçbir dinleyicisi yoktu** ve bu bir kusuru
+   * gizliyordu: `fx/TutorialHints` okuma süresini duvar saatiyle
+   * ölçüyor (doğru — 2×/3× hızda kısalmasın diye) ama duraklatmayı
+   * görmüyordu; balon perdenin arkasında süresini doldurup
+   * kayboluyordu. Artık dinleniyor.
+   *
+   * (`speed:changed` aynı turda **kaldırıldı**: hızın gerçek kanalı
+   * doğrudan `clock.setScale` çağrısıydı, olay onu yalnız tekrarlıyor
+   * ve hiç kimse duymuyordu.)
+   */
   'game:paused': { readonly paused: boolean };
 
   /**
@@ -80,7 +93,7 @@ export interface GameEvents {
    * "kayıt başarısızsa oyuncuya bir kez bildirilir"). Gizli sekmede
    * ayarlar kalıcı olmuyor; oyun çalışmaya devam ediyor (M6).
    */
-  'save:failed': { readonly once: boolean };
+  'save:failed': { readonly once: boolean }; // bekçi: bilerek dinleyicisiz seam — uyarıyı `GameScene` doğrudan çiziyor (`fx/SaveWarning.ts`)
 
   /**
    * M6-T11 — `SoundSystem` `tower_upgrade.m4a` çalıyor.
