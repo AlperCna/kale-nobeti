@@ -15,7 +15,7 @@
 
 import type { BarracksTier } from '../types/barracks';
 import type { TowerEffect, TowerTier } from '../types/tower';
-import { t } from './i18n';
+import { t, yuzde, saniye, saniyede } from './i18n';
 
 /**
  * Etkinin bir satırlık okunur hâli. Sayılar `towers.ts`'ten geliyor.
@@ -24,9 +24,10 @@ import { t } from './i18n';
  * oyunun aynı şeyi iki türlü söylemesi demek olurdu.
  */
 export function etkiMetni(e: TowerEffect): string {
-  if (e.kind === 'burn') return `${t('infoEffectBurn')} ${e.dps}/sn · ${e.seconds} sn`;
+  if (e.kind === 'burn')
+    return `${t('infoEffectBurn')} ${saniyede(e.dps)} · ${saniye(e.seconds)}`;
   if (e.kind === 'slow')
-    return `${t('infoEffectSlow')} %${Math.round(e.factor * 100)} · ${e.seconds} sn`;
+    return `${t('infoEffectSlow')} ${yuzde(e.factor)} · ${saniye(e.seconds)}`;
   return `${t('infoEffectChain')} ×${e.targets}`;
 }
 
@@ -73,7 +74,7 @@ export function kislaOzeti(ad: string, tier: BarracksTier): string {
     `${tier.respawnSeconds} ${t('sumRespawn')}`,
   ];
   if (tier.evasion !== undefined && tier.evasion > 0) {
-    parcalar.push(`${t('sumEvasion')} %${Math.round(tier.evasion * 100)}`);
+    parcalar.push(`${t('sumEvasion')} ${yuzde(tier.evasion)}`);
   }
   return parcalar.join(' · ');
 }

@@ -1,6 +1,6 @@
 import type { EnemyDef, EnemyId } from '../types/enemy';
 import type { StringKey } from '../data/strings';
-import { t } from '../util/i18n';
+import { t, yuzde } from '../util/i18n';
 
 /**
  * `M8-T02` — düşman adı ve savunma özeti.
@@ -53,7 +53,7 @@ export function enemySummary(def: EnemyDef): string {
   const parcalar: string[] = [];
   if (def.armor > 0) parcalar.push(`${t('statArmor')} ${def.armor}`);
   if (def.magicResist > 0) {
-    parcalar.push(`${t('statResist')} %${Math.round(def.magicResist * 100)}`);
+    parcalar.push(`${t('statResist')} ${yuzde(def.magicResist)}`);
   }
   if (def.flying) parcalar.push(t('statFlying'));
   /**

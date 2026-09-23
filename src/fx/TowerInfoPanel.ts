@@ -8,6 +8,7 @@ import { applyDamage, etkiDps } from '../systems/combat';
 import { enemyFrameKey } from '../data/spriteFrames';
 import { createParchmentFrame } from './ParchmentFrame';
 import { TowerInfoLabels, SATIRLAR } from './TowerInfoLabels';
+import { yuzde } from '../util/i18n';
 
 /**
  * Kule bilgi paneli — `GAME-DESIGN.md` §11.
@@ -299,7 +300,8 @@ export class TowerInfoPanel {
     this.#etiketler.setSplash(yaricap > 0);
     // Ham piksel oyuncuya hiçbir şey söylemiyordu ("294" neyin 294'ü?).
     // Yolun **payı** olarak yazılıyor: kıyas ölçüsü kendi içinde.
-    this.#kapsama.setText(`${Math.round((s.coveredPx / this.#toplamYol) * 100)}%`);
+    // `M129` — biçim dile bağlı: Türkçede `%15`, İngilizcede `15%`.
+    this.#kapsama.setText(yuzde(s.coveredPx / this.#toplamYol));
     this.#iade.setText(`+${s.refund}`);
 
     // §11: yükseltme farkı (öncesi › sonrası, DPS). §6 yükseltmenin altın

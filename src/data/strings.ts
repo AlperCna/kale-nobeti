@@ -338,6 +338,9 @@ const TR = {
   sumHp: 'can',
   sumRespawn: 'sn diriliş',
   sumEvasion: 'kaçınma',
+  /** `M129` — `util/i18n.saniye`/`saniyede` bunları kullanıyor. */
+  unitSec: 'sn',
+  unitPerSec: '/sn',
   infoEffectBurn: 'Yanma',
   infoEffectSlow: 'Yavaşlatma',
   infoEffectChain: 'Zincir',
@@ -634,6 +637,8 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     sumHp: 'HP',
     sumRespawn: 's respawn',
     sumEvasion: 'evasion',
+    unitSec: 's',
+    unitPerSec: '/s',
     infoEffectBurn: 'Burn',
     infoEffectSlow: 'Slow',
     infoEffectChain: 'Chain',
