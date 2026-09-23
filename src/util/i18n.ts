@@ -61,3 +61,33 @@ export function t(key: StringKey, locale: Locale = mevcut): string {
 
   return key;
 }
+
+/**
+ * **Dile bağlı BİÇİM — `M129`.**
+ *
+ * `t()` metni çeviriyordu ama **sayının biçimi** kodda kalmıştı ve iki
+ * yönde birden yanlıştı. Tarayıcıda İngilizce arayüzde görüldü:
+ * `Troll — armor 4, magic resist %15` (yüzde işareti Türkçe yerinde) ve
+ * `Burn 11/sn · 4 sn` (birim hiç çevrilmemiş). Aynanın öteki yüzü de
+ * vardı: kule panelinin kapsama değeri `15%` yazıyordu, yani **Türkçe
+ * arayüzde İngilizce biçim**.
+ *
+ * Kural tek adreste: yüzde işareti Türkçede sayının **önünde**,
+ * İngilizcede **arkasında**. Birim sözcüğü koda yazılmıyor —
+ * `strings.ts`'ten geliyor (CLAUDE.md: oyuncuya görünen hiçbir metin
+ * kodun içinde yazılmaz).
+ */
+export function yuzde(oran: number, locale: Locale = mevcut): string {
+  const n = Math.round(oran * 100);
+  return locale === 'tr' ? `%${n}` : `${n}%`;
+}
+
+/** `4 sn` · `4 s`. */
+export function saniye(deger: number, locale: Locale = mevcut): string {
+  return `${deger} ${t('unitSec', locale)}`;
+}
+
+/** `11/sn` · `11/s` — saniye BAŞINA. */
+export function saniyede(deger: number, locale: Locale = mevcut): string {
+  return `${deger}${t('unitPerSec', locale)}`;
+}

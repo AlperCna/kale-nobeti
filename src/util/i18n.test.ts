@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { t, setLocale, getLocale } from './i18n';
+import { t, setLocale, getLocale, yuzde, saniye, saniyede } from './i18n';
 import { STRINGS, DEFAULT_LOCALE } from '../data/strings';
 
 describe('i18n', () => {
@@ -110,5 +110,46 @@ describe('i18n', () => {
       else genel.document = oncekiBelge;
       setLocale(oncekiDil);
     }
+  });
+
+  /**
+   * **`M129` — biçim de dile bağlı, yalnız metin değil.**
+   *
+   * Tarayıcıda İngilizce arayüzde görüldü: `magic resist %15` (yüzde
+   * işareti Türkçe yerinde) ve `Burn 11/sn · 4 sn` (birim hiç
+   * çevrilmemiş). Aynanın öteki yüzü de vardı — kule panelinin kapsama
+   * değeri Türkçe arayüzde `15%` yazıyordu.
+   *
+   * İki yön de bağlanıyor: kural tek adreste (`util/i18n`) ve birim
+   * sözcüğü `strings.ts`'ten geliyor, koda yazılmıyor.
+   */
+  describe('dile bağlı biçim (M129)', () => {
+    it('yüzde işareti Türkçede ÖNDE, İngilizcede ARKADA', () => {
+      expect(yuzde(0.15, 'tr')).toBe('%15');
+      expect(yuzde(0.15, 'en')).toBe('15%');
+      expect(yuzde(0.4, 'tr')).toBe('%40');
+      expect(yuzde(0.4, 'en')).toBe('40%');
+    });
+
+    it('yüzde YUVARLIYOR — oran değil tam sayı gösteriliyor', () => {
+      expect(yuzde(0.333, 'tr')).toBe('%33');
+      expect(yuzde(0.336, 'en')).toBe('34%');
+    });
+
+    it('saniye birimi çevriliyor', () => {
+      expect(saniye(4, 'tr')).toBe('4 sn');
+      expect(saniye(4, 'en')).toBe('4 s');
+      expect(saniyede(11, 'tr')).toBe('11/sn');
+      expect(saniyede(11, 'en')).toBe('11/s');
+    });
+
+    it('etkin dili izliyor — çağrı yerleri dil bilmiyor', () => {
+      setLocale('en');
+      expect(yuzde(0.3)).toBe('30%');
+      expect(saniye(2)).toBe('2 s');
+      setLocale('tr');
+      expect(yuzde(0.3)).toBe('%30');
+      expect(saniye(2)).toBe('2 sn');
+    });
   });
 });
