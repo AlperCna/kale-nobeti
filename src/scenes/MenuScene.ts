@@ -95,7 +95,12 @@ export class MenuScene extends Phaser.Scene {
     // M6-T05 — ilk izlenim ekranı. Kompozisyon üst-orta boşluk bırakacak
     // şekilde üretildi (bkz. görsel brifi): gökyüzü üstte açık, kale
     // alt yarıda — başlık/buton üstüne net oturuyor.
-    this.add.image(width / 2, height / 2, 'menu-bg');
+    // `M125` — `menu-bg` kritik değil; eksikse mürekkep zemin kalıyor.
+    // Korumasız `add.image` Phaser'in yeşil `__MISSING` dokusunu çizerdi
+    // (ölçüldü, `OrientationGate` başlığı).
+    if (this.textures.exists('menu-bg')) {
+      this.add.image(width / 2, height / 2, 'menu-bg');
+    }
 
     // M6-T11 — menü müziği. `sound` sahneler arası paylaşılan tek
     // yönetici (Phaser); `isPlaying` koruması olmadan `Menu`ye her
