@@ -203,19 +203,51 @@ export class GameOverScene extends Phaser.Scene {
     }
 
     const s = this.#data.stats;
+    /**
+     * **`M128` — düzen artık AKIŞ, sabit ofset değil.**
+     *
+     * Her blok `UST`'ten sabit bir ofsetteydi ve **olmayan blok da yer
+     * kaplıyordu**. Canlı ekran görüntüsünde görüldü: düz bir kampanya
+     * kaybında yıldız satırı çizilmiyor (yıldız yalnız kazanınca var) ama
+     * istatistikler yine `UST + 150`'den başlıyordu, yani "kalan can" ile
+     * tablo arasında açıklanamayan 46 px'lik bir boşluk kalıyordu.
+     *
+     * `M123`'ün "Nasıl oynanır" düzeniyle aynı çare: yükseklikler
+     * içerikten türüyor. Kazanma ekranının ölçüleri **birebir aynı**
+     * kalıyor (band 46 + altı satır → butonlar yine `UST + 330`), yalnız
+     * eksik bloklar artık boşluk bırakmıyor.
+     */
+    const bantVar = (won && this.#data.endless !== true) || this.#data.endless === true;
+    const bantPayi = bantVar ? 46 : 0;
+    const ustBlok = UST + 104 + bantPayi + rekorPayi;
+
+    const satirlar: ReadonlyArray<readonly [string, string]> =
+      s === undefined
+        ? []
+        : [
+            [t('statKills'), String(s.kills)],
+            [t('statTowers'), String(s.towersBuilt)],
+            [t('statGoldEarned'), String(s.goldEarned)],
+            [t('statGoldSpent'), String(s.goldSpent)],
+            /**
+             * **`M128`** — sonsuz elde "Ulaşılan dalga" **manşette** zaten
+             * yazıyor (`UST + 104`, rekorla birlikte) ve orada elin
+             * *skoru*; tabloda üç satır arayla ikinci kez göstermek aynı
+             * sayıyı tekrar ediyordu. Kampanyada manşet yok, satır duruyor.
+             */
+            ...(this.#data.endless === true
+              ? []
+              : ([[t('statPeakWave'), String(s.peakWave)]] as const)),
+            [
+              t('statDuration'),
+              `${Math.floor(s.durationSec / 60)}:${String(s.durationSec % 60).padStart(2, '0')}`,
+            ],
+          ];
+
     if (s !== undefined) {
-      const satirlar: ReadonlyArray<readonly [string, string]> = [
-        [t('statKills'), String(s.kills)],
-        [t('statTowers'), String(s.towersBuilt)],
-        [t('statGoldEarned'), String(s.goldEarned)],
-        [t('statGoldSpent'), String(s.goldSpent)],
-        [t('statPeakWave'), String(s.peakWave)],
-        [t('statDuration'), `${Math.floor(s.durationSec / 60)}:${String(s.durationSec % 60).padStart(2, '0')}`],
-      ];
       const stil = { fontFamily: 'Spectral, serif', fontSize: '18px', color: '#8A7250' } as const;
-      const ust = UST + 150 + rekorPayi;
       satirlar.forEach(([ad, deger], i) => {
-        const y = ust + i * 26;
+        const y = ustBlok + i * 26;
         this.add.text(width / 2 - 150, y, ad, stil).setOrigin(0, 0.5);
         this.add.text(width / 2 + 150, y, deger, { ...stil, color: '#E4D3A8' }).setOrigin(1, 0.5);
       });
@@ -233,7 +265,10 @@ export class GameOverScene extends Phaser.Scene {
     // Yerleşim ölçülerek kuruldu: 6 istatistik satırı (26 px) + 3 buton
     // (64 px) 720 px'e ancak sığıyor — canlı testte son buton ekranın
     // altından taşmıştı.
-    const butonUst = this.#data.stats === undefined ? height / 2 + 96 : UST + 330 + rekorPayi;
+    // `M128` — buton bloğu da türetiliyor: tablo kısalırsa (sonsuz el)
+    // ya da band yoksa (kampanya kaybı) butonlar da yukarı geliyor.
+    const butonUst =
+      s === undefined ? height / 2 + 96 : ustBlok + satirlar.length * 26 + 24;
     const birincilEylem = this.#butonlariKur(width / 2, butonUst, {
       kaybetti: !won,
       sonrakiVar,
