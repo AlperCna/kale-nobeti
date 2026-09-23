@@ -225,18 +225,28 @@ export class PreloadScene extends Phaser.Scene {
    * bitiyor. Yine de doğru gerekçeyle durmak, yanlış gerekçeyle doğru
    * sonuca varmaktan iyi.
    *
-   * **`M123`: "konsol temiz" İDDİASI ÇÜRÜDÜ — ama sebep bu yarış değil.**
-   * Ölçüldü (tarayıcı, soğuk açılış, üretim yolunun aynısı): konsolda
-   * her açılışta bir Phaser hatası var — `Texture key already in use:
-   * atlas`. Yarış **değil**: `queueAtlas` sayaçla izlendi ve tur başına
-   * **tek kez** çağrılıyor (`Menu`, `exists=false`), kod tabanında tek
-   * bir `load.atlas` var. Atlas da doğru yükleniyor — 36 kare, tek
-   * kaynak, her şey çiziliyor. Yani hata **zararsız ama gerçek** ve
-   * platform kuralını ("yayın yapısında konsol çıktısı bulunmaz")
-   * deliyor. Kök sebep özel Phaser yapımının dosya tipi katmanında
-   * görünüyor (`MultiFile` üyesinin dokuyu bir kez, `addAtlas`'ın ikinci
-   * kez eklemesi) ve ayrı bir işe bırakıldı. Yukarıdaki yarış gerekçesi
-   * kendi başına hâlâ geçerli, yalnız "konsol temiz" cümlesi değil.
+   * **`M123` bir hata gördü, `M130` sebebini buldu: DEV SUNUCUSU.**
+   *
+   * `M123`'te tarayıcıda her açılışta bir Phaser hatası görüldü —
+   * `Texture key already in use: atlas` — ve o not kök sebebi özel
+   * Phaser yapımına yüklüyordu. **Yanlıştı.** `M130` izledi ve ölçtü:
+   *
+   * - `TextureManager` sarmalandı: `AtlasJSONFile.addToCache → addAtlas
+   *   → addAtlasJSONHash → create` zinciri **iç içe tek** bir ekleme,
+   *   yani ikinci bir `create('atlas')` yok.
+   * - `checkKey` sarmalandı: hatayı basan tek yer o ve **hiç `false`
+   *   dönmedi**.
+   * - Ağ günlüğü: sayfa yüklemesi başına `atlas.png`/`atlas.json` **tam
+   *   bir kez** isteniyor.
+   * - `node_modules/.vite` silinip sunucu yeniden başlatılınca hata
+   *   **kayboldu** ve bir daha çıkmadı.
+   * - **Yayın yapısı (`vite preview`, `dist/`) ölçüldü: konsol
+   *   TAMAMEN BOŞ**, `__game` de yok. Platform kuralı sağlanıyor.
+   *
+   * Yani hata oyunda değil, **bayat Vite bağımlılık önbelleğinde**ydi —
+   * `M101`'de bir doğrulamayı da aynı önbellek bozmuştu. Aşağıdaki yarış
+   * gerekçesi kendi başına geçerli; "konsol temiz" cümlesi de öyle,
+   * yalnız **hangi yapıda** ölçüldüğü artık yazılı.
    */
   static queueHud(scene: Phaser.Scene): void {
     PreloadScene.queueAtlas(scene);
