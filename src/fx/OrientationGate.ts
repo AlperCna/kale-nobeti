@@ -48,11 +48,27 @@ export class OrientationGate {
      * indirmenin parçası), yani bedava. Üstüne mürekkep perde:
      * arka plan kimliği veriyor, perde metnin kontrastını garantiliyor.
      */
-    const zemin = scene.add.image(width / 2, height / 2, 'menu-bg');
-    // `cover`: en-boy oranı korunarak kısa kenardan taşacak şekilde.
-    const olcek = Math.max(width / zemin.width, height / zemin.height);
-    zemin.setScale(olcek);
-    this.#kok.add(zemin);
+    /**
+     * **`M125` — üstteki "her zaman yüklü, yani bedava" bir VARSAYIMDI.**
+     *
+     * Ölçüldü (`menu-bg`'nin yolu bilerek bozulup portre ekranda
+     * koşuldu): ağ aksarsa korumasız `add.image` Phaser'ın 32×32
+     * `__MISSING` dokusunu çiziyor ve hemen altındaki `cover` ölçeği onu
+     * **1280×1280'e** büyütüyor — yani bu kare baştan başa yeşil bir
+     * hata desenine dönüşüyor. Hem de yukarıda yazdığı gibi mobil
+     * portre oyuncusunun gördüğü **tek** karede.
+     *
+     * Eksikse mürekkep perde tek başına kalıyor: `M10-T04` öncesinin düz
+     * lacivert zemini. Kimlik kaybı var, hata yok — `Y14`'ün
+     * "kritik değil" sınıflandırmasının gerçekten sessiz hâli.
+     */
+    if (scene.textures.exists('menu-bg')) {
+      const zemin = scene.add.image(width / 2, height / 2, 'menu-bg');
+      // `cover`: en-boy oranı korunarak kısa kenardan taşacak şekilde.
+      const olcek = Math.max(width / zemin.width, height / zemin.height);
+      zemin.setScale(olcek);
+      this.#kok.add(zemin);
+    }
     this.#kok.add(scene.add.rectangle(0, 0, width, height, INK, 0.78).setOrigin(0));
 
     this.#kok.add(

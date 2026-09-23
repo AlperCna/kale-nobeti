@@ -185,7 +185,12 @@ export class LevelSelectScene extends Phaser.Scene {
       if (acik) {
         // Küçük resim + üstünde yalnız köşe/kenar (orta dolgu yok —
         // varsa küçük resmi kapatırdı).
-        this.add.image(x, y, `card-${m.id}`).setDisplaySize(KART_W, KART_H);
+        // `M125` — küçük resim kritik değil (`Y14`): inmezse kartta yol
+        // çizimi, yıldızlar ve ad zaten var. Korumasız `add.image` ise
+        // kart boyutuna büyütülmüş yeşil bir `__MISSING` çizerdi.
+        if (this.textures.exists(`card-${m.id}`)) {
+          this.add.image(x, y, `card-${m.id}`).setDisplaySize(KART_W, KART_H);
+        }
         // `M8-T13` — yolun kendisi kartın üstünde. Küçük resimler haritanın
         // **arka planı**; yol onların üstüne oyun içinde çiziliyor, yani
         // karta bakan oyuncu haritanın şeklini hiç görmüyordu. Aynı
