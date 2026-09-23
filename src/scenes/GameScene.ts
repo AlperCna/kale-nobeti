@@ -195,6 +195,7 @@ const HUD_GOLD_HEDEFI: Vec2 = { x: 44, y: 12 };
 
 /** `Y09` — hangi ipucunun hangi metni gösterdiği, `strings.ts` üzerinden. */
 const HINT_TEXT_KEY: Readonly<Record<HintId, StringKey>> = {
+  build: 'hintBuild',
   earlyStart: 'hintEarlyStart',
   dragRally: 'hintDragRally',
   targetModes: 'hintTargetModes',

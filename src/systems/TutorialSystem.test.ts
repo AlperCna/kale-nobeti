@@ -9,7 +9,34 @@ describe('TutorialSystem — Y09, iki ipucu (S65, S69)', () => {
     const gosterilen: string[] = [];
     const t = new TutorialSystem(new MemoryStore(), true, (h) => gosterilen.push(h), new EventBus());
     t.start();
-    expect(gosterilen).toEqual(['earlyStart']);
+    expect(gosterilen).toEqual(['build']);
+  });
+
+  /**
+   * **`M127` — iki ipucun TETİKLERİ takas edildi.**
+   *
+   * `start()` sahne açılışında koşuyor ve eskiden `earlyStart`'ı
+   * tetikliyordu: yepyeni oyuncu, ilk oturumda menüyü ve "Nasıl
+   * oynanır"ı atlayarak (`ilkOturum.ts`) doğrudan oyuna düşüyor ve
+   * gördüğü ilk cümle erken başlatma takası oluyordu — dalga 1
+   * hazırlığında sahada hiç düşman yokken, yani metnin yarısı yanlışken.
+   *
+   * Artık `start()` ilk eylemi anlatıyor (`build`), `earlyStart` ise
+   * mekaniğe rastlandığı ana taşındı: **ilk dalga bittiğinde**. Öteki
+   * yedi ipucunun hepsi zaten böyle çalışıyordu; `earlyStart` tek
+   * istisnaydı.
+   */
+  it('`earlyStart` sahne açılışında DEĞİL, ilk dalga bitince geliyor', () => {
+    const bus = new EventBus();
+    const gosterilen: string[] = [];
+    const t = new TutorialSystem(new MemoryStore(), true, (h) => gosterilen.push(h), bus);
+    t.start();
+    expect(gosterilen, 'açılışta erken başlatma anlatılmamalı').toEqual(['build']);
+    bus.emit('wave:ended', { index: 1 });
+    expect(gosterilen).toEqual(['build', 'earlyStart']);
+    // Sonraki dalgalarda tekrar etmiyor — `#tetikle` bir kez gösteriyor.
+    bus.emit('wave:ended', { index: 2 });
+    expect(gosterilen).toEqual(['build', 'earlyStart']);
   });
 
   it('görülen ipucu kalıcı — yeni oturumda (aynı depo) TEKRAR görünmüyor', () => {
@@ -92,10 +119,10 @@ describe('TutorialSystem — Y09, iki ipucu (S65, S69)', () => {
     const bus = new EventBus();
     const gosterilen: string[] = [];
     const t = new TutorialSystem(new MemoryStore(), true, (h) => gosterilen.push(h), bus);
-    t.start(); // earlyStart
+    t.start(); // build
     bus.emit('barracks:placed', { spotIndex: 0 }); // dragRally
-    expect(gosterilen).toEqual(['earlyStart', 'dragRally']);
-    expect(t.hasSeen('earlyStart')).toBe(true);
+    expect(gosterilen).toEqual(['build', 'dragRally']);
+    expect(t.hasSeen('build')).toBe(true);
     expect(t.hasSeen('dragRally')).toBe(true);
   });
 
@@ -122,7 +149,7 @@ describe('TutorialSystem — Y09, iki ipucu (S65, S69)', () => {
     const t = new TutorialSystem(new MemoryStore(), false, (h) => gosterilen.push(h), bus);
     t.setEnabled(true);
     t.start();
-    expect(gosterilen).toEqual(['earlyStart']);
+    expect(gosterilen).toEqual(['build']);
   });
 
   describe('TIER 1 kural 10 — sözleşme LocalStore’da, TutorialSystem’de değil', () => {
@@ -170,7 +197,7 @@ describe('TutorialSystem — Y09, iki ipucu (S65, S69)', () => {
         }).not.toThrow();
         // Kalıcılık hiç çalışmadığı için ipucu her seferinde görünüyor —
         // veri kaybı sessiz kalmıyor, oyuncu bilgilendirilmeye devam ediyor.
-        expect(gosterilen).toEqual(['earlyStart', 'earlyStart']);
+        expect(gosterilen).toEqual(['build', 'build']);
       } finally {
         if (asil) Object.defineProperty(globalThis, 'localStorage', asil);
         else delete (globalThis as { localStorage?: unknown }).localStorage;
@@ -186,7 +213,7 @@ describe('TutorialSystem — Y09, iki ipucu (S65, S69)', () => {
 
       const sonra = JSON.parse(depo.get(SAVE_KEY)!) as Record<string, unknown>;
       expect(sonra['progress']).toEqual({ version: 1, stars: { harita1: 3 } });
-      expect((sonra['tutorial'] as { seenHints: string[] }).seenHints).toEqual(['earlyStart']);
+      expect((sonra['tutorial'] as { seenHints: string[] }).seenHints).toEqual(['build']);
     });
 
     it('bozuk JSON kaydı çökertmiyor, hiç ipucu görülmemiş sayılır', () => {
@@ -196,7 +223,7 @@ describe('TutorialSystem — Y09, iki ipucu (S65, S69)', () => {
       expect(() => {
         new TutorialSystem(depo, true, (h) => gosterilen.push(h), new EventBus()).start();
       }).not.toThrow();
-      expect(gosterilen).toEqual(['earlyStart']);
+      expect(gosterilen).toEqual(['build']);
     });
 
     it('eski kayıtta `tutorial` alanı hiç yoksa (sürüm öncesi) veri kaybı olmadan çalışıyor', () => {
@@ -204,7 +231,7 @@ describe('TutorialSystem — Y09, iki ipucu (S65, S69)', () => {
       depo.set(SAVE_KEY, JSON.stringify({ progress: { version: 1, stars: {} } }));
       const gosterilen: string[] = [];
       new TutorialSystem(depo, true, (h) => gosterilen.push(h), new EventBus()).start();
-      expect(gosterilen).toEqual(['earlyStart']);
+      expect(gosterilen).toEqual(['build']);
 
       const sonra = JSON.parse(depo.get(SAVE_KEY)!) as Record<string, unknown>;
       expect(sonra['progress']).toEqual({ version: 1, stars: {} }); // dokunulmadı
