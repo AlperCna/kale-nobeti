@@ -259,6 +259,15 @@ const TR = {
   effectFull: 'Tam',
   /** `Y09` — ayarlardaki ipucu açma/kapama anahtarı. */
   hints: 'İpuçları',
+  /**
+   * `M127` — ilk oturumun **ilk** yönlendirmesi.
+   *
+   * `ilkOturum.ts` menüyü ve "Nasıl oynanır"ı bilerek atlıyor (Poki
+   * kılavuzu), yani oyuncunun yapması gereken tek şeyi söyleyen hiçbir
+   * yer kalmıyordu. `howTo1`'in kısa hâli; buraya ayrı bir anahtar
+   * olarak yazılıyor çünkü ipucu paneli tek cümlelik.
+   */
+  hintBuild: 'Altın dairelere dokun ve ilk kuleni kur.',
   /** `Y09` — S65'in dayandığı mekanik: erken başlatma bonusu. */
   /** `M28` — `howTo6` ile aynı sebep: takasın iki yakası da yazıyor. */
   hintEarlyStart:
@@ -593,6 +602,7 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     effectLow: 'Low',
     effectFull: 'Full',
     hints: 'Hints',
+    hintBuild: 'Tap a gold circle to build your first tower.',
     hintEarlyStart:
       'Start early: leftover time turns to gold. But the next wave arrives on top of whoever is still on the field.',
     hintDragRally: 'Drag the flag',

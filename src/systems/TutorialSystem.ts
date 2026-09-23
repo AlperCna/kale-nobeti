@@ -33,6 +33,7 @@ import type { EventBus } from './EventBus';
  * biri bir anahtar + bir tetik.
  */
 export type HintId =
+  | 'build'
   | 'earlyStart'
   | 'dragRally'
   | 'targetModes'
@@ -43,6 +44,7 @@ export type HintId =
   | 'abilityUpgrade';
 
 const HINT_IDS: readonly HintId[] = [
+  'build',
   'earlyStart',
   'dragRally',
   'targetModes',
@@ -123,11 +125,41 @@ export class TutorialSystem {
      * yetenek hâli: görünmeyen bir takas seçim değil, zar atışıdır.
      */
     bus.on('ability:upgradable', () => this.#tetikle('abilityUpgrade'));
+
+    /**
+     * `M127` — erken başlatma ipucu artık `start()`'ta değil BURADA:
+     * ilk dalga bittiğinde, yani oyuncu kule kurup düşman görüp altın
+     * kazandıktan sonra. Metnin iki yakası da ancak o an doğru
+     * (gerekçe `start()` başlığında).
+     */
+    bus.on('wave:ended', () => this.#tetikle('earlyStart'));
   }
 
-  /** `GameScene.create()`'in sonunda **bir kez** — ilk hazırlık aşaması için. */
+  /**
+   * **`M127` — `start()` DOĞRU AN ama içeriği yanlıştı.**
+   *
+   * Buraya kadar bu metot `earlyStart`'ı tetikliyordu, yani yepyeni
+   * oyuncunun ilk oturumda gördüğü **ilk ve tek** yönlendirme *"erken
+   * başlat: kalan süre altına döner, ama yeni dalga sahada kalanların
+   * üstüne gelir"* oluyordu. Tarayıcıda oyuncu gözüyle görüldü ve üç
+   * şeyi birden varsayıyor: oyuncu ne dalga ne altın ne de hazırlık
+   * sayacı biliyor, üstelik "sahada kalanlar" dalga 1 hazırlığında
+   * **hiç yok** — cümlenin yarısı o an yanlış.
+   *
+   * Aynı anda yapması gereken tek şeyin (yapı noktasına dokun) ekranda
+   * hiçbir karşılığı yoktu: noktalar durağan altın daireler, nabız yok,
+   * ve "Nasıl oynanır" sayfasını ilk oturum **bilerek atlıyor**
+   * (`ilkOturum.ts`, Poki'nin "menüyü atla" kılavuzu).
+   *
+   * Bu yüzden ikisi takas edildi: sahne açılışı ilk eylemi anlatıyor,
+   * `earlyStart` ise mekaniğe rastlandığı ana — ilk dalga bittiğinde,
+   * yani oyuncu kule kurup düşman görüp altın kazandıktan sonra —
+   * taşındı. Öteki yedi ipucunun hepsi zaten böyle çalışıyor
+   * (`barracks:placed`, `enemy:shielded`, `wave:flyers`, …); `earlyStart`
+   * tek istisnaydı.
+   */
   start(): void {
-    this.#tetikle('earlyStart');
+    this.#tetikle('build');
   }
 
   /** Ayarlar panelindeki "İpuçları" anahtarı — kapalıyken hiç tetiklenmez. */
