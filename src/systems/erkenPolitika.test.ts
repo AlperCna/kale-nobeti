@@ -26,7 +26,8 @@ import { MAPS, COVERAGE_REFERENCE_RANGE } from '../data/maps';
 import { wavesFor } from '../data/waves';
 import { getEnemyForMap } from '../data/enemies';
 import { POOL_PREALLOC } from '../data/balance';
-import { buildReferenceBoards } from './balanceChecks';
+import { buildReferenceBoards, cumulativeGold } from './balanceChecks';
+import { yetenekYukseltmeFiyati } from '../data/abilities';
 import { simulateAllWaves } from './waveSim';
 import type { ErkenPolitika } from './waveSim';
 import { REFERANS_POLITIKA } from './referansOlcum';
@@ -110,6 +111,12 @@ describe('Erken başlatma politikası — M121', () => {
    * 0,35), yani fazladan altının alacağı bir şey yok. `M99`'un yetenek
    * yükseltmesi o gideri açtı ama referans ölçüm yeteneği hiç
    * kullanmıyor (`'yok'`), dolayısıyla kazanç bu ölçümde görünmüyor.
+   *
+   * **`M126`: o "soru" kapandı ve cevap düğmenin lehine** — bonus her
+   * haritada tam olarak bir yeteneğin tam yükseltmesini karşılıyor.
+   * Ölçüm ve gerekçe alttaki "karşılığı TAM OLARAK bir yetenek
+   * yükseltmesi" testinde. Buradaki ±1 can hâlâ doğru; yalnız
+   * **eksik** bir ölçüttü.
    */
   it('iyi oyun (`sonBirkac` · `temizken`) hiç basmamaktan KÖTÜ değil', () => {
     for (const p of ['sonBirkac', 'temizken'] as const) {
@@ -140,6 +147,56 @@ describe('Erken başlatma politikası — M121', () => {
     // `CLAUDE.md` Arcade fizik notu: naif O(n·m) taraması 200'e kadar
     // yetiyor. Pay en az iki kat kalmalı ki ızgara sorusu açılmasın.
     expect(200 / tepe).toBeGreaterThan(2);
+  });
+
+  /**
+   * **`M126` — `M121`'in "kazanç sıfıra yakın" BULGUSU YANLIŞ ŞEYİ
+   * ÖLÇÜYORDU.**
+   *
+   * Üstteki iddia doğru: `sonBirkac` ile hiç basmamak arasında **can**
+   * farkı ±1. Ama o ölçüm yetenekleri `'yok'` koşuyor (`referansOlcum`
+   * tabanı), yani fazladan altının harcanacak yeri yok — S117'nin
+   * "harita 4-6'da altın kısıt değil" olgusu ölçümün içinde.
+   *
+   * Altının gideri `M99`'da açıldı: **yetenek yükseltmesi**. Ölçüldü ve
+   * ilişki tesadüf değil, **yapısal** — ikisi de haritanın altın
+   * çarpanıyla ölçekleniyor, yani oran altı haritada da aynı:
+   *
+   * | Harita | erken bonusu | bir yetenek tam yükseltme |
+   * |---|---|---|
+   * | Değirmen Geçidi | 520 | 500 |
+   * | Taş Köprü | 1144 | 1100 |
+   * | Kül Ovası | 1976 | 1900 |
+   * | Kar Geçidi | 4056 | 3900 |
+   * | Kadim Harabe | 5304 | 5100 |
+   * | Sisli Bataklık | 5720 | 5500 |
+   *
+   * Yani düğmenin karşılığı **tam olarak bir yetenek, sonuna kadar** —
+   * ve `yetenekKatkisi`'nin ölçtüğüne göre L1 → L3 geç üç haritada
+   * **6 can** kazandırıyor (33 → 27). Karşılık gerçek; `referansOlcum`
+   * onu tanım gereği görmüyor.
+   *
+   * İki yönlü bağlanıyor: bonus bir yükseltmeyi karşılamazsa düğme
+   * ödülsüz kalır, `1,5` katını aşarsa erken basmak bedava bir hediyeye
+   * dönüşür ve `M16`'nın kurduğu karar çöker. Sayı yazılmıyor, iki
+   * sabitten **türüyor**.
+   */
+  it('erken başlatmanın karşılığı TAM OLARAK bir yetenek yükseltmesi', () => {
+    for (const m of MAPS) {
+      const w = wavesFor(m.id);
+      const bonus = cumulativeGold(m, w, w.length, true) - cumulativeGold(m, w, w.length, false);
+      const l2 = yetenekYukseltmeFiyati(1, m);
+      const l3 = yetenekYukseltmeFiyati(2, m);
+      expect(l2, 'yükseltme fiyatı tanımsız').not.toBeNull();
+      expect(l3, 'yükseltme fiyatı tanımsız').not.toBeNull();
+      const tamYukseltme = (l2 ?? 0) + (l3 ?? 0);
+      expect(bonus, `${m.id}: bonus ${Math.round(bonus)} / yükseltme ${tamYukseltme}`).toBeGreaterThanOrEqual(
+        tamYukseltme,
+      );
+      expect(bonus, `${m.id}: bonus ${Math.round(bonus)} / yükseltme ${tamYukseltme}`).toBeLessThan(
+        tamYukseltme * 1.5,
+      );
+    }
   });
 
   it('referans ölçüm hâlâ en muhafazakâr politikayı kullanıyor', () => {
