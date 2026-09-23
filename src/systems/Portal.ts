@@ -15,8 +15,18 @@
  * | Çağrı | Ne zaman |
  * |---|---|
  * | `gameplayStart` | Oyuncunun **ilk etkileşiminde** — yüklemede değil |
- * | `gameplayStop` | Her kesintide: duraklatma, ayar paneli, seviye bitişi, menüye dönüş |
+ * | `gameplayStop` | Her kesintide: duraklatma, seviye bitişi, menüye dönüş |
  * | `commercialBreak` | **Yalnız** duraklamadan oyuna dönerken |
+ *
+ * **`M131`: bu satırda "ayar paneli" de yazıyordu ve hiçbir yer onu
+ * çağırmıyordu** — doküman ile kod ayrışmıştı. Ayrışan taraf **doküman**:
+ * HUD'un ⚙ paneli *bilerek* duraklatmıyor (gerekçesi `HudScene`'deki
+ * duraklatma düğmesi başlığında — ekran sarsıntısı ve efekt yoğunluğu
+ * ayarları ancak oyun **akarken** değerlendirilebiliyor). Poki'nin şartı
+ * *"any gameplay interruption (pause, menu open, level end, cutscene)"*
+ * diyor; oyun akmaya devam ettiği için bu panel bir kesinti değil,
+ * oynanışın üstündeki bir katman. Oyunu gerçekten durduran **duraklatma
+ * menüsü** zaten `stop` gönderiyor.
  *
  * Poki'nin açık yasağı: *"Olaylar arka arkaya veya çift tetiklenemez."*
  * Bu yüzden `#oyundaMi` bayrağı burada tutuluyor ve yinelenen çağrılar
