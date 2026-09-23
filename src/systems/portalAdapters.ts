@@ -61,20 +61,65 @@ function kuresel<T>(ad: string): T | null {
  * geri çağrısıyla değil, bizim `sesiKis`'imizle yapılıyor: reklam hiç
  * gelmese bile (engelleyici, ağ) ses geri açılsın.
  */
+/**
+ * **SDK hazır olana kadar olayları KUYRUKLA** — `M131`.
+ *
+ * İki portalın dokümanı da aynı şeyi söylüyor ve bu kod ikisini de
+ * ihlal ediyordu:
+ *
+ * - CrazyGames: *"It is important to `await` for the initialization
+ *   since it happens asynchronously, and **the SDK is unusable until
+ *   initialized**."* — ve init'in *yükleme ekranında*, oyun başlamadan
+ *   yapılması öneriliyor.
+ * - Poki: belgelenen kalıp `PokiSDK.init().then(() => { ... oyuna devam
+ *   et ... }).catch(() => { ... yine de yükle ... })`, yani oyunun
+ *   başlaması `then` içinde.
+ *
+ * Buradaki kod `void sdk.init()` diyordu: başlatma ateşlenip
+ * **beklenmiyordu** ve bağdaştırıcı hemen dönüyordu. `gameplayStart`
+ * oyuncunun sahnedeki **ilk `pointerdown`**'ında atıyor (`GameScene`),
+ * yani hızlı tıklayan oyuncuda init'ten önce gidebiliyordu — ve
+ * CrazyGames'in cümlesine göre o olay düşerdi.
+ *
+ * **Oyun yine beklemiyor.** Poki'nin kendi `catch` dalı *"yine de
+ * yükle"* diyor ve platform şartı *"reklam engelleyici açıkken de
+ * oynanabilmeli"*. Bu yüzden çare init'i beklemek değil, olayları
+ * **sıraya koyup** init çözülünce (ya da reddedilince) boşaltmak:
+ * oyun hiç gecikmiyor, hiçbir olay düşmüyor, sıra korunuyor.
+ */
+function initKapisi(init: (() => Promise<unknown>) | undefined): (is: () => void) => void {
+  if (init === undefined) return (is) => is();
+  let hazir = false;
+  const bekleyen: (() => void)[] = [];
+  const bosalt = (): void => {
+    hazir = true;
+    for (const is of bekleyen) is();
+    bekleyen.length = 0;
+  };
+  // Reddetme de kapıyı açıyor: Poki'nin `catch` dalının karşılığı.
+  void init().then(bosalt, bosalt);
+  return (is) => {
+    if (hazir) is();
+    else bekleyen.push(is);
+  };
+}
+
 export function pokiAdapter(): PortalAdapter | null {
   const sdk = kuresel<PokiGlobal>('PokiSDK');
   if (sdk === null) return null;
-  void sdk.init?.();
+  const kapi = initKapisi(sdk.init === undefined ? undefined : () => sdk.init!());
   return {
     ad: 'poki',
-    gameplayStart: () => sdk.gameplayStart(),
-    gameplayStop: () => sdk.gameplayStop(),
+    gameplayStart: () => kapi(() => sdk.gameplayStart()),
+    gameplayStop: () => kapi(() => sdk.gameplayStop()),
     commercialBreak: (sesiKis) => {
-      sesiKis(true);
-      void sdk
-        .commercialBreak()
-        .catch(() => {})
-        .finally(() => sesiKis(false));
+      kapi(() => {
+        sesiKis(true);
+        void sdk
+          .commercialBreak()
+          .catch(() => {})
+          .finally(() => sesiKis(false));
+      });
     },
     // `sdk.poki.com/game-events` — `start`/`complete`/`fail` özel anlamlı.
     measure: (k, n, e) => sdk.measure?.(k, n, e),
@@ -93,23 +138,25 @@ export function pokiAdapter(): PortalAdapter | null {
 export function crazyAdapter(): PortalAdapter | null {
   const cg = kuresel<CrazyGlobal>('CrazyGames');
   if (cg === null) return null;
-  void cg.SDK.init?.();
+  const kapi = initKapisi(cg.SDK.init === undefined ? undefined : () => cg.SDK.init!());
   return {
     ad: 'crazygames',
-    gameplayStart: () => cg.SDK.game.gameplayStart(),
-    gameplayStop: () => cg.SDK.game.gameplayStop(),
+    gameplayStart: () => kapi(() => cg.SDK.game.gameplayStart()),
+    gameplayStop: () => kapi(() => cg.SDK.game.gameplayStop()),
     commercialBreak: (sesiKis) => {
-      const reklam = cg.SDK.ad;
-      if (reklam === undefined) {
+      kapi(() => {
+        const reklam = cg.SDK.ad;
+        if (reklam === undefined) {
+          sesiKis(true);
+          sesiKis(false);
+          return;
+        }
         sesiKis(true);
-        sesiKis(false);
-        return;
-      }
-      sesiKis(true);
-      void reklam
-        .requestAd('midgame')
-        .catch(() => {})
-        .finally(() => sesiKis(false));
+        void reklam
+          .requestAd('midgame')
+          .catch(() => {})
+          .finally(() => sesiKis(false));
+      });
     },
   };
 }

@@ -910,7 +910,7 @@ ifade sezgiseli ve her biri **kasıtlı bozmayla** doğrulandı.
 | 3 | M0   PreloadScene 4 aşama (8) |
 | 4 | k.7  setText yalnız Text üretmeyen dosyada |
 | 5 | k.11 saf mantıkta runtime Phaser yok |
-| 6 | test src/ altında test dosyası (68) |
+| 6 | test src/ altında test dosyası (69) |
 | 7 | k.9  Math.sqrt yalnız math.ts |
 | 8 | mim. coverage measureCoverage ile üretiliyor |
 | 9 | k.8  saf mantıkta duvar saati yok |
