@@ -6,6 +6,9 @@ import type { RunEndContext } from './AchievementSystem';
 import { EventBus } from './EventBus';
 import { SaveSystem } from './SaveSystem';
 import { ACHIEVEMENTS } from '../data/achievements';
+import { MAPS } from '../data/maps';
+import { wavesFor } from '../data/waves';
+import { getEnemy } from '../data/enemies';
 import { STRINGS } from '../data/strings';
 import { MemoryStore, SAVE_KEY } from '../util/storage';
 
@@ -350,5 +353,36 @@ describe('M23 başarımları — oyunun derinliğine işaret', () => {
 
   it('kimlikler benzersiz', () => {
     expect(new Set(ACHIEVEMENTS.map((a) => a.id)).size).toBe(ACHIEVEMENTS.length);
+  });
+
+  /**
+   * **`M133` — sayaç eşikleri kampanyanın boyuna karşı bağlandı.**
+   *
+   * `data/achievements.ts`'in başlığı "hiçbiri kavrama dayanmıyor,
+   * `kill1000` bile beş haritayı bitirende kendiliğinden doluyor"
+   * diyordu. Ölçüm bunu yalanladı: bütün kampanya 614 düşman. İddia
+   * bir sayıya dayanıyordu ve o sayıyı hiçbir yer ölçmüyordu.
+   *
+   * Burada eşik **seçilmiyor**, ikisinin kampanyanın hangi tarafında
+   * durduğu sabitleniyor: `kill100` tek turda doğmalı, `kill1000`
+   * bilerek turlar arası birikmeli. Dalga verisi bu ayrımı bozacak
+   * kadar değişirse başlıktaki cümle yeniden yazılmalı.
+   */
+  it('kill100 TEK turda doğuyor, kill1000 turlar arası birikiyor', () => {
+    let kampanya = 0;
+    for (const m of MAPS) {
+      for (const w of wavesFor(m.id)) {
+        for (const g of w.groups) {
+          kampanya += g.count;
+          const yetenek = getEnemy(g.enemy)?.ability;
+          // Örümcek Ana ölünce yavru veriyor — onlar da öldürülüyor.
+          if (yetenek?.kind === 'split') kampanya += g.count * yetenek.count;
+        }
+      }
+    }
+    const esik = (id: string): number => ACHIEVEMENTS.find((a) => a.id === id)!.threshold;
+
+    expect(esik('kill100'), `kampanya ${kampanya}`).toBeLessThanOrEqual(kampanya);
+    expect(esik('kill1000'), `kampanya ${kampanya}`).toBeGreaterThan(kampanya);
   });
 });
