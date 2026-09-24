@@ -46,6 +46,8 @@ export class Enemy extends Phaser.GameObjects.Sprite implements Poolable, EnemyS
   pathFraction = 0;
   /** Kaç kez yandaş çağırdı (`M13`). Havuza dönerken sıfırlanıyor. */
   summonsDone = 0;
+  /** M140 — susturma beklemesi; `resetEnemyState` sıfırlıyor. */
+  susturmaBekleme = 0;
   blockedBy: object | null = null;
   alive = false;
   /** `M10-T03` — kalan buz kalkanı. `resetEnemyState` sıfırlıyor. */

@@ -41,6 +41,7 @@ class SahteDusman implements AbilityEnemy, Poolable {
   progress = { segmentIndex: 0, tInSegment: 0, remainingDistance: 0 };
   pathFraction = 0;
   summonsDone = 0;
+  susturmaBekleme = 0;
   blockedBy: object | null = null;
   alive = false;
   shieldLeft = 0;

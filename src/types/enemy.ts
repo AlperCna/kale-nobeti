@@ -43,6 +43,29 @@ export type EnemyAbility =
   /** Örümcek Ana: ölünce 3× yavru. */
   | { readonly kind: 'split'; readonly count: number; readonly childId: EnemyId }
   /**
+   * **Susturma** — `M140`, boss'un üçüncü verb'ü (harita 4).
+   *
+   * Menzilindeki **en yakın** kuleyi `seconds` kadar susturur, sonra
+   * `cooldownSeconds` bekler. Susturulmuş kule hedef aramaz, ateş
+   * etmez; bekleme sayacı da donar.
+   *
+   * **Neden yeni bir eksen:** sahadaki bütün verb'ler tahtanın bir
+   * varsayımını kırıyor (hedeflenebilirlik, engellenebilirlik, zırh,
+   * öldürme sırası, doğum yeri) ama hiçbiri **kulelerin kendisine**
+   * dokunmuyordu. Cevabı da aile değil **yerleşim**: tek noktaya
+   * yığılmış tahtada bir susturma delik açar, dağıtılmışta açmaz.
+   * Oyun bugüne kadar kapsamayı ölçüyordu, yedekliliği hiç sınamadı.
+   */
+  | {
+      readonly kind: 'silence';
+      /** Kule arama yarıçapı, px. Karesel karşılaştırılır (k.9). */
+      readonly radius: number;
+      /** Kulenin susturulduğu süre, sn. */
+      readonly seconds: number;
+      /** İki susturma arası bekleme, sn. */
+      readonly cooldownSeconds: number;
+    }
+  /**
    * **İkinci evre** — `M10-T03`, harita 5 (Kadim Harabe).
    *
    * Canı `hpRatio`'nun altına düşünce hızlanıyor. Boss dövüşünü tek
@@ -232,6 +255,15 @@ export interface EnemyState {
    * kalkanla doğar ve bu **çökme değil yanlış denge** olarak görünür.
    */
   shieldLeft: number;
+  /**
+   * Susturma yeteneğinin bir sonraki kullanıma kalan süresi, sn.
+   *
+   * `summonsDone` ile aynı gerekçe: zamana bağlı bilgi candan
+   * türetilemiyor, o yüzden **tek sayı** saklanıyor ve
+   * `resetEnemyState` onu sıfırlıyor (TIER 1 kural 3). Doğumda `0` —
+   * yani boss menzile girer girmez ilk susturmayı yapabiliyor.
+   */
+  susturmaBekleme: number;
 }
 
 /**

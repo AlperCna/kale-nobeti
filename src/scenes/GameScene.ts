@@ -836,6 +836,9 @@ export class GameScene extends Phaser.Scene {
       enemyPool,
       this.#map.hpMultiplier * this.settings.difficulty.hpScale,
       dusmanCoz,
+      // `M140` — susturmanın tek uygulama adresi `TowerSystem.sustur`;
+      // `waveSim` de aynı sistemi aynı geri çağrıyla kuruyor.
+      (x, y, r, sn) => this.#towers?.sustur(x, y, r, sn) != null,
     );
     this.#waves = new WaveManager(
       enemyPool,
@@ -1282,6 +1285,8 @@ export class GameScene extends Phaser.Scene {
     this.#kislalariIsle(sd, dusmanlar);
     this.abilities.tick(sd);
     this.#towers?.update(sd, dusmanlar);
+    // İşaret durumdan türüyor (`Tower.susturmaGoster`), bayrak tutulmuyor.
+    for (const k of this.#towers?.towers ?? []) k.susturmaGoster();
     this.#projectiles?.update(sd, dusmanlar);
     this.#damageTexts?.update(sd);
     // `M106` — işaretler güncellemeden SONRA: konum ve alfa o karede

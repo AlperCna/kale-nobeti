@@ -240,6 +240,7 @@ dalga bütçesine iki kez sayılırdı.
 | Trol | Kışla ile tut + yoğun tek hedef |
 | Kurt Binicisi | Buz (yavaşlatmanın tek kaynağı) / Barut Fıçısı geniş patlama |
 | Ogre Şef | Büyü + Top, **`weakest`/`closest`** hedefleme (S94), Meteor |
+| Ogre Şef susturma (harita 4) | Cevap AILE degil YERLESIM: kapsamayi dagit, tek darbogaza yigma. Meteor acil cevap |
 
 ---
 
@@ -741,7 +742,7 @@ aşan hasar. Kalkanın yuttuğu kayıp sayılmıyor: o gerçek bir mekanik.
 | 1 · Değirmen Geçidi | 11714 | 178 | 1330 | **%87,1** |
 | 2 · Taş Köprü | 22696 | 186 | 1114 | **%94,3** |
 | 3 · Kül Ovası | 37328 | 405 | 1098 | **%96** |
-| 4 · Kar Geçidi | 67611 | 750 | 1605 | **%96,5** |
+| 4 · Kar Geçidi | 67201 | 828 | 1596 | **%96,4** |
 | 5 · Kadim Harabe | 87256 | 982 | 1581 | **%97,1** |
 | 6 · Sisli Bataklık | 70314 | 1039 | 1446 | **%96,5** |
 
@@ -757,7 +758,7 @@ Simülasyon **canlı oyunla aynı kodu** kullanıyor: aynı
 | 1 · Değirmen Geçidi | **0** | 0 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:0 |
 | 2 · Taş Köprü | **2** | 54 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:2 d8:0 d9:0 d10:0 |
 | 3 · Kül Ovası | **6** | 1540 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:1 d9:0 d10:5 |
-| 4 · Kar Geçidi | **9** | 4907 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:4 d9:0 d10:5 |
+| 4 · Kar Geçidi | **9** | 5429 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:4 d9:0 d10:5 |
 | 5 · Kadim Harabe | **11** | 10141 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:1 d9:1 d10:9 |
 | 6 · Sisli Bataklık | **15** | 7478 | d1:0 d2:0 d3:0 d4:0 d5:2 d6:0 d7:1 d8:0 d9:0 d10:12 |
 
@@ -909,7 +910,7 @@ ifade sezgiseli ve her biri **kasıtlı bozmayla** doğrulandı.
 | 3 | M0   PreloadScene 4 aşama (8) |
 | 4 | k.7  setText yalnız Text üretmeyen dosyada |
 | 5 | k.11 saf mantıkta runtime Phaser yok |
-| 6 | test src/ altında test dosyası (69) |
+| 6 | test src/ altında test dosyası (70) |
 | 7 | k.9  Math.sqrt yalnız math.ts |
 | 8 | mim. coverage measureCoverage ile üretiliyor |
 | 9 | k.8  saf mantıkta duvar saati yok |

@@ -49,6 +49,18 @@ export class EnemyAbilitySystem<T extends AbilityEnemy & Poolable> {
     private readonly pool: Pool<T>,
     private readonly hpMultiplier: number,
     private readonly lookupEnemy: (id: EnemyDef['id']) => EnemyDef | undefined,
+    /**
+     * `silence` yeteneğinin tek çıkışı — `M140`.
+     *
+     * Bu sistem kuleleri **tanımıyor** ve tanımamalı (kural 11'in ruhu:
+     * saf mantık, dar yüzey). Çağıran taraf `TowerSystem.sustur`'u
+     * bağlıyor; hem `GameScene` hem `waveSim` aynı sistemi kurduğu için
+     * oyun ile simülasyon yapıca aynı şeyi koşuyor — S80/S81/S86'nın üç
+     * kez düştüğü ayrışma burada doğuştan kapalı.
+     *
+     * @returns Gerçekten bir kule susturuldu mu.
+     */
+    private readonly sustur?: (x: number, y: number, radius: number, saniye: number) => boolean,
   ) {}
 
   /** @param scaledDelta `GameClock.scaledDelta`, birim ms. */
@@ -109,6 +121,30 @@ export class EnemyAbilitySystem<T extends AbilityEnemy & Poolable> {
         while (e.summonsDone < hedef) {
           e.summonsDone++;
           this.#cagir(e, y.childId, y.count);
+        }
+        continue;
+      }
+
+      if (y.kind === 'silence') {
+        /**
+         * **Susturma** — `M140`, harita 4 boss'u.
+         *
+         * Bekleme **yalnız gerçekten bir kule susturulduğunda** başlıyor.
+         * Her karede körlemesine saymak, boss menzil dışındayken de
+         * sayacı tüketirdi ve yetenek "bazen çalışan bir şey" gibi
+         * görünürdü; oysa oyuncunun okuması gereken kural basit:
+         * **boss bir kulenin yanına gelirse o kule susar.**
+         *
+         * `enrage`/`summon` gibi candan türetilemiyor (zamana bağlı), o
+         * yüzden tek sayı saklanıyor ve `resetEnemyState` sıfırlıyor.
+         */
+        if (e.susturmaBekleme > 0) {
+          e.susturmaBekleme -= dt;
+          if (e.susturmaBekleme < 0) e.susturmaBekleme = 0;
+          continue;
+        }
+        if (this.sustur?.(e.x, e.y, y.radius, y.seconds) === true) {
+          e.susturmaBekleme = y.cooldownSeconds;
         }
         continue;
       }

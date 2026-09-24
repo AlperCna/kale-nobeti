@@ -49,6 +49,7 @@ function trolYap(mover: PathMover): SimTrol {
     shieldLeft: 0,
     pathFraction: 0,
     summonsDone: 0,
+    susturmaBekleme: 0,
     speedFactor: 1,
     progress: mover.spawnProgress(),
     blockedBy: null,

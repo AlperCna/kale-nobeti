@@ -100,6 +100,15 @@ export interface TowerRuntime {
   targetMode: TargetMode;
   /** Bir sonraki atışa kalan süre. Birim: **saniye**. */
   cooldownLeft: number;
+  /**
+   * Susturulmaya kalan süre, sn (`M140`). `0` = kule çalışıyor.
+   *
+   * Sıfırdan büyükken kule hedef **aramıyor**, ateş etmiyor ve
+   * `cooldownLeft` de **donuyor** — susturma "kule kapalı" demek,
+   * "atışını biriktiriyor" değil; yoksa susturma bitince kule
+   * biriken atışları peş peşe boşaltır ve etki geri alınırdı.
+   */
+  susturmaKalan: number;
   target: Targetable | null;
 }
 

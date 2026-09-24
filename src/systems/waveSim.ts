@@ -136,6 +136,14 @@ export interface SimResult {
   /** Aynı anda ekranda görülen en yüksek düşman sayısı. */
   readonly peakEnemies: number;
   /**
+   * Bu dalgada uygulanan **susturma** sayısı — `M140`.
+   *
+   * Dengeye etkisi ölçülemeyen bir mekanik dekordur. Bu alan "susturma
+   * gerçekten oluyor mu" sorusunu iddia değil ölçüm yapıyor; testler
+   * buna bakıyor.
+   */
+  readonly susturmaSayisi: number;
+  /**
    * **Hangi düşman** sızdı — tip başına adet.
    *
    * Toplam sayı "dalga sızdırdı" diyor ama *neyin* sızdığını söylemiyor.
@@ -186,6 +194,7 @@ class SimEnemy implements SpawnableEnemy, Poolable, Targetable {
   progress = { segmentIndex: 0, tInSegment: 0, remainingDistance: 0 };
   pathFraction = 0;
   summonsDone = 0;
+  susturmaBekleme = 0;
   blockedBy: object | null = null;
   alive = false;
   /** `M10-T03` — oyunla aynı kalkan alanı; denge ölçümü onu da görsün. */
@@ -567,6 +576,7 @@ function kosturDalgalar(
         tierIndex: bt.tier,
         targetMode: bt.targetMode ?? 'first',
         cooldownLeft: 0,
+        susturmaKalan: 0,
         target: null,
       });
     }
@@ -686,6 +696,7 @@ function kosturDalgalar(
       durationSec: (dalgaAdimi * stepMs) / 1000,
       killedCount,
       peakEnemies,
+      susturmaSayisi: towers.susturmaSayisi,
       leakedByEnemy,
       canDogumDalgasina,
       atilanHasar,
@@ -774,8 +785,12 @@ function kosturDalgalar(
    * bu sefer düşman tarafında. Gerçek oyunla aynı sıra: yetenekler
    * kulelerden **önce** işleniyor (`GameScene.update`).
    */
-  yetenekler = new EnemyAbilitySystem<SimEnemy>(enemyPool, dogumCarpani, (id) =>
-    getEnemyForMap(id, map),
+  yetenekler = new EnemyAbilitySystem<SimEnemy>(
+    enemyPool,
+    dogumCarpani,
+    (id) => getEnemyForMap(id, map),
+    // `M140` — oyunla aynı adres; susturma simülasyonda da işliyor.
+    (x, y, r, sn) => towers.sustur(x, y, r, sn) !== null,
   );
 
   const maxAdim = Math.ceil((MAX_SECONDS_PER_WAVE * 1000) / stepMs) * Math.max(1, waves.length);
@@ -910,6 +925,7 @@ export function simulateWave(
       durationSec: 0,
       killedCount: 0,
       peakEnemies: 0,
+      susturmaSayisi: 0,
       leakedByEnemy: {},
       atilanHasar: 0,
       bosaUcusta: 0,

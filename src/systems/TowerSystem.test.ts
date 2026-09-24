@@ -11,6 +11,7 @@ function kule(o: Partial<TowerRuntime> = {}): TowerRuntime {
     spotIndex: 0,
     x: 0,
     y: 0,
+    susturmaKalan: 0,
     def: OKCU,
     tierIndex: 0,
     targetMode: 'first',

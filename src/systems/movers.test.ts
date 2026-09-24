@@ -24,6 +24,7 @@ function dusman(mover: PathMover, ozel: Partial<EnemyState> = {}): EnemyState {
     speedFactor: 1,
     pathFraction: 0,
     summonsDone: 0,
+    susturmaBekleme: 0,
     shieldLeft: 0,
     progress: mover.spawnProgress(),
     blockedBy: null,
@@ -138,6 +139,54 @@ describe('resetEnemyState', () => {
     expect(e.progress).toEqual({ segmentIndex: 0, tInSegment: 0, remainingDistance: 0 });
   });
 
+  /**
+   * **`M140` — tamlık artık DERLEYICIYE bağlı.**
+   *
+   * Yukarıdaki test alanları **elle** sayıyor ve yeni bir alan sessizce
+   * kaçıyor: `susturmaBekleme` eklendiğinde hem o test hem bekçi yeşil
+   * kaldı (negatif doğrulamada ölçüldü — sıfırlama satırı silinince
+   * `guard` 26/26 geçmeye devam etti). TIER 1 kural 3'ün bu projede beş
+   * kez yaşanmış hata sınıfı tam olarak bu.
+   *
+   * Buradaki iki nesne **tam nesne değişmezi**: `EnemyState`'e bir alan
+   * eklendiği an ikisi de derlenmez ve ekleyen kişi "sıfırlanmış hâli
+   * nedir" sorusunu cevaplamak zorunda kalır. Sonra `toEqual` cevabın
+   * gerçekten uygulandığını sınıyor.
+   */
+  it('EnemyState’in HER alanı sıfırlanıyor — liste derleyicide', () => {
+    const kirli: EnemyState = {
+      def: GOBLIN,
+      hp: 42,
+      maxHp: 99,
+      speed: 110,
+      speedFactor: 0.5,
+      progress: { segmentIndex: 3, tInSegment: 0.7, remainingDistance: 250 },
+      summonsDone: 2,
+      pathFraction: 0.8,
+      blockedBy: { asker: true },
+      alive: true,
+      shieldLeft: 30,
+      susturmaBekleme: 4,
+    };
+    const temiz: EnemyState = {
+      def: null,
+      hp: 0,
+      maxHp: 0,
+      speed: 0,
+      speedFactor: 1,
+      progress: { segmentIndex: 0, tInSegment: 0, remainingDistance: 0 },
+      summonsDone: 0,
+      pathFraction: 0,
+      blockedBy: null,
+      alive: false,
+      shieldLeft: 0,
+      susturmaBekleme: 0,
+    };
+
+    resetEnemyState(kirli);
+    expect(kirli).toEqual(temiz);
+  });
+
   it('sıfırlanan düşman kalenin dibinde doğmuyor', () => {
     // progress sıfırlanmazsa yeniden kullanılan nesne yolun sonunda başlar
     // ve anında can götürür — bu testin varlık sebebi o.
@@ -161,6 +210,7 @@ describe('resetEnemyState', () => {
       speed: 1,
       pathFraction: 0,
     summonsDone: 0,
+    susturmaBekleme: 0,
       shieldLeft: 0,
       speedFactor: 1,
       progress: { segmentIndex: 3, tInSegment: 0.7, remainingDistance: 12 },

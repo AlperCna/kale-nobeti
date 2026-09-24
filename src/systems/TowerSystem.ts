@@ -41,6 +41,13 @@ export function currentTier(t: TowerRuntime): TowerTier {
 
 export class TowerSystem<T extends TowerRuntime = TowerRuntime> {
   readonly #towers: T[] = [];
+  /**
+   * Kaç kez susturma uygulandı — `M140`, ölçüm ve test için.
+   *
+   * Dengeye etkisi olmayan bir mekanik dekordur; bu sayaç "gerçekten
+   * oluyor mu" sorusunu iddia değil **ölçüm** yapıyor.
+   */
+  #susturmaSayisi = 0;
 
   constructor(
     private readonly onFire: FireHandler<T>,
@@ -49,6 +56,11 @@ export class TowerSystem<T extends TowerRuntime = TowerRuntime> {
 
   get towers(): readonly T[] {
     return this.#towers;
+  }
+
+  /** Uygulanan susturma sayısı — `M140`. */
+  get susturmaSayisi(): number {
+    return this.#susturmaSayisi;
   }
 
   /**
@@ -68,11 +80,71 @@ export class TowerSystem<T extends TowerRuntime = TowerRuntime> {
     if (i >= 0) this.#towers.splice(i, 1);
   }
 
+  /**
+   * `(x, y)` çevresindeki **en yakın** kuleyi `saniye` kadar susturur —
+   * `M140`, düşmanın `silence` yeteneğinin tek uygulama adresi.
+   *
+   * **Tek kule, en yakın.** Yarıçaptaki hepsini susturmak boss'u tek
+   * başına bir tahta silgisine çevirirdi; "menzildeki rastgele biri"
+   * ise okunmaz olurdu. En yakın olan hem tahmin edilebilir hem de
+   * oyuncunun yerleşim kararını anlamlı kılıyor: darboğaza yığarsan
+   * susturulan kule hep aynı bölgeden çıkar.
+   *
+   * Zaten susturulmuş kule **yeniden hedeflenmiyor** (`susturmaKalan`
+   * sıfırdan büyükse aday değil); yoksa boss süreyi sürekli tazeleyip
+   * tek bir kuleyi kalıcı olarak kapatırdı.
+   *
+   * TIER 1 kural 9: mesafe karesel.
+   *
+   * @returns Susturulan kule, yoksa `null` (çağıran ölçüm/olay için).
+   */
+  sustur(x: number, y: number, radius: number, saniye: number): T | null {
+    const rKare = radius * radius;
+    let enYakin: T | null = null;
+    let enKucukKare = Infinity;
+    for (const t of this.#towers) {
+      if (t.susturmaKalan > 0) continue;
+      const dx = t.x - x;
+      const dy = t.y - y;
+      const kare = dx * dx + dy * dy;
+      if (kare > rKare || kare >= enKucukKare) continue;
+      enKucukKare = kare;
+      enYakin = t;
+    }
+    if (enYakin === null) return null;
+    this.#susturmaSayisi++;
+    enYakin.susturmaKalan = saniye;
+    enYakin.target = null;
+    return enYakin;
+  }
+
   /** @param scaledDelta `GameClock.scaledDelta`, birim ms. */
   update(scaledDelta: number, enemies: readonly Targetable[]): void {
     const saniye = scaledDelta * MS_TO_S;
 
     for (const t of this.#towers) {
+      /**
+       * **Susturma** — `M140`. Kule kapalı: hedef aramıyor, ateş etmiyor
+       * ve `cooldownLeft` **donuyor**.
+       *
+       * Sayacın donması bilinçli. Sayaç işlemeye devam etseydi susturma
+       * bitince kule birikmiş atışı anında boşaltır ve kaybettiği zamanı
+       * geri alırdı — yani etki yalnız *görsel* olurdu. Aşağıdaki
+       * `+=` yorumunun tarif ettiği "birikmiş atışları peş peşe boşaltma"
+       * sorununun aynısı, bu kez kasıtlı olarak yaratılmış hâli.
+       *
+       * Hedef referansı **bırakılıyor**: susturma bitince kule yeniden
+       * seçiyor. Tutulsaydı ölü ya da menzilden çıkmış bir hedefe
+       * dönerdi — `isTargetStillValid` zaten yakalardı ama bir kare
+       * boşa giderdi.
+       */
+      if (t.susturmaKalan > 0) {
+        t.susturmaKalan -= saniye;
+        if (t.susturmaKalan <= 0) t.susturmaKalan = 0;
+        t.target = null;
+        continue;
+      }
+
       t.cooldownLeft -= saniye;
 
       // TIER 1 kural 9: hazır değilse hedef ARAMA. Bu tek satır hedef arama

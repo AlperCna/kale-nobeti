@@ -36,6 +36,7 @@ class SahteDusman implements AbilityEnemy, Poolable {
   progress = { segmentIndex: 0, tInSegment: 0, remainingDistance: 0 };
   pathFraction = 0;
   summonsDone = 0;
+  susturmaBekleme = 0;
   blockedBy: object | null = null;
   alive = false;
   shieldLeft = 0;
@@ -419,8 +420,14 @@ describe('enrage — can eşiğinin altında hızlanma', () => {
 /**
  * **Boss verb'lerinin kapsamı** — `M13`.
  *
- * İlk dört harita boss'u **tanıtıyor** (düz), son ikisi ona bir verb
- * ekliyor: harita 5 ikinci evre (`M10-T03`), harita 6 çağırma (`M13`).
+ * İlk üç harita boss'u **tanıtıyor** (düz), son üçü ona bir verb
+ * ekliyor: harita 4 susturma (`M140`), harita 5 ikinci evre
+ * (`M10-T03`), harita 6 çağırma (`M13`).
+ *
+ * **`M140` — bu liste yeni verb'ü yakaladı.** Susturma eklenirken
+ * kapı burada kırıldı; tam olarak amacı bu (`CLAUDE.md` TIER 2, "onu
+ * saymayan listeleri ara"). Liste elle ama **dar**: yalnız hangi
+ * haritanın hangi verb'ü taşıdığını söylüyor, sayıları değil.
  * Tablo `enemies.BOSS_YETENEGI`; bu test onun kapsamını bağlıyor,
  * yani bir verb yanlışlıkla bütün haritalara yayılırsa kırılır.
  */
@@ -430,7 +437,7 @@ describe('boss verb kapsamı', () => {
       'degirmen-gecidi': undefined,
       'tas-kopru': undefined,
       'kul-ovasi': undefined,
-      'kar-gecidi': undefined,
+      'kar-gecidi': 'silence',
       'kadim-harabe': 'enrage',
       'sisli-bataklik': 'summon',
     };
