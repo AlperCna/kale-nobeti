@@ -795,7 +795,8 @@ harcamak demek. Kapı yeni bir sayı getirmiyor; §6'nın kule yükseltmeleri
 için zaten kullandığı **yer kıtlığı** gerekçesinin aynısı: tahta dolmadan
 yükseltme tahtayla yarışır, dolduktan sonra S117'nin emmek istediği
 **atıl** altın olur. Ölçülen pencere (referans tahtanın noktaları
-doldurduğu dalga): **7 · 3 · 4 · 4 · 4 · 4**.
+doldurduğu dalga): **7 · 3 · 4 · 4 · 4 · 4** — `M132`'den beri
+`systems/yetenekYukseltme.test.ts` bağlıyor, çelişirlerse doğru olan test.
 
 **Neden fiyat altın çarpanını izliyor:** gider kalemi gelirle aynı ölçekte
 büyümeli — `startGold`'un S72'de çarpanı izlemesiyle aynı gerekçe. Sonuç
@@ -881,6 +882,14 @@ düzeltildi:
   4. dalgada doluyor, dalga 10 tahtası birebir aynı, can kaybı 14 → 13. Yani
   çarpan atıl altını emiyor, **kıtlığı geri getirmiyor**. Harita 5-6'ya
   konmadı: taranan her k değeri bir sağlamayı kırıyor (`OPEN-QUESTIONS` S117).
+  **`M132` — yeniden tarandı ve kol KAPANDI.** `M79` "önce S95, sonra k"
+  diye bir ön koşul yazmıştı; S95 `M118`'de kapandı, dalga verisi `M119`'da
+  değişti, yani koşul sağlandı. Tarama harita başına tekrarlandı: harita 5
+  yalnız **k=1,05**'i kaldırıyor (oran 0,38 → **0,40**), harita 6 onu bile
+  kaldırmıyor (Kolay payı kırılıyor). Uygulanmadı — 0,8 hedefinin yanında
+  gürültü. Sebep yapısal: harita 5-6 zaten 14 ve 17 can kaybında, tahtayı
+  zayıflatan kolun 20 tavanına 3-6 can payı kalıyor. Kalan tek kol, fiyat
+  değil, **yeni bir gider kalemi**.
   Fiyatın tek adresi `towers.maliyet(ham, map)`; ham `.cost` okumasını
   bekçinin 18. kuralı yasaklıyor.
 - **S82 → S86 → S87** — harita 3'ün çarpanı bir ara 2,5'e çekildi,

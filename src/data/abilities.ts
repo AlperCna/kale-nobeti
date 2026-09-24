@@ -98,6 +98,11 @@ export const ABILITIES: readonly AbilityDef[] = [METEOR, TAKVIYE];
  * Ölçülen pencere (`spotsFullAtWave`): **7 · 3 · 4 · 4 · 4 · 4**.
  * Yukarıdaki iddia artık doğru.
  *
+ * **`M132` — bu sayılar artık BAĞLI.** Buraya kadar üç yerde düzyazıydı
+ * ve `spotsFullAtWave` altı harita için hiçbir testte çağrılmıyordu;
+ * `systems/yetenekYukseltme.test.ts` bağladı. Çelişirlerse doğru olan
+ * testtir.
+ *
  * ## Referans ölçümler NEDEN kayma dedi
  *
  * Bütün denge sayıları (`referansOlcum`) yetenekleri **kapalı** koşuyor

@@ -1822,7 +1822,8 @@ export class GameScene extends Phaser.Scene {
    * Ölçülen pencere (referans tahtanın noktaları doldurduğu dalga,
    * `spotsFullAtWave`): **7 · 3 · 4 · 4 · 4 · 4**. Yani harita 1'de
    * yükseltme neredeyse hiç doğmuyor — `abilities.ts`'in iddiası artık
-   * **doğru**.
+   * **doğru**. Sayılar `M132`'den beri bağlı:
+   * `systems/yetenekYukseltme.test.ts`.
    */
   get #tahtaDolu(): boolean {
     return this.#towerBySpot.size + this.#barracksBySpot.size >= this.#map.buildSpots.length;
