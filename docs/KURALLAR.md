@@ -324,7 +324,6 @@ Kaynak: `src/data/abilities.ts` · `GAME-DESIGN.md` §8
 |---|---|
 | `cooldownSeconds` | 45 |
 | `radius` | 90 |
-| `damage` | 180 |
 | `damageType` | true |
 | `hitsFlying` | true |
 
@@ -334,7 +333,6 @@ Kaynak: `src/data/abilities.ts` · `GAME-DESIGN.md` §8
 | Alan | Değer |
 |---|---|
 | `cooldownSeconds` | 20 |
-| `soldierCount` | 2 |
 | `soldierHp` | 60 |
 | `soldierDps` | 7 |
 | `lifetimeSeconds` | 20 |

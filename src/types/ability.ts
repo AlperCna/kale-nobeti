@@ -20,7 +20,13 @@ export interface MeteorDef {
   readonly cooldownSeconds: number;
   /** Etki yarıçapı. Birim: px. Karesel karşılaştırılır (TIER 1 k.9). */
   readonly radius: number;
-  readonly damage: number;
+  /**
+   * **`M137` — `damage` alanı SİLİNDİ.** `180` yazıyordu ve hiçbir yerden
+   * okunmuyordu: `M99` seviye tablosunu getirince hasarın tek adresi
+   * `METEOR_HASAR` oldu (`meteorHasari(seviye)`). Alan `METEOR_HASAR[0]`'ın
+   * kopyasıydı; değiştirmek hiçbir şey yapmıyordu. `M111`'in `threshold`
+   * bulgusuyla aynı sınıf.
+   */
   readonly damageType: DamageType;
   /** Uçanları da vuruyor mu — S48. */
   readonly hitsFlying: boolean;
@@ -30,7 +36,10 @@ export interface TakviyeDef {
   readonly id: 'takviye';
   readonly kind: 'summon';
   readonly cooldownSeconds: number;
-  readonly soldierCount: number;
+  /**
+   * `soldierCount` de `M137`'de silindi — `TAKVIYE_ASKER[0]`'ın kopyasıydı,
+   * asker sayısını `takviyeAskerSayisi(seviye)` veriyor.
+   */
   readonly soldierHp: number;
   readonly soldierDps: number;
   /** Geçici askerin ömrü. Birim: saniye. */

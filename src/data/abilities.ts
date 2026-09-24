@@ -2,9 +2,17 @@
  * Yetenek verisi. TIER 1 kural 1: sayı burada, sistemde değil.
  *
  * Her sayı `docs/GAME-DESIGN.md` §8'den **birebir**:
- * - Meteor — hedeflenen **90 px** yarıçapta **180 gerçek hasar**, bekleme **45 sn**.
- * - Takviye — hedeflenen noktaya **2 geçici asker** (HP **60**, DPS **7**,
+ * - Meteor — hedeflenen **90 px** yarıçapta gerçek hasar, bekleme **45 sn**.
+ * - Takviye — hedeflenen noktaya geçici asker (HP **60**, DPS **7**,
  *   **20 sn** ömür), bekleme **20 sn**.
+ *
+ * **`M137` — seviyeye göre değişen iki sayı bu nesnelerde DURMUYOR.**
+ * Meteor'un hasarı `METEOR_HASAR`, Takviye'nin asker sayısı
+ * `TAKVIYE_ASKER`. `M99` seviye tablolarını getirdiğinde bu nesnelerdeki
+ * `damage: 180` ve `soldierCount: 2` alanları **okunmaz oldu** ama
+ * silinmedi: tablonun L1 değerinin kopyası olarak kaldılar, yani
+ * değiştirmek hiçbir şey yapmıyordu. `M111`'in `threshold` bulgusuyla
+ * aynı sınıf — "veri ile kod farklı bir şey söylüyor". İkisi de silindi.
  */
 
 import type { AbilityDef, MeteorDef, TakviyeDef } from '../types/ability';
@@ -21,7 +29,6 @@ export const METEOR: MeteorDef = {
   cooldownSeconds: 45,
   kind: 'damage',
   radius: 90,
-  damage: 180,
   damageType: 'true',
   /**
    * `// GEÇİCİ — S48`: §8 uçanları söylemiyor. **Vuruyor** kabul edildi.
@@ -35,7 +42,6 @@ export const TAKVIYE: TakviyeDef = {
   id: 'takviye',
   cooldownSeconds: 20,
   kind: 'summon',
-  soldierCount: 2,
   soldierHp: 60,
   soldierDps: 7,
   lifetimeSeconds: 20,
