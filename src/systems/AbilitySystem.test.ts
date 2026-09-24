@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { AbilitySystem } from './AbilitySystem';
 import { stepSoldiers } from './BarracksSystem';
-import { METEOR, TAKVIYE } from '../data/abilities';
+import { METEOR, TAKVIYE, takviyeAskerSayisi } from '../data/abilities';
 import { GOBLIN, HARPI, OGRE_SEF, ZIRHLI_ORK } from '../data/enemies';
 import type { BlockableEnemy, SoldierState } from '../types/barracks';
 import type { EnemyDef } from '../types/enemy';
@@ -174,7 +174,11 @@ describe('Takviye — §8', () => {
     const havuz = [bosAsker(), bosAsker(), bosAsker()];
     let i = 0;
     const cikan = s.castReinforcements({ x: 100, y: 50 }, () => havuz[i++] ?? null);
-    expect(cikan).toHaveLength(TAKVIYE.soldierCount);
+    // `M137` — eskiden `TAKVIYE.soldierCount` okunuyordu; o alan
+    // `TAKVIYE_ASKER[0]`'ın ölü kopyasıydı ve test rastlantıyla
+    // geçiyordu. Sistem asker sayısını `takviyeAskerSayisi`'den alıyor,
+    // sağlama da artık oradan.
+    expect(cikan).toHaveLength(takviyeAskerSayisi(1));
     for (const a of cikan!) {
       expect(a.maxHp).toBe(60);
       expect(a.dps).toBe(7);

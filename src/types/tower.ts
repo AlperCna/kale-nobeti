@@ -29,8 +29,7 @@ export type TargetMode = 'first' | 'last' | 'strongest' | 'weakest' | 'closest';
  * Ayrık birleşim: her etkinin kendi alanları var, ortak "value" alanı yok.
  * Böylece `kind` kontrolü yapıldığında derleyici doğru alanları biliyor
  * ve yeni bir etki eklendiğinde `switch` eksik kalırsa hata veriyor.
- */
-/**
+ *
  * **`M136` — buradaki sayılar SİLİNDİ, kopyaydılar ve ikisi bayattı.**
  *
  * Satırlar şöyleydi: *"Kundakçı: 4 HP/sn, 4 sn"* ve *"Buz %50 / 2,5 sn;
