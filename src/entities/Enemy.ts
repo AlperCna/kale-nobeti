@@ -84,7 +84,7 @@ export class Enemy extends Phaser.GameObjects.Sprite implements Poolable, EnemyS
     'FlipX',
     'DisplaySize',
     'Tint',
-  ];
+  ]; // bekçi: havuz Frame — spawn() göstermeden önce her zaman setFrame yazıyor
 
   /** Savaş alanı gösterim boyutu — kare değişse de sabit kalır. */
   readonly #size: number;

@@ -1256,6 +1256,138 @@ const sonuclar = [];
 }
 
 // ---------------------------------------------------------------------
+// 26 — Havuz manifestosunun TAMLIĞI (TIER 1 kural 3) — `M135`
+//
+// 11. kural manifestoyu **tek yönlü** okuyor: bildirilen her ad için
+// `resetForPool()` bir `set*` çağırıyor mu? Kendi notu boşluğu da kabul
+// ediyor: *"koruduğu şey NEYİN sıfırlanması gerektiği değil, listelenenin
+// sıfırlanıp sıfırlanmadığı"*. Yani **eksik bildirilmiş** bir manifesto
+// sessiz kalıyor — nesne o durumu yaşamı boyunca değiştiriyor, reset onu
+// bugün sıfırlıyor olabilir, ama bekçi o satırın silinmesini görmez.
+//
+// Ölçüldü (`M135`): `EnemyHealthBar` yaşamı boyunca `this.setAlpha(alfa)`
+// çağırıyor (can çubuğu sönümlenirken) ve `resetForPool()` `setAlpha(1)`
+// ile sıfırlıyor — ama manifestosu yalnız `Active · Visible · Position`
+// bildiriyordu. Bugün doğru çalışıyordu; `setAlpha(1)` satırı silinseydi
+// bekçi yeşil kalır ve geri dönüşen çubuk önceki düşmanın soluk
+// opaklığını miras alırdı.
+//
+// Bu kural ters yönü bekçiliyor: nesnenin **kendi üstünde** (`this.set…`,
+// zincir dahil) yaşamı boyunca çağrılan her görsel setter manifestoda
+// bildirilmiş olmalı. Yapıcı ve `resetForPool()` gövdeleri dışarıda —
+// biri bir kez koyuyor, öteki zaten sıfırlama.
+//
+// **Muafiyet:** manifestonun bittiği satıra `// bekçi: havuz <Ad> — …`.
+// `Enemy.Frame` bunu kullanıyor: `spawn()` göstermeden önce her zaman
+// `setFrame` yazıyor, yani havuzdaki eski kare hiç görünmüyor.
+//
+// Kör noktası: çocuk nesnenin durumu (`this.#dolgu.setSize(…)`). Manifesto
+// Phaser setter adlarından oluşuyor ve çocuğun durumunun bu dilde bir adı
+// yok; `EnemyHealthBar` dolguyu `resetForPool()` içinde elle sıfırlıyor.
+// ---------------------------------------------------------------------
+{
+  /** Phaser setter → manifesto adı. Sadece **görünür durum** taşıyanlar. */
+  const SETTER_ADI = {
+    setPosition: 'Position', setX: 'Position', setY: 'Position',
+    setAlpha: 'Alpha',
+    setAngle: 'Angle', setRotation: 'Angle',
+    setScale: 'Scale',
+    setDisplaySize: 'DisplaySize',
+    setFlipX: 'FlipX', setFlipY: 'FlipY',
+    setTint: 'Tint', setTintFill: 'Tint', clearTint: 'Tint',
+    setVisible: 'Visible', setActive: 'Active',
+    setOrigin: 'Origin', setDepth: 'Depth',
+    setFrame: 'Frame', setTexture: 'Frame',
+    setText: 'Text', setFontSize: 'FontSize',
+    setFillStyle: 'FillStyle', setStrokeStyle: 'StrokeStyle',
+    setSize: 'Size',
+  };
+
+  /** `bas` satırından başlayan blogun gövde satırlarını süslü eşleyerek al. */
+  const govdeAl = (satirlar, bas) => {
+    let derinlik = 0;
+    let basladi = false;
+    const cikti = [];
+    for (const s of satirlar.slice(bas)) {
+      for (const ch of s.metin) {
+        if (ch === '{') {
+          derinlik++;
+          basladi = true;
+        } else if (ch === '}') derinlik--;
+      }
+      cikti.push(s);
+      if (basladi && derinlik <= 0) break;
+    }
+    return cikti;
+  };
+
+  let ihlalVar = false;
+  for (const dosya of dosyalar) {
+    if (dosya.endsWith('.test.ts')) continue;
+    const satirlar = kodSatirlari(readFileSync(dosya, 'utf8'));
+
+    const manifestSatiri = satirlar.findIndex((s) =>
+      /static\s+readonly\s+HAVUZ_ALANLARI\s*:/.test(s.metin),
+    );
+    if (manifestSatiri < 0) continue;
+
+    // Manifest metni — 11. kuraldaki `readonly string[]` tuzağına karşı
+    // sayım `= [`den SONRA başlıyor.
+    let manifestMetin = '';
+    let sonManifestSatiri = manifestSatiri;
+    let derin = 0;
+    let acildi = false;
+    for (let i = manifestSatiri; i < satirlar.length; i++) {
+      const metin = satirlar[i].metin;
+      const bas = i === manifestSatiri ? metin.indexOf('= [') + 2 : 0;
+      for (let k = Math.max(0, bas); k < metin.length; k++) {
+        if (metin[k] === '[') {
+          derin++;
+          acildi = true;
+        } else if (metin[k] === ']') derin--;
+      }
+      manifestMetin += metin;
+      sonManifestSatiri = i;
+      if (acildi && derin <= 0) break;
+    }
+    const bildirilen = new Set([...manifestMetin.matchAll(/'([A-Za-z]+)'/g)].map((m) => m[1]));
+
+    // Muafiyetler: manifestonun kapandığı satırdaki `// bekçi: havuz <Ad>`.
+    for (const m of satirlar[sonManifestSatiri].metin.matchAll(/\/\/ bekçi: havuz ([A-Za-z]+)/g)) {
+      bildirilen.add(m[1]);
+    }
+
+    // Yaşam gövdesi = bütün dosya − yapıcı − resetForPool.
+    const disarda = new Set();
+    for (const anahtar of [/^\s{2}constructor\s*\(/, /resetForPool\s*\(\s*\)\s*:\s*void\s*\{/]) {
+      const bas = satirlar.findIndex((s) => anahtar.test(s.metin));
+      if (bas >= 0) for (const s of govdeAl(satirlar, bas)) disarda.add(s.no);
+    }
+
+    for (const s of satirlar) {
+      if (disarda.has(s.no)) continue;
+      // Zincir `this` üstünde mi? `this.#cocuk.setX(` sayılmaz.
+      for (const ifade of s.metin.split(';')) {
+        if (!/this\.(set[A-Z]|clearTint)/.test(ifade)) continue;
+        for (const c of ifade.matchAll(/(set[A-Z][A-Za-z]*|clearTint)\(/g)) {
+          const ad = SETTER_ADI[c[1]];
+          if (ad === undefined || bildirilen.has(ad)) continue;
+          ihlalVar = true;
+          ihlal(
+            'k.3 ',
+            dosya,
+            s.no,
+            `${c[1]}() yaşam boyunca çağrılıyor ama HAVUZ_ALANLARI '${ad}' bildirmiyor — ` +
+              `listeye ekle ya da manifestonun son satırına \`// bekçi: havuz ${ad} — <gerekçe>\` yaz`,
+          );
+        }
+      }
+    }
+  }
+  sonuclar.push(['k.3  HAVUZ_ALANLARI eksiksiz (yaşamdaki setter bildirilmiş)', !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
 
 const gecen = sonuclar.filter(([, ok]) => ok).length;
 if (taranamayan.length > 0) {
