@@ -1,6 +1,18 @@
 import { describe, it, expect } from 'vitest';
 import { MAPS } from './maps';
-import { PANEL_W, PANEL_H, PANEL_SAG, PANEL_SOL, PANEL_ESIK, panelKonumu } from './panelLayout';
+import {
+  PANEL_W,
+  PANEL_H,
+  PANEL_SAG,
+  PANEL_SOL,
+  PANEL_ESIK,
+  PANEL_IC_PAY,
+  PANEL_IKON_HEDEF,
+  PANEL_IKON_SUTUN,
+  panelKonumu,
+  panelYuksekligi,
+} from './panelLayout';
+import { ENEMIES } from './enemies';
 
 /** `MapRenderer.SPOT_RADIUS` — yuva dairesinin yarıçapı. */
 const NOKTA_YARICAPI = 28;
@@ -28,7 +40,7 @@ describe('Kule bilgi paneli — incelenen kuleyi ÖRTMEZ', () => {
    * Bu test değişmez kuralı bekçiliyor: hangi noktayı seçersen seç,
    * panelin seçtiği köşe o noktayı içermiyor.
    */
-  it('beş haritanın hiçbir yapı noktası, kendi paneli tarafından örtülmüyor', () => {
+  it('altı haritanın hiçbir yapı noktası, kendi paneli tarafından örtülmüyor', () => {
     for (const m of MAPS) {
       for (const [i, s] of m.buildSpots.entries()) {
         const yer = panelKonumu(s.x);
@@ -63,5 +75,44 @@ describe('Kule bilgi paneli — incelenen kuleyi ÖRTMEZ', () => {
   it('sağ yerleşim kalıcı HUD ile çakışmıyor — tam ekran düğmesi hariç', () => {
     // Tam ekran düğmesi `848,636 – 928,714`; panel `998,440` — kesişmiyor.
     expect(PANEL_SAG.x).toBeGreaterThan(928);
+  });
+
+  /**
+   * **`M134` — panelin boyu kadrodan türüyor, sabit değil.**
+   *
+   * S166 kapanırken ikon şeridi ızgaraya döndü (hedefler 29×44 → 44×44)
+   * ve panel bir ikon satırı uzadı. Sabit bırakılsaydı beş düşmanlı
+   * harita 1'de altta 44 px ölü boşluk kalırdı.
+   *
+   * `PANEL_H` en kötü hâli tarif ediyor ve içindeki satır sayısı elle
+   * yazılı; burada `MAPS`'ten türetilip karşılaştırılıyor. Yeni bir
+   * düşman kadroya girip satır sayısını artırırsa bu test kırılır —
+   * `PANEL_H`'in yorumu da o zaman yeniden yazılır.
+   */
+  it('PANEL_H en kalabalık kadronun gerektirdiği boy — MAPS`ten türetildi', () => {
+    const satir = (m: (typeof MAPS)[number]): number =>
+      Math.ceil(ENEMIES.filter((e) => m.enemyRoster.includes(e.id)).length / PANEL_IKON_SUTUN);
+    const enCok = Math.max(...MAPS.map(satir));
+    expect(PANEL_H, `en kalabalık kadro ${enCok} satır`).toBe(panelYuksekligi(enCok));
+  });
+
+  it('her haritanın KENDİ boyu iki yerleşimde de sınırların içinde', () => {
+    for (const m of MAPS) {
+      const kadro = ENEMIES.filter((e) => m.enemyRoster.includes(e.id)).length;
+      const h = panelYuksekligi(Math.ceil(kadro / PANEL_IKON_SUTUN));
+      for (const spotX of [100, 1100]) {
+        const yer = panelKonumu(spotX, h);
+        expect(yer.y, `${m.id} üst kenar`).toBeGreaterThanOrEqual(0);
+        expect(yer.y + h, `${m.id} alt kenar`).toBeLessThanOrEqual(720);
+      }
+      // Sol yerleşim yetenek şeridinin üstünde bitmeye devam ediyor.
+      expect(panelKonumu(1100, h).y + h, `${m.id} yetenek şeridi`).toBeLessThanOrEqual(622);
+    }
+  });
+
+  it('ikon ızgarası panelin iç genişliğine sığıyor — hedefler 44×44', () => {
+    expect(PANEL_IKON_SUTUN * PANEL_IKON_HEDEF).toBeLessThanOrEqual(PANEL_W - 2 * PANEL_IC_PAY);
+    // Platform alt sınırı: hedef iki eksende de 44'ten küçük olamaz.
+    expect(PANEL_IKON_HEDEF).toBeGreaterThanOrEqual(44);
   });
 });
