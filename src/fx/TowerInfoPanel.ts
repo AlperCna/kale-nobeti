@@ -1,6 +1,14 @@
 import Phaser from 'phaser';
 import type { EnemyDef } from '../types/enemy';
-import { PANEL_W, PANEL_H, PANEL_IC_PAY, panelKonumu } from '../data/panelLayout';
+import {
+  PANEL_W,
+  PANEL_H,
+  PANEL_IC_PAY,
+  PANEL_IKON_HEDEF,
+  PANEL_IKON_SUTUN,
+  panelKonumu,
+  panelYuksekligi,
+} from '../data/panelLayout';
 import type { TargetMode, TowerDef, TowerTier } from '../types/tower';
 import { NUMBER_FONT_KEY } from './numberFont';
 import { effectiveDps } from '../systems/balanceChecks';
@@ -51,14 +59,27 @@ const INK = 0x14203a;
 const VERMILION = 0xb03a2e;
 
 const SOL_PAY = PANEL_IC_PAY;
-const ICON = 20;
-/** İkonlar arası **azami** adım; kadro sığmazsa küçülüyor (`M113`). */
-const IKON_ADIM = 30;
-/** Dokunma hedefinin yüksekliği — Platform alt sınırı. */
-const IKON_HEDEF_H = 44;
+/**
+ * İkonun çizim boyu.
+ *
+ * `M134` — **20'den 28'e**: ızgara hücresi 44 px olunca 20 px'lik ikon
+ * hücrenin ortasında kayboluyordu ve şerit seyrek duruyordu. 28 + 6'lık
+ * halka = 34, hücreye her yandan 5 px payla giriyor. Düşman silüetleri
+ * de bu boyda gerçekten ayırt ediliyor.
+ */
+const ICON = 28;
+/**
+ * Dokunma hedefinin ölçüsü — Platform alt sınırı, iki eksende de.
+ *
+ * `M134`'e kadar yalnız yükseklik 44'tü; genişlik ikon adımıydı ve on
+ * ikonlu kadroda **29**'a düşüyordu (S166). Izgara yerleşimi ikisini de
+ * 44'e çıkardı; şeridin kaç sütuna sığdığı da bu sayıdan türüyor.
+ */
+const IKON_HEDEF_W = PANEL_IKON_HEDEF;
+const IKON_HEDEF_H = PANEL_IKON_HEDEF;
 /** Değer kolonunun sağ kenarı — sayılar sağa dayalı. */
 const W = PANEL_W;
-/** Son satır (ikon şeridi, y=236) + yarı ikon + alt band. */
+/** Panelin dış yüksekliği; ikon ızgarasının satır sayısı da içinde. */
 const H = PANEL_H;
 
 export interface TowerInfoState {
@@ -105,6 +126,9 @@ export class TowerInfoPanel {
   /** Seçili düşman halkası — sprite'ın kendisi değil, çevresindeki çerçeve. */
   readonly #ikonlar: Phaser.GameObjects.Rectangle[] = [];
 
+  /** Bu haritadaki kadroya göre panelin dış yüksekliği. */
+  readonly #yukseklik: number;
+
   #state: TowerInfoState | null = null;
   #seciliDusman = 0;
 
@@ -123,8 +147,11 @@ export class TowerInfoPanel {
     this.#toplamYol = Math.max(1, toplamYol);
     this.#kap = scene.add.container(x, y).setVisible(false);
 
-    const arka = scene.add.rectangle(0, 0, W, H, INK, 0.9).setOrigin(0);
-    const cerceve = createParchmentFrame(scene, W / 2, H / 2, W, H, 16, true);
+    // `M134` — boy kadrodan türüyor: kaç ikon satırı varsa o kadar.
+    this.#yukseklik = panelYuksekligi(Math.ceil(roster.length / PANEL_IKON_SUTUN));
+    const h = this.#yukseklik;
+    const arka = scene.add.rectangle(0, 0, W, h, INK, 0.9).setOrigin(0);
+    const cerceve = createParchmentFrame(scene, W / 2, h / 2, W, h, 16, true);
     this.#kap.add([arka, cerceve]);
 
     this.#etiketler = new TowerInfoLabels(scene, SOL_PAY, W / 2 + 8);
@@ -182,28 +209,41 @@ export class TowerInfoPanel {
      *
      * ## Dokunma hedefi
      *
-     * Hedef artık ikonun kendisi değil, arkasındaki **görünmez
-     * dikdörtgen**: genişlik = adım (yan yana iki hedef çakışmasın),
-     * yükseklik = Platform alt sınırı **44**. Dikey şart tam
-     * karşılanıyor; yatayda adım 44'ün altında kalıyor çünkü on ikon
-     * 256 px'lik iç genişliğe 44'er piksele sığmıyor — **ölçülmüş
-     * istisna** (S166), sessiz ihlal değil.
+     * Hedef ikonun kendisi değil, arkasındaki **görünmez dikdörtgen**.
+     *
+     * **`M134` — S166 KAPANDI, şerit ızgaraya döndü.** Buraya kadar tek
+     * satırdı ve genişlik = adım'dı; on ikonlu kadroda adım **29**'a
+     * düşüyordu, yani Platform'un 44×44 alt sınırı yatayda tutmuyordu.
+     * Kayıt bunu "ölçülmüş istisna" diye bırakmış ve çözümü de yazmıştı:
+     * *"şeridi iki satıra bölmek ya da paneli genişletmek"*. İlki
+     * yapıldı — paneli genişletmek 11 ikon × 44 = 484 px isterdi, panel
+     * 300.
+     *
+     * Sütun sayısı **türetiliyor**, seçilmiyor: `⌊256/44⌋ = 5`. En
+     * kalabalık kadro 10 (harita 3-4-5) olduğu için bugün tam iki satır
+     * çıkıyor; kadro büyürse satır kendiliğinden artar ve `PANEL_H`'in
+     * gerekçesi de aynı bölmeyi kullanır. Hedef artık **44×44** —
+     * istisna kalmadı.
+     *
+     * Izgara bloğu panel içinde yatay olarak ortalanıyor, satırlar blok
+     * içinde sola yaslı: eksik son satır (9 kadroda 5+4) ortalanırsa
+     * ikonlar üst satırla hizasını kaybediyor.
      */
     const icGenislik = W - 2 * SOL_PAY;
-    const adim =
-      roster.length > 1
-        ? Math.min(IKON_ADIM, Math.floor((icGenislik - ICON) / (roster.length - 1)))
-        : IKON_ADIM;
+    const sutun = PANEL_IKON_SUTUN;
+    const blokW = Math.min(roster.length, sutun) * IKON_HEDEF_W;
+    const blokX = SOL_PAY + (icGenislik - blokW) / 2;
     roster.forEach((e, i) => {
-      const bx = SOL_PAY + ICON / 2 + i * adim;
+      const bx = blokX + IKON_HEDEF_W / 2 + (i % sutun) * IKON_HEDEF_W;
+      const by = SATIRLAR.ikonlar + Math.floor(i / sutun) * IKON_HEDEF_H;
       const hedef = scene.add
-        .rectangle(bx, SATIRLAR.ikonlar, adim, IKON_HEDEF_H, 0x000000, 0)
+        .rectangle(bx, by, IKON_HEDEF_W, IKON_HEDEF_H, 0x000000, 0)
         .setInteractive({ useHandCursor: true });
       const halka = scene.add
-        .rectangle(bx, SATIRLAR.ikonlar, ICON + 6, ICON + 6, 0x000000, 0)
+        .rectangle(bx, by, ICON + 6, ICON + 6, 0x000000, 0)
         .setStrokeStyle(2, GOLD);
       const ikon = scene.add
-        .image(bx, SATIRLAR.ikonlar, 'atlas', enemyFrameKey(e.id))
+        .image(bx, by, 'atlas', enemyFrameKey(e.id))
         .setDisplaySize(ICON, ICON);
       const sec = (): void => {
         this.#seciliDusman = i;
@@ -283,7 +323,7 @@ export class TowerInfoPanel {
     this.#state = s;
     // Konum ve eşik `data/panelLayout.ts`'te (TIER 1 kural 1); orası
     // Phaser'a dokunmuyor, yani değişmez kural `node`'da test edilebiliyor.
-    const yer = panelKonumu(s.spot.x);
+    const yer = panelKonumu(s.spot.x, this.#yukseklik);
     this.#kap.setPosition(yer.x, yer.y);
     this.#kap.setVisible(true);
 

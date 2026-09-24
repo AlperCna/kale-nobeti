@@ -39,7 +39,6 @@
  * (640) solunda kalıyor — `panelLayout.test.ts` ikisini de bekçiliyor.
  */
 export const PANEL_W = 300;
-export const PANEL_H = 320; // M11-T01 etki (+26), M11-T02 patlama (+26)
 
 /**
  * İçerik ile panel kenarı arasındaki pay.
@@ -48,6 +47,57 @@ export const PANEL_H = 320; // M11-T01 etki (+26), M11-T02 patlama (+26)
  * metin süslemenin altında kalıyordu. 22 = 16 kenar + 6 nefes.
  */
 export const PANEL_IC_PAY = 22;
+
+/**
+ * Düşman ikonu şeridinin dokunma hedefi — Platform alt sınırı, iki
+ * eksende de (`M134`, S166'nın kapanışı).
+ *
+ * Şerit tek satırdı ve hedefin **genişliği** ikon adımıydı: on ikonlu
+ * kadroda 29 px'e düşüyordu, yani 44×44 şartı yatayda tutmuyordu.
+ * Kayıt bunu "ölçülmüş istisna" diye bırakmış ve çözümü de yazmıştı —
+ * *"şeridi iki satıra bölmek ya da paneli genişletmek"*. İlki yapıldı:
+ * paneli genişletmek 11 ikon × 44 = 484 px isterdi, panel 300.
+ */
+export const PANEL_IKON_HEDEF = 44;
+
+/** Bir ikon satırının kapladığı yükseklik. */
+export const PANEL_IKON_SATIR_H = PANEL_IKON_HEDEF;
+
+/**
+ * Şeridin sütun sayısı — **seçilmiyor, türetiliyor.**
+ *
+ * İç genişlik `300 - 2×22 = 256`, hedef 44 → `⌊256/44⌋ = 5`.
+ */
+export const PANEL_IKON_SUTUN = Math.max(
+  1,
+  Math.floor((PANEL_W - 2 * PANEL_IC_PAY) / PANEL_IKON_HEDEF),
+);
+
+/**
+ * Tek ikon satırlı panelin dış yüksekliği.
+ * `M11-T01` etki (+26), `M11-T02` patlama (+26).
+ */
+export const PANEL_H_TEK_SATIR = 320;
+
+/** İkon satırı sayısına göre panelin dış yüksekliği. */
+export function panelYuksekligi(ikonSatiri: number): number {
+  return PANEL_H_TEK_SATIR + Math.max(0, ikonSatiri - 1) * PANEL_IKON_SATIR_H;
+}
+
+/**
+ * **En kalabalık kadronun** gerektirdiği yükseklik — yerleşim
+ * sağlamalarının kullandığı **en kötü hâl**.
+ *
+ * Buradaki `2` elle yazılı ama bağlı: en kalabalık kadro 10 (harita
+ * 3-4-5), sütun 5, yani `⌈10/5⌉ = 2`. `panelLayout.test.ts` bu sayıyı
+ * `MAPS`'ten türetip karşılaştırıyor — çelişirlerse doğru olan test.
+ *
+ * Panel **alt kenarından** demirli: yükseklik küçülünce üst kenar
+ * aşağı iner, alt kenar yerinde kalır. Yani en kötü hâl aynı zamanda
+ * en geniş kutu, ve "paneli örtmez" sağlaması onu sınadığında kısa
+ * paneller de garanti altında.
+ */
+export const PANEL_H = panelYuksekligi(2);
 
 /** Mantıksal ekran (CLAUDE.md Teknoloji). */
 const EKRAN_W = 1280;
@@ -82,9 +132,21 @@ export const PANEL_ESIK = EKRAN_W / 2;
  * Değişmez kural: **panel hiçbir zaman incelenen kuleyi örtmez.** Bu
  * eşikten çıkıyor — `x > 640` olan bir nokta `PANEL_SOL`'un (12-282)
  * içine, `x <= 640` olan bir nokta `PANEL_SAG`'ın (998-1268) içine
- * düşemez. `panelLayout.test.ts` bunu beş haritanın gerçek noktalarıyla
+ * düşemez. `panelLayout.test.ts` bunu altı haritanın gerçek noktalarıyla
  * doğruluyor.
+ *
+ * **`M134` — yükseklik artık parametre.** Panel o haritanın kadrosuna
+ * göre bir ya da iki ikon satırı taşıyor; sabit boy, beş düşmanlı
+ * harita 1'de altta 44 px ölü boşluk bırakıyordu. Demir **alt kenarda**:
+ * kısa panelin üst kenarı aşağı iner, alt kenar iki yerleşimde de
+ * yerinde kalır. Varsayılan `PANEL_H` en kötü hâl, yani `PANEL_SAG` /
+ * `PANEL_SOL` sabitleri en geniş kutuyu tarif etmeye devam ediyor.
  */
-export function panelKonumu(spotX: number): { readonly x: number; readonly y: number } {
-  return spotX > PANEL_ESIK ? PANEL_SOL : PANEL_SAG;
+export function panelKonumu(
+  spotX: number,
+  yukseklik: number = PANEL_H,
+): { readonly x: number; readonly y: number } {
+  return spotX > PANEL_ESIK
+    ? { x: PANEL_SOL.x, y: 622 - PAY - yukseklik }
+    : { x: PANEL_SAG.x, y: EKRAN_H - PAY - yukseklik };
 }
