@@ -15,6 +15,7 @@ import type { TowerId, TierIndex } from '../types/tower';
 import { TOWERS } from './towers';
 import { KISLA } from './barracks';
 import type { EnemyId } from '../types/enemy';
+import { ENEMIES } from './enemies';
 
 /**
  * `atlas.png`/`atlas.json` `npm run prep-assets` ile üretiliyor, testten
@@ -39,18 +40,19 @@ describe('spriteFrames.ts — atlas.json ile eşleşme', () => {
     },
   );
 
-  const DUSMANLAR: readonly EnemyId[] = [
-    'goblin',
-    'orkSavasci',
-    'kurtBinicisi',
-    'harpi',
-    'zirhliOrk',
-    'saman',
-    'trol',
-    'orumcekAna',
-    'orumcekYavrusu',
-    'ogreSef',
-  ];
+  /**
+   * **`M133` — bu liste de artık türetiliyor.** Hemen yukarıdaki aile
+   * listesi `M118`'de "elle sayılmıyor" diye türetilmişti; **iki satır
+   * altındaki düşman listesi elle kaldı** ve kadro 11'e çıkarken 10'da
+   * dondu. Eksik olan `tunelci`ydi — yani Tünelci'nin atlas karesi
+   * hiçbir testte doğrulanmıyordu.
+   *
+   * Bugün çökme üretmiyor, çünkü Tünelci karesini **bilerek** Örümcek
+   * Ana'dan ödünç alıyor (`spriteFrames.ts`, `M12`/`M32`). Tam da bu
+   * yüzden tehlikeliydi: Tünelci kendi çizimini aldığı gün anahtar
+   * değişecek ve onu sayan tek yer burası olacaktı.
+   */
+  const DUSMANLAR: readonly EnemyId[] = ENEMIES.map((e) => e.id);
 
   it.each(DUSMANLAR)('%s atlas karesi var', (id) => {
     expect(kareler.has(enemyFrameKey(id))).toBe(true);

@@ -551,6 +551,11 @@ tavana 3-6 can var, fiyatı yükseltmek tahtayı zayıflatmanın başka adı.
 Kalan tek kol **yeni bir zorunlu gider kalemi**, yani yeni sayılar:
 TIER 2 gereği sahibinin kararı. Ayrıntı `plan/OPEN-QUESTIONS.md` S117.
 
+**`M133` — S117 KAPANDI.** Kalan kol sahibine soruldu, **"kapandı say"**
+dedi. Bugünkü hâl kabul edilen hâl. Böylece açık duran tasarım sorusu
+kalmadı; `M77`'nin 2 canlık sim/oyun farkı zaten `M94`'te çözünürlük
+olarak açıklanmıştı.
+
 ---
 
 ## Claude Code komut şablonu

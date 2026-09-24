@@ -39,8 +39,22 @@ export interface AchievementDef {
  *
  * Seçim ölçütü ROADMAP'in "ucuz dönüş sebebi" notu: her biri **oyuncunun
  * zaten yapacağı** bir şeyi işaretliyor ya da bir kere denemeye değer bir
- * sapma öneriyor. Hiçbiri kavrama (grind) dayanmıyor — `kill1000` bile
- * beş haritayı bir kez bitiren birinde kendiliğinden doluyor.
+ * sapma öneriyor.
+ *
+ * **`M133` — buradaki ölçülü iddia YANLIŞTI ve düzeltildi.** Cümle
+ * "hiçbiri kavrama (grind) dayanmıyor — `kill1000` bile beş haritayı bir
+ * kez bitiren birinde kendiliğinden doluyor" diyordu. Ölçüldü: bütün
+ * kampanya (altı harita × on dalga, ölünce bölünen Örümcek Ana'nın 48
+ * yavrusu dahil) toplam **662** düşman — harita başına 138 · 116 ·
+ * 111 · 101 · 98 · 98. Beş harita 564. Yani eşik bir turda
+ * **karşılanamıyor**; `kill1000` yaklaşık 1,5 kampanya ya da bir
+ * kampanya + sonsuz mod demek. İddia harita 6 eklendiğinde
+ * bayatlamadı, **baştan yanlıştı**.
+ *
+ * Doğru cümle: on altısı bir turda doğuyor, `kill1000` **bilerek**
+ * turlar arası birikiyor (sayaç zaten kalıcı). Eşiğe dokunulmadı —
+ * oyuncuya gösterilen metin ("Toplam 1000 düşman öldür.") dürüst.
+ * Sayılar `systems/AchievementSystem.test.ts`'te bağlı.
  */
 export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'firstTower', kind: 'flag', threshold: 1, title: 'achFirstTower', desc: 'achFirstTowerDesc' },
@@ -75,8 +89,15 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
    * İlk üçü oyuncunun kararını, dördüncüsü bir keşfi işaretliyor —
    * yukarıdaki seçim ölçütü ikisine de izin veriyor.
    *
-   * **Neden tam dört:** `AchievementsScene` iki sütuna diziyor ve alt
-   * bilgiyle çakışmadan 8 satır sığıyor, yani 16 tavan. 12 + 4 = 16.
+   * **Neden tam dört:** `AchievementsScene` iki sütuna diziyor ve o gün
+   * alt bilgiyle çakışmadan 8 satır sığıyordu, yani 16 tavan. 12 + 4 = 16.
+   *
+   * **`M133` — bu tavan artık 16 değil.** `M111` on yedinciyi eklerken
+   * yerleşimi yeniden ölçtü (`UST` 190 → 172, `SATIR_Y` 58 → 54) ve
+   * tavan **18** oldu; türetmesi `AchievementsScene`'in başında, sayı
+   * `AchievementSystem.test.ts`'te bağlı (`≤ 18`). Buradaki "16" tarihî
+   * bir kayıttı ve güncel sınır sanılabilirdi — on sekizinci başarımın
+   * sığmayacağını söylüyordu, oysa sığıyor.
    */
   { id: 'bothBranches', kind: 'flag', threshold: 1, title: 'achBothBranches', desc: 'achBothBranchesDesc' },
   { id: 'bothAbilities', kind: 'flag', threshold: 1, title: 'achBothAbilities', desc: 'achBothAbilitiesDesc' },
