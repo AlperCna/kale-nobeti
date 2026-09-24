@@ -930,9 +930,10 @@ ifade sezgiseli ve her biri **kasıtlı bozmayla** doğrulandı.
 | 23 | M105 hareket, hareket ayarını izliyor (k.6) |
 | 24 | M114 dokunma hedefi ölçülü nesnede |
 | 25 | M122 strings.ts ölü oyuncu metni taşımıyor |
+| 26 | k.3  HAVUZ_ALANLARI eksiksiz (yaşamdaki setter bildirilmiş) |
 
 Liste **türetilmiş**: üretici bekçiyi koşturup çıktısını okuyor, elle
-sayılmıyor. Bugün **25** kural var.
+sayılmıyor. Bugün **26** kural var.
 
 Sahne alanları kuralı **dört kez çıkan** bir hatadan doğdu: alan
 başlatıcısı yalnız bir kez koşuyor, `create()` her yeniden başlatmada.

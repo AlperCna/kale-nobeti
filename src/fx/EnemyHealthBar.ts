@@ -22,7 +22,24 @@ const OFFSET_Y = 30;
 
 export class EnemyHealthBar extends Phaser.GameObjects.Container implements Poolable {
   /** `Y08` — bkz. `entities/Enemy.HAVUZ_ALANLARI`'ın başındaki gerekçe. */
-  static readonly HAVUZ_ALANLARI: readonly string[] = ['Active', 'Visible', 'Position'];
+  /**
+   * `M135` — **`Alpha` eksikti.** `show()` çubuğu `alfa` parametresiyle
+   * sönümlendiriyor ve `resetForPool()` onu `setAlpha(1)` ile geri
+   * alıyordu, ama manifesto bildirmediği için bekçi o satırı
+   * korumuyordu: silinse geri dönüşen çubuk önceki düşmanın soluk
+   * opaklığını miras alırdı. Bekçinin 26. kuralı artık bu yönü de
+   * okuyor.
+   *
+   * **Dolgunun genişliği listede yok** ve olamaz: manifesto Phaser
+   * setter adlarından oluşuyor, dolgu ise bir çocuk nesne
+   * (`#dolgu.setSize`). `resetForPool()` onu elle sıfırlıyor.
+   */
+  static readonly HAVUZ_ALANLARI: readonly string[] = [
+    'Active',
+    'Visible',
+    'Position',
+    'Alpha',
+  ];
 
   readonly #dolgu: Phaser.GameObjects.Rectangle;
 

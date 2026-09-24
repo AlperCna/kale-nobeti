@@ -279,8 +279,11 @@ public/assets/  atlas.png · atlas.json · bg/*.webp · audio/ · fonts/
   `npm run typecheck && npm run test && npm run guard && npm run build`
   `guard` (`scripts/guard-rules.mjs`) uzun süre bu satırda yazmıyordu ama
   fiilen her kilometre taşında koşuyordu — TIER 1'in otomatikleştirilebilen
-  kısmını o bekliyor (k.5 `any`, k.7 `BitmapText`, k.8 ham `delta`,
-  k.9 `Math.sqrt`, k.11 `import type`). Kapıdan geçmeyen iş commit edilmez.
+  kısmını o bekliyor (k.3 havuz sıfırlaması, k.5 `any`, k.7 `BitmapText`,
+  k.8 ham `delta`, k.9 `Math.sqrt`, k.10 `localStorage`, k.11 `import type`).
+  Kapıdan geçmeyen iş commit edilmez. **`M135` — bu parantez de eksik
+  sayıyordu:** k.3 ve k.10 bekçide yıllardır vardı ama burada yazmıyordu,
+  yani TIER 1'in otomatik kısmı olduğundan dar görünüyordu.
   **Kural sayısı buraya yazılmıyor:** güncel liste `docs/KURALLAR.md`
   §17'de ve **üretiliyor** (üretici bekçiyi koşturup çıktısını okuyor).
   Elle yazılıyken §17 on kural gösteriyordu, bekçi on dokuz koşuyordu.
