@@ -73,6 +73,7 @@ export function enemySummary(def: EnemyDef): string {
   else if (y === 'burrow') parcalar.push(t('statBurrow'));
   else if (y === 'enrage') parcalar.push(t('statEnrage'));
   else if (y === 'summon') parcalar.push(t('statSummon'));
+  else if (y === 'silence') parcalar.push(t('statSilence'));
 
   const ad = enemyName(def.id);
   return parcalar.length === 0 ? ad : `${ad} — ${parcalar.join(', ')}`;

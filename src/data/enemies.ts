@@ -7,6 +7,7 @@
  */
 
 import type { EnemyAbility, EnemyDef } from '../types/enemy';
+import { COVERAGE_REFERENCE_RANGE } from './maps';
 import { bossFor } from './bossScaling';
 
 export const GOBLIN: EnemyDef = {
@@ -428,8 +429,36 @@ const SISLI_BATAKLIK_CAGIRMA = {
  * ilk dört harita boss'u **tanıtıyor**, son ikisi ona bir verb
  * ekliyor.
  */
+/**
+ * **Susturma** — `M140`, harita 4 (Kar Geçidi) boss'unun verb'ü.
+ *
+ * Boss yetenekleri harita 5'te (evre 2) ve 6'da (çağırma) vardı;
+ * harita 4'ünki düzdü. Bu üçüncüsü yükselişi tamamlıyor — `howTo10`
+ * artık "son üç harita" diyor.
+ *
+ * **Neden boss taşıyor, yeni bir düşman değil:** atlas'ta boş kare
+ * yok ve yeni bir düşman ya çizim ister ya da bir siluetin ikinci
+ * anlamı olur — Tünelci'nin Örümcek Ana'dan ödünç aldığı kare zaten
+ * bu projenin kayıtlı kusuru (`M12`/`M32`). Boss görsel olarak zaten
+ * ayrı (46 px) ve `BOSS_YETENEGI` deseni kurulu.
+ *
+ * **Yarıçap seçilmedi, mevcut bir sabitten alındı:**
+ * `COVERAGE_REFERENCE_RANGE` (150) — kapsama ölçümünün referans kule
+ * menzili. Yani kural okunur: *boss senin menzilindeyse sen de onun
+ * menzilindesin.*
+ *
+ * Süre ve bekleme **tarandı**; gerekçe `docs/GAME-DESIGN.md` §5.
+ */
+const KAR_GECIDI_SUSTURMA = {
+  kind: 'silence',
+  radius: COVERAGE_REFERENCE_RANGE,
+  seconds: 2,
+  cooldownSeconds: 6,
+} as const;
+
 const BOSS_YETENEGI: Readonly<Record<string, EnemyAbility>> = {
   'kadim-harabe': KADIM_HARABE_EVRE2,
+  'kar-gecidi': KAR_GECIDI_SUSTURMA,
   'sisli-bataklik': SISLI_BATAKLIK_CAGIRMA,
 };
 

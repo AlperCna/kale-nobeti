@@ -246,7 +246,7 @@ const TR = {
    * ama bu sayfa "bir şeyi kaçırdım" diyenin baktığı yer.
    */
   howTo10:
-    'Bazı düşmanların kendi numarası var: Tünelci yolun ortasında yeraltına iner ve hedeflenemez. Son iki haritanın bossu da öyle — Kadim Harabe’de canı yarıya inince hızlanır, Sisli Bataklık’ta yandaş çağırır.',
+    'Bazı düşmanların kendi numarası var: Tünelci yolun ortasında yeraltına iner ve hedeflenemez. Son üç haritanın bossu da öyle — Kar Geçidi’nde yanındaki kuleyi susturur, Kadim Harabe’de canı yarıya inince hızlanır, Sisli Bataklık’ta yandaş çağırır.',
   lockedHint: 'Önce önceki haritayı bitir',
   endlessBestShort: 'Sonsuz',
   settingsTitle: 'Ayarlar',
@@ -405,6 +405,7 @@ const TR = {
   statHeals: 'iyileştirir',
   statEnrage: 'yarısında hızlanır',
   statSummon: 'yandaş çağırır',
+  statSilence: 'kule susturur',
 
   /** `M8-T03` — duraklatma menüsü ve oyun sonu istatistikleri. */
   restart: 'Yeniden başla',
@@ -593,7 +594,7 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     howTo8: 'Slowed enemies take more physical damage: the Frost tower pairs with Archer and Cannon.',
     howTo9: 'A blue ring is a frost shield; nothing reaches health until it breaks.',
     howTo10:
-      'Some enemies have a trick of their own: the Tunneler burrows mid-path and cannot be targeted. So do the last two bosses — the one in Ancient Ruin speeds up at half health, the one in Misty Marsh summons help.',
+      'Some enemies have a trick of their own: the Tunneler burrows mid-path and cannot be targeted. So do the last three bosses — the one in Snow Pass silences a nearby tower, the one in Ancient Ruin speeds up at half health, the one in Misty Marsh summons help.',
     lockedHint: 'Finish the previous map first',
     endlessBestShort: 'Endless',
     settingsTitle: 'Settings',
@@ -676,6 +677,7 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     statHeals: 'heals',
     statEnrage: 'enrages at half HP',
     statSummon: 'summons minions',
+    statSilence: 'silences towers',
     restart: 'Restart',
     settingsButton: 'Settings',
     statKills: 'Kills',

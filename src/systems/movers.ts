@@ -127,4 +127,5 @@ export function resetEnemyState(e: EnemyState): void {
   e.progress = { segmentIndex: 0, tInSegment: 0, remainingDistance: 0 };
   e.pathFraction = 0;
   e.summonsDone = 0;
+  e.susturmaBekleme = 0; // M140 — TIER 1 kural 3: sayaç da sıfırlanmalı
 }

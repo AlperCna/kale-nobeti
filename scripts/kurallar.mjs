@@ -777,6 +777,7 @@ function olustur() {
     ['Trol', 'Kışla ile tut + yoğun tek hedef'],
     ['Kurt Binicisi', 'Buz (yavaşlatmanın tek kaynağı) / Barut Fıçısı geniş patlama'],
     ['Ogre Şef', 'Büyü + Top, **`weakest`/`closest`** hedefleme (S94), Meteor'],
+    ['Ogre Şef susturma (harita 4)', 'Cevap AILE degil YERLESIM: kapsamayi dagit, tek darbogaza yigma. Meteor acil cevap'],
   ]), '');
 
   // ---------------------------------------------------------------- 7

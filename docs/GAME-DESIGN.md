@@ -510,6 +510,51 @@ menzilinden geçmeli (8 noktalı haritada ≥ 3). `util/coverage.ts` ile ölçü
 | Ogre Şef | Büyü + Top, **`weakest` ya da `closest`** hedefleme (S94: `strongest` ölçümde en kötü çıktı), Meteor |
 | **Buz kalkanı** (harita 4 Ork Savaşçı) | Patlama/ağır vuruş — kalkan **toplam** bir havuz, erimeden cana hasar geçmiyor |
 | **Ogre Şef 2. evre** (harita 5, can %50) | Hız ×1,6 — kaleye varmadan bitirmek gerekiyor |
+| **Ogre Şef susturma** (harita 4, `M140`) | Cevap **aile değil yerleşim**: yanındaki kule 2 sn susuyor, kapsama dağınıksa delik açılmıyor. Meteor acil cevap |
+<!-- SUSTURMA-KAYDI -->
+
+**`M140` — susturma: yeni eksen, ve cevabın KESİKLİ olduğu bulgusu.**
+Sahadaki bütün verb'ler tahtanın bir varsayımını kırıyordu
+(hedeflenebilirlik, engellenebilirlik, zırh, öldürme sırası, doğum yeri)
+ama hiçbiri **kulelerin kendisine** dokunmuyordu. Susturma o ekseni
+açıyor: menzilindeki en yakın kule susuyor, yani oyun ilk kez
+**yedekliliği** sınıyor (kapsamayı zaten ölçüyordu).
+
+**Taşıyıcı neden boss:** atlas'ta boş kare yok. Yeni bir düşman ya çizim
+ister ya bir siluetin ikinci anlamı olur — Tünelci'nin Örümcek Ana'dan
+ödünç aldığı kare bu projenin kayıtlı kusuru (`M12`/`M32`) ve ikincisini
+üretmek istemedik. Boss görsel olarak zaten ayrı (46 px), `BOSS_YETENEGI`
+deseni kurulu ve `howTo10` "boss'un kendi numarası var" kuralını zaten
+öğretiyor — artık "son üç harita" diyor.
+
+**Sayılar tarandı ve cevap TEKDÜZE DEĞİL.** Harita 4'ün can kaybı,
+(süre, bekleme) ikilisine göre:
+
+| süre \ bekleme | 3 sn | 5 sn |
+|---|---|---|
+| 3 sn | 12 | 12 |
+| 4 sn | **23** | 12 |
+| 5 sn | **23** | 13 |
+| 6 sn | **23** | **23** |
+
+Bu bir eğri değil **uçurum**. Sebep yapısal: boss en tehlikeli sızıntı ve
+onu öldüren kuleyi kapatmak geri besleme kuruyor — sustur → boss yaşar →
+daha çok sustur → kaleye varır. Aynı sıçrama düşman tarafına taşındığında
+da görüldü (harita 2'nin Şaman'ı susturucuya çevrildi: 0 · 0 · 0 · 6).
+Yani **eşik davranışı taşıyıcıdan değil mekaniğin kendisinden geliyor**:
+"kule kapalıyken geçti mi" sorusunun cevabı ayrık.
+
+**Seçim bilinçli olarak uçurumun ALTINDA:** yarıçap
+`COVERAGE_REFERENCE_RANGE` (150 — "boss senin menzilindeyse sen de onun
+menzilindesin"), süre **2 sn**, bekleme **6 sn**. Ölçülen sonuç: boss
+dalgasında **8 susturma** oluyor (yani dekor değil) ve referans tahtanın
+can kaybı **12'de kalıyor** (yani kumar değil). İkisi de
+`systems/susturma.test.ts`'te bağlı; sayılar uçurumun üstüne çıkarsa
+test kırılır.
+
+**Açık bırakılan:** oyuncu tarafında etki ölçülmedi — referans tahta iyi
+oynayan bir tahta ve susturmayı soğuruyor. Zayıf bir tahtada sonucu
+değiştirip değiştirmediği, ancak oyuncu verisiyle bilinir.
 | **Tünelci** (`M12`, yeraltı geçişi) | Yolun %15-%60'ında **hedeflenemez**: kuleleri aralığın DIŞINA kur. Patlama ve önceden tutuşmuş yanma hâlâ değer |
 
 **Yeni mekanikler oyuncuya söyleniyor (`M15`).** Dalga telgrafı düşmanı **haritaya göre** çözüyor — eskiden temel tanımı gösteriyordu ve harita 6'nın bossunu "zırh 10, yetenek yok" diye yazıyordu (S106). Yeraltı geçişi ayrıca bir öğretici ipucu alıyor (`hintBurrow`), buz kalkanıyla aynı ölçütle: sonucu değiştiriyor ve kendiliğinden keşfedilemiyor. **Çağırmaya ipucu verilmedi** — olay görünür (ekrana yandaş geliyor) ve telgraf zaten "yandaş çağırır" diyor.
