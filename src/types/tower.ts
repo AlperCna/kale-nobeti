@@ -30,12 +30,28 @@ export type TargetMode = 'first' | 'last' | 'strongest' | 'weakest' | 'closest';
  * Böylece `kind` kontrolü yapıldığında derleyici doğru alanları biliyor
  * ve yeni bir etki eklendiğinde `switch` eksik kalırsa hata veriyor.
  */
+/**
+ * **`M136` — buradaki sayılar SİLİNDİ, kopyaydılar ve ikisi bayattı.**
+ *
+ * Satırlar şöyleydi: *"Kundakçı: 4 HP/sn, 4 sn"* ve *"Buz %50 / 2,5 sn;
+ * Barut Fıçısı %40 / 2 sn"*. Gerçek: Kundakçı **11** HP/sn (verideki
+ * kendi notu geçmişi de yazıyor — `4 → 7 → 11`, S95) ve Buz **%30 /
+ * 2 sn**. Üstelik **Barut Fıçısı artık yavaşlatmıyor**: yavaşlatma
+ * `M11-T02`'de ondan alınıp Buz'un tek kimliği yapıldı ve bu üç ayrı
+ * dosyada kayıtlı (`bossScaling.ts`, `maps.ts`, `GAME-DESIGN` §4.2) —
+ * yalnız burası güncellenmemişti.
+ *
+ * Kök sebep tek bir bayatlık değil, **kopyanın kendisi**: TIER 1 kural 1
+ * denge sayısının yalnız `data/` içinde durmasını istiyor. Sayı yerine
+ * artık etkinin **sahibi** yazılı; sahiplik `towers.test.ts`'te bağlı,
+ * değerler `data/towers.ts`'te.
+ */
 export type TowerEffect =
-  /** Kundakçı: 4 HP/sn, 4 sn (§4.1). */
+  /** Kundakçı (Okçu T3b) — süreli yanma. Değerler `data/towers.ts`. */
   | { readonly kind: 'burn'; readonly dps: number; readonly seconds: number }
-  /** Buz %50 / 2,5 sn; Barut Fıçısı %40 / 2 sn (§4.2, §4.3). */
+  /** Buz (Büyü T3b) — yavaşlatmanın TEK sahibi (§4.2). Değerler `data/towers.ts`. */
   | { readonly kind: 'slow'; readonly factor: number; readonly seconds: number }
-  /** Yıldırım: 3 hedefe, her sıçramada `× falloff` (§4.3). */
+  /** Yıldırım (Büyü T3a) — sıçrayan hasar, her sıçramada `× falloff`. */
   | { readonly kind: 'chain'; readonly targets: number; readonly falloff: number };
 
 /** Tek bir kule kademesi. `GAME-DESIGN.md` §4.1-§4.4 tablolarının bir satırı. */

@@ -402,4 +402,36 @@ describe('towers.ts — maliyet(ham, map) (S117)', () => {
       'kar-gecidi',
     ]);
   });
+
+  /**
+   * **`M136` — etkinin SAHİBİ bağlandı.**
+   *
+   * `types/tower.ts`'in `TowerEffect` yorumu *"Buz %50 / 2,5 sn; Barut
+   * Fıçısı %40 / 2 sn"* diyordu. Değerler bayattı **ve sahip yanlıştı**:
+   * yavaşlatma `M11-T02`'de Barut Fıçısı'ndan alınıp Buz'un tek kimliği
+   * yapılmıştı (`GAME-DESIGN` §4.2'nin kendi cümlesi: *"Yavaşlatma Barut
+   * Fıçısı'ndan ALINDI"*). Yorum düzeltildi ve sayı kopyaları silindi;
+   * geriye kalan iddia — **her etki türünün tek bir dalı var** — §4'ün
+   * "hiçbir kule diğerinin düpedüz üstünü değildir" tasarımının doğrudan
+   * sonucu ve artık burada duruyor.
+   *
+   * Bir dal ikinci bir kimlik edinirse bu test kırılır; o zaman §4 ve
+   * `TowerEffect` yorumu birlikte yeniden yazılmalı.
+   */
+  it('her etki türünün TEK sahibi var — kimlikler karışmıyor', () => {
+    const sahip = new Map<string, string[]>();
+    for (const t of TOWERS) {
+      for (const dal of t.branches) {
+        if (dal.effect === undefined) continue;
+        sahip.set(dal.effect.kind, [
+          ...(sahip.get(dal.effect.kind) ?? []),
+          dal.branchNameKey ?? t.id,
+        ]);
+      }
+    }
+    expect([...sahip.keys()].sort()).toEqual(['burn', 'chain', 'slow']);
+    expect(sahip.get('slow')).toEqual(['branchFrost']);
+    expect(sahip.get('burn')).toEqual(['branchIncendiary']);
+    expect(sahip.get('chain')).toEqual(['branchLightning']);
+  });
 });

@@ -234,6 +234,27 @@ sayılar **birebir aynı** kaldı:
 Yani `TutorialHints.destroy()`'un `off` çağrısı ve diğer iki kayıt
 sahne ömrüyle birlikte temizleniyor — sızıntı yok.
 
+### E6b — `M136`'da üçüncü kez, bu kez **bütün** olay kümesiyle
+
+`M115` tablosu dokuz olay sayıyordu; `types/events.ts` on dokuz olay
+tanımlıyor. Aradan `M118`-`M135` geçti. **Beş** başlatma üzerinden on
+dokuzunun hepsi sayıldı ve turdan tura tek bir sayı bile değişmedi;
+`M115`'in listelediği dokuzu da **birebir aynı** çıktı.
+
+| Olay | Dinleyici | | Olay | Dinleyici |
+|---|---|---|---|---|
+| `barracks:placed` | 4 | | `ability:upgradable` | 1 |
+| `enemy:killed` · `tower:placed` | 3 | | `enemy:healing` · `enemy:shielded` | 1 |
+| `ability:upgraded` · `gold:changed` | 2 | | `game:paused` · `purchase:denied` | 1 |
+| `life:lost` · `wave:started` | 2 | | `wave:flyers` | 1 |
+| `wave:ended` · `tower:upgraded` | 2 | | `save:failed` | **0** (bilerek) |
+| `enemy:burrowed` · `targeting:opened` | 2 | | **toplam** | **33** |
+
+`shutdownListeners()` yine **12**. `save:failed`'in sıfırı kusur değil —
+`types/events.ts`'te yazılı, bilerek dinleyicisiz bir seam (uyarıyı
+`GameScene` doğrudan çiziyor). Bundan sonraki ölçüm tek bir sayıya
+bakabilir: **toplam 33**.
+
 ### E6 ve E6b neden ikiz
 
 İkisi de **sessiz birikme** sınıfından: ne çökme üretiyorlar ne hata
