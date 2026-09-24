@@ -198,8 +198,9 @@ Türün en çok kenar durum üreten mekaniği. Her kural için ayrı test var.
 **Sinerji:** iki kışlanın toplanma noktası aynı yere konursa verilen hasar
 başına alınan hasar **yarıya** iniyor. Bu da kural 3'ten çıkıyor, özel kod yok.
 
-**Varsayılan toplanma noktası kışlanın üstü OLAMAZ** — üç haritanın da yapı
-noktaları yoldan 40 px'ten uzak. `defaultRally()` yola en yakın noktayı veriyor.
+**Varsayılan toplanma noktası kışlanın üstü OLAMAZ** — 6 haritanın da
+yapı noktaları yoldan uzak: en yakını **50 px**, `pathSnapMax` 40.
+`defaultRally()` yola en yakın noktayı veriyor.
 
 ---
 
