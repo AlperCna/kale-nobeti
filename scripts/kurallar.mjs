@@ -59,6 +59,7 @@ import { ABILITIES, YETENEK_SEVIYE_SAYISI, METEOR_HASAR, TAKVIYE_ASKER, yetenekY
 // (Ters tırnak YOK: bu satırlar kurallar.mjs içinde bir şablon
 // dizesinin içinde yaşıyor, ters tırnak onu erken kapatıyor.)
 import { STRINGS } from './data/strings';
+import { closestPointOnPaths } from './util/math';
 const dalAdi = (k) => (k === undefined ? null : STRINGS.tr[k]);
 // M103 — düşman adları da aynı adresten. Önceden bu betikte elle
 // yazılmış bir harita vardı ve Tünelci'yi (M12) saymıyordu.
@@ -211,6 +212,11 @@ it('dokum', () => {
       return Object.fromEntries(ENEMIES.map((e) => [e.id,
         STRINGS.tr[AD_ANAHTARI[e.id]] + (e.leakDamage === enBuyuk ? ' (boss)' : '')]));
     })(),
+    // M138 — belge 'uc haritanin da' diyordu, harita alti. Sayi da
+    // mesafe de artik OLCULUYOR: butun haritalarin yapi noktalari
+    // arasinda yola en yakin olani.
+    yolaEnYakinNokta: Math.min(...MAPS.map((m) =>
+      Math.min(...m.buildSpots.map((s) => Math.sqrt(closestPointOnPaths(s, m.paths).distSq))))),
     blok: { ...BLOCK }, soldierSpeed: SOLDIER_SPEED, meleeK: +MELEE_DPS_PER_POINT.toFixed(4),
     balance: { startLives: BALANCE.startLives, sellRefund: BALANCE.sellRefund, damageFloor: BALANCE.damageFloor,
       prepSeconds: BALANCE.prepSeconds, earlyBonusFrom: BALANCE.earlyBonusFrom,
@@ -721,7 +727,10 @@ function olustur() {
     ['`rallyRange`', `${n(D.blok.rallyRange)} px`, 'Toplanma noktası kışlaya en fazla bu kadar uzağa konabilir'],
     ['`pathSnapMax`', `${n(D.blok.pathSnapMax)} px`, 'Toplanma noktası yola bu kadar yakınsa yapışır; uzaksa konamaz'],
   ]), '');
-  y(tablo(['#', 'Kural', 'Not'], [
+  // M138 — basliktaki 'Dokuz' elle yazili, liste burada; ikisi
+  // ayrisabilir. HARITA_GOSTERIM_ADI ile ayni disiplin: uyusmazsa
+  // sessizce yanlis belge basmak yerine FIRLAT.
+  const engellemeKurallari = [
     ['1', '`Soldier.engagedWith` ve `Enemy.blockedBy` alanları', 'Kilit **iki taraflı**; tek taraflı temizlik düşmanı sonsuza durdurur'],
     ['2', 'Aggro içindeki en yakın **engellenmemiş** düşmanı hedefle, temas mesafesinde kilitlen', 'Düşmanın yol ilerlemesi durur'],
     ['3', 'Bir düşmanı **birden çok asker** dövebilir; düşman **yalnız `blockedBy`** askerine hasar verir', 'Sayı üstünlüğü ikili kazanç: bedava DPS + tek hasar'],
@@ -731,11 +740,20 @@ function olustur() {
     ['7', 'Ölen asker diriliş sonrası kışlada doğar ve toplanma noktasına **yürür**; yürürken engellemez', 'Aksi hâlde diriliş döngüsü kilitlenirdi'],
     ['8', '`flying === true` ise asker onu **hedeflemez**', 'Uçanlar engellenemez'],
     ['9', 'Ogre Şef askerleri **tek vuruşta** öldürür', 'Kışla boss\'a karşı ~1 sn gecikme sağlar — bilinçli'],
-  ]), '');
+  ];
+  if (engellemeKurallari.length !== 9) {
+    throw new Error(
+      'kurallar.mjs: basliktaki "Dokuz engelleme kurali" ' +
+        engellemeKurallari.length +
+        ' satirla uyusmuyor — basligi ve icindekiler satirini da guncelle.',
+    );
+  }
+  y(tablo(['#', 'Kural', 'Not'], engellemeKurallari), '');
   y(`**Sinerji:** iki kışlanın toplanma noktası aynı yere konursa verilen hasar`);
   y(`başına alınan hasar **yarıya** iniyor. Bu da kural 3'ten çıkıyor, özel kod yok.`, '');
-  y(`**Varsayılan toplanma noktası kışlanın üstü OLAMAZ** — üç haritanın da yapı`);
-  y(`noktaları yoldan ${n(D.blok.pathSnapMax)} px'ten uzak. \`defaultRally()\` yola en yakın noktayı veriyor.`, '');
+  y(`**Varsayılan toplanma noktası kışlanın üstü OLAMAZ** — ${D.haritalar.length} haritanın da`);
+  y(`yapı noktaları yoldan uzak: en yakını **${n(D.yolaEnYakinNokta)} px**, \`pathSnapMax\` ${n(D.blok.pathSnapMax)}.`);
+  y(`\`defaultRally()\` yola en yakın noktayı veriyor.`, '');
 
   // ---------------------------------------------------------------- 6
   y('---', '', '## 6. Düşmanlar', '');
