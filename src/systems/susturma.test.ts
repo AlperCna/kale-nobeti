@@ -16,10 +16,14 @@
  */
 import { describe, expect, it } from 'vitest';
 import { TowerSystem } from './TowerSystem';
-import { referansKosu, referansCanKaybi } from './referansOlcum';
-import { MAPS, MAP_4 } from '../data/maps';
+import { referansKosu, referansCanKaybi, REFERANS_ERKEN_BONUSU, REFERANS_POLITIKA } from './referansOlcum';
+import { buildReferenceBoards } from './balanceChecks';
+import { simulateAllWaves } from './waveSim';
+import { wavesFor } from '../data/waves';
+import { measureCoverage } from '../util/coverage';
+import { MAPS, MAP_4, COVERAGE_REFERENCE_RANGE } from '../data/maps';
 import { getEnemyForMap, GOBLIN } from '../data/enemies';
-import { OKCU } from '../data/towers';
+import { OKCU, TOWERS } from '../data/towers';
 import type { Targetable } from '../types/enemy';
 import type { TowerRuntime } from '../types/tower';
 
@@ -143,5 +147,30 @@ describe('susturma — veri ve ölçüm', () => {
    */
   it('referans tahtanın can kaybını DEĞİŞTİRMİYOR', () => {
     expect(referansCanKaybi(MAP_4)).toBe(12);
+  });
+
+  /**
+   * **`M141` — susturma TEK AİLE tahtalarında da oluyor.**
+   *
+   * `M140` tabloya *"cevap aile değil yerleşim"* diye ölçülmemiş bir
+   * iddia yazdı; `M141` ölçtü ve yanlış çıktı. Aynı tahtalar susturma
+   * açık/kapalı koşuldu (sızan düşman): karışık 9→9, Okçu 12→12, Top
+   * 13→13, **Büyü 11→13**. Yani bedel yerleşime değil **aileye** bağlı
+   * ve zaten boss'a karşı en zayıf aileyi (Ogre Şef %25 büyü dirençli)
+   * eziyor. Ayrıntı `GAME-DESIGN.md` §5.
+   *
+   * Bu test on/off farkını tutamaz (veri sabit), ama iddianın dayandığı
+   * gözlemi tutuyor: susturma **her aile tahtasında** gerçekleşiyor,
+   * yani fark tek bir yerleşimin tuhaflığı değil.
+   */
+  it('her tek-aile tahtasında da gerçekleşiyor — tek yerleşim tuhaflığı değil', () => {
+    const w = wavesFor(MAP_4.id);
+    const kapsama = measureCoverage(MAP_4.paths, MAP_4.buildSpots, COVERAGE_REFERENCE_RANGE);
+    for (const t of TOWERS) {
+      const boards = buildReferenceBoards(MAP_4, w, kapsama, REFERANS_ERKEN_BONUSU, t.id);
+      const r = simulateAllWaves(w, boards, MAP_4, undefined, 1, 'yok', REFERANS_POLITIKA);
+      const toplam = r.reduce((a, x) => a + x.susturmaSayisi, 0);
+      expect(toplam, `${t.id} tahtasında susturma`).toBeGreaterThanOrEqual(4);
+    }
   });
 });

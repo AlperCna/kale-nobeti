@@ -510,7 +510,7 @@ menzilinden geçmeli (8 noktalı haritada ≥ 3). `util/coverage.ts` ile ölçü
 | Ogre Şef | Büyü + Top, **`weakest` ya da `closest`** hedefleme (S94: `strongest` ölçümde en kötü çıktı), Meteor |
 | **Buz kalkanı** (harita 4 Ork Savaşçı) | Patlama/ağır vuruş — kalkan **toplam** bir havuz, erimeden cana hasar geçmiyor |
 | **Ogre Şef 2. evre** (harita 5, can %50) | Hız ×1,6 — kaleye varmadan bitirmek gerekiyor |
-| **Ogre Şef susturma** (harita 4, `M140`) | Cevap **aile değil yerleşim**: yanındaki kule 2 sn susuyor, kapsama dağınıksa delik açılmıyor. Meteor acil cevap |
+| **Ogre Şef susturma** (harita 4, `M140`) | Yanındaki kule 2 sn susuyor. **Ölçülen cevap: karışık tahta** — tek aileyle, özellikle Büyü ile karşılamak bedeli doğuruyor (aşağıdaki `M141` ölçümü) |
 <!-- SUSTURMA-KAYDI -->
 
 **`M140` — susturma: yeni eksen, ve cevabın KESİKLİ olduğu bulgusu.**
@@ -555,6 +555,33 @@ test kırılır.
 **Açık bırakılan:** oyuncu tarafında etki ölçülmedi — referans tahta iyi
 oynayan bir tahta ve susturmayı soğuruyor. Zayıf bir tahtada sonucu
 değiştirip değiştirmediği, ancak oyuncu verisiyle bilinir.
+
+**`M141` — "cevap yerleşimdir" İDDİASI ÖLÇÜLDÜ VE YANLIŞ ÇIKTI.**
+`M140` bu tabloya *"cevap aile değil yerleşim: kapsamayı dağıt"* diye
+bir satır yazmıştı. Ölçülmemiş bir iddiaydı; ölçüldü. Aynı tahtalar
+susturma **açık** ve **kapalı** koşuldu (harita 4, sızan düşman sayısı):
+
+| tahta | kapalı | açık | fark | susturma |
+|---|---|---|---|---|
+| karışık | 9 | 9 | **0** | 8 |
+| yalnız Okçu | 12 | 12 | **0** | 6 |
+| yalnız Top | 13 | 13 | **0** | 7 |
+| yalnız Büyü | 11 | **13** | **+2** | 10 |
+
+Bedel **yerleşime değil aileye** bağlı. Üstelik yönü ilginç: susturma
+zaten boss'a karşı en zayıf aileyi eziyor — Ogre Şef'in %25 büyü
+direnci var, yani Büyü'nün payı en dardı ve bir kulenin susması onu
+sınırın dışına itiyor. Okçu ve Top hiç hissetmiyor.
+
+İki düzeltme birden: (1) tablodaki satır ölçümle değiştirildi.
+(2) **Yerleşim zaten bir karar değil** — harita 4'ün tahtası `M132`'de
+ölçüldüğü gibi **dalga 4'te doluyor**, yani boss geldiğinde bütün yapı
+noktaları zaten dolu ve dağıtacak bir şey kalmamış oluyor. İddia
+yazılırken bu göz ardı edilmişti.
+
+**Yöntem kaydı:** susturma `BOSS_YETENEGI`'den çıkarılıp aynı tahtalar
+yeniden koşuldu; tek aile tahtaları `buildReferenceBoards`'un
+`tekAile` parametresiyle üretildi (S95'in ölçüm yolu).
 | **Tünelci** (`M12`, yeraltı geçişi) | Yolun %15-%60'ında **hedeflenemez**: kuleleri aralığın DIŞINA kur. Patlama ve önceden tutuşmuş yanma hâlâ değer |
 
 **Yeni mekanikler oyuncuya söyleniyor (`M15`).** Dalga telgrafı düşmanı **haritaya göre** çözüyor — eskiden temel tanımı gösteriyordu ve harita 6'nın bossunu "zırh 10, yetenek yok" diye yazıyordu (S106). Yeraltı geçişi ayrıca bir öğretici ipucu alıyor (`hintBurrow`), buz kalkanıyla aynı ölçütle: sonucu değiştiriyor ve kendiliğinden keşfedilemiyor. **Çağırmaya ipucu verilmedi** — olay görünür (ekrana yandaş geliyor) ve telgraf zaten "yandaş çağırır" diyor.
