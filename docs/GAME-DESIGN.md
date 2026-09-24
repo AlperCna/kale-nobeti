@@ -920,6 +920,35 @@ düzeltildi:
 | 6 · Sisli Bataklık | 8,5 | 11 | 17 | 8 |
 <!-- /ÜRETİLEN:rampa -->
 
+  **`M139` — tahtayı ZAYIFLATAN her kolun payı ölçüldü.** Rampanın üst
+  ucu doluyken "yeni bir tehdit eklenebilir mi" sorusu her tasarım
+  turunda yeniden soruluyor; `M132` bunu fiyat kolu için ölçmüştü,
+  burada **ikinci ve bağımsız** bir kolla genelleştirildi. Yöntem: bütün
+  kulelerin atış hızı `k` ile çarpılıp referans can kaybı yeniden
+  koşuldu — yani tahta aynı, **çıktısı `k` kadar az**. Bu, kuleyi
+  susturan/devre dışı bırakan her mekaniğin vekili.
+
+  | tahta çıktısı | 1 | 2 | 3 | 4 | 5 | 6 |
+  |---|---|---|---|---|---|---|
+  | ×1,00 | 0 | 2 | 9 | 12 | 14 | 17 |
+  | ×0,95 | 0 | 2 | 9 | 13 | 18 | 19 |
+  | ×0,90 | 0 | 1 | 11 | 19 | **21** | 19 |
+  | ×0,85 | 0 | 1 | 15 | **21** | 21 | **23** |
+  | ×0,80 | 0 | 2 | **27** | 26 | 23 | 26 |
+
+  20 tavanı harita 5'te **%10**, harita 4 ve 6'da **%15** çıktı kaybında
+  aşılıyor. Harita 1-2 hiç kıpırdamıyor; harita 3 %15'e kadar dayanıyor.
+
+  **Tasarım sonucu:** tahtanın çıktısını azaltan bir mekanik **geç
+  haritalara konamaz** — harita 6 zaten 17/20 ve yalnız %5 kayıp onu
+  19'a taşıyor. Yeri **orta oyun**: harita 2-3'ün payı geniş ve S116'nın
+  "orta oyun boş" bulgusu tam orayı işaret ediyor.
+
+  **Uyarı — bu tablo bir ÜST SINIR.** Tarama *düzgün* bir kayıp ölçüyor
+  (bütün kuleler eşit oranda). Gerçek bir susturma **yoğun**: tek kule,
+  tamamen, kısa süre. Darboğazdaki kuleyi susturmak aynı toplam kaybın
+  daha kötüsüdür, yani gerçek bütçe buradan dar.
+
   **`M14` (S101): dört çarpan yeniden türetildi.** Erken başlatma bonusu
   altın çarpanını izlemeye başlayınca geç haritaların referans tahtası
   zenginleşti ve rampa `0·3·4·15·14·18`'e düştü — harita 5, harita 4'ün
