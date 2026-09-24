@@ -541,6 +541,16 @@ yükseltmeyle birlikte 1,02 · 0,95 — ama yükseltme seçime bağlı, tahta
 zorunlu), ve `M77`'nin bıraktığı tek aile tahtalarındaki 2 canlık
 sim/oyun farkı — **`M94`'te çözünürlük olarak açıklandı**.
 
+**`M132` — oran kolunun FİYAT ucu kapandı.** Yukarıdaki satır kolu
+"açık" sayıyordu çünkü `M79` bir ön koşul yazmıştı: *önce S95, sonra k*.
+S95 `M118`'de kapandı, dalga verisi `M119`'da değişti, ama tarama
+yeniden koşulmadı. Koşuldu: harita 5'in tavanı **k=1,05** (oran
+0,38 → 0,40, hedefin yanında gürültü), harita 6'nınki **yok** (1,05 bile
+Kolay payını kırıyor). Sebep yapısal — iki harita 14 ve 17 can kaybında,
+tavana 3-6 can var, fiyatı yükseltmek tahtayı zayıflatmanın başka adı.
+Kalan tek kol **yeni bir zorunlu gider kalemi**, yani yeni sayılar:
+TIER 2 gereği sahibinin kararı. Ayrıntı `plan/OPEN-QUESTIONS.md` S117.
+
 ---
 
 ## Claude Code komut şablonu

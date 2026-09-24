@@ -375,6 +375,27 @@ describe('towers.ts — maliyet(ham, map) (S117)', () => {
    * sağlamalardan geçen tek değer Kar Geçidi 1,4 çıktı (oran 0,41 → 0,57).
    * Harita 5 yalnız k=1'de, harita 6 ise 1,1'de bile geçmiyor. Yeni bir
    * çarpan konursa denge yeniden türetilmeli — bu test onu durdurur.
+   *
+   * **`M132` — tarama YENİDEN koşuldu, sonuç değişmedi.** `M79`'un kaydı
+   * "önce S95, sonra k" diyordu: hedefe (oran 0,8) ulaşmak için gereken
+   * k'da tek aile tahtaları eşiği aşıyordu. **S95 `M118`'de kapandı** ve
+   * dalga verisi `M119`'da değişti, yani taramanın ön koşulu artık
+   * sağlanıyordu — ama kimse yeniden ölçmemişti. Ölçüldü (harita başına,
+   * tam takıma karşı; aşağıdaki testin kendi kırılması sayılmadı):
+   *
+   * | k | harita 5 | harita 6 |
+   * |---|---|---|
+   * | 1,05 | **geçiyor** (oran 0,38 → 0,40) | Kolay payı kırılıyor |
+   * | 1,1  | aile ölü | Takviye katkısı · boss payı |
+   * | 1,2  | Meteor/Takviye katkısı | + erken politika |
+   * | 1,3  | Meteor/Takviye katkısı | aile en-kötü · yükseltme emilimi |
+   *
+   * Yani harita 5'in tavanı 1,05, harita 6'nınki yok. **Uygulanmadı:**
+   * 0,38 → 0,40 hedefin (0,8) yanında ölçüm gürültüsü, karşılığında
+   * bütün denge tablosu yeniden türetilirdi. Sebep yapısal ve k'dan
+   * bağımsız: harita 5-6 zaten 14 ve 17 can kaybında, yani tahtayı
+   * zayıflatan her kolun 20 tavanına 3-6 canlık payı var. **Fiyat kolu
+   * bu iki haritada kapandı** — kalan tek kol yeni bir gider kalemi.
    */
   it('çarpan YALNIZ Kar Geçidi haritasında var (M79 taraması)', () => {
     expect(MAPS.filter((m) => m.costMultiplier !== undefined).map((m) => m.id)).toEqual([

@@ -26,7 +26,7 @@ import {
 } from '../data/abilities';
 import { MAPS, MAP_1, MAP_6, COVERAGE_REFERENCE_RANGE } from '../data/maps';
 import { wavesFor } from '../data/waves';
-import { buildReferenceBoards, cumulativeGold } from './balanceChecks';
+import { buildReferenceBoards, cumulativeGold, spotsFullAtWave } from './balanceChecks';
 import { measureCoverage } from '../util/coverage';
 import { REFERANS_ERKEN_BONUSU } from './referansOlcum';
 import { GOBLIN } from '../data/enemies';
@@ -84,6 +84,14 @@ function kosarkenEnCokAtil(m: MapDef): number {
     if (elde > enCok) enCok = elde;
   }
   return enCok;
+}
+
+/** Referans tahtanın bütün yapı noktalarını doldurduğu dalga (`-1` = hiç). */
+function doluDalga(m: MapDef): number {
+  const w = wavesFor(m.id);
+  const k = measureCoverage(m.paths, m.buildSpots, COVERAGE_REFERENCE_RANGE);
+  const t = buildReferenceBoards(m, w, k, REFERANS_ERKEN_BONUSU);
+  return spotsFullAtWave(t, m.buildSpots.length);
 }
 
 /** İki yeteneği de azami seviyeye çıkarmanın toplam bedeli. */
@@ -229,6 +237,44 @@ describe('yetenek yükseltmesi — etki', () => {
     });
     // İkisi de aynı çarpanla ölçeklendiği için oran değişmiyor.
     expect(new Set(oranlar).size, `oranlar: ${oranlar.join(' ')}`).toBe(1);
+  });
+
+  /**
+   * **`M132` — kapının PENCERESİ de bağlandı.**
+   *
+   * `M107` kapıyı `#tahtaDolu`'ya koyarken gerekçeyi bir ölçümle
+   * kurmuştu: "referans tahtanın noktaları doldurduğu dalga
+   * **7 · 3 · 4 · 4 · 4 · 4**". O liste `data/abilities.ts`,
+   * `scenes/GameScene.ts` ve `docs/GAME-DESIGN.md` içinde düzyazı
+   * olarak duruyordu; `spotsFullAtWave` **altı harita için hiçbir
+   * yerde çağrılmıyordu** (tek testi harita 1'e bakıyor).
+   *
+   * Bu tehlikeli, çünkü bu fonksiyon daha önce **aynı sebeple**
+   * sessizce yanlış cevap verdi: `M38` kışlaların da yer kapladığını
+   * fark edene kadar harita 3-6 için "hiç dolmadı" diyordu ve harita 1'de
+   * kışla olmadığı için testler görmedi.
+   *
+   * Asıl sözleşme aşağıdaki iki `expect`: kapı **açılıyor** ve geç
+   * haritalarda turun **yarısından önce** açılıyor. Liste ise regresyon
+   * kilidi — kırıldığında üç düzyazı kopyanın da yeniden türetilmesi
+   * gerektiğini söyler.
+   */
+  it('gider kalemi AÇILIYOR ve geç haritalarda turun yarısından önce', () => {
+    for (const m of MAPS) {
+      const d = doluDalga(m);
+      expect(d, `${m.id} tahta hiç dolmuyor — kapı hiç açılmaz`).toBeGreaterThan(0);
+      expect(d, `${m.id} 10 dalgalık tur`).toBeLessThanOrEqual(10);
+    }
+    // Emilecek atıl altın geç haritalarda; kapı orada erken açılmalı.
+    for (const m of MAPS.slice(3)) {
+      expect(doluDalga(m), `${m.id} kapı geç açılıyor`).toBeLessThanOrEqual(5);
+    }
+  });
+
+  it('doldurma penceresi 7 · 3 · 4 · 4 · 4 · 4 — regresyon kilidi', () => {
+    // Kırıldıysa doğru olan BU ölçüm; düzyazı kopyalar buna uydurulur
+    // (`data/abilities.ts` · `scenes/GameScene.ts` · `docs/GAME-DESIGN.md`).
+    expect(MAPS.map(doluDalga)).toEqual([7, 3, 4, 4, 4, 4]);
   });
 
   it('bozuk kayıt bedava seviye VERMİYOR', () => {
