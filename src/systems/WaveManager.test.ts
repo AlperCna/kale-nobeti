@@ -497,3 +497,55 @@ describe('turdanGeriYukle', () => {
     expect(wm.upcomingWave).toBeDefined();
   });
 });
+
+/**
+ * **Hazırlık sahayı DONDURUR — sözleşme (S169, `M155`).**
+ *
+ * `M144`'e kadar bu davranışı hiçbir şey tutmuyordu: oyuncu onu kusur
+ * sanıp bildirdi, `M145`-`M154` düzeltmeyi ölçtü ve **kural** ilan
+ * edildi (`GAME-DESIGN.md` §6). Bağlanmasının sebebi ölçülü: düzeltme
+ * uygulandığında **14 test / 9 dosya** kırılıyor ve mesajların hiçbiri
+ * sebebi söylemiyor — hepsi denge sayısı. Bu test kırılan **ilk** şey
+ * olsun diye var; okuyan, dengenin değil **zeminin** değiştiğini bilsin.
+ *
+ * Yol bilerek uzun (`UZUN_YOL`): düşman test boyunca kaleye varmasın,
+ * yoksa ölçülen şey donma değil ölüm olur.
+ */
+const UZUN_YOL: readonly Vec2[] = [
+  { x: 0, y: 0 },
+  { x: 12000, y: 0 },
+];
+
+describe('WaveManager — hazırlık sahayı DONDURUR (S169 kuralı)', () => {
+  it('hazırlıkta sahada kalan YÜRÜMÜYOR, dalga başlayınca yeniden yürüyor', () => {
+    const { wm, pool } = kur(MAP1_WAVES, POOL_PREALLOC.enemy, UZUN_YOL);
+    wm.startWaveEarly();
+    expect(wm.phase).toBe('running');
+
+    // Dalga kuyruğu boşalıp hazırlığa dönene kadar koştur (üst sınırlı).
+    const kare = 1000 / 60;
+    for (let i = 0; i < 60 * 120 && wm.phase !== 'prep'; i++) wm.update(kare);
+    expect(wm.phase, 'dalga hazırlığa dönmeliydi').toBe('prep');
+
+    const kalan = pool.activeItems().filter((e) => e.alive);
+    expect(kalan.length, 'kural ancak sahada kalan varken ölçülebilir').toBeGreaterThan(0);
+    const once = kalan.map((e) => e.pathFraction);
+
+    kosut(wm, 5); // hazırlığın 5 saniyesi
+    expect(
+      kalan.map((e) => e.pathFraction),
+      'hazırlık boyunca KIPIRDAMAMALI',
+    ).toEqual(once);
+    expect(
+      kalan.every((e) => e.alive),
+      'donan düşman ölmüyor, bekliyor',
+    ).toBe(true);
+
+    // Dalga başlayınca aynı düşmanlar yeniden yürüyor.
+    wm.startWaveEarly();
+    kosut(wm, 1);
+    expect(kalan.some((e, i) => e.pathFraction > (once[i] ?? 0)), 'dalga başlayınca yürümeli').toBe(
+      true,
+    );
+  });
+});
