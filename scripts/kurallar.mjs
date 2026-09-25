@@ -49,7 +49,7 @@ import { writeFileSync } from 'node:fs';
 import { TOWERS, tierAt } from './data/towers';
 import { KISLA, barracksTierAt, BLOCK, SOLDIER_SPEED, MELEE_DPS_PER_POINT, meleeDps } from './data/barracks';
 import { ENEMIES, getEnemyForMap } from './data/enemies';
-import { BOSS_ARMOR_BY_MAP, BOSS_HP_BY_MAP } from './data/bossScaling';
+import { BOSS_ARMOR_BY_MAP, BOSS_HP_BY_MAP, BOSS_CEILING_RATIO } from './data/bossScaling';
 import { MAPS, COVERAGE_REFERENCE_RANGE } from './data/maps';
 import { wavesFor, budget, wavePoints, waveEnemyCount, spawnDelayFor } from './data/waves';
 import { ABILITIES, YETENEK_SEVIYE_SAYISI, METEOR_HASAR, TAKVIYE_ASKER, yetenekYukseltmeFiyati } from './data/abilities';
@@ -70,7 +70,7 @@ import { EFFECT_SCALE, DEFAULT_SETTINGS, reducedMotionDefaults } from './systems
 import { SHAKE_MIN_SEC, SHAKE_MAX_SEC } from './fx/ScreenShake';
 import { HITSTOP_MIN_MS, HITSTOP_MAX_MS } from './fx/HitStop';
 import { applyDamage } from './systems/combat';
-import { buildReferenceBoards, ceilingAPerBranch, effectiveHp, effectiveDps, BOSS_CEILING_RATIO, cumulativeGold, spotsFullAtWave, KISLA_ILE_DOGRULANAN } from './systems/balanceChecks';
+import { buildReferenceBoards, ceilingAPerBranch, effectiveHp, effectiveDps, cumulativeGold, spotsFullAtWave, KISLA_ILE_DOGRULANAN } from './systems/balanceChecks';
 // S109/S92 — referans ölçümün TEK adresi. Bu betik M80'e kadar çifti
 // kendi kuruyordu (gerçekçi tahta + politikasız sim) ve belgeye iyimser
 // sayı basıyordu; testler aynı kusuru S109'da kapatmıştı.

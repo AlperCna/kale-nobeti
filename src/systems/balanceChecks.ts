@@ -700,10 +700,20 @@ export function ceilingAWeakestBranch(
 // ------------------------------------------------- Boss HP'si (research/01 §12)
 
 /**
- * Boss'un tavana oranı — `research/01` §12 ve `GAME-DESIGN.md` §5.
- * Hedef band %75-85; türetme ortayı alıyor.
+ * **`M158` — TANIM ARTIK `data/bossScaling.ts`'te (TIER 1 kural 1).**
+ *
+ * Buraya `export const BOSS_CEILING_RATIO = 0.8` diye yazılıydı: gerekçesi
+ * `research/01` §12'den gelen, hedef bandı `%75-85` olan, `GAME-DESIGN.md`
+ * §5'te tablosu olan **bir denge sayısı** — yani k.1'in *"tüm sayısal
+ * değerler `src/data/*.ts` içindeki tipli sabitlerde durur"* dediği şeyin
+ * ta kendisi. `docs/plan/DATA-SCHEMAS.md` onu zaten veri diye listeliyordu.
+ * Üstelik `balanceChecks.ts` onu **hiç kullanmıyordu**: tek tüketicileri
+ * `data/bossScaling.test.ts` (türetmenin yaşadığı yer) ve belge üreticisi.
+ *
+ * Yeniden **dışa aktarılmıyor**: k.1'in derdi zaten "tek adres", ikinci
+ * bir kapı açmak onu geri bozardı. Çağrı yerleri `data/bossScaling`'e
+ * bakıyor.
  */
-export const BOSS_CEILING_RATIO = 0.8;
 
 /**
  * **Boss HP'si haritadan türetilir** — `700 × hpMultiplier` DEĞİL.

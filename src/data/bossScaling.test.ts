@@ -10,13 +10,13 @@ import {
   BOSS_ARMOR_BY_MAP,
   BOSS_HP_BY_MAP,
   bossFor,
+  BOSS_CEILING_RATIO,
 } from './bossScaling';
 import { MAP_1, MAP_2, MAP_3, MAP_4, MAP_5, MAP_6, MAPS, COVERAGE_REFERENCE_RANGE } from './maps';
 import { MAP1_WAVES, MAP2_WAVES, MAP3_WAVES, MAP4_WAVES, MAP5_WAVES, MAP6_WAVES } from './waves';
 import { OGRE_SEF, getEnemyForMap } from './enemies';
 import { BALANCE } from './balance';
 import {
-  BOSS_CEILING_RATIO,
   bossAffordable,
   buildReferenceBoards,
   ceilingAPerBranch,
