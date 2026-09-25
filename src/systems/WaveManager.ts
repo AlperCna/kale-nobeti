@@ -204,6 +204,34 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
 
     if (this.#phase === 'prep') {
       this.#prepLeftSec -= dt;
+      /**
+       * **`M144` — SAHADA KALANLAR HAZIRLIK BOYUNCA YÜRÜMÜYOR.**
+       *
+       * `#ilerlet(dt)` burada **çağrılmıyor**; `running` ve `done`
+       * dallarında çağrılıyor. Sonuç: dalga kapanıp hazırlık başlayınca
+       * sahada kalan düşmanlar **donuyor**, sonraki dalga başlayınca
+       * yürümeye devam ediyor.
+       *
+       * **Oyuncu bildirdi, tarayıcıda üretildi** (Taş Köprü, hazırlık
+       * fazı): iki Zırhlı Ork `pathFraction` 0,000 ve 0,065'te 16 saniye
+       * kıpırdamadı, engellenmiş de değildiler. Dalganın kuyruğu son
+       * doğanlarla birlikte kapandığı için donan şey genellikle **yeni
+       * gelenler** oluyor — raporun sözleriyle "gelecekler donuyor".
+       *
+       * **Bu bir kusur ve `M16`'nın (S102) niyetine aykırı:** dalga
+       * kuyruk bitince kapanıyor ki "sıradaki dalga bir öncekinin
+       * artıkları yoldayken gelsin". Artıklar park edince örtüşme yarım
+       * kalıyor ve hazırlık sırasında sızıntı **imkânsız** oluyor, yani
+       * erken başlatmanın bedeli olduğundan az.
+       *
+       * **DÜZELTİLMEDİ ve sebebi ölçüldü.** Tek satır (`#ilerlet(dt)`)
+       * eklendiğinde referans rampa `0 · 2 · 9 · 13 · 14 · 17` iken
+       * `0 · 8 · 25 · 31 · 28 · 21` oluyor: altı haritanın **dördü
+       * geçilemez** ve rampa monotonluğunu kaybediyor. Bütün denge bu
+       * davranışın üstüne türetilmiş — düzeltmek çarpanları, dalga
+       * bütçelerini ve boss ölçeklemesini yeniden türetmek demek.
+       * Kayıt: `plan/OPEN-QUESTIONS.md` **S169**.
+       */
       // Sayaç dolunca dalga **otomatik** başlıyor (S29). Erken başlatma
       // bir seçenek, zorunluluk değil — §6'nın bonus formülü zaten bunu
       // varsayıyor ("kalanSaniye × …" ancak sayaç işlerken anlamlı).
