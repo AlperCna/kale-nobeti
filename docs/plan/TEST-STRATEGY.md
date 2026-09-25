@@ -201,8 +201,8 @@ Bu liste yazıldı ki sonradan "neden sahne testi yok" sorulmasın.
 | E10 | Kışla 9 kuralı | Her kural için senaryo | Hepsi §4.4'teki gibi | M5 |
 | E11 | Kışla sinerjisi | İki kışlayı aynı noktaya topla | Grup dövüşü çalışıyor | M5 |
 | E12 | Efektsiz okunurluk | Ses ve efektleri kapat | Oyun **hâlâ okunur** | M6 |
-| E13 | 640×360 okunurluk | Tarayıcıyı küçült | Tüm yazı okunur, motifler kaybolmuyor | M6 |
-| E14 | Renk körlüğü | Gri tonlamalı ekran görüntüsü | Düşman tipleri **silüetten** ayrılıyor | M6 |
+| E13 | 640×360 okunurluk | **640×360'a indirgeyip** büyüt (DPR tuzağı, aşağıda) | Tüm yazı okunur, motifler kaybolmuyor | M6 · **koşturuldu `M162`** |
+| E14 | Renk körlüğü | Gri tonlamalı ekran görüntüsü | Düşman tipleri **silüetten** ayrılıyor | M6 · **koşturuldu `M162`** |
 | E15 | `prefers-reduced-motion` | Sistemde aç | Varsayılanlar düşük geliyor | M6 |
 | E16 | **Gizli sekme** | Gizli pencerede aç | `localStorage` istisnası **çökertmiyor** | M7 |
 | E17 | Düşük uçlu cihaz | 4 GB RAM'li cihazda oyna | Akıcı (CrazyGames şartı) | M7 |
@@ -282,6 +282,44 @@ Dağılım: `barracks:placed` 4 · `enemy:killed` 3 · `tower:placed` 3 ·
 altındaki cümle doğru biçimde **33** diyor. Toplam yanlış değildi,
 *sayan liste* eksikti — `CLAUDE.md` TIER 2'nin birinci yüzeyi. Yukarıdaki
 dağılım on dokuzun hepsini taşıyor.
+
+### E13 ve E14 — `M162`'de İLK KEZ koşturuldu
+
+İkisi de tabloda `M6`'ya yazılıydı ama **hiçbir yerde koşturulduklarına
+dair kayıt yoktu** — E6b'nin üç kayıtlı turu varken bunların sıfır. Aradan
+kadro 11 düşmana, harita 6'ya, verb sayısı beşe çıktı.
+
+**E14 — renk körlüğü / silüet.** Tuvale `filter: grayscale(1)` uygulanıp
+iki şey bakıldı: (1) canlı sahada on bir tür (`__kn.spawnEnemy` ile
+doğuruldu), (2) atlas kareleri yan yana.
+
+*Sonuç:* dokuz kare de **silüetten** ayrılıyor — goblin ince ve hançerli,
+Ork Savaşçı geniş ve baltalı, Zırhlı Ork ondan daha hantal, Kurt Binicisi
+dört ayaklı, Harpi kanatlı, Şaman kambur ve asalı, Trol devasa ve uzun
+kollu, örümcekler sekiz bacaklı. **Kural 6'nın asıl iddiası (dost/düşman)
+da tutuyor:** kışla askeri **dik, ince, mızrak + kalkan, boynuzsuz**;
+düşmanların hepsi kambur/boynuzlu/geniş. Ayrım renge dokunmuyor.
+
+*Bilinen ve bilinçli örtüşme:* `orumcek_ana` ile `orumcek_yavrusu` yalnız
+**boyutla** ayrılıyor, ve Tünelci'nin kendi karesi yok — Örümcek Ana'nın
+karesini kullanıyor (`M12` greybox kararı, bedeli `M32`'de ölçüldü).
+Boyut renk değil, yani k.6 ihlali değil; yine de nihai çizim geldiğinde
+ilk kapatılacak yer burası.
+
+**E13 — 640×360 okunurluk.** *Yöntem tuzağı, `M162`'de bulundu:*
+tarayıcı penceresini 640×360 yapmak **yetmiyor**. Tarayıcı paneli
+`devicePixelRatio = 2` ile çalışıyor, yani tuvalin arka deposu hâlâ
+1280×720 ve ekran görüntüsü olduğundan **iki kat keskin** çıkıyor —
+sağlama sahte biçimde geçer. Doğrusu: tuvali 640×360'lık bir offscreen
+tuvale çizip (`drawImage(src, 0, 0, 640, 360)`) sonucu `image-rendering:
+pixelated` ile büyütmek. Gerçek bilgi kaybı ancak böyle görünüyor.
+
+*Sonuç:* en yoğun iki ekranda da **okunur**. "Nasıl oynanır" iki sütunlu
+gövde metninin tamamı, bölüm başlıkları, `← Geri` ve `Tam ekran`
+etiketleri; oyun içinde `280 altın · 20 can · 1.10 dalga`, `Meteor`,
+`Takviye` ve üst şeritteki üç düğme. Yazı yumuşuyor ama hiçbir satır
+kaybolmuyor. (Ekrandaki küçük kapsama sayıları geliştirme katmanı,
+yayında yok.)
 
 ### E6 ve E6b neden ikiz
 
