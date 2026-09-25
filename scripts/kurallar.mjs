@@ -807,7 +807,7 @@ function olustur() {
   y('Bugün boss HP’si **türetilmiş değil ölçülerek ayarlanmış** bir sayı ve üç', '');
   y('testle bağlı: `bossScaling.test`’in regresyon kilidi (yazılı HP’ler ölçülen', '');
   y('değerlerdir) · `kisitB`’nin “boss hiçbir haritada sızmıyor”u · `kisitB`’nin', '');
-  y('“boss dalgası haritanın zirvesi”i (`M70`). Gerekçe `bossScaling.ts` başlığında.', '');
+  y('“Doruk sonda” (`M70` → `M153`): boss dalgası bedelsiz olamaz **ve** son üç dalga', 'haritanın toplam can hasarının yarısından fazlasını taşır. Gerekçe `bossScaling.ts` başlığında.', '');
 
   // ---------------------------------------------------------------- 8
   y('---', '', '## 8. Etkin DPS matrisi', '');

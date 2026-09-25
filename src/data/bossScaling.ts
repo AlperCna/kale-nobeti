@@ -129,9 +129,23 @@ export const BOSS_ARMOR_BY_MAP: Readonly<Record<string, number>> = {
  * **Bugün gerçekten garanti edilen üç şey** ve hepsinin testi var:
  * `bossScaling.test`'in regresyon kilidi (yazılı HP'ler ölçülen
  * değerlerdir) · `kisitB`'nin "boss hiçbir haritada sızmıyor"u ·
- * `kisitB`'nin "boss dalgası haritanın zirvesi"si (`M70`, S135).
+ * `kisitB`'nin **"doruk sonda"**sı (`M70` → `M153`, S135).
  * Yani sayı **türetilmiş değil, ölçülerek ayarlanmış** — ve metin artık
  * bunu söylüyor.
+ *
+ * **`M153` — üçüncü madde yeniden tanımlandı.** Eski hâli *"boss dalgası
+ * haritanın **sayısal zirvesi**"* idi ve `M151`'e kadar **yanlış
+ * muhasebeyle** doğrulanıyordu: sızıntı, düşmanı doğuran dalgaya değil
+ * **sızdığı ana** yazılıyordu, yani 9. dalganın Trol'ü finalin hanesine
+ * geçiyordu. Doğru muhasebeye (`SimResult.canDogumDalgasina`) geçilince
+ * iddia Kar Geçidi'nde düştü ve `M152` altı bütçe varyantıyla onu geri
+ * getirmeyi denedi — hepsi başka bir sağlamayı kırdı. Sebep sayı değil:
+ * S116 ağırlığı bilerek **orta oyuna** taşıdı, S135 ise finali zirve
+ * istiyordu. Bugünkü kural ikisini birden sağlıyor: **final bedelsiz
+ * olamaz** ve **son üç dalga haritanın toplam can hasarının yarısından
+ * fazlasını taşır** (ölçülen paylar: %78 · %62 · %79 · %82). Bu sayı o
+ * kuralın **refakat** ayağını besliyor — bossun kendisi hâlâ garantili
+ * ölüyor.
  */
 export const BOSS_HP_BY_MAP: Readonly<Record<string, number>> = {
   'degirmen-gecidi': 700, // §5'in belgelenmiş değeri (türetme 718 diyor)

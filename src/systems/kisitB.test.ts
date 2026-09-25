@@ -100,21 +100,21 @@ function canKaybi(map: MapDef, waves: readonly Wave[]): number {
  * (8 > 3). Yani "boss dalgası zirvedir" iddiası bu iki haritada yalnız
  * **muhasebe** sayesinde geçiyor: 9. dalganın taşması 10'a yazılıyor.
  *
- * **Neden hâlâ düzeltilmedi:** kural `M70`'te **sahibin kararı**;
- * doğru muhasebeye geçmek `FINAL_ZIRVE_MUAF`'ı 1'den 3'e çıkarmak
- * (kuralın yarısını muaf tutmak) ya da harita 4-5'in dalga bütçelerini
- * yeniden dağıtmak demek. İkisi de tasarım kararı. Kayıt:
- * `plan/OPEN-QUESTIONS.md` **S170**.
+ * **`M153`: DÜZELTİLDİ.** Bu yardımcı artık `canDogumDalgasina`
+ * okuyor, yani yukarıdaki tablonun **sağ sütunu**. Kuralın kendisi de
+ * yeniden tanımlandı (aşağıdaki testin başlığına bakın): eski hâli
+ * düzeltilmiş muhasebeyle sağlanamıyordu ve sebebi sayı değil, S116 ile
+ * S135'in çelişmesiydi. Ayrıntı `plan/OPEN-QUESTIONS.md` **S170**.
  */
 function dalgaBasinaCan(map: MapDef, waves: readonly Wave[]): number[] {
-  return kosu(map, waves).sim.map((r) => {
-    let can = 0;
-    for (const [id, n] of Object.entries(r.leakedByEnemy)) {
-      const e = getEnemyForMap(id as EnemyId, map);
-      if (e) can += e.leakDamage * (n ?? 0);
+  const toplam: number[] = new Array<number>(waves.length).fill(0);
+  for (const r of kosu(map, waves).sim) {
+    for (const [dalga, can] of Object.entries(r.canDogumDalgasina)) {
+      const i = Number(dalga) - 1;
+      if (i >= 0 && i < toplam.length) toplam[i] = (toplam[i] ?? 0) + can;
     }
-    return can;
-  });
+  }
+  return toplam;
 }
 
 describe('Kısıt B — düşman kırılımı', () => {
@@ -127,14 +127,42 @@ describe('Kısıt B — düşman kırılımı', () => {
    * baskı elit dalgasının taşmasında (S135). Sahibi kuralı seçti —
    * boss her haritada zirve olacak — ve bu test onu bağlıyor.
    *
-   * İki kademeli, çünkü öğretici haritalar hiç sızdırmıyor:
-   * her haritada zirve **en az** boss dalgasında, ve baskının olduğu
-   * haritalarda **kesin** orada.
-   *
    * Ölçüt sızıntı **sayısı** değil **can bedeli**: Trol'ün `leakDamage`
    * değeri 2, goblininki 1 — iki goblin bir Trol etmiyor.
+   *
+   * ## `M153` — kural YENİDEN TANIMLANDI, çünkü eskisi ölçülemez oldu
+   *
+   * `M151` muhasebeyi düzeltti: bu test `leakedByEnemy` (sızıntının
+   * **sızdığı an**) okuyordu, oysa `SimResult.canDogumDalgasina`
+   * (**doğum** dalgası) tam bu soru için `M84`'te eklenmişti. Düzeltilmiş
+   * muhasebeyle "final = sayısal zirve" iddiası **Kar Geçidi'nde
+   * düştü**: gerçek profil `… d7:5 d9:4 d10:4`.
+   *
+   * `M152` finali zirve yapmayı **altı varyantla** denedi ve hepsi
+   * ölçüldü: `+Trol×1` zirveyi veriyor ama haritanın toplamını 13 → 16
+   * yapıp rampa monotonluğunu kırıyor; `+Harpi×2` (tam bütçe) haritayı
+   * 25'e fırlatıp dört aile sağlamasını kırıyor; eşit puanda tip
+   * değişimi hiç kıpırdatmıyor (`M117`'nin bulgusu). Sebep sayı değil:
+   * **S116 ile S135 çelişiyor.** `M119` (S116, sahibin kararı) ağırlığı
+   * orta oyuna taşıyıp dalga 6'yı 48 puana çıkardı; onun taşması
+   * **nefes dalgası olan d7'yi** (24 puan!) haritanın en pahalı dalgası
+   * yapıyor. Örtüşme varken nefes dalgası nefes olmuyor.
+   *
+   * **Yeni kural, sahibin kararı:** §7'nin istediği şey "tek dalga
+   * sayısal maksimum" değil **doruğun sonda olması**. İki parça:
+   *   1. Boss dalgası **bedelsiz olamaz** (`final > 0`).
+   *   2. **Son üç dalga** haritanın yarısından fazlasını taşır.
+   *
+   * Ölçülen (doğum dalgasına göre, referans tahta): Kül Ovası %78 ·
+   * Kar Geçidi %62 · Kadim Harabe %79 · Sisli Bataklık %82. Eşik %50,
+   * yani en dar paylı haritada bile 12 puanlık pay var. Değirmen Geçidi
+   * hiç sızdırmıyor (iddia boş), Taş Köprü zaten muaf.
+   *
+   * **Ne kaybettik:** "final, haritanın en pahalı tek dalgasıdır"
+   * garantisi. **Ne kazandık:** iddia artık doğru muhasebeyle ölçülüyor
+   * ve S116 ile çelişmiyor.
    */
-  it('**boss dalgası haritanın ZİRVESİ** — §7 (S135)', () => {
+  it('doruk SONDA — final bedelsiz değil, son üç dalga yarıdan fazla (§7, S135 → M153)', () => {
     for (const [m, w] of [
       [MAP_1, MAP1_WAVES],
       [MAP_2, MAP2_WAVES],
@@ -145,7 +173,6 @@ describe('Kısıt B — düşman kırılımı', () => {
     ] as const) {
       const pw = dalgaBasinaCan(m, w);
       const son = pw[9] ?? 0;
-      const erkenEnCok = Math.max(...pw.slice(0, 9));
       const etiket = `${m.id}: ${pw.join(' ')}`;
       /**
        * `M117` — muafiyet **veride** (`FINAL_ZIRVE_MUAF`), testte değil.
@@ -157,8 +184,13 @@ describe('Kısıt B — düşman kırılımı', () => {
        * başında. Liste dışındaki her harita kuralı **aynen** taşıyor.
        */
       if (FINAL_ZIRVE_MUAF.includes(m.id)) continue;
-      expect(son, etiket).toBeGreaterThanOrEqual(erkenEnCok);
-      if (pw.reduce((a, b) => a + b, 0) > 0) expect(son, etiket).toBeGreaterThan(erkenEnCok);
+      const toplam = pw.reduce((a, b) => a + b, 0);
+      if (toplam === 0) continue; // Değirmen Geçidi: hiç sızıntı yok, iddia boş
+      // (1) Boss dalgası **bedelsiz olamaz**.
+      expect(son, `${etiket} — final bedelsiz`).toBeGreaterThan(0);
+      // (2) Doruk **sonda**: son üç dalga haritanın yarısından fazlasını taşıyor.
+      const sonUc = pw.slice(-3).reduce((a, b) => a + b, 0);
+      expect(sonUc / toplam, `${etiket} — son üç ${sonUc}/${toplam}`).toBeGreaterThan(0.5);
     }
     // Muafiyet **sessizce büyümesin**: bugün tek harita, ve bu sayı
     // büyüyecekse bilerek büyümeli (S136'nın “boşa koşan test” dersi).

@@ -144,6 +144,14 @@ export const ELIT_CARPANI: Readonly<Record<string, number>> = {
  * önemli. Muafiyet **liste** olarak duruyor ki kapsamı tek yerden okunsun
  * ve geç haritalara sessizce sızmasın; `kisitB` listedekiler dışında
  * kuralı aynen uyguluyor.
+ *
+ * **`M153` — kural değişti, liste DEĞİŞMEDİ.** S135 artık "final sayısal
+ * zirve" demiyor, **"doruk sonda"** diyor: final bedelsiz olamaz ve son
+ * üç dalga toplamın yarısından fazlasını taşır. Taş Köprü yine de muaf,
+ * çünkü sebebi aynı kaldı — doğru muhasebeyle haritanın **tüm** can
+ * hasarı 2 ve ikisi de **dalga 6'da** (elit dalgası); son üç dalga
+ * **0** taşıyor. Yani muafiyetin gerekçesi "final zirve olamıyor"dan
+ * "final bedel istemiyor"a döndü, ama tek adres ve tek harita.
  */
 export const FINAL_ZIRVE_MUAF: readonly string[] = ['tas-kopru'];
 

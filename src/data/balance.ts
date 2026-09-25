@@ -226,7 +226,8 @@ export const BALANCE = {
   /**
    * **Boss dalgasının bütçe çarpanı — `M70` (S135).**
    *
-   * §7 boss dalgasını haritanın zirvesi olarak tanımlıyor. Kül
+   * §7 boss dalgasına haritanın **doruğunu** yüklüyor (`M153`'e kadar
+   * "sayısal zirve" diye okunuyordu; bkz. `bossScaling.ts` başlığı). Kül
    * Ovası'nda değildi: dalga 10 **sıfır** can kaybettiriyordu, bütün
    * baskı elit dalgasının taşmasındaydı (S135).
    *
