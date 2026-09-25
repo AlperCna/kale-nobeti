@@ -752,7 +752,12 @@ export class GameScene extends Phaser.Scene {
     this.#soundSystem = new SoundSystem(this, this.bus, this.#waveList, () => this.settings.sfxScale);
     // `M8-T03` — yalnız `bus` dinliyor. Duvar saati enjekte ediliyor:
     // `RunStats` saf mantık, zamanı kendi okumaz (bekçi k.8).
-    this.#runStats = new RunStats(this.bus, () => performance.now(), this.#map.startGold);
+    this.#runStats = new RunStats(
+      this.bus,
+      () => performance.now(),
+      this.#map.startGold,
+      this.startLives,
+    );
 
     this.#towers = new TowerSystem<Tower>((kule, tier, hedef) => {
       // Uçan çarpanı **mermiye girmeden önce** uygulanıyor: o kulenin

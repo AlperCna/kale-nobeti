@@ -24,6 +24,13 @@ export interface RunStatsData {
   readonly goldEarned: number;
   readonly goldSpent: number;
   readonly towersBuilt: number;
+  /**
+   * **Bugün hiçbir yer OKUMUYOR** (`M157`'de arandı): oyun sonu ekranı
+   * kalan canı zaten `3 / 20 kalan can` biçiminde manşette gösteriyor,
+   * yıldızlar da ondan türüyor. Alan tur kaydında duruyor ve dosyanın
+   * başlığındaki "portal metrikleri" için tutuluyor — ama **yanlış**
+   * durmasının gerekçesi yoktu.
+   */
   readonly livesLost: number;
   /** Ulaşılan en yüksek dalga numarası. */
   readonly peakWave: number;
@@ -43,6 +50,18 @@ export class RunStats {
   #goldSpent = 0;
   #towersBuilt = 0;
   #livesLost = 0;
+  /**
+   * **`M157` — eskiden `START_LIVES_TAHMINI = 20` diye SABİTTİ ve Zor'da
+   * yanlış sayıyordu.** `life:lost` kalan canı taşıyor, kaybedileni
+   * değil; taban bilinmezse fark alınamaz. Eski gerekçe *"`BALANCE
+   * .startLives` içe aktarmak bu dosyayı denge verisine bağlardı"*
+   * diyordu ve haklıydı — ama çaresi sabit yazmak değil, **tabanı
+   * enjekte etmek**: `startGold` üç alan yukarıda tam olarak bu sebeple
+   * zaten kurucu parametresi. `DIFFICULTY.zor.startLives` **12** olduğu
+   * için tahmin ilk can kaybında `20 − 11 = 9` diyordu; Zor'da bir can
+   * kaybeden oyuncu dokuz kaybetmiş sayılıyordu.
+   */
+  readonly #baslangicCan: number;
   #peakWave = 0;
   #soldAny = false;
   /** Önceki oturum(lar)da oynanan süre — `geriYukle` dolduruyor. */
@@ -58,10 +77,11 @@ export class RunStats {
    *   alma kaybolur**. Canlı testte yakalandı: iki kule (70 + 110)
    *   kurulduğunda `goldSpent` 110 diyordu.
    */
-  constructor(bus: EventBus, now: () => number, startGold: number) {
+  constructor(bus: EventBus, now: () => number, startGold: number, startLives: number) {
     this.#now = now;
     this.#baslangic = now();
     this.#sonToplam = startGold;
+    this.#baslangicCan = startLives;
 
     bus.on('enemy:killed', () => {
       this.#kills++;
@@ -76,7 +96,7 @@ export class RunStats {
       // Olay kalan canı taşıyor, kaybedileni değil — fark tutuluyor.
       // Boss sızması tek seferde 10 can götürüyor (§5), o yüzden
       // "her olay 1 can" varsayımı yanlış olurdu.
-      this.#livesLost = Math.max(this.#livesLost, START_LIVES_TAHMINI - remaining);
+      this.#livesLost = Math.max(this.#livesLost, this.#baslangicCan - remaining);
     });
     bus.on('wave:started', ({ index }) => {
       if (index > this.#peakWave) this.#peakWave = index;
@@ -148,10 +168,3 @@ export class RunStats {
   }
 }
 
-/**
- * `life:lost` kalan canı taşıyor; kaybedileni bulmak için başlangıç
- * gerekiyor. `BALANCE.startLives` içe aktarmak bu dosyayı denge verisine
- * bağlardı ve `RunStats`'ın tek işi saymak — sabit burada, tek satır,
- * `GAME-DESIGN.md` §6 ile aynı değer.
- */
-const START_LIVES_TAHMINI = 20;
