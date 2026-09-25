@@ -216,6 +216,28 @@ describe('Aile dengesi — M11 Faz 5 (S95)', () => {
    * En dar pay Büyü'de (Kar Geçidi 19). Bu bilinçli: daha fazla
    * yükseltmek Büyü'yü karışık tahtanın üstüne çıkarıyor ve S95'in
    * "hiçbir aile her yerde karışıktan iyi olmasın" şartını zorluyordu.
+   *
+   * **`M143` — YUKARIDAKİ TABLO BAYATMIŞ, yeniden ölçüldü.** `M118`'de
+   * yazıldı; aradan `M119` (dalga verisi), `M140` ve `M143` (susturma)
+   * geçti ve tablo güncellenmedi — ör. Kül Ovası/Büyü **4** diyordu,
+   * gerçek **13**. Değirmen Geçidi satırı hiç yoktu. Güncel ölçüm:
+   *
+   * | harita | karışık | Okçu | Top | Büyü |
+   * |---|---|---|---|---|
+   * | Değirmen Geçidi | 0 | 10 | 9 | 0 |
+   * | Taş Köprü | 2 | 1 | 3 | 0 |
+   * | Kül Ovası | 9 | 6 | 8 | 13 |
+   * | Kar Geçidi | 13 | **18** | **19** | **19** |
+   * | Kadim Harabe | 14 | 16 | 15 | 18 |
+   * | Sisli Bataklık | 17 | 16 | 9 | 13 |
+   *
+   * **En dar pay artık Kar Geçidi'nde ve İKİ ailede:** Top ve Büyü
+   * 19/20. `M143` harpinin susturma sayılarını tam bu yüzden taradı —
+   * 2 sn'lik susturma Büyü'yü 21'e çıkarıp haritayı düşürüyordu. Sınır
+   * susturmadan değil, **önceden var olan 1 canlık paydan** geliyor.
+   *
+   * Sayılar yine elle; aşağıdaki testler onları değil **özellikleri**
+   * bağlıyor (ölü aile yok, hiçbiri karışıktan sürekli iyi değil).
    */
   it('HİÇBİR aile ölü değil — üç ailenin de en kötü haritası 20 canın altında', () => {
     for (const aile of AILELER) {

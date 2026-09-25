@@ -184,8 +184,11 @@ describe('Boss ölçeklemesi — zırh düşer, HP türetilir', () => {
    * (harita 4'ün kalkanlı Ork Savaşçı'sı), o yüzden iddia gevşetilmedi
    * **daraltıldı**: bilinen varyant adıyla ayrı tutuluyor, geri kalan
    * her düşman hâlâ birebir aynı olmak zorunda.
+   *
+   * **`M143` — ikinci varyant:** harita 4'ün harpisi susturuyor. Bu liste
+   * yeni varyantı **yakaladı** (kapı kırıldı), yani amacını yaptı.
    */
-  const BILINEN_VARYANTLAR = new Set(['kar-gecidi/orkSavasci']);
+  const BILINEN_VARYANTLAR = new Set(['kar-gecidi/orkSavasci', 'kar-gecidi/harpi']);
 
   it('boss dışındaki düşmanlar DEĞİŞMEDİ (bilinen varyantlar hariç)', () => {
     for (const m of H) {

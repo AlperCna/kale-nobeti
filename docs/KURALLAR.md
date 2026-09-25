@@ -240,7 +240,7 @@ dalga bütçesine iki kez sayılırdı.
 | Trol | Kışla ile tut + yoğun tek hedef |
 | Kurt Binicisi | Buz (yavaşlatmanın tek kaynağı) / Barut Fıçısı geniş patlama |
 | Ogre Şef | Büyü + Top, **`weakest`/`closest`** hedefleme (S94), Meteor |
-| Ogre Şef susturma (harita 4) | Karisik tahta bedeli yutuyor; tek aile — ozellikle Buyu — yutmuyor (M141 olcumu). Meteor acil cevap |
+| Susturma (harita 4: boss + harpi) | Karisik tahta bedeli yutuyor; tek aile — ozellikle Buyu — yutmuyor (M141 olcumu). Meteor acil cevap |
 
 ---
 
@@ -393,7 +393,7 @@ tahta 3820'de takılıyor ve oyuncu 34 can kaybediyordu (20 canla kayıp).
 | 1 · Değirmen Geçidi | ×1 | ×1 | ×1 | 1350 | 0,84 | 1,47 | 0 / 20 ✓ |
 | 2 · Taş Köprü | ×1,6 | ×2,2 **←ayrıştı** | ×1 | 3180 | 0,85 | 1,44 | 2 / 20 ✓ |
 | 3 · Kül Ovası | ×2,8 | ×3,8 **←ayrıştı** | ×1 | 5100 | 0,78 | 1,37 | 9 / 20 ✓ |
-| 4 · Kar Geçidi | ×7,35 | ×7,8 **←ayrıştı** | ×1,4 | 7140 | 0,55 | 1,16 | 12 / 20 ✓ |
+| 4 · Kar Geçidi | ×7,35 | ×7,8 **←ayrıştı** | ×1,4 | 7140 | 0,55 | 1,16 | 13 / 20 ✓ |
 | 5 · Kadim Harabe | ×10,05 | ×10,2 **←ayrıştı** | ×1 | 6440 | 0,38 | 0,99 | 14 / 20 ✓ |
 | 6 · Sisli Bataklık | ×8,5 | ×11 **←ayrıştı** | ×1 | 6440 | 0,35 | 0,95 | 17 / 20 ✓ |
 
@@ -557,9 +557,9 @@ referans tahtaya, tavana ve boss türetmesine hiç girmiyor — hiçbir düşman
 
 | Seviye | HP çarpanı | Başlangıç canı | Yıldız | 1 | 2 | 3 | 4 | 5 | 6 |
 |---|---|---|---|---|---|---|---|---|---|
-| kolay | ×0,8 | 20 | **kaydedilmiyor** | 0 / 20 ✓ | 0 / 20 ✓ | 2 / 20 ✓ | 4 / 20 ✓ | 5 / 20 ✓ | 8 / 20 ✓ |
-| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 2 / 20 ✓ | 9 / 20 ✓ | 12 / 20 ✓ | 14 / 20 ✓ | 17 / 20 ✓ |
-| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 2 / 12 ✓ | 9 / 12 ✓ | 12 / 12 ✗ | 14 / 12 ✗ | 17 / 12 ✗ |
+| kolay | ×0,8 | 20 | **kaydedilmiyor** | 0 / 20 ✓ | 0 / 20 ✓ | 2 / 20 ✓ | 2 / 20 ✓ | 5 / 20 ✓ | 8 / 20 ✓ |
+| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 2 / 20 ✓ | 9 / 20 ✓ | 13 / 20 ✓ | 14 / 20 ✓ | 17 / 20 ✓ |
+| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 2 / 12 ✓ | 9 / 12 ✓ | 13 / 12 ✗ | 14 / 12 ✗ | 17 / 12 ✗ |
 
 Hücreler: referans tahtanın kaybettiği can / o seviyenin canı.
 
@@ -742,7 +742,7 @@ aşan hasar. Kalkanın yuttuğu kayıp sayılmıyor: o gerçek bir mekanik.
 | 1 · Değirmen Geçidi | 11714 | 178 | 1330 | **%87,1** |
 | 2 · Taş Köprü | 22696 | 186 | 1114 | **%94,3** |
 | 3 · Kül Ovası | 37328 | 405 | 1098 | **%96** |
-| 4 · Kar Geçidi | 67201 | 828 | 1596 | **%96,4** |
+| 4 · Kar Geçidi | 67016 | 872 | 1586 | **%96,3** |
 | 5 · Kadim Harabe | 87256 | 982 | 1581 | **%97,1** |
 | 6 · Sisli Bataklık | 70314 | 1039 | 1446 | **%96,5** |
 
@@ -758,7 +758,7 @@ Simülasyon **canlı oyunla aynı kodu** kullanıyor: aynı
 | 1 · Değirmen Geçidi | **0** | 0 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:0 |
 | 2 · Taş Köprü | **2** | 54 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:2 d8:0 d9:0 d10:0 |
 | 3 · Kül Ovası | **6** | 1540 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:1 d9:0 d10:5 |
-| 4 · Kar Geçidi | **9** | 5429 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:4 d9:0 d10:5 |
+| 4 · Kar Geçidi | **10** | 5502 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:5 d9:0 d10:5 |
 | 5 · Kadim Harabe | **11** | 10141 | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:1 d9:1 d10:9 |
 | 6 · Sisli Bataklık | **15** | 7478 | d1:0 d2:0 d3:0 d4:0 d5:2 d6:0 d7:1 d8:0 d9:0 d10:12 |
 
@@ -774,7 +774,7 @@ tablo aynı canı düşmanın **doğduğu** dalgaya yazıyor (`M84`):
 | 1 · Değirmen Geçidi | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:0 d8:0 d9:0 d10:0 | — |
 | 2 · Taş Köprü | d1:0 d2:0 d3:0 d4:0 d5:0 d6:2 d7:0 d8:0 d9:0 d10:0 | **%0** |
 | 3 · Kül Ovası | d1:0 d2:0 d3:0 d4:0 d5:0 d6:2 d7:0 d8:0 d9:0 d10:7 | **%78** |
-| 4 · Kar Geçidi | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:4 d8:0 d9:4 d10:4 | **%33** |
+| 4 · Kar Geçidi | d1:0 d2:0 d3:0 d4:0 d5:0 d6:0 d7:5 d8:0 d9:4 d10:4 | **%31** |
 | 5 · Kadim Harabe | d1:0 d2:0 d3:0 d4:0 d5:0 d6:3 d7:0 d8:0 d9:8 d10:3 | **%21** |
 | 6 · Sisli Bataklık | d1:0 d2:0 d3:0 d4:2 d5:0 d6:1 d7:0 d8:0 d9:5 d10:9 | **%53** |
 
@@ -787,7 +787,7 @@ bu ikisi farklı düzeltmeler gerektiriyor:
 | 1 · Değirmen Geçidi | **hiç yok** |
 | 2 · Taş Köprü | Harpi ×2 |
 | 3 · Kül Ovası | Trol ×3 · Örümcek Yavrusu ×3 |
-| 4 · Kar Geçidi | Örümcek Yavrusu ×4 · Trol ×3 · Şaman ×1 · Zırhlı Ork ×1 |
+| 4 · Kar Geçidi | Örümcek Yavrusu ×5 · Trol ×3 · Şaman ×1 · Zırhlı Ork ×1 |
 | 5 · Kadim Harabe | Zırhlı Ork ×4 · Şaman ×3 · Trol ×2 · Örümcek Ana ×1 · Kurt Binicisi ×1 |
 | 6 · Sisli Bataklık | Tünelci ×8 · Ork Savaşçı ×5 · Trol ×2 |
 

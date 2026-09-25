@@ -777,7 +777,7 @@ function olustur() {
     ['Trol', 'Kışla ile tut + yoğun tek hedef'],
     ['Kurt Binicisi', 'Buz (yavaşlatmanın tek kaynağı) / Barut Fıçısı geniş patlama'],
     ['Ogre Şef', 'Büyü + Top, **`weakest`/`closest`** hedefleme (S94), Meteor'],
-    ['Ogre Şef susturma (harita 4)', 'Karisik tahta bedeli yutuyor; tek aile — ozellikle Buyu — yutmuyor (M141 olcumu). Meteor acil cevap'],
+    ['Susturma (harita 4: boss + harpi)', 'Karisik tahta bedeli yutuyor; tek aile — ozellikle Buyu — yutmuyor (M141 olcumu). Meteor acil cevap'],
   ]), '');
 
   // ---------------------------------------------------------------- 7
