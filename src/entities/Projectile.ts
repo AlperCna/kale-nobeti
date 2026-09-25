@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { resetProjectileState } from '../systems/ProjectileSystem';
 import type { DamageType } from '../types/enemy';
 import type { Enemy } from './Enemy';
 import type { ProjectileState } from '../types/projectile';
@@ -121,16 +122,9 @@ export class Projectile extends Phaser.GameObjects.Arc implements ProjectileStat
    * düşman çöpe gitmez — kuralın metninde adı geçen tam senaryo.
    */
   resetForPool(): void {
-    this.target = null;
-    this.damage = 0;
-    this.damageType = 'physical';
-    this.speed = 0;
-    this.splashRadius = 0;
-    this.hitRadius = 0;
-    this.effect = undefined;
-    this.alive = false;
-    this.lastKnownX = 0;
-    this.lastKnownY = 0;
+    // `M142` — mantıksal sıfırlama saf fonksiyonda (Enemy ve Soldier ile
+    // aynı desen); tamlığı `ProjectileSystem.test.ts` derleyiciye bağlıyor.
+    resetProjectileState(this);
     // `M8-T08` — iz bayrağı da sıfırlanıyor: havuzdan çıkan bir ok,
     // önceki elde büyü mermisiyse iz bırakmaya devam ederdi (kural 3).
     this.trail = false;
