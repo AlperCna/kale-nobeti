@@ -191,16 +191,16 @@ Bu liste yazıldı ki sonradan "neden sahne testi yok" sorulmasın.
 | E1 | Duraklatma | ESC, sonra boşluk | İkisi de duraklatıp devam ettiriyor; Hud yanıt veriyor | M0 |
 | E2 | 2× hız | Butona bas | Test nesnesi **gözle** iki kat hızlanıyor | M0 |
 | E3 | Letterbox girdisi | Pencereyi yarıya küçült, butona tıkla | Tıklama ıskalamıyor | M0 |
-| E4 | Font düşüşü | `fonts/` klasörünü boşalt | 2 sn içinde sistem serif'e düşüp devam ediyor | M0 |
+| E4 | Font düşüşü | `FontFace.prototype.load`'u reddet/askıda bırak | 2 sn içinde sistem serif'e düşüp devam ediyor | M0 · **koşturuldu `M164`** |
 | E5 | Alt klasör servisi | `npx serve dist -l 5000`, alt yoldan aç | Beyaz ekran yok (`base:'./'`) | M0 |
 | E6 | Havuz sızıntısı | 10 dalga oyna, `activeCount` izle | Sabit kalıyor | M1 |
 | E6b | **Dinleyici sızıntısı** | Sahneyi N kez yeniden başlat, `devHooks.shutdownListeners()` izle | **Sabit kalıyor** | M1 |
 | E7 | Kapsama ölçümü | Geliştirme göstergesini oku | Ortalama ve `L` raporlanıyor | M1 |
 | E8 | Karşı-oyun | §5 tablosundaki 7 senaryoyu dene | Her tehdidin cevabı işliyor | M4 |
-| E9 | Uçan hattı | Hazırlık aşamasına bak | Kesikli altın hat görünüyor, ≥3 nokta kesiyor | M4 |
+| E9 | Uçan hattı | Hazırlık aşamasına bak | Kesikli altın hat görünüyor, ≥3 nokta kesiyor | M4 · **koşturuldu `M164`** (hat evet, sayı gözle) |
 | E10 | Kışla 9 kuralı | Her kural için senaryo | Hepsi §4.4'teki gibi | M5 |
 | E11 | Kışla sinerjisi | İki kışlayı aynı noktaya topla | Grup dövüşü çalışıyor | M5 |
-| E12 | Efektsiz okunurluk | Ses ve efektleri kapat | Oyun **hâlâ okunur** | M6 |
+| E12 | Efektsiz okunurluk | Ses ve efektleri kapat | Oyun **hâlâ okunur** | M6 · **koşturuldu `M164`** |
 | E13 | 640×360 okunurluk | **640×360'a indirgeyip** büyüt (DPR tuzağı, aşağıda) | Tüm yazı okunur, motifler kaybolmuyor | M6 · **koşturuldu `M162`** |
 | E14 | Renk körlüğü | Gri tonlamalı ekran görüntüsü | Düşman tipleri **silüetten** ayrılıyor | M6 · **koşturuldu `M162`** |
 | E15 | `prefers-reduced-motion` | Sistemde aç | Varsayılanlar düşük geliyor | M6 |
@@ -354,6 +354,36 @@ tüketilmeli" mimari kuralını sağlıyor.
 *Düzeltme sonrası:* aynı taklit, on iki örneklemenin **hepsinde** uyarı
 görünüyor (*"İlerleme kaydedilemiyor — tarayıcın depolamayı
 engelliyor"*), ekran görüntüsüyle de doğrulandı.
+
+### E4, E9, E12 — `M164`'te ilk kez koşturuldu; üçü de geçti
+
+**E4 — font düşüşü.** `BootScene` fontları `FontFace` ile yükleyip
+`Preload`'dan **önce** `await` ediyor, yani yükleme takılırsa oyun hiç
+açılmaz. İki uç durum ayrı ayrı taklit edildi
+(`FontFace.prototype.load` değiştirilerek):
+
+| Durum | Menüye varış |
+|---|---|
+| `load()` **reddediyor** | **204 ms** — beklemeden devam ediyor |
+| `load()` **hiç çözülmüyor** | **2101 ms** — `FONT_TIMEOUT_MS` (2000) sınırı |
+
+Üçüncü olarak `document.fonts.clear()` ile yüzler silinip menü yeniden
+çizildi: başlık **sistem serif**ine düşüyor, düzen bozulmuyor, Türkçe
+harfler (`ö · ı · ş`) eksiksiz. Yani hem "asılı kalmıyor" hem "okunur
+kalıyor" tarafı ölçüldü.
+
+**E12 — efektsiz okunurluk.** Ses kapalı, `effects: 'low'`, ekran
+sarsıntısı kapalı. Dövüş hâlâ okunuyor: düşmanlar yolda, mermi havada,
+hasar sayısı ve altın sayacı işliyor (`particleCount` düşük ama sıfır
+değil — "low" kapatmıyor, seyreltiyor). Kayıp bilgi yok.
+
+**E9 — uçan hattı.** Değirmen Geçidi'nin uçanları dalga 6'da; o dalganın
+hazırlığında `flyerHintOn()` **true** ve ekranda **kesikli altın hat**
+haritayı çapraz kesiyor — kahverengi yer yolundan açıkça ayrı.
+*Kısmen ölçüldü:* hattın "≥3 yapı noktası kesiyor" şartı **gözle**
+doğrulandı, sayıyla değil; hat birkaç noktanın menziline giriyor.
+Sayısal sağlama istenirse `flyerPaths` ile `buildSpots` arasındaki
+mesafe `util/coverage.ts` tarzında hesaplanabilir.
 
 ### E6 ve E6b neden ikiz
 
