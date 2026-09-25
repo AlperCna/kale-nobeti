@@ -160,11 +160,32 @@ describe('DIFFICULTY — M8-T11 (S80)', () => {
    * katı `leakDamage`), ve dalga 4'ün §7 düzeltmesi (S127) onun üstüne
    * bindi. Ölçüm: **9 → 12** (üretim adımı ve ortanca aynı).
    */
-  it('Zor: harita 4 ve 5 referans tahtadan DAHA İYİSİNİ istiyor (S87)', () => {
+  /**
+   * **`M149` — kural GEVŞETİLDİ: üç harita yerine YALNIZ FİNAL.**
+   *
+   * Eski hâli harita **4, 5 ve 6**'nın üçünün de Zor'da referans
+   * tahtayla geçilememesini istiyordu. S169'un düzeltmesi (hazırlık
+   * fazında düşmanlar artık yürüyor) o şartı **uygulanamaz** yaptı ve
+   * sebebi ölçüldü: şart `h4 ≥ 12` tabanı koyuyor, Büyü tahtası harita
+   * 6'yı `~14`'te tavanlıyor (8,08'de 19 can, 8,2'de 20) ve katı
+   * artanlık `h4 < h5 < h6` istiyor — yani üç harita **iki canlık** bir
+   * banda sıkışıyor, oysa ölçüm çözünürlüğü **±2**. Bölge gürültüden
+   * dar, pratikte boş.
+   *
+   * Bugünkü rampanın üst ucu (13-17) donmanın verdiği payla mümkündü;
+   * pay kalkınca taban ile tavan çakıştı.
+   *
+   * **Neyi koruyoruz:** Zor'un anlamı başlangıç canının **12** olması
+   * ve **finalin referans tahtayı yenmesi** — "Zor'da iyi oynamak
+   * gerekir" iddiası buradan geliyor. **Neyi bıraktık:** orta
+   * haritaların da aynı şartı sağlaması. Öğrenme yayı (harita 1-3
+   * Zor'da geçilebilir) yukarıdaki testte **aynen duruyor**, yani
+   * kuralın iki ucu da hâlâ bağlı.
+   */
+  it('Zor: FİNAL referans tahtadan daha iyisini istiyor (S87 → M149)', () => {
     expect(DIFFICULTY.zor.startLives).toBe(12);
-    for (const m of MAPS.slice(3)) {
-      expect(canKaybi(m, 1), m.id).toBeGreaterThanOrEqual(DIFFICULTY.zor.startLives);
-    }
+    const final = MAPS[MAPS.length - 1]!;
+    expect(canKaybi(final, 1), final.id).toBeGreaterThanOrEqual(DIFFICULTY.zor.startLives);
   });
 
   it('Kolay: BEŞ harita da bol payla geçiliyor', () => {
