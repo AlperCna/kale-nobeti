@@ -192,16 +192,49 @@ Ayrıntı: `docs/research/04-varlik-paket-boyut.md`
 - Toplam doku sayısı ≤ 16 (Phaser multi-texture batching sınırı).
   **`M95`'te ölçüldü ve cümle netleşti:** sayılan şey *bir karede çizilen
   ayrı doku* — `textures.getTextureKeys().length` DEĞİL. O sayaç bugün
-  **379** diyor ve kural ihlal ediliyormuş gibi görünüyor; 372'si
-  `Phaser.GameObjects.Text`in kendi tuvali (her `Text` bir doku üretiyor —
-  TIER 1 kural 7'nin ölçülmüş gerekçesi). Gerçek resim dokusu **7**:
-  `atlas` · ziyaret edilen harita arka planları · `menu-bg` · `sayilar`
-  (bitmap font) · `kn-parcacik` (çalışma zamanında üretiliyor).
-  Oyun içinde görünür `Text` sayısı **8** (HUD 6 + Overlay 2), yani karede
-  ~15 ayrı doku — sınırın altında. **Ölçüm tuzağı:** geliştirme yapısında
-  kapsama göstergesi yapı noktası başına bir `Text` ekliyor (harita 4'te
-  +13) ve sayı 28'e çıkıyor; o katman yayında yok (`MapRenderer`
-  `import.meta.env.DEV`).
+  **379** diyor ve kural ihlal ediliyormuş gibi görünüyor; neredeyse
+  hepsi `Phaser.GameObjects.Text`in kendi tuvali (her `Text` bir doku
+  üretiyor — TIER 1 kural 7'nin ölçülmüş gerekçesi). *O sayaç oturuma
+  bağlı ve kıyas değeri yok:* `M95` **379**, `M160` daha kısa bir
+  oturumda **298** ölçtü; kaç sahne gezildiğine göre değişiyor.
+  **İkisini ayırmak gerekiyor** (`M160`):
+  - **Yüklü** resim dokusu — menü + seviye seçim + bir harita gezildikten
+    sonra ölçülen **11**: `atlas` · `menu-bg` · `sayilar` (bitmap font) ·
+    `bg-<harita>` (ziyaret edilen her harita için bir tane) · `card-*`
+    (altı harita küçük resmi) · `kn-parcacik` (çalışma zamanında üretilen).
+  - **Oyun karesinde çizilen** — **4**: `atlas` · o haritanın `bg-*`'ı ·
+    `sayilar` · `kn-parcacik`. Batching sınırını ilgilendiren bu.
+    `menu-bg` ve `card-*` yüklü ama sahneleri durmuş, çizilmiyorlar.
+  Buraya `M95`'ten beri tek bir *"gerçek resim dokusu **7**"* yazıyordu ve
+  hangisini saydığı belirsizdi; `card-*` altısı listede hiç yoktu.
+  Oyun içinde görünür `Text` sayısı **`M160`'ta yeniden ölçüldü: en kötü
+  hâlde 11** (Zor: HUD 9 + Overlay 2), Normal'de **10**. Buraya `M95`'ten
+  beri **8** (HUD 6 + Overlay 2) yazıyordu ve eksikti — sebebi sayı değil
+  **örnekleme**: iki `Text` yalnız belirli koşullarda var ve `M95`'in
+  baktığı karede ikisi de yoktu.
+  1. **Zorluk rozeti** — `#zorlukRozeti` Normal'de erken dönüyor, yani
+     rozet yalnız Kolay/Zor'da çiziliyor (+1).
+  2. **Erken başlat düğmesinin iki etiketi** (`Dalgayı başlat` · risk
+     satırı) — yalnız **hazırlık fazında** ve `BALANCE.earlyBonusFrom`'dan
+     (dalga 4) itibaren var (+2).
+  Ölçülen liste (Zor, dalga 6 hazırlığı): `Zor · altın · can · dalga ·
+  Dalgayı başlat · sahada · Meteor · Takviye · ⚙` + Overlay `⛶ · Tam ekran`.
+  Yani oynanış karesi **4 resim + 11 metin = 15** ve sınır **aşılmıyor** —
+  ama pay **bir** doku, eski cümlenin ima ettiği rahatlık kadar değil.
+  Yeni bir kalıcı `Text` eklemek bu payı bitirir.
+  **Duraklatınca sınır AŞILIYOR ve bu sorun değil** (`M160`, ölçüldü):
+  duraklatma menüsü altı `Text` daha ekliyor — Normal'de dalga 1'de
+  ölçülen **14** (`altın·can·dalga·Meteor·Takviye·⚙` + `Duraklatıldı·
+  ESC / boşluk·Devam·Yeniden başla·Ayarlar·Haritalar`) + Overlay 2.
+  Yani o karede toplam 16'yı geçiyor ve Phaser bir yığın daha boşaltıyor.
+  Kuralın derdi **oynanış karesi**; duraklatma ekranı durağan, fazladan
+  bir çizim çağrısının ölçülebilir bir bedeli yok.
+  **Ölçüm tuzağı:** geliştirme yapısında kapsama göstergesi yapı noktası
+  başına bir `Text` ekliyor (harita 4'te +13); o katman yayında yok
+  (`MapRenderer` `import.meta.env.DEV`). **İkinci tuzak, `M160`:** bu sayı
+  tek bir kareye bakarak ölçülemez — koşullu metinler (rozet, erken
+  başlat, duraklatma menüsü) ayrı ayrı aranmalı. `M95` tam bunu yaptı ve
+  sayı altmış beş kilometre taşı boyunca eksik kaldı.
 
 ## Klasör yapısı
 
