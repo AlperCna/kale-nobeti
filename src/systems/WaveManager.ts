@@ -205,12 +205,23 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
     if (this.#phase === 'prep') {
       this.#prepLeftSec -= dt;
       /**
-       * **`M144` — SAHADA KALANLAR HAZIRLIK BOYUNCA YÜRÜMÜYOR.**
+       * **HAZIRLIK SAHAYI DONDURUR — kural, kusur değil (`M155`, S169).**
        *
-       * `#ilerlet(dt)` burada **çağrılmıyor**; `running` ve `done`
-       * dallarında çağrılıyor. Sonuç: dalga kapanıp hazırlık başlayınca
-       * sahada kalan düşmanlar **donuyor**, sonraki dalga başlayınca
-       * yürümeye devam ediyor.
+       * `#ilerlet(dt)` burada **bilerek çağrılmıyor**; `running` ve
+       * `done` dallarında çağrılıyor. Sonuç: dalga kapanıp hazırlık
+       * başlayınca sahada kalan düşmanlar **bekler**, dalga başlayınca
+       * hep birlikte yürümeye devam eder. Sözleşme
+       * `WaveManager.test.ts` içinde **bağlı**; oyuncuya `howTo6` ve
+       * `hintEarlyStart` ile söyleniyor; tasarım gerekçesi
+       * `GAME-DESIGN.md` §6'da.
+       *
+       * Kuralın iki sonucu: **nefes anı gerçekten nefes** (kuyruk 20
+       * saniye boyunca kaleye yaklaşmaz, oyuncunun hazırlığı kule
+       * kurmaya kalır) ve **erken başlatmanın bedeli iki katlı**
+       * (yenisini çağırmakla kalmaz, bekleyenleri de yürütür).
+       *
+       * Aşağısı bu kararın nasıl alındığıdır — `M144`'ten `M154`'e
+       * kadar ölçüldü ve önce **kusur** sanıldı.
        *
        * **Oyuncu bildirdi, tarayıcıda üretildi** (Taş Köprü, hazırlık
        * fazı): iki Zırhlı Ork `pathFraction` 0,000 ve 0,065'te 16 saniye
@@ -218,13 +229,13 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
        * doğanlarla birlikte kapandığı için donan şey genellikle **yeni
        * gelenler** oluyor — raporun sözleriyle "gelecekler donuyor".
        *
-       * **Bu bir kusur ve `M16`'nın (S102) niyetine aykırı:** dalga
+       * **`M144`'te kusur sanıldı, çünkü `M16`'nın (S102) niyetine aykırı görünüyor:** dalga
        * kuyruk bitince kapanıyor ki "sıradaki dalga bir öncekinin
        * artıkları yoldayken gelsin". Artıklar park edince örtüşme yarım
        * kalıyor ve hazırlık sırasında sızıntı **imkânsız** oluyor, yani
        * erken başlatmanın bedeli olduğundan az.
        *
-       * **DÜZELTİLMEDİ ve sebebi ölçüldü.** Tek satır (`#ilerlet(dt)`)
+       * **Ölçüldü.** Tek satır (`#ilerlet(dt)`)
        * eklendiğinde referans rampa `0 · 2 · 9 · 13 · 14 · 17` iken
        * `0 · 8 · 25 · 31 · 28 · 21` oluyor: altı haritanın **dördü
        * geçilemez** ve rampa monotonluğunu kaybediyor. Bütün denge bu
@@ -246,6 +257,12 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
        * `hic`'tir"* düşüyor. Donma bir denge parametresi değil **zemin**:
        * kalkınca büyüklükler değil **sıralamalar** değişiyor ve HP
        * vektörü sıralamayı hareket ettiremiyor.
+       *
+       * **`M155` — SAHİBİN KARARI: davranış KURAL (seçenek b).** S169
+       * kapandı. Kural belgeye (`GAME-DESIGN.md` §6), oyuncu metnine
+       * (`howTo6`, `hintEarlyStart`) ve teste yazıldı — yani bundan
+       * sonra `#ilerlet(dt)`'yi buraya eklemek denge sağlamalarını
+       * değil **önce sözleşme testini** kırar ve sebebi okunur olur.
        */
       // Sayaç dolunca dalga **otomatik** başlıyor (S29). Erken başlatma
       // bir seçenek, zorunluluk değil — §6'nın bonus formülü zaten bunu

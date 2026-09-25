@@ -733,6 +733,31 @@ taşıyordu) ve pahalı olan Büyü ailesi tabanda aç kalıyordu (S110).
 `balanceChecks` dalga başına bir yavaşlatıcı kuruyordu (S112) ve tavan
 yavaşlatmayı hiç görmüyordu (S113).
 
+**`M155` — hazırlık sahayı DONDURUR ve bu artık bir KURAL (S169).**
+
+Hazırlık sayacı işlerken sahada kalan düşmanlar **yürümez**; dalga
+başlayınca hep birlikte yeniden yürür. Oyuncu bunu bir kusur sanıp
+bildirdi (*"gelecekler donuyor"*) ve tarayıcıda üretildi; `M145`-`M154`
+düzeltmeyi ölçtü ve **davranış kural ilan edildi.** Üç sonucu var ve
+üçü de bilinçli:
+
+1. **Nefes anı gerçekten nefes.** Bir dalganın kuyruğu hazırlık boyunca
+   kaleye yaklaşmaz, yani oyuncunun 20 saniyesi kule kurmaya ayrılır —
+   yukarıdaki örtüşme takası ise dalga *koşarken* geçerli kalır.
+2. **Erken başlatmanın bedeli iki katlı.** Kalan süreyi altına çevirmek
+   yalnız yeni dalgayı artıkların üstüne çağırmakla kalmaz, **bekleyen
+   artıkları da yürütür**. Tablodaki "hep erken bas" satırının sertliği
+   buradan geliyor.
+3. **Bütün denge sayıları bu zeminde türetildi.** `M154` düzeltmeyi uçtan
+   uca koşturdu: rampalar bir HP vektörüyle kurtarılabiliyor, ama
+   **karşılaştırmalı** iddiaların altısı birden düşüyor — en keskini
+   `erkenPolitika`'nın yönünün tersine dönmesi (erken basmak *avantaj*
+   oluyor), ki o da bu bölümün tabanı. Yani donma bir parametre değil,
+   **zemin**.
+
+Sözleşme `systems/WaveManager.test.ts` içinde bağlı ve oyuncuya
+`howTo6` ile `hintEarlyStart`'ta söyleniyor.
+
 **Denge tabanı:** referans oyuncu erken **basmıyor**
 (`systems/referansOlcum.ts`). Referans tahta hangi ekonomiyi
 varsayıyorsa simülasyon da onu oynamak zorunda — ikisi ayrışırsa tahta

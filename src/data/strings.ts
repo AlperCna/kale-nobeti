@@ -220,8 +220,15 @@ const TR = {
    * ve ölçüm hep basmanın harita 5-6'yı geçilemez yaptığını söylüyor.
    * Satır yalnız ödülü anlatınca oyun yanlış ders veriyordu.
    */
+  /**
+   * **`M155` (S169) — kuralın ikinci yarısı eksikti.** Satır yalnız
+   * "yeni dalga üstüne biner" diyordu; hazırlık sahayı **dondurduğu**
+   * için erken basmanın ikinci bedeli **bekleyenleri yürütmek**. Oyuncu
+   * donmayı kusur sanıp bildirdi — yani metin sessiz kalınca kural
+   * görünmüyor.
+   */
   howTo6:
-    'Hazırlık sayacını erken bitirmek altın kazandırır — ama yeni dalga sahada kalanların üstüne biner. Düğmede iki sayı da yazıyor.',
+    'Hazırlık sayacı işlerken sahada kalanlar bekler. Erken bitirmek altın kazandırır — ama onları yürütür ve yeni dalga üstlerine biner. Düğmede iki sayı da yazıyor.',
   /**
    * `M87` — duraklatma düğmesi gelince bu satır **eski kuralı**
    * anlatıyordu: dokunmatikte klavye yok, yani oyuncuya “duraklatamazsın”
@@ -271,7 +278,7 @@ const TR = {
   /** `Y09` — S65'in dayandığı mekanik: erken başlatma bonusu. */
   /** `M28` — `howTo6` ile aynı sebep: takasın iki yakası da yazıyor. */
   hintEarlyStart:
-    'Erken başlat: kalan süre altına döner. Ama yeni dalga, sahada kalanların üstüne gelir.',
+    'Erken başlat: kalan süre altına döner. Ama sahada bekleyenler yürümeye başlar ve yeni dalga üstlerine gelir.',
   /** `Y09` — S69'un ölçtüğü mekanik: toplanma noktası sürükleme. */
   hintDragRally: 'Bayrağı sürükle',
 
@@ -589,7 +596,7 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     howTo11:
       'Once every build spot is taken, a price appears above your abilities: Meteor hits harder, Reinforcements bring more soldiers. Board first, then abilities — on later maps gold outgrows what the board can spend.',
     howTo6:
-      'Ending the prep timer early earns gold — but the new wave arrives on top of whoever is still on the field. The button shows both numbers.',
+      'While the prep timer runs, whoever is still on the field waits. Ending it early earns gold — but it sets them moving and the new wave arrives on top of them. The button shows both numbers.',
     howTo7: 'The pause button up top — or ESC/space — stops the game; the menu also has restart and back to maps.',
     howTo8: 'Slowed enemies take more physical damage: the Frost tower pairs with Archer and Cannon.',
     howTo9: 'A blue ring is a frost shield; nothing reaches health until it breaks.',
@@ -608,7 +615,7 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     hints: 'Hints',
     hintBuild: 'Tap a gold circle to build your first tower.',
     hintEarlyStart:
-      'Start early: leftover time turns to gold. But the next wave arrives on top of whoever is still on the field.',
+      'Start early: leftover time turns to gold. But those waiting on the field start moving, and the next wave arrives on top of them.',
     hintDragRally: 'Drag the flag',
     language: 'Language',
     langTr: 'Türkçe',
