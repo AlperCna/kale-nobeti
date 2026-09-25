@@ -1910,10 +1910,35 @@ export class GameScene extends Phaser.Scene {
     this.#kayitUyarildi = true;
     this.bus.emit('save:failed', { once: true });
     const overlay = this.scene.get('Overlay');
-    // `Overlay` `Menu.create()`'te başlatılıyor, yani `Game`'e gelindiğinde
-    // her zaman ayakta. Yine de savunmacı: doğrudan test için `Game`
-    // sahnesi tek başına başlatılabiliyor (`__game.scene.start('Game')`).
-    if (overlay.scene.isActive()) gosterKayitUyarisi(overlay, this.settings.effectScale);
+    const ciz = (): void => gosterKayitUyarisi(overlay, this.settings.effectScale);
+    /**
+     * **`M163` — `isActive()` TEK BAŞINA YETMİYOR ve ilk oturumda hep
+     * yanlış cevap veriyordu.**
+     *
+     * Buradaki koşul `if (overlay.scene.isActive()) ciz()` idi ve notu
+     * *"`Overlay` `Menu.create()`'te başlatılıyor, yani `Game`'e
+     * gelindiğinde her zaman ayakta"* diyordu. **İlk oturumda menü
+     * atlanıyor** (`M10-T01`, `PreloadScene` doğrudan `Game`'e gidiyor);
+     * o yüzden `create()`'in başında `scene.launch('Overlay')` var — ama
+     * `launch` **kuyruğa alıyor**, sahne bu karede aktifleşmiyor. Yani
+     * kırk küsur satır aşağıdaki `isActive()` hâlâ `false` dönüyor,
+     * uyarı sessizce düşüyor ve `#kayitUyarildi` ile registry bayrağı
+     * çoktan tüketildiği için **bir daha hiç** denenmiyor.
+     *
+     * **Tarayıcıda üretildi** (boş kayıt + `setItem` fırlatıyor, `Boot`'tan
+     * yeniden başlatma): on dört örneklemenin hepsinde `Overlay` aktif,
+     * bayrak `false`, uyarı **yok**. Kontrol koşusu (Overlay önceden
+     * ayakta) aynı anda uyarıyı **gösteriyordu** — yani mekanizma değil
+     * **zamanlama** kırıktı.
+     *
+     * Vurucu tarafı: kaçırılan tek durum, kuralın **tam da yazıldığı**
+     * durum — oyunu ilk kez gizli sekmede açan oyuncu.
+     *
+     * `once`, mimari kuralın "create() içindeki dinleyici tüketilmeli"
+     * şartını sağlıyor.
+     */
+    if (overlay.scene.isActive()) ciz();
+    else overlay.events.once(Phaser.Scenes.Events.CREATE, ciz);
   }
 
   #havuzDoldu(ad: string, kapasite: number): void {

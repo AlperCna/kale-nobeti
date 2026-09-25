@@ -204,7 +204,7 @@ Bu liste yazıldı ki sonradan "neden sahne testi yok" sorulmasın.
 | E13 | 640×360 okunurluk | **640×360'a indirgeyip** büyüt (DPR tuzağı, aşağıda) | Tüm yazı okunur, motifler kaybolmuyor | M6 · **koşturuldu `M162`** |
 | E14 | Renk körlüğü | Gri tonlamalı ekran görüntüsü | Düşman tipleri **silüetten** ayrılıyor | M6 · **koşturuldu `M162`** |
 | E15 | `prefers-reduced-motion` | Sistemde aç | Varsayılanlar düşük geliyor | M6 |
-| E16 | **Gizli sekme** | Gizli pencerede aç | `localStorage` istisnası **çökertmiyor** | M7 |
+| E16 | **Gizli sekme** | `Storage.prototype.setItem` fırlatır yap + kaydı boşalt, `Boot`'tan başlat | Çökmüyor **ve** uyarı görünüyor | M7 · **koşturuldu `M163`, kusur buldu** |
 | E17 | Düşük uçlu cihaz | 4 GB RAM'li cihazda oyna | Akıcı (CrazyGames şartı) | M7 |
 | E18 | Üç harita | Baştan sona oyna | Üçü de bitirilebiliyor | M7 |
 | E19 | Üç kişi | 3 kişiye oynat | Nerede sıkıldıkları not edildi | M7 |
@@ -320,6 +320,40 @@ etiketleri; oyun içinde `280 altın · 20 can · 1.10 dalga`, `Meteor`,
 `Takviye` ve üst şeritteki üç düğme. Yazı yumuşuyor ama hiçbir satır
 kaybolmuyor. (Ekrandaki küçük kapsama sayıları geliştirme katmanı,
 yayında yok.)
+
+### E16 — `M163`'te İLK KEZ koşturuldu ve **bir kusur buldu**
+
+`localStorage` gizli sekmede istisna fırlatıyor; kural 10 iki şey
+istiyor: **çökmesin** ve **oyuncuya bir kez bildirilsin**. Taklit:
+`Storage.prototype.setItem`'ı fırlatır yapıp kaydı boşaltmak, sonra
+`Boot`'tan yeniden başlatmak (yani "ilk oturum" + "depolama yok").
+
+**Birinci yarı geçti:** oyun çökmüyor, `MemoryStore` yedeğine düşüyor,
+menü/oyun normal açılıyor. Boot'taki yoklama fırlatmayı yakalıyor.
+
+**İkinci yarı KIRIKTI — ve tam da kuralın yazıldığı durumda.**
+On dört örneklemenin hepsinde uyarı **yok**, registry bayrağı
+`false` (yani tüketilmiş). Kontrol koşusu — `Overlay` önceden ayakta —
+aynı anda uyarıyı **gösteriyordu**, yani mekanizma değil **zamanlama**
+kırıktı.
+
+*Teşhis:* ilk oturumda menü atlanıyor (`M10-T01`: `PreloadScene`
+doğrudan `Game`'e gidiyor) ve `Overlay`'i `Menu` değil `GameScene`
+başlatıyor — `create()`'in başında `scene.launch('Overlay')` ile. Ama
+`launch` **kuyruğa alıyor**: sahne o karede aktifleşmiyor. Kırk küsur
+satır aşağıdaki `if (overlay.scene.isActive())` hâlâ `false` dönüyor,
+uyarı düşüyor, ve bayrak çoktan tüketildiği için bir daha denenmiyor.
+Yani uyarı **yalnız ilk oturumda** kayboluyordu; menüden geçen her
+yolda çalışıyordu — bu yüzden gözle fark edilmesi çok zor.
+
+*Düzeltme (`M163`):* `isActive()` yanlışsa uyarı
+`overlay.events.once(Phaser.Scenes.Events.CREATE, ciz)` ile
+`Overlay` doğduğu anda çiziliyor. `once`, "create() içindeki dinleyici
+tüketilmeli" mimari kuralını sağlıyor.
+
+*Düzeltme sonrası:* aynı taklit, on iki örneklemenin **hepsinde** uyarı
+görünüyor (*"İlerleme kaydedilemiyor — tarayıcın depolamayı
+engelliyor"*), ekran görüntüsüyle de doğrulandı.
 
 ### E6 ve E6b neden ikiz
 
