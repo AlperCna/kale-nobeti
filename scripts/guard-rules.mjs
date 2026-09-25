@@ -1388,6 +1388,39 @@ const sonuclar = [];
 }
 
 // ---------------------------------------------------------------------
+// 27 — `data/` ve `types/` YAPRAK katman (TIER 1 kural 1'in dayanağı)
+//
+// k.1 "denge verisi `src/data/*.ts` içindeki tipli sabitlerde durur" diyor
+// ve gücü **tek adres** olmasından geliyor. `data/` uygulama katmanına
+// bakmaya başlarsa o adres tek olmaktan çıkar: sayı `systems/`'e yazılıp
+// `data/`'ya içe aktarılabilir ve kural sözde sağlanmış görünür.
+// `M158` tam bu sınıftan bir ihlal buldu — `BOSS_CEILING_RATIO`
+// (`research/01` §12'den gelen, bandı belgelenmiş bir denge oranı)
+// `systems/balanceChecks.ts`'te yaşıyordu ve orada hiç kullanılmıyordu.
+//
+// Kural k.1'in KENDİSİNİ denetlemiyor — o düzenli ifadeyle denetlenebilir
+// değil (bir sayının "denge" mi "sunum" mu olduğunu ad söylemiyor; tarama
+// `NAMLU_ORANI` gibi görsel sabitleri de yakalıyordu). Denetlediği şey
+// k.1'in **yapısal ön koşulu**: yön. Testler muaf, onlar her katmanı
+// okuyabilir.
+// ---------------------------------------------------------------------
+{
+  let ihlalVar = false;
+  const YAPRAK = /(^|[\\/])src[\\/](data|types)[\\/][^\\/]+\.ts$/;
+  const UYGULAMA = /from\s+['"][^'"]*\.\.[\\/](systems|scenes|fx|entities)[\\/]/;
+  for (const dosya of dosyalar) {
+    if (!YAPRAK.test(dosya) || /\.test\.ts$/.test(dosya)) continue;
+    for (const s of kodSatirlari(readFileSync(dosya, 'utf8'))) {
+      if (UYGULAMA.test(s.metin)) {
+        ihlalVar = true;
+        ihlal('k.1 ', dosya, s.no, `yaprak katman uygulama katmanına bakıyor: ${s.metin.trim()}`);
+      }
+    }
+  }
+  sonuclar.push(['k.1  data/ ve types/ yaprak — uygulama katmanına bakmıyor', !ihlalVar]);
+}
+
+// ---------------------------------------------------------------------
 
 const gecen = sonuclar.filter(([, ok]) => ok).length;
 if (taranamayan.length > 0) {

@@ -147,6 +147,19 @@ export const BOSS_ARMOR_BY_MAP: Readonly<Record<string, number>> = {
  * kuralın **refakat** ayağını besliyor — bossun kendisi hâlâ garantili
  * ölüyor.
  */
+/**
+ * Boss'un tavana oranı — `research/01` §12 ve `GAME-DESIGN.md` §5.
+ * Hedef band %75-85; türetme ortayı alıyor.
+ *
+ * **`M158`'e kadar `systems/balanceChecks.ts`'te duruyordu** ve orada
+ * TIER 1 kural 1'i ihlal ediyordu: gerekçesi araştırmadan gelen, bandı
+ * belgelenmiş bir **denge sayısı** sistem dosyasında yaşıyordu.
+ * `balanceChecks` onu kullanmıyordu bile — tek tüketicisi aşağıdaki
+ * tablonun türetildiği `bossScaling.test.ts`. Adresi burası, çünkü
+ * `BOSS_HP_BY_MAP`'in her satırı bu oranla türetildi.
+ */
+export const BOSS_CEILING_RATIO = 0.8;
+
 export const BOSS_HP_BY_MAP: Readonly<Record<string, number>> = {
   'degirmen-gecidi': 700, // §5'in belgelenmiş değeri (türetme 718 diyor)
   // **`M11` Faz 5 (S95): 712 → 859.** Okçu ailesi güçlenince (ölü

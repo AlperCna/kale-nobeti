@@ -932,9 +932,10 @@ ifade sezgiseli ve her biri **kasıtlı bozmayla** doğrulandı.
 | 24 | M114 dokunma hedefi ölçülü nesnede |
 | 25 | M122 strings.ts ölü oyuncu metni taşımıyor |
 | 26 | k.3  HAVUZ_ALANLARI eksiksiz (yaşamdaki setter bildirilmiş) |
+| 27 | k.1  data/ ve types/ yaprak — uygulama katmanına bakmıyor |
 
 Liste **türetilmiş**: üretici bekçiyi koşturup çıktısını okuyor, elle
-sayılmıyor. Bugün **26** kural var.
+sayılmıyor. Bugün **27** kural var.
 
 Sahne alanları kuralı **dört kez çıkan** bir hatadan doğdu: alan
 başlatıcısı yalnız bir kez koşuyor, `create()` her yeniden başlatmada.
