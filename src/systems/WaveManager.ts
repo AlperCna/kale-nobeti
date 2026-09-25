@@ -231,6 +231,21 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
        * davranışın üstüne türetilmiş — düzeltmek çarpanları, dalga
        * bütçelerini ve boss ölçeklemesini yeniden türetmek demek.
        * Kayıt: `plan/OPEN-QUESTIONS.md` **S169**.
+       *
+       * **`M154` — düzeltmenin reçetesi uçtan uca koşturuldu ve sınır
+       * ölçüldü.** `M145`-`M149`'un türettiği paket (bu satır + yeraltı
+       * penceresi `0,6 → 0,5` + HP vektörü `1,0 · 1,3 · 1,7 · 5,145 ·
+       * 7,4 · 8,08`) **rampaları kurtarıyor** — Normal `0 · 3 · 5 · 9 ·
+       * 12 · 13` katı artan, Kolay azalmıyor, hiçbir aile 20'yi aşmıyor.
+       * Ama **14 test / 9 dosya** kırılıyor ve altısı sayıyla kapanmıyor:
+       * hepsi **karşılaştırmalı** iddia (hangi aile iyi · hangi hedefleme ·
+       * hangi politika · hangi dalga doruk) ve hepsi **donmuş dünyada**
+       * ölçüldü. En keskini: donma kalkınca `erkenPolitika`'nın yönü
+       * **tersine dönüyor** (Taş Köprü'de `hemen` 1, `hic` 3), yani
+       * bütün denge sayılarının tabanı olan *"en muhafazakâr politika
+       * `hic`'tir"* düşüyor. Donma bir denge parametresi değil **zemin**:
+       * kalkınca büyüklükler değil **sıralamalar** değişiyor ve HP
+       * vektörü sıralamayı hareket ettiremiyor.
        */
       // Sayaç dolunca dalga **otomatik** başlıyor (S29). Erken başlatma
       // bir seçenek, zorunluluk değil — §6'nın bonus formülü zaten bunu
