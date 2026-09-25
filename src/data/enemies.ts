@@ -456,6 +456,14 @@ const KAR_GECIDI_SUSTURMA = {
   cooldownSeconds: 6,
 } as const;
 
+/** Harpi sürüsünün susturması — sayıları `M143`'te tarandı, boss'unkinden ayrı. */
+const KAR_GECIDI_HARPI_SUSTURMA = {
+  kind: 'silence',
+  radius: COVERAGE_REFERENCE_RANGE,
+  seconds: 1,
+  cooldownSeconds: 12,
+} as const;
+
 const BOSS_YETENEGI: Readonly<Record<string, EnemyAbility>> = {
   'kadim-harabe': KADIM_HARABE_EVRE2,
   'kar-gecidi': KAR_GECIDI_SUSTURMA,
@@ -473,6 +481,42 @@ export function getEnemyForMap(
   }
   const temel = getEnemy(id);
   if (temel === undefined) return undefined;
+  /**
+   * **`M143` — Kar Geçidi'nin harpileri de susturuyor.**
+   *
+   * `M140` susturmayı boss'a vermişti ve oyuncu ona **kampanya başına
+   * bir kez** rastlıyordu. Sahibin isteğiyle ikinci bir taşıyıcı arandı;
+   * beş aday (yeteneği boş olan kadro) ölçülerek elendi:
+   *
+   * | aday | can | susturma | ilk dalga |
+   * |---|---|---|---|
+   * | yalnız boss | 12 | 8 | d10 |
+   * | **Harpi** | **12** | 95 | d6 |
+   * | Kurt Binicisi | 12 | 71 | d5 |
+   * | goblin | 14 | 959 | d1 |
+   * | Ork Savaşçı | 14 | 868 | d2 |
+   * | Zırhlı Ork | **20 — harita düşüyor** | 418 | d3 |
+   *
+   * goblin ve Ork Savaşçı kadronun en kalabalıkları; ~900 susturma
+   * mekanik değil **abluka**. Zırhlı Ork haritayı kaybettiriyor. Kurt
+   * Binicisi ölçümde neredeyse dekor (yalnız Top tahtasına +1).
+   *
+   * **Harpi seçildi** çünkü tek bedel veren aday o (aile tahtalarına
+   * +1/+2) ve **uçtuğu için yer yolunu değil uçan hattını** susturuyor,
+   * yani boss'unkinden farklı bir coğrafya. Karışık tahta ve rampa
+   * kıpırdamıyor. Ölçüm tablosu `GAME-DESIGN.md` §5'te.
+   *
+   * **Sayıları boss'unkinden AYRI ve bu ölçülerek zorunlu oldu:**
+   * harpi boss'un sabitiyle (2 sn / 6 sn) koşulduğunda Büyü tahtası
+   * harita 4'te **21 can** kaybediyor, yani harita kaybediliyor
+   * (`aileDengesi` kırıldı). Sebep `M141`'in bulgusunun büyütülmüş
+   * hâli: susturma zaten boss'a karşı en zayıf aileyi eziyor. Sürü
+   * taşıyıcı tek taşıyıcıdan çok daha sık susturuyor, o yüzden aynı
+   * sayı iki yerde aynı anlama gelmiyor.
+   */
+  if (map.id === 'kar-gecidi' && id === 'harpi') {
+    return { ...temel, ability: KAR_GECIDI_HARPI_SUSTURMA };
+  }
   if (map.id === 'kar-gecidi' && id === 'orkSavasci') {
     return { ...temel, shield: KAR_GECIDI_KALKANI };
   }

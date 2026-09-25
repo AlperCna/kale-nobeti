@@ -24,6 +24,8 @@ import { measureCoverage } from '../util/coverage';
 import { MAPS, MAP_4, COVERAGE_REFERENCE_RANGE } from '../data/maps';
 import { getEnemyForMap, GOBLIN } from '../data/enemies';
 import { OKCU, TOWERS } from '../data/towers';
+import { enemySummary } from '../fx/enemyLabel';
+import { t } from '../util/i18n';
 import type { Targetable } from '../types/enemy';
 import type { TowerRuntime } from '../types/tower';
 
@@ -111,6 +113,39 @@ describe('susturma — veri ve ölçüm', () => {
   });
 
   /**
+   * **`M143` — ikinci taşıyıcı: harita 4'ün harpisi.**
+   *
+   * Susturma `M140`'ta yalnız boss'taydı, yani oyuncu ona kampanya
+   * başına **bir kez** rastlıyordu. Harpi onu 5-6 dalgaya yayıyor ve
+   * **uçtuğu için** yer yolunu değil uçan hattını susturuyor.
+   *
+   * Yalnız harita 4'te: başka haritaların harpisi düz kalmalı, yoksa
+   * `bossScaling`'in "boss dışındaki düşmanlar değişmedi" iddiası
+   * sessizce genişlerdi.
+   */
+  /**
+   * **Oyuncuya SÖYLENİYOR** — TIER 2'nin "oyuncu metinleri" yüzeyi.
+   *
+   * Dalga telgrafı düşmanı **haritaya göre** çözüyor (`M15`/S106), yani
+   * Kar Geçidi'nin harpisinin etiketinde susturma yazıyor, başka
+   * haritanınkinde yazmıyor. Bu, `M12`'nin yeraltı geçişi için koyduğu
+   * ölçütle aynı: mekanik sonucu değiştiriyorsa oyuncu onu dalga
+   * gelmeden görmeli. Ayrı bir ipucu verilmedi — çağırmayla aynı
+   * gerekçe: olay görünür (kulede işaret) ve telgraf zaten söylüyor.
+   */
+  it('dalga telgrafı harita 4’ün harpisinde susturmayı YAZIYOR', () => {
+    const harita4 = getEnemyForMap('harpi', MAP_4)!;
+    const harita2 = getEnemyForMap('harpi', MAPS[1]!)!;
+    expect(enemySummary(harita4)).toContain(t('statSilence'));
+    expect(enemySummary(harita2)).not.toContain(t('statSilence'));
+  });
+
+  it('harpi YALNIZ harita 4’te susturuyor', () => {
+    const tasiyan = MAPS.filter((m) => getEnemyForMap('harpi', m)?.ability?.kind === 'silence');
+    expect(tasiyan.map((m) => m.id)).toEqual(['kar-gecidi']);
+  });
+
+  /**
    * **Dekor değil.** Dengeye etkisi ölçülemeyen bir mekanik dekordur;
    * bu sağlama susturmanın gerçekten uygulandığını ölçüyor. Sayı `M140`'ta
    * **8** ölçüldü ve hepsi dalga 10'da (boss dalgası) — alt sınır
@@ -145,8 +180,19 @@ describe('susturma — veri ve ölçüm', () => {
    * görünüyor, iyi bir tahta soğuruyor. Bu test o kararı bağlıyor —
    * sayılar uçurumun üstüne çıkarsa kırılır.
    */
-  it('referans tahtanın can kaybını DEĞİŞTİRMİYOR', () => {
-    expect(referansCanKaybi(MAP_4)).toBe(12);
+  /**
+   * **`M143` — rampa artık +1 KIPIRDIYOR ve bu bilinçli.**
+   *
+   * `M140`'ta susturma yalnız boss'taydı ve harita 4 **12**'de kalıyordu.
+   * `M143` harpiyi de susturucu yapınca **13** oldu — rampa
+   * `0 · 2 · 9 · 13 · 14 · 17`, hâlâ monoton ve aslında daha yumuşak
+   * (eski sıçrama 9 → 12 → 14 idi).
+   *
+   * Sayı burada bağlı çünkü harpinin süresi/beklemesi bu değere göre
+   * seçildi; değişirse ikisi birlikte yeniden türetilmeli.
+   */
+  it('rampadaki yeri: harita 4 = 13', () => {
+    expect(referansCanKaybi(MAP_4)).toBe(13);
   });
 
   /**

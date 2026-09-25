@@ -510,7 +510,7 @@ menzilinden geçmeli (8 noktalı haritada ≥ 3). `util/coverage.ts` ile ölçü
 | Ogre Şef | Büyü + Top, **`weakest` ya da `closest`** hedefleme (S94: `strongest` ölçümde en kötü çıktı), Meteor |
 | **Buz kalkanı** (harita 4 Ork Savaşçı) | Patlama/ağır vuruş — kalkan **toplam** bir havuz, erimeden cana hasar geçmiyor |
 | **Ogre Şef 2. evre** (harita 5, can %50) | Hız ×1,6 — kaleye varmadan bitirmek gerekiyor |
-| **Ogre Şef susturma** (harita 4, `M140`) | Yanındaki kule 2 sn susuyor. **Ölçülen cevap: karışık tahta** — tek aileyle, özellikle Büyü ile karşılamak bedeli doğuruyor (aşağıdaki `M141` ölçümü) |
+| **Susturma** (harita 4 — boss `M140`, **harpi `M143`**) | Boss 2 sn, harpi 1 sn kule susturuyor. **Ölçülen cevap: karışık tahta** — tek aileyle, özellikle Büyü ile karşılamak bedeli doğuruyor (`M141`) |
 <!-- SUSTURMA-KAYDI -->
 
 **`M140` — susturma: yeni eksen, ve cevabın KESİKLİ olduğu bulgusu.**
@@ -582,6 +582,47 @@ yazılırken bu göz ardı edilmişti.
 **Yöntem kaydı:** susturma `BOSS_YETENEGI`'den çıkarılıp aynı tahtalar
 yeniden koşuldu; tek aile tahtaları `buildReferenceBoards`'un
 `tekAile` parametresiyle üretildi (S95'in ölçüm yolu).
+
+**`M143` — ikinci taşıyıcı: Kar Geçidi'nin harpisi.** `M140`'ta susturma
+yalnız boss'taydı, yani oyuncu ona **kampanya başına bir kez**
+rastlıyordu. Sahibin isteğiyle ikinci bir taşıyıcı arandı. Sanat kısıtı
+aynı kaldı (atlas'ta boş kare yok), o yüzden aday kümesi harita 4'ün
+kadrosunda **yeteneği boş olan** düşmanlar; beşi de ölçüldü:
+
+| aday | rampa (harita 4) | susturma | ilk dalga |
+|---|---|---|---|
+| yalnız boss | 12 | 8 | d10 |
+| **Harpi** | 12 | 95 | d6 |
+| Kurt Binicisi | 12 | 71 | d5 |
+| goblin | 14 | **959** | d1 |
+| Ork Savaşçı | 14 | **868** | d2 |
+| Zırhlı Ork | **20 — harita düşüyor** | 418 | d3 |
+
+goblin ve Ork Savaşçı kadronun en kalabalıkları ve ~900 susturma bir
+mekanik değil **abluka**. Zırhlı Ork haritayı kaybettiriyor. Kurt
+Binicisi ölçümde neredeyse dekor (yalnız Top tahtasına +1). **Harpi
+seçildi:** bedel veren tek aday o, ve **uçtuğu için** yer yolunu değil
+uçan hattını susturuyor — boss'unkinden farklı bir coğrafya.
+
+**Sayıları boss'unkinden ayrı, ve bu ölçülerek zorunlu oldu.** Harpi
+boss'un sabitiyle (2 sn / 6 sn) koşulduğunda Büyü tahtası harita 4'te
+**21 can** kaybediyor, yani harita kaybediliyor. Tarama:
+
+| süre \ bekleme | 6 sn | 12 sn | 20 sn |
+|---|---|---|---|
+| 2 sn | **21 ✗** | — | **20 ✗** |
+| 1 sn | **20 ✗** | **geçiyor** | geçiyor |
+
+Seçilen **1 sn / 12 sn** — geçen iki değerden daha sık olanı, çünkü
+verb'ün *hissedilmesi* isteğin kendisiydi. Rampa `0 · 2 · 9 · **13** ·
+14 · 17` oldu: hâlâ monoton ve aslında daha yumuşak (eski sıçrama
+9 → 12 → 14).
+
+**Sınır susturmadan değil, önceden var olan bir paydan geliyor:** Kar
+Geçidi'nde Büyü tahtası zaten **19/20**'ydi ve `aileDengesi`'nin kendi
+notu bunu "en dar pay" diye yazıyordu. Bugün Top da 19. Yani harita 4
+tek aileyle oynayan biri için zaten sınırda; susturma o sınırı
+görünür kıldı, yaratmadı.
 | **Tünelci** (`M12`, yeraltı geçişi) | Yolun %15-%60'ında **hedeflenemez**: kuleleri aralığın DIŞINA kur. Patlama ve önceden tutuşmuş yanma hâlâ değer |
 
 **Yeni mekanikler oyuncuya söyleniyor (`M15`).** Dalga telgrafı düşmanı **haritaya göre** çözüyor — eskiden temel tanımı gösteriyordu ve harita 6'nın bossunu "zırh 10, yetenek yok" diye yazıyordu (S106). Yeraltı geçişi ayrıca bir öğretici ipucu alıyor (`hintBurrow`), buz kalkanıyla aynı ölçütle: sonucu değiştiriyor ve kendiliğinden keşfedilemiyor. **Çağırmaya ipucu verilmedi** — olay görünür (ekrana yandaş geliyor) ve telgraf zaten "yandaş çağırır" diyor.
@@ -987,7 +1028,7 @@ düzeltildi:
 | 1 · Değirmen Geçidi | 1 | 1 | 0 | 0 |
 | 2 · Taş Köprü | 1,6 | 2,2 | 2 | 0 |
 | 3 · Kül Ovası | 2,8 | 3,8 | 9 | 2 |
-| 4 · Kar Geçidi | 7,35 | 7,8 | 12 | 4 |
+| 4 · Kar Geçidi | 7,35 | 7,8 | 13 | 2 |
 | 5 · Kadim Harabe | 10,05 | 10,2 | 14 | 5 |
 | 6 · Sisli Bataklık | 8,5 | 11 | 17 | 8 |
 <!-- /ÜRETİLEN:rampa -->
