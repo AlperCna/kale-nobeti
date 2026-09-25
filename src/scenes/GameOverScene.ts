@@ -233,9 +233,16 @@ export class GameOverScene extends Phaser.Scene {
              * **`M128`** — sonsuz elde "Ulaşılan dalga" **manşette** zaten
              * yazıyor (`UST + 104`, rekorla birlikte) ve orada elin
              * *skoru*; tabloda üç satır arayla ikinci kez göstermek aynı
-             * sayıyı tekrar ediyordu. Kampanyada manşet yok, satır duruyor.
+             * sayıyı tekrar ediyordu.
+             *
+             * **`M159` — kampanya ZAFERİNDE de düşüyor, aynı gerekçeyle.**
+             * Kampanyayı kazanmak bütün dalgaları bitirmek demek, yani
+             * satır her zaman harita uzunluğunu (10) yazıyordu: sabit bir
+             * sayı, sıfır bilgi. Kaybedilen elde ise tablonun **en çok şey
+             * söyleyen** satırı — "dördüncü dalgada düştüm". `M128` bu
+             * ölçütü koyduğunda yalnız sonsuz modu görmüştü.
              */
-            ...(this.#data.endless === true
+            ...(this.#data.endless === true || won
               ? []
               : ([[t('statPeakWave'), String(s.peakWave)]] as const)),
             [
