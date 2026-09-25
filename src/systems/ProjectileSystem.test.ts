@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { ProjectileSystem } from './ProjectileSystem';
+import { ProjectileSystem, resetProjectileState } from './ProjectileSystem';
 import { Pool } from '../util/pool';
 import type { Poolable } from '../util/pool';
 import type { ProjectileState } from '../types/projectile';
@@ -381,5 +381,66 @@ describe('ProjectileSystem — boşa giden mermi (S24)', () => {
     at(sys, { target: hedef });
     for (let i = 0; i < 30 && sys.activeCount > 0; i++) sys.update(1000 / 60, [hedef]);
     expect(onBosa).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * **`M142` — merminin mantıksal sıfırlaması artık SAF ve TAM.**
+ *
+ * Havuzlanan üç varlıktan ikisi (Enemy, Soldier) mantıksal sıfırlamayı
+ * `systems/` içindeki saf bir fonksiyona devrediyordu; mermi bu desenin
+ * dışındaydı — sıfırlaması entity'nin içinde satır satır duruyordu, yani
+ * `node`'da doğrudan sınanamıyor ve tamlığı hiçbir şeye bağlanmıyordu.
+ * `M140` aynı boşluğu `EnemyState` tarafında ölçmüştü: sıfırlama satırı
+ * silindiğinde elle sayan test de bekçi de yeşil kalıyor.
+ *
+ * İki nesne **tam nesne değişmezi**: `ProjectileState`'e bir alan
+ * eklendiği an ikisi de derlenmez.
+ */
+describe('resetProjectileState — TIER 1 kural 3', () => {
+  it('HER alan sıfırlanıyor, liste derleyicide', () => {
+    const hedef: Targetable = dusman({ x: 300, y: 300 });
+    const kirli: ProjectileState<Targetable> = {
+      x: 120,
+      y: 240,
+      target: hedef,
+      damage: 34,
+      damageType: 'magic',
+      speed: 600,
+      splashRadius: 55,
+      hitRadius: 12,
+      effect: { kind: 'burn', dps: 11, seconds: 4 },
+      alive: true,
+      lastKnownX: 300,
+      lastKnownY: 300,
+    };
+    const temiz: ProjectileState<Targetable> = {
+      x: 0,
+      y: 0,
+      target: null,
+      damage: 0,
+      damageType: 'physical',
+      speed: 0,
+      splashRadius: 0,
+      hitRadius: 0,
+      effect: undefined,
+      alive: false,
+      lastKnownX: 0,
+      lastKnownY: 0,
+    };
+
+    resetProjectileState(kirli);
+    expect(kirli).toEqual(temiz);
+  });
+
+  it('ölü hedef referansı BIRAKILIYOR — kural 3’ün kendi örneği', () => {
+    const hedef = dusman({ x: 10, y: 0 });
+    const m: ProjectileState<Targetable> = {
+      x: 0, y: 0, target: hedef, damage: 1, damageType: 'physical',
+      speed: 1, splashRadius: 0, hitRadius: 1, effect: undefined,
+      alive: true, lastKnownX: 0, lastKnownY: 0,
+    };
+    resetProjectileState(m);
+    expect(m.target).toBeNull();
   });
 });

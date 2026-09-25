@@ -606,6 +606,66 @@ describe('Havuz sözleşmesi (TIER 1 kural 3)', () => {
     expect(s.flipX).toBe(false); // G06
   });
 
+  /**
+   * **`M142` — tamlık DERLEYICIYE bağlandı.**
+   *
+   * Yukarıdaki test on alanı sayıyor, `SoldierState`'te **on altı** var;
+   * `home`, `rally`, `x`, `y`, `maxHp`, `speed` hiç kontrol edilmiyordu.
+   * `M140`'ta aynı boşluk `EnemyState` tarafında ölçüldü: sıfırlama
+   * satırı silindiğinde hem elle sayan test hem bekçi yeşil kalıyordu.
+   *
+   * Buradaki iki nesne **tam nesne değişmezi**: `SoldierState`'e bir
+   * alan eklendiği an ikisi de derlenmez ve ekleyen "sıfırlanmış hâli
+   * nedir" sorusunu cevaplamak zorunda kalır.
+   *
+   * **`home` ve `rally` bilerek sıfırlanmıyor** — kışlanın kimliği
+   * onlar, askerin değil; `spawnSoldier` her doğuşta ikisini de
+   * yazıyor. Beklenen nesne bunu kirli değerleriyle taşıyor, yani karar
+   * saklanmıyor, **yazılı**.
+   */
+  it('resetSoldierState — HER alan, liste derleyicide', () => {
+    const kirli: SoldierState = {
+      x: 120,
+      y: 240,
+      hp: 30,
+      maxHp: 75,
+      dps: 9,
+      engagedWith: null,
+      home: { x: 500, y: 500 },
+      rally: { x: 600, y: 600 },
+      state: 'fighting',
+      respawnLeft: 3,
+      shield: 12,
+      evasion: 0.25,
+      lifetimeLeft: 5,
+      speed: 60,
+      alive: true,
+      flipX: true,
+    };
+    const temiz: SoldierState = {
+      x: 0,
+      y: 0,
+      hp: 0,
+      maxHp: 0,
+      dps: 0,
+      engagedWith: null,
+      // Sıfırlanmıyor — kışlanın alanı, `spawnSoldier` yazıyor.
+      home: { x: 500, y: 500 },
+      rally: { x: 600, y: 600 },
+      state: 'dead',
+      respawnLeft: 0,
+      shield: 0,
+      evasion: 0,
+      lifetimeLeft: Number.POSITIVE_INFINITY,
+      speed: 0,
+      alive: false,
+      flipX: false,
+    };
+
+    resetSoldierState(kirli);
+    expect(kirli).toEqual(temiz);
+  });
+
   it('havuzda bekleyen asker (alive=false) adım atmıyor', () => {
     const s = asker();
     resetSoldierState(s);

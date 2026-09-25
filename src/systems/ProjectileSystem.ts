@@ -59,6 +59,34 @@ export type DamageHandler<E extends Targetable> = (
 /** Süreli etkiyi düşmana uygular. `effects.ts` saf tarafı yapıyor. */
 export type EffectHandler<E extends Targetable> = (enemy: E, effect: TowerEffect) => void;
 
+/**
+ * Merminin **mantıksal** durumunu sıfırlar — `M142`, TIER 1 kural 3.
+ *
+ * `resetEnemyState` (`movers.ts`) ve `resetSoldierState` (`BarracksSystem`)
+ * ile aynı desen: havuzlanan üç varlığın üçünde de mantıksal sıfırlama
+ * **saf ve Phaser'sız** bir fonksiyonda, görsel sıfırlama `entities/`
+ * tarafında. Mermi `M142`'ye kadar bu desenin dışındaydı — sıfırlaması
+ * entity'nin içinde satır satır duruyordu, yani `node`'da doğrudan
+ * sınanamıyordu ve tamlığı hiçbir şeye bağlı değildi.
+ *
+ * `trail`/`trailColor` **burada değil**: onlar `ProjectileState`'in değil
+ * görünümün alanı ve entity sıfırlıyor.
+ */
+export function resetProjectileState<E extends Targetable>(m: ProjectileState<E>): void {
+  m.x = 0;
+  m.y = 0;
+  m.target = null;
+  m.damage = 0;
+  m.damageType = 'physical';
+  m.speed = 0;
+  m.splashRadius = 0;
+  m.hitRadius = 0;
+  m.effect = undefined;
+  m.alive = false;
+  m.lastKnownX = 0;
+  m.lastKnownY = 0;
+}
+
 export class ProjectileSystem<E extends Targetable, T extends ProjectileState<E> & Poolable> {
   constructor(
     private readonly pool: Pool<T>,
