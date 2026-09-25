@@ -549,3 +549,39 @@ describe('WaveManager — hazırlık sahayı DONDURUR (S169 kuralı)', () => {
     );
   });
 });
+
+/**
+ * **Dalga olaylarının TABANI — `M159`.**
+ *
+ * `types/events.ts` yıllardır *"`wave:started`'ın 0 tabanlı `index`'i"*
+ * diyordu ve `wave:ended` ile arasında **bilinçli bir taban farkı**
+ * olduğunu anlatıyordu. Yanlıştı: `WaveManager` `wave.index`'i yayıyor ve
+ * `data/waves.ts` dalgaları `dalgaKur(1..10)` ile kuruyor. Üç dinleyicinin
+ * üçü de zaten **1 tabanlı** davranıyordu — yani kod doğru, **sözleşme
+ * metni** yanlıştı. Metne güvenip `+1` yapan dördüncü bir dinleyici
+ * sessizce bir dalga kayardı.
+ *
+ * Taban artık burada bağlı; ikisi de aynı.
+ */
+describe('dalga olayları 1 TABANLI (M159)', () => {
+  it('wave:started ilk dalgada 1 diyor — 0 değil', () => {
+    const { wm, bus } = kur();
+    const gorulen: number[] = [];
+    bus.on('wave:started', ({ index }) => gorulen.push(index));
+    wm.startWaveEarly();
+    expect(gorulen[0], 'ilk dalga 1 olmalı').toBe(1);
+    expect(MAP1_WAVES[0]?.index, 'veri de 1 tabanlı').toBe(1);
+  });
+
+  it('wave:ended de 1 tabanlı — ikisi arasında taban farkı YOK', () => {
+    const { wm, bus } = kur();
+    const baslayan: number[] = [];
+    const biten: number[] = [];
+    bus.on('wave:started', ({ index }) => baslayan.push(index));
+    bus.on('wave:ended', ({ index }) => biten.push(index));
+    wm.startWaveEarly();
+    for (let i = 0; i < 60 * 180 && biten.length === 0; i++) wm.update(1000 / 60);
+    expect(biten[0], 'biten ilk dalga 1').toBe(1);
+    expect(biten[0]).toBe(baslayan[0]);
+  });
+});

@@ -22,13 +22,27 @@ export type GoldChangeReason = 'kill' | 'waveBonus' | 'earlyBonus' | 'sell' | 's
 
 export interface GameEvents {
   'enemy:killed': { readonly id: number; readonly gold: number };
+  /**
+   * `index` **1 tabanlı dalga numarası** — ilk dalga `1`.
+   *
+   * **`M159` — bu satır yıllarca yanlış belgelendi.** Aşağıdaki
+   * `wave:ended` notu *"`wave:started`'ın 0 tabanlı `index`'i"* diyor ve
+   * ikisi arasında **bilinçli bir taban farkı** olduğunu anlatıyordu.
+   * Öyle değil: `WaveManager` `wave.index`'i yayıyor, `data/waves.ts` ise
+   * dalgaları `dalgaKur(1..10)` ile kuruyor (sonsuz mod da `waveAt(i + 1)`).
+   * Üç dinleyicinin üçü de zaten 1 tabanlı davranıyordu — `RunStats`
+   * (“Ulaşılan dalga” satırı), `waveSim` (`tahtayiHazirla(index - 1)`),
+   * `SoundSystem` (`waveList.find((w) => w.index === index)`). Yani **kod
+   * doğru, sözleşme metni yanlıştı**; metne güvenip `+1` yapan dördüncü
+   * bir dinleyici sessizce bir dalga kayardı. Taban artık
+   * `WaveManager.test.ts` içinde **bağlı**.
+   */
   'wave:started': { readonly index: number };
   /**
    * M6-T11 — dalga bitince yayılıyor. `music_game` dalga 1 bitince başlıyor.
    *
-   * `index` **1 tabanlı biten dalga numarası** (`wave:started`'ın 0 tabanlı
-   * `index`'iyle aynı ad, farklı taban — `M10-T02`'de fark edildi, adlar
-   * korunuyor çünkü ikisi de yayınlanmış sözleşme).
+   * `index` **1 tabanlı biten dalga numarası** — `wave:started` ile
+   * **aynı taban** (`M159`; eskiden burada bir fark olduğu yazıyordu).
    *
    * Olay `WaveManager`'ın sayacı **artmadan önce** yayılıyor: dinleyici
    * "sıradaki dalga" isterse `index`'i 0 tabanlı sıradaki indeks olarak
