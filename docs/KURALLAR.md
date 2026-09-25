@@ -289,7 +289,8 @@ testle bağlı: `bossScaling.test`’in regresyon kilidi (yazılı HP’ler öl�
 
 değerlerdir) · `kisitB`’nin “boss hiçbir haritada sızmıyor”u · `kisitB`’nin
 
-“boss dalgası haritanın zirvesi”i (`M70`). Gerekçe `bossScaling.ts` başlığında.
+“Doruk sonda” (`M70` → `M153`): boss dalgası bedelsiz olamaz **ve** son üç dalga
+haritanın toplam can hasarının yarısından fazlasını taşır. Gerekçe `bossScaling.ts` başlığında.
 
 ---
 

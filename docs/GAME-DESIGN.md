@@ -854,6 +854,18 @@ Boss dalgaları: her haritanın 10. dalgası. **Boss refakatsiz gelir** veya
 refakat boss'tan *sonra* gönderilir — aksi halde `first` hedeflemesi bütün
 ateşi refakate yönlendirir ve boss serbest yürür.
 
+**Doruk sonda (S135).** Bir haritanın baskısı sona doğru toplanır: **final
+bedelsiz olamaz** ve **son üç dalga, haritanın toplam can hasarının yarısından
+fazlasını taşır.** Sağlaması `systems/kisitB.test.ts` içinde ve can hasarını
+düşmanı **doğuran** dalgaya yazar (`SimResult.canDogumDalgasina`) — sızdığı ana
+değil, çünkü bir dalganın kuyruğu sonrakinin üstüne binebiliyor (§7'nin
+örtüşme tasarımı). Kural `M70`'te *"boss dalgası haritanın sayısal zirvesidir"*
+diye kondu; `M153`'te bu biçime geçti, çünkü S116 ağırlığı bilerek orta oyuna
+taşıdıktan sonra ikisi Kar Geçidi'nde aynı anda sağlanamıyordu ve altı bütçe
+varyantı da başka bir sağlamayı kırdı. Ölçülen paylar: Kül Ovası %78 · Kar
+Geçidi %62 · Kadim Harabe %79 · Sisli Bataklık %82. Muafiyet: `FINAL_ZIRVE_MUAF`
+(bugün yalnız Taş Köprü, gerekçesi `waves.ts` içinde).
+
 ### Dalga telegrafı (zorunlu)
 Hazırlık aşamasında gelecek dalganın kompozisyonu ikonlarla gösterilir:
 `🗡️×8  🛡️×3  🦅×4`. Oyuncunun körlemesine oynaması türün en yaygın şikâyeti.
