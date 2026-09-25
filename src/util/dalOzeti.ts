@@ -28,7 +28,17 @@ export function etkiMetni(e: TowerEffect): string {
     return `${t('infoEffectBurn')} ${saniyede(e.dps)} · ${saniye(e.seconds)}`;
   if (e.kind === 'slow')
     return `${t('infoEffectSlow')} ${yuzde(e.factor)} · ${saniye(e.seconds)}`;
-  return `${t('infoEffectChain')} ×${e.targets}`;
+  if (e.kind === 'chain') return `${t('infoEffectChain')} ×${e.targets}`;
+  /**
+   * **`M157` — örtük `else` kaldırıldı.** Zincir dalı eskiden son
+   * `return`'dü, yani dördüncü bir `TowerEffect` türü eklense oyuncuya
+   * sessizce **zincir metni** yazılırdı (`×undefined` ile). `never`
+   * ataması bunu derleme hatasına çeviriyor — `M156`'nın düşman
+   * yeteneklerinde yaptığının aynısı, bu kez tür şekilleri farklı
+   * olduğu için `Record` yerine tüketicilik sağlamasıyla.
+   */
+  const kalan: never = e;
+  throw new Error(`etkiMetni: bilinmeyen etki ${JSON.stringify(kalan)}`);
 }
 
 /**

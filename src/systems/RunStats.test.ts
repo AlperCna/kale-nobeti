@@ -1,11 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { RunStats } from './RunStats';
 import { EventBus } from './EventBus';
+import { DIFFICULTY } from '../data/difficulty';
 
-function kur(): { bus: EventBus; stats: RunStats; ilerlet: (ms: number) => void } {
+function kur(baslangicCan = 20): {
+  bus: EventBus;
+  stats: RunStats;
+  ilerlet: (ms: number) => void;
+} {
   const bus = new EventBus();
   let saat = 1000;
-  const stats = new RunStats(bus, () => saat, 280);
+  const stats = new RunStats(bus, () => saat, 280, baslangicCan);
   return { bus, stats, ilerlet: (ms) => (saat += ms) };
 }
 
@@ -41,6 +46,30 @@ describe('RunStats — M8-T03', () => {
     expect(stats.data.livesLost).toBe(1);
     bus.emit('life:lost', { remaining: 9 }); // boss sızdı
     expect(stats.data.livesLost).toBe(11);
+  });
+
+  /**
+   * **`M157` — taban artık TAHMİN değil.** Buradaki sayı sabitken
+   * (`START_LIVES_TAHMINI = 20`) Zor'da yanlıştı: `DIFFICULTY.zor
+   * .startLives` **12**, yani ilk can kaybında `20 − 11 = 9` çıkıyordu.
+   * `startGold` aynı sebeple üç alan yukarıda zaten kurucu
+   * parametresiydi; bu test iki tabanı da bağlıyor.
+   */
+  it('BAŞLANGIÇ CANI tabandan geliyor — Zor 12 canla doğru sayıyor (M157)', () => {
+    const { bus, stats } = kur(DIFFICULTY.zor.startLives);
+    expect(DIFFICULTY.zor.startLives, 'taban değişirse test de değişsin').toBe(12);
+    bus.emit('life:lost', { remaining: 11 });
+    expect(stats.data.livesLost, 'bir can kaybedildi').toBe(1);
+    bus.emit('life:lost', { remaining: 1 }); // boss sızdı
+    expect(stats.data.livesLost).toBe(11);
+  });
+
+  it('kolay ve normal aynı tabanı kullanıyor — sapma yok', () => {
+    for (const z of ['kolay', 'normal'] as const) {
+      const { bus, stats } = kur(DIFFICULTY[z].startLives);
+      bus.emit('life:lost', { remaining: DIFFICULTY[z].startLives - 3 });
+      expect(stats.data.livesLost, z).toBe(3);
+    }
   });
 
   it('tepe dalga GERİ GİTMİYOR', () => {
