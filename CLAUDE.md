@@ -288,7 +288,8 @@ public/assets/  atlas.png · atlas.json · bg/*.webp · audio/ · fonts/
   Sahne yeniden başlatma bu oyunda garanti: kaybedince tekrar dene,
   haritalar arası geçiş, seviye seçimden dönüş.
   Sızıntı çökme üretmez, **olayların iki kez işlenmesi** olarak görünür.
-  Çalışma zamanı sağlaması: `TEST-STRATEGY.md` E6b.
+  Çalışma zamanı sağlaması: `docs/plan/TEST-STRATEGY.md` E6b
+  (`M95`'te ölçüldü, `M115`'te yeniden).
 - `Enemy` kendi hasarını hesaplamaz; `combat.ts` içindeki saf `applyDamage()`
   fonksiyonu kullanılır (test edilebilir olsun diye).
 - Harita verisi (`maps.ts`) waypoint + yapı noktası koordinatları içerir.
