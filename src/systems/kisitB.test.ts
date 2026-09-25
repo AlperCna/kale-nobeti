@@ -76,6 +76,36 @@ function canKaybi(map: MapDef, waves: readonly Wave[]): number {
 }
 
 /** Dalga başına **can bedeli** — S135'in ölçütü. */
+/**
+ * **DİKKAT — bu yardımcı sızıntıyı SIZDIĞI ANA yazıyor** (`leakedByEnemy`),
+ * düşmanı **doğuran dalgaya** değil. `M151`'de ölçüldü ve fark büyük.
+ *
+ * `SimResult.canDogumDalgasina` tam bu soru için var (`M84`, S116) ve
+ * kendi notu şunu söylüyor: *"`leakedByEnemy` sızıntıyı sızdığı ana
+ * yazıyor… 9. dalganın Trol'ü 10. dalga koşarken kaleye varıyor ve
+ * bütün baskı finale yazılıyor"*. Bu test o düzeltilmiş alanı **hiç
+ * kullanmadı**.
+ *
+ * Bugünkü ağaçta iki muhasebe (referans tahta, dalga başına **can**):
+ *
+ * | harita | sızma anı | doğum dalgası |
+ * |---|---|---|
+ * | Kül Ovası | `… d8:2 d10:7` | `… d6:2 d10:7` |
+ * | Kar Geçidi | `… d8:5 **d10:8**` | `… **d7:5** d9:4 d10:4` |
+ * | Kadim Harabe | `… d8:2 d9:1 **d10:11**` | `… d6:3 **d9:8** d10:3` |
+ * | Sisli Bataklık | `d5:2 d7:1 **d10:14**` | `d4:2 d6:1 d9:5 **d10:9**` |
+ *
+ * **Sonuç:** doğum dalgasına göre ölçüldüğünde **harita 4 ve 5 kuralı
+ * ihlal ediyor** — Kar Geçidi'nde zirve d7 (5 > 4), Kadim Harabe'de d9
+ * (8 > 3). Yani "boss dalgası zirvedir" iddiası bu iki haritada yalnız
+ * **muhasebe** sayesinde geçiyor: 9. dalganın taşması 10'a yazılıyor.
+ *
+ * **Neden hâlâ düzeltilmedi:** kural `M70`'te **sahibin kararı**;
+ * doğru muhasebeye geçmek `FINAL_ZIRVE_MUAF`'ı 1'den 3'e çıkarmak
+ * (kuralın yarısını muaf tutmak) ya da harita 4-5'in dalga bütçelerini
+ * yeniden dağıtmak demek. İkisi de tasarım kararı. Kayıt:
+ * `plan/OPEN-QUESTIONS.md` **S170**.
+ */
 function dalgaBasinaCan(map: MapDef, waves: readonly Wave[]): number[] {
   return kosu(map, waves).sim.map((r) => {
     let can = 0;
