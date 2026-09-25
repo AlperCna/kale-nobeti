@@ -255,6 +255,34 @@ dokuzunun hepsi sayıldı ve turdan tura tek bir sayı bile değişmedi;
 `GameScene` doğrudan çiziyor). Bundan sonraki ölçüm tek bir sayıya
 bakabilir: **toplam 33**.
 
+### E6b — `M161`'de dördüncü kez; sızıntı yok, ama tablo bir satır eksikti
+
+`M136`'dan sonra `M137`-`M160` geçti (susturma verb'ü, hazırlık kuralı,
+`RunStats`'ın tabanı, bekçi kuralı 27). `RunStats` dikkate değer: beş
+`bus` dinleyicisini **kurucusunda** kaydediyor ve `GameScene` her
+`create()`'te yenisini yaratıyor — yani sızıntı olsaydı en hızlı buradan
+büyürdü.
+
+`Game` **beş kez** yeniden başlatıldı, on dokuz olayın hepsi sayıldı:
+
+| tur | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|
+| toplam dinleyici | 33 | 33 | 33 | 33 | 33 |
+
+Dağılım: `barracks:placed` 4 · `enemy:killed` 3 · `tower:placed` 3 ·
+`ability:upgraded` 2 · `enemy:burrowed` 2 · `gold:changed` 2 ·
+`life:lost` 2 · `targeting:opened` 2 · `tower:upgraded` 2 ·
+`wave:ended` 2 · `wave:started` 2 · `ability:cast` 1 ·
+`ability:upgradable` 1 · `enemy:healing` 1 · `enemy:shielded` 1 ·
+`game:paused` 1 · `purchase:denied` 1 · `wave:flyers` 1 ·
+`save:failed` **0** (bilerek).
+
+**Yan bulgu — `M136` tablosu on dokuz olaydan on sekizini sayıyor.**
+`ability:cast` satırı yok; o yüzden tablonun satırları **32** ediyor ama
+altındaki cümle doğru biçimde **33** diyor. Toplam yanlış değildi,
+*sayan liste* eksikti — `CLAUDE.md` TIER 2'nin birinci yüzeyi. Yukarıdaki
+dağılım on dokuzun hepsini taşıyor.
+
 ### E6 ve E6b neden ikiz
 
 İkisi de **sessiz birikme** sınıfından: ne çökme üretiyorlar ne hata
