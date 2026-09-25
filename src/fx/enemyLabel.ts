@@ -1,4 +1,4 @@
-import type { EnemyDef, EnemyId } from '../types/enemy';
+import type { EnemyAbility, EnemyDef, EnemyId } from '../types/enemy';
 import type { StringKey } from '../data/strings';
 import { t, yuzde } from '../util/i18n';
 
@@ -42,6 +42,35 @@ export function enemyName(id: EnemyId): string {
 }
 
 /**
+ * Yetenek türü → `strings.ts` anahtarı.
+ *
+ * **Neden yetenek telgrafta yazıyor:** `M13`'te boss'a çağırma eklendi
+ * ve telgraf onu söylemiyordu — oyuncu yandaşları ancak boss'u
+ * dilimleyince öğreniyordu; harita 5'in ikinci evresi de `M10`'dan beri
+ * sessizdi. Yetenek, oyuncunun karşı-oyun kararını değiştiren tek şey
+ * (bu dosyanın başlığı) ve "tam bilgi ver" kuralı (S93) onu **dalga
+ * gelmeden** göstermeyi istiyor.
+ *
+ * **`M156` — söz artık derleyicide.** Buranın yerinde yedi dallı bir
+ * `if/else if` zinciri ve üstünde *"her yetenek burada yazılı olmalı"*
+ * diye **elle tutulan bir söz** vardı. Bu projede elle tutulan söz
+ * tutulmuyor (CLAUDE.md TIER 2): sekizinci bir `kind` eklemek zinciri
+ * kırmaz, sessizce **etiketsiz** bir düşman üretir — yani oyuncuya
+ * mekaniği söylemeyen tam da o en tehlikeli yüzey. `Record<EnemyAbility
+ * ['kind'], StringKey>` eksik anahtarda `npm run typecheck`'i kırıyor,
+ * ve dosyanın kendi `AD_ANAHTARI`'ı zaten bu biçimdeydi.
+ */
+export const YETENEK_ANAHTARI: Readonly<Record<EnemyAbility['kind'], StringKey>> = {
+  regen: 'statRegen',
+  split: 'statSplit',
+  heal: 'statHeals',
+  burrow: 'statBurrow',
+  enrage: 'statEnrage',
+  summon: 'statSummon',
+  silence: 'statSilence',
+};
+
+/**
  * "Zırhlı Ork — zırh 8, uçar" gibi tek satır.
  *
  * Yalnız **sıfırdan farklı** savunmalar yazılıyor: goblin için "zırh 0,
@@ -56,24 +85,8 @@ export function enemySummary(def: EnemyDef): string {
     parcalar.push(`${t('statResist')} ${yuzde(def.magicResist)}`);
   }
   if (def.flying) parcalar.push(t('statFlying'));
-  /**
-   * **Her yetenek burada yazılı olmalı.** `M13`'te boss'a çağırma
-   * eklendi ve telgraf onu söylemiyordu: oyuncu yandaşları ancak boss'u
-   * dilimleyince öğreniyordu. Harita 5'in ikinci evresi de aynı durumda
-   * — `M10`'dan beri sessizdi.
-   *
-   * Yetenek, oyuncunun karşı-oyun kararını değiştiren tek şey (bu
-   * dosyanın başlığı); "tam bilgi ver" kuralı (S93) onu satın almadan —
-   * burada **dalga gelmeden** — göstermeyi istiyor.
-   */
   const y = def.ability?.kind;
-  if (y === 'regen') parcalar.push(t('statRegen'));
-  else if (y === 'split') parcalar.push(t('statSplit'));
-  else if (y === 'heal') parcalar.push(t('statHeals'));
-  else if (y === 'burrow') parcalar.push(t('statBurrow'));
-  else if (y === 'enrage') parcalar.push(t('statEnrage'));
-  else if (y === 'summon') parcalar.push(t('statSummon'));
-  else if (y === 'silence') parcalar.push(t('statSilence'));
+  if (y !== undefined) parcalar.push(t(YETENEK_ANAHTARI[y]));
 
   const ad = enemyName(def.id);
   return parcalar.length === 0 ? ad : `${ad} — ${parcalar.join(', ')}`;

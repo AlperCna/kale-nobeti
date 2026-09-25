@@ -473,7 +473,16 @@ function dusmanTablosu() {
     if (a.kind === 'burrow')
       return `**Yeraltı geçişi** — yolun ${yuzde(a.fromFraction * 100)}-${yuzde(a.toFraction * 100)} arasında hedeflenemez`;
     if (a.kind === 'summon') return `Canı düştükçe ${a.count} yandaş çağırır`;
-    return a.kind;
+    if (a.kind === 'enrage')
+      return `Canı ${yuzde(a.hpRatio * 100)}'e inince hızı ${n(a.speedMultiplier)}x`;
+    if (a.kind === 'silence')
+      return `${a.seconds} sn kule susturur (yaricap ${a.radius}, bekleme ${a.cooldownSeconds} sn)`;
+    // BILEREK FIRLATIYOR — eskiden `return a.kind` vardi ve yeni bir verb
+    // sessizce belgeye HAM KIMLIK basiyordu (`enrage` ile `silence` bugun
+    // yalniz boss varyantlarinda oldugu icin hic gorunmemisti, ama tuzak
+    // duruyordu). `M156`: bu dosya derleyici gormuyor, o yuzden soz
+    // burada ancak GURULTU ile tutulur — uretici durur, kapi kirilir.
+    throw new Error(`kurallar.mjs: '${a.kind}' yetenegi dusmanTablosu()'nda yazili degil`);
   };
   return tablo(
     ['Düşman', 'HP', 'Hız', 'Zırh', 'B.Direnç', 'Altın', 'Puan', 'Sızma', 'Özellik'],
