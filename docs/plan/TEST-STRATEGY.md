@@ -193,7 +193,7 @@ Bu liste yazıldı ki sonradan "neden sahne testi yok" sorulmasın.
 | E3 | Letterbox girdisi | Pencereyi yarıya küçült, butona tıkla | Tıklama ıskalamıyor | M0 |
 | E4 | Font düşüşü | `FontFace.prototype.load`'u reddet/askıda bırak | 2 sn içinde sistem serif'e düşüp devam ediyor | M0 · **koşturuldu `M164`** |
 | E5 | Alt klasör servisi | `npx serve dist -l 5000`, alt yoldan aç | Beyaz ekran yok (`base:'./'`) | M0 |
-| E6 | Havuz sızıntısı | 10 dalga oyna, `activeCount` izle | Sabit kalıyor | M1 |
+| E6 | Havuz sızıntısı | 10 dalga oyna, **bütün** havuz sayaçlarını izle | Sabit kalıyor, saha boşalınca sıfır | M1 · **koşturuldu `M165`** |
 | E6b | **Dinleyici sızıntısı** | Sahneyi N kez yeniden başlat, `devHooks.shutdownListeners()` izle | **Sabit kalıyor** | M1 |
 | E7 | Kapsama ölçümü | Geliştirme göstergesini oku | Ortalama ve `L` raporlanıyor | M1 |
 | E8 | Karşı-oyun | §5 tablosundaki 7 senaryoyu dene | Her tehdidin cevabı işliyor | M4 |
@@ -384,6 +384,30 @@ haritayı çapraz kesiyor — kahverengi yer yolundan açıkça ayrı.
 doğrulandı, sayıyla değil; hat birkaç noktanın menziline giriyor.
 Sayısal sağlama istenirse `flyerPaths` ile `buildSpots` arasındaki
 mesafe `util/coverage.ts` tarzında hesaplanabilir.
+
+### E6 — `M165`'te İLK KEZ koşturuldu (ikizi dört kez koşmuştu)
+
+Küçük bir ironi: E6b dört kez ölçüldü (`M95` · `M115` · `M136` · `M161`)
+ama **asıl E6 hiç koşmamıştı**. Değirmen Geçidi baştan sona oynandı
+(on dalga, 3× hız, tahta her karede yeniden doldurularak), **kazanıldı**
+(8 can kaldı) ve belgenin istediği `activeCount`'un ötesinde **bütün
+havuzlar** izlendi.
+
+| dalga | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| sahadaki düşman | 2 | 3 | 4 | 3 | 5 | 5 | 7 | 6 | **12** | 9 |
+
+- `enemyCapacity` boyunca **60** — sabit. Sessiz büyüme TIER 1 kural 3
+  ihlali olurdu; yok.
+- `poolExhausted` **0** — hiçbir havuz tükenmedi. Tepe 12, kapasitenin
+  beşte biri (bu en kolay harita; `CLAUDE.md`'nin altı harita üzerinden
+  ölçtüğü tepe 23).
+- **Saha boşalınca hepsi sıfıra dönüyor:** düşman 0 · mermi 0 · can
+  çubuğu 0 · altın uçuşu 0 · asker 0 · parçacık 0. Tek istisna hasar
+  sayısı **1** — o da sönmekte olan son yazı, beklenen.
+
+Yani havuza dönen nesne gerçekten dönüyor ve sayaçlar turdan tura
+birikmiyor.
 
 ### E6 ve E6b neden ikiz
 
