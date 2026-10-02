@@ -438,8 +438,8 @@ export class GameScene extends Phaser.Scene {
   /**
    * Bu **koşunun** başlangıç canı — `M26`.
    *
-   * Zorluğa göre değişiyor (Zor 12, diğerleri 20) ve yıldız eşikleri
-   * artık buna oranlı. HUD portal olayını gönderirken kayıtla aynı
+   * Zorluk verisinden geliyor (`M175`'ten beri üç seviye de 20; öncesinde
+   * Zor 12) ve yıldız eşikleri buna oranlı. HUD portal olayını gönderirken kayıtla aynı
    * sayıyı kullansın diye dışa açıldı.
    */
   get startLives(): number {
