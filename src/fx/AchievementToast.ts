@@ -3,11 +3,14 @@ import type { Settings } from '../systems/Settings';
 import { t } from '../util/i18n';
 import { createParchmentFrame } from './ParchmentFrame';
 import { getAchievement } from '../data/achievements';
+import { BASARIM_BANDI } from '../data/panelLayout';
 
-const GENISLIK = 320;
-const YUKSEKLIK = 76;
-const SAG_BOSLUK = 16;
-const UST = 190;
+// `M168` — ölçü ve konum `data/panelLayout.ts`'te (`BASARIM_BANDI`):
+// bant `y = 190`'da ayar düğmesini örtüyordu; gerekçesi orada.
+const GENISLIK = BASARIM_BANDI.w;
+const YUKSEKLIK = BASARIM_BANDI.h;
+const SAG_BOSLUK = BASARIM_BANDI.sagBosluk;
+const UST = BASARIM_BANDI.y;
 /** Ekranda kalma süresi. Birim: ms. */
 const SURE_MS = 3000;
 const KAYMA_MS = 320;

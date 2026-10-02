@@ -10,6 +10,7 @@ import type { TargetMode, TierIndex, TowerDef } from '../types/tower';
 import { TOWERS, TARGET_MODES, tierAt, maliyet } from '../data/towers';
 import { KISLA, barracksTierAt } from '../data/barracks';
 import { FRAME_CARTOUCHE } from '../data/spriteFrames';
+import { UST_ORTA_HUD } from '../data/panelLayout';
 import { measureCoverage } from '../util/coverage';
 import { dalOzeti, kislaOzeti } from '../util/dalOzeti';
 import { t } from '../util/i18n';
@@ -343,6 +344,12 @@ export class BuildMenu {
     this.#infoPanel = infoPanel;
     this.#actions = actions;
     this.#settings = settings;
+    // `M168` — açık menünün alınabilirliği altınla birlikte değişiyor.
+    // `bus` her `Game` kapanışında temizleniyor (`EventBus.clear`, E6b),
+    // ve bu kurucu her `create()`'te koşuyor — dinleyici birikmiyor.
+    bus.on('gold:changed', () => {
+      for (const f of this.#fiyatBoyayicilar) f();
+    });
   }
 
   /**
@@ -426,9 +433,7 @@ export class BuildMenu {
     TOWERS.forEach((def, i) => {
       const bx = (i - (toplam - 1) / 2) * BUTON_ARA;
       const fiyat = maliyet(def.tiers[0].cost, this.#map);
-      const alinabilir = this.#economy.canAfford(fiyat);
-
-      const cerceve = this.#menuButonu(kap, bx, `${kuleAdi(def.id)} ${fiyat}`, alinabilir, () =>
+      const cerceve = this.#menuButonu(kap, bx, `${kuleAdi(def.id)} ${fiyat}`, fiyat, () =>
         this.#actions.placeTower(spotIndex, def),
       );
       roller.bagla(cerceve, ROLE_KEY[def.id] ?? 'roleOkcu');
@@ -439,7 +444,7 @@ export class BuildMenu {
       kap,
       (TOWERS.length - (toplam - 1) / 2) * BUTON_ARA,
       `${t('barracks')} ${kislaMaliyet}`,
-      this.#economy.canAfford(kislaMaliyet),
+      kislaMaliyet,
       () => this.#actions.placeBarracks(spotIndex),
     );
     roller.bagla(kislaCerceve, 'roleKisla');
@@ -486,7 +491,7 @@ export class BuildMenu {
     if (kule.tierIndex === 0) {
       // T1 → T2, tek seçenek.
       const fiyat = maliyet(kule.def.tiers[1].cost, this.#map);
-      this.#menuButonu(kap, -IKILI_OFSET, `↑ ${fiyat}`, this.#economy.canAfford(fiyat), () =>
+      this.#menuButonu(kap, -IKILI_OFSET, `↑ ${fiyat}`, fiyat, () =>
         this.#actions.upgradeTower(spotIndex, 1),
       );
       this.#satButonu(kap, IKILI_OFSET, iade, () => this.#actions.sellTower(spotIndex));
@@ -532,7 +537,7 @@ export class BuildMenu {
         kap,
         -DAL_BUTON_ARA,
         `${dalAdi(a.branchNameKey, '3a')} ${maliyet(a.cost, this.#map)}`,
-        this.#economy.canAfford(maliyet(a.cost, this.#map)),
+        maliyet(a.cost, this.#map),
         () => this.#actions.upgradeTower(spotIndex, 2),
         DAL_BUTON_W,
       );
@@ -540,7 +545,7 @@ export class BuildMenu {
         kap,
         0,
         `${dalAdi(b.branchNameKey, '3b')} ${maliyet(b.cost, this.#map)}`,
-        this.#economy.canAfford(maliyet(b.cost, this.#map)),
+        maliyet(b.cost, this.#map),
         () => this.#actions.upgradeTower(spotIndex, 3),
         DAL_BUTON_W,
       );
@@ -641,7 +646,7 @@ export class BuildMenu {
 
     if (k.tier === 0) {
       const m = maliyet(barracksTierAt(KISLA, 1).cost, this.#map);
-      this.#menuButonu(kap, -IKILI_OFSET, `↑ ${m}`, this.#economy.canAfford(m), () =>
+      this.#menuButonu(kap, -IKILI_OFSET, `↑ ${m}`, m, () =>
         this.#actions.upgradeBarracks(spotIndex, 1),
       );
       this.#satButonu(kap, IKILI_OFSET, iade, () => this.#actions.sellBarracks(spotIndex));
@@ -671,7 +676,7 @@ export class BuildMenu {
         kap,
         -DAL_BUTON_ARA,
         `${dalAdi(a.branchNameKey, '3a')} ${maliyet(a.cost, this.#map)}`,
-        this.#economy.canAfford(maliyet(a.cost, this.#map)),
+        maliyet(a.cost, this.#map),
         () => this.#actions.upgradeBarracks(spotIndex, 2),
         DAL_BUTON_W,
       );
@@ -679,7 +684,7 @@ export class BuildMenu {
         kap,
         0,
         `${dalAdi(b.branchNameKey, '3b')} ${maliyet(b.cost, this.#map)}`,
-        this.#economy.canAfford(maliyet(b.cost, this.#map)),
+        maliyet(b.cost, this.#map),
         () => this.#actions.upgradeBarracks(spotIndex, 3),
         DAL_BUTON_W,
       );
@@ -706,12 +711,20 @@ export class BuildMenu {
    */
   readonly #satSifirlayicilar: (() => void)[] = [];
 
+  /**
+   * Açık menünün fiyatlı butonlarını altına göre yeniden boyayan geri
+   * çağrılar (`M168`). `#satSifirlayicilar` ile aynı ömür: menü her
+   * açılışta baştan kuruluyor, `closeMenu` diziyi boşaltıyor.
+   */
+  readonly #fiyatBoyayicilar: (() => void)[] = [];
+
   #satOnaylariniSifirla(): void {
     for (const f of this.#satSifirlayicilar) f();
   }
 
   closeMenu(): void {
     this.#satSifirlayicilar.length = 0;
+    this.#fiyatBoyayicilar.length = 0;
     this.#menu?.destroy(true);
     this.#menu = undefined;
     this.#cartouche?.destroy();
@@ -784,20 +797,40 @@ export class BuildMenu {
     kap: Phaser.GameObjects.Container,
     bx: number,
     metin: string,
-    etkin: boolean,
+    fiyat: number,
     onClick: () => void,
     genislik: number = BUTON_W,
   ): Phaser.GameObjects.Container {
     const cerceve = createParchmentButton(this.#scene, bx, 0, genislik, 44, 10);
-    if (!etkin) cerceve.setAlpha(0.55);
 
     const etiket = this.#scene.add
       .text(bx, 0, metin, {
         fontFamily: 'Spectral, serif',
         fontSize: '16px',
-        color: etkin ? '#14203A' : '#3A3A3A',
+        color: '#14203A',
       })
       .setOrigin(0.5);
+
+    /**
+     * **`M168` — alınabilirlik artık TIKLAMA ANINDA soruluyor.**
+     *
+     * Bu parametre eskiden `etkin: boolean`'dı ve menü **açılırken** bir
+     * kez hesaplanıyordu; tıklama işleyicisi o değeri kapatıyordu. Menüyü
+     * altın yetmezken açıp dalga öldürmelerini bekleyen oyuncu — çok
+     * sıradan bir an — altını yettiği hâlde buton soluk kalıyor ve
+     * tıklayınca **"yetersiz altın" titremesi** alıyordu. Tarayıcıda
+     * üretildi: 262 altınla "Top 110" reddedildi, menü 89 altınken
+     * açılmıştı. Artık hem tıklama kararı hem görünüm canlı: altın
+     * değişince açık menünün butonları yeniden boyanıyor.
+     */
+    const alinabilir = (): boolean => this.#economy.canAfford(fiyat);
+    const boya = (): void => {
+      const e = alinabilir();
+      cerceve.setAlpha(e ? 1 : 0.55);
+      etiket.setColor(e ? '#14203A' : '#3A3A3A');
+    };
+    boya();
+    this.#fiyatBoyayicilar.push(boya);
 
     // Devre dışıyken de tıklanabilir: M6-T11 "yetersiz altınla satın alma
     // denenince" sesi (`purchase:denied`) ancak böyle tetiklenebiliyor.
@@ -811,7 +844,7 @@ export class BuildMenu {
       ) => {
         // Sahne dinleyicisi aynı tıklamayla menüyü kapatmasın.
         olay.stopPropagation();
-        if (!etkin) {
+        if (!alinabilir()) {
           this.#bus.emit('purchase:denied', {});
           this.#reddetGeriBildirimi(cerceve, etiket);
           return;
@@ -994,7 +1027,26 @@ export class BuildMenu {
       istenenX = Math.min(HUD_ALANI.sag - panelSol, maxX);
     }
 
-    kap.setPosition(istenenX, y);
+    // `M168` — üst-ortadaki "Dalgayı başlat" kutusu (`UST_ORTA_HUD`).
+    // `Hud` sahnesi `Game`'in üstünde: menü o kutuya girerse hazırlık
+    // fazında düğme menünün "↑ yükselt" ve "Sat" butonlarını hem örtüyor
+    // hem tıklamalarını yutuyordu. Önce noktanın ALTINA çevirmek denenir
+    // (yukarıdaki üst kenar kuralıyla aynı hamle); o da kutuya giriyorsa
+    // panel kutunun hemen altına itilir.
+    const kutuyaGiriyor = (py: number): boolean =>
+      py + panelUst < UST_ORTA_HUD.y1 &&
+      py + panelAlt > UST_ORTA_HUD.y0 &&
+      istenenX + panelSag > UST_ORTA_HUD.x0 &&
+      istenenX + panelSol < UST_ORTA_HUD.x1;
+    let sonY = y;
+    if (kutuyaGiriyor(sonY)) {
+      const alta = Phaser.Math.Clamp(spot.y + MENU_NOKTA_BOSLUK - panelUst, minY, maxY);
+      sonY = kutuyaGiriyor(alta)
+        ? Phaser.Math.Clamp(UST_ORTA_HUD.y1 + MENU_KENAR_PAY - panelUst, minY, maxY)
+        : alta;
+    }
+
+    kap.setPosition(istenenX, sonY);
   }
 
   /** Seçili kule/kışlanın üstüne altın kartuş (P02) — `closeMenu` kaldırıyor. */

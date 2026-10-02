@@ -3,6 +3,8 @@ import { yenidenKurOverlay } from './OverlayScene';
 import { portal } from '../systems/Portal';
 import { haritaKazanildi, haritaKaybedildi } from '../systems/olcum';
 import { starsFor } from '../systems/SaveSystem';
+import { oyunSonucu } from '../systems/oyunSonu';
+import { AYAR_DUGMESI, ERKEN_BASLAT } from '../data/panelLayout';
 import type { SoundSystem } from '../fx/SoundSystem';
 import type { GameScene } from './GameScene';
 import type { Speed } from '../types/common';
@@ -56,7 +58,8 @@ const MARGIN = 20;
  * Düzeltmek üç haritanın yolunu yeniden çizmek demekti.
  */
 const HIZ_BTN_Y = MARGIN + BTN / 2;
-const AYAR_BTN_Y = 180;
+// `M168` — `data/panelLayout.ts`'ten: başarım bandı bu düğmeden kaçıyor.
+const AYAR_BTN_Y = AYAR_DUGMESI.y;
 /**
  * Duraklatma düğmesi — `M87`. **Üst şeritte, sağ kenarda değil.**
  *
@@ -312,6 +315,13 @@ export class HudScene extends Phaser.Scene {
     const dev = devHooks();
     if (dev !== undefined) dev.hudFrames = (dev.hudFrames ?? 0) + 1;
 
+    // `M168` — `Game` yeni haritayı yüklerken (tembel arka plan) sahne
+    // `create()`'ten önce birkaç kare bekliyor ve getter'lar önceki elin
+    // sayılarını döndürüyor: altın, can ve "10/10 dalga" o kareler boyunca
+    // HUD'da yanıp sönüyordu. Duraklatmada güncelleme sürüyor (sayılar
+    // zaten değişmiyor); yalnız sahne henüz kurulmadıysa bekleniyor.
+    if (!this.scene.isActive('Game') && !this.scene.isPaused('Game')) return;
+
     const game = this.#game();
     this.#readout?.update({
       gold: game.gold,
@@ -423,9 +433,16 @@ export class HudScene extends Phaser.Scene {
   #oyunSonuKontrol(game: GameScene): void {
     if (this.#bitti) return;
 
-    const kaybetti = game.lives <= 0;
-    const kazandi = game.wavePhase === 'done' && game.lives > 0;
-    if (!kaybetti && !kazandi) return;
+    // `M168` — `Game` koşmuyorsa (yeni harita yükleniyor) getter'lar
+    // ÖNCEKİ elin `done / 1 can`'ını okuyor; karar `systems/oyunSonu.ts`'te
+    // ve gerekçesi orada.
+    const sonuc = oyunSonucu({
+      oyunKosuyor: this.scene.isActive('Game'),
+      can: game.lives,
+      faz: game.wavePhase,
+    });
+    if (sonuc === null) return;
+    const kazandi = sonuc === 'kazandi';
 
     this.#bitti = true;
     game.soundSystem?.playOutcome(kazandi);
@@ -531,16 +548,18 @@ export class HudScene extends Phaser.Scene {
    * Etiket sabit; kazanılacak bonus değişken olduğu için yazılmıyor.
    */
   #createEarlyStartButton(): void {
-    const x = this.scale.width / 2;
+    // `M168` — konum ve ölçü `data/panelLayout.ts`'te (`ERKEN_BASLAT`):
+    // `BuildMenu` aynı kutudan kaçıyor, iki yerde ayrı sayı tutulursa
+    // çakışma geri gelir.
+    const { x, y, w, h } = ERKEN_BASLAT;
     // Üst-orta, geri sayımın hemen altında — oyuncu geri bildirimi
     // (2026-09-14, harita 3): alt-ortadayken kalenin ve iki yapı
     // noktasının üstüne düşüyordu (harita 3'ün kalesi ekranın alt
     // ortasında). Geri sayım (y 16, 32 px) ile boss çubuğu (y 46) aynı
     // yerde ama bu buton yalnız hazırlıkta görünüyor, boss çubuğu yalnız
     // boss canlıyken — hiç çakışmıyorlar.
-    const y = 82;
 
-    this.#earlyBtn = createParchmentButton(this, x, y, 180, 52, 14).setVisible(false);
+    this.#earlyBtn = createParchmentButton(this, x, y, w, h, 14).setVisible(false);
     this.#earlyLabel = this.add
       .text(x, y - 14, t('startWave'), {
         fontFamily: 'Spectral, serif',

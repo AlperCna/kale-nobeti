@@ -150,3 +150,55 @@ export function panelKonumu(
     ? { x: PANEL_SOL.x, y: 622 - PAY - yukseklik }
     : { x: PANEL_SAG.x, y: EKRAN_H - PAY - yukseklik };
 }
+
+/**
+ * **"Dalgayı başlat" düğmesi — HUD üst-ortası** (`HudScene`). `M168`'de
+ * buraya taşındı ki **tek adres** olsun.
+ *
+ * Kusur tarayıcıda, gerçek bir oyunda bulundu: hazırlık fazında (dalga
+ * 4'ten itibaren) bu düğme ve altındaki *"N sahada"* satırı, üst-ortadaki
+ * bir kulenin yükseltme menüsünün **tam üstüne** çiziliyordu. `Hud`
+ * sahnesi `Game`'in üstünde koştuğu için menünün **"↑ yükselt"** ve
+ * **"Sat"** düğmeleri hem görünmüyor hem tıklanamıyordu — oyuncunun
+ * yükseltme yapmak istediği an tam da hazırlık fazı. Menü sol üstteki
+ * HUD kartından zaten kaçıyordu (`BuildMenu`'nun `HUD_ALANI`'sı), ama o
+ * kaçınma *"orası değişirse burası da değişmeli — yorumla bağlı, kodla
+ * değil"* diye yazılmıştı ve bu düğme sonradan eklendiğinde listeye hiç
+ * girmedi.
+ */
+export const ERKEN_BASLAT = { x: EKRAN_W / 2, y: 82, w: 180, h: 52 } as const;
+
+/**
+ * Menülerin **girmediği** üst-orta kutu: düğmenin kendisi, üstündeki
+ * geri sayım ve altındaki risk satırı (düğme merkezinin `46` px altında,
+ * ~18 px yüksek — `HudScene.#createEarlyStartButton`).
+ */
+export const UST_ORTA_HUD = {
+  x0: ERKEN_BASLAT.x - ERKEN_BASLAT.w / 2,
+  y0: 0,
+  x1: ERKEN_BASLAT.x + ERKEN_BASLAT.w / 2,
+  y1: ERKEN_BASLAT.y + 46 + 12,
+} as const;
+
+/**
+ * HUD'un sağ sütunundaki **ayar düğmesi** (`HudScene`) — `M168`'de buraya
+ * taşındı, çünkü başarım bandı onun yerini bilmeden konmuştu.
+ */
+export const AYAR_DUGMESI = { x: EKRAN_W - 20 - 56 / 2, y: 180, w: 56, h: 56 } as const;
+
+/**
+ * **Başarım bandı** (`fx/AchievementToast`) — sağdan kayarak giren bildirim.
+ *
+ * `M168` — bant `y = 190`'daydı (152-228) ve sağ sütundaki ayar düğmesini
+ * (152-208) **tamamen** örtüyordu; oyunda her başarımda düğme bandın
+ * içinden fışkırıyordu. Sebep: bant `M8-T07`'de ayar düğmesi `y = 116`'da
+ * iken konmuştu; `M8-B01` düğmeyi harita 3'ün yolundan kaçırmak için
+ * 180'e indirdi ve bandın yerine hiç bakılmadı. Bant artık düğmenin
+ * altında başlıyor — kayarken de üstünden geçmiyor.
+ */
+export const BASARIM_BANDI = {
+  w: 320,
+  h: 76,
+  sagBosluk: 16,
+  y: AYAR_DUGMESI.y + AYAR_DUGMESI.h / 2 + 12 + 76 / 2,
+} as const;

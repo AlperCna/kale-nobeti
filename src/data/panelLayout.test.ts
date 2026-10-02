@@ -10,6 +10,10 @@ import {
   PANEL_IKON_HEDEF,
   PANEL_IKON_SUTUN,
   panelKonumu,
+  ERKEN_BASLAT,
+  UST_ORTA_HUD,
+  AYAR_DUGMESI,
+  BASARIM_BANDI,
   panelYuksekligi,
 } from './panelLayout';
 import { ENEMIES } from './enemies';
@@ -114,5 +118,57 @@ describe('Kule bilgi paneli — incelenen kuleyi ÖRTMEZ', () => {
     expect(PANEL_IKON_SUTUN * PANEL_IKON_HEDEF).toBeLessThanOrEqual(PANEL_W - 2 * PANEL_IC_PAY);
     // Platform alt sınırı: hedef iki eksende de 44'ten küçük olamaz.
     expect(PANEL_IKON_HEDEF).toBeGreaterThanOrEqual(44);
+  });
+});
+
+/**
+ * `M168` — "Dalgayı başlat" kutusu tek adreste ve kutu, düğmeyi **ve**
+ * altındaki risk satırını kapsıyor. `BuildMenu` bu kutudan kaçıyor;
+ * kutu düğmeden dar olursa menü yine düğmenin altına girer.
+ */
+describe('UST_ORTA_HUD — erken başlat kutusu (M168)', () => {
+  it('düğmenin tamamını kapsıyor', () => {
+    expect(UST_ORTA_HUD.x0).toBeLessThanOrEqual(ERKEN_BASLAT.x - ERKEN_BASLAT.w / 2);
+    expect(UST_ORTA_HUD.x1).toBeGreaterThanOrEqual(ERKEN_BASLAT.x + ERKEN_BASLAT.w / 2);
+    expect(UST_ORTA_HUD.y0).toBeLessThanOrEqual(ERKEN_BASLAT.y - ERKEN_BASLAT.h / 2);
+    expect(UST_ORTA_HUD.y1).toBeGreaterThanOrEqual(ERKEN_BASLAT.y + ERKEN_BASLAT.h / 2);
+  });
+
+  it('düğmenin altındaki risk satırını da kapsıyor (merkez + 46, ~18 px)', () => {
+    expect(UST_ORTA_HUD.y1).toBeGreaterThanOrEqual(ERKEN_BASLAT.y + 46 + 9);
+  });
+
+  it('hiçbir haritada yapı noktası kutunun altında değil', () => {
+    for (const m of MAPS) {
+      for (const s of m.buildSpots) {
+        const icinde =
+          s.x > UST_ORTA_HUD.x0 && s.x < UST_ORTA_HUD.x1 && s.y > UST_ORTA_HUD.y0 && s.y < UST_ORTA_HUD.y1;
+        expect(icinde, `${m.id} (${s.x},${s.y})`).toBe(false);
+      }
+    }
+  });
+});
+
+describe('BASARIM_BANDI — ayar düğmesiyle çakışmıyor (M168)', () => {
+  const bant = {
+    x0: 1280 - BASARIM_BANDI.sagBosluk - BASARIM_BANDI.w,
+    x1: 1280 - BASARIM_BANDI.sagBosluk,
+    y0: BASARIM_BANDI.y - BASARIM_BANDI.h / 2,
+    y1: BASARIM_BANDI.y + BASARIM_BANDI.h / 2,
+  };
+  const ayar = {
+    x0: AYAR_DUGMESI.x - AYAR_DUGMESI.w / 2,
+    x1: AYAR_DUGMESI.x + AYAR_DUGMESI.w / 2,
+    y0: AYAR_DUGMESI.y - AYAR_DUGMESI.h / 2,
+    y1: AYAR_DUGMESI.y + AYAR_DUGMESI.h / 2,
+  };
+
+  it('bant ayar düğmesinin dikey bandına girmiyor — kayarken de üstünden geçmiyor', () => {
+    expect(bant.y0, `bant ${bant.y0}-${bant.y1}, ayar ${ayar.y0}-${ayar.y1}`).toBeGreaterThanOrEqual(ayar.y1);
+  });
+
+  it('bant ekranın içinde ve kule bilgi panelinin üstünde bitiyor', () => {
+    expect(bant.x0).toBeGreaterThanOrEqual(0);
+    expect(bant.y1).toBeLessThanOrEqual(PANEL_SAG.y);
   });
 });
