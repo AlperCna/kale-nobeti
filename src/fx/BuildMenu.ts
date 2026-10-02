@@ -189,6 +189,14 @@ const ROL_Y = 40;
  *
  * TIER 1 kural 7: her rol için ayrı statik `Text`, yalnız görünürlük
  * değişiyor. `setText` yok — `SettingsPanel`'in deseni.
+ *
+ * **`M180` — dokunmatikte şerit BOŞ kalmıyor.** Telefon emülasyonunda
+ * (yayın yapısı, 640×360) görüldü: imleç olmadığı için şerit oyuncu `?`e
+ * basana kadar boş bir parşömen bandıydı — yarım kalmış bir ekran gibi
+ * duruyordu ve oyuncu kulelerin farkını öğrenmeden kuruyordu. Dokunmatik
+ * cihazda artık **ilk ailenin rolü varsayılan** olarak görünüyor; `?`
+ * sıradakilere geçiyor. Varsayılan "sabitlenmiş" sayılmıyor: dokunmatik
+ * ekranlı bir dizüstünde fareyle üstüne gelme yine çalışıyor.
  */
 class RolSeridi {
   readonly #satirlar = new Map<StringKey, Phaser.GameObjects.Text>();
@@ -197,11 +205,19 @@ class RolSeridi {
   readonly #genislik: number;
   /** `?` ile gezilen sıra; `-1` = hiçbiri sabitlenmedi (fare modu). */
   #sabitIndex = -1;
+  /** Hiçbiri sabitlenmemişken ve imleç üstünde değilken görünen satır; `-1` = yok. */
+  readonly #varsayilanIndex: number;
 
-  constructor(scene: Phaser.Scene, kap: Phaser.GameObjects.Container, butonSayisi: number) {
+  constructor(
+    scene: Phaser.Scene,
+    kap: Phaser.GameObjects.Container,
+    butonSayisi: number,
+    dokunmatik: boolean,
+  ) {
     this.#scene = scene;
     this.#kap = kap;
     this.#genislik = butonSayisi * BUTON_ARA;
+    this.#varsayilanIndex = dokunmatik ? 0 : -1;
   }
 
   /** Bir aile butonunu rol satırına bağlar ve satırı (gizli) yaratır. */
@@ -239,12 +255,17 @@ class RolSeridi {
       Phaser.Input.Events.POINTER_DOWN,
       (_p: unknown, _x: number, _y: number, olay: Phaser.Types.Input.EventData) => {
         olay.stopPropagation(); // sahne dinleyicisi menüyü kapatmasın
-        // Sırayla gez, sonuncudan sonra kapat (-1).
-        this.#sabitIndex = this.#sabitIndex + 1 >= this.#satirlar.size ? -1 : this.#sabitIndex + 1;
+        // Sırayla gez, sonuncudan sonra bırak (-1 → varsayılana dön).
+        // Görünen satırdan bir sonrakine: dokunmatikte ilk basış ikinci
+        // aileyi gösteriyor, varsayılanı bir daha değil.
+        const gorunen = this.#sabitIndex >= 0 ? this.#sabitIndex : this.#varsayilanIndex;
+        this.#sabitIndex = gorunen + 1 >= this.#satirlar.size ? -1 : gorunen + 1;
         this.#uygula();
       },
     );
     this.#kap.add([cerceve, etiket]);
+    // Bütün satırlar bağlandı — varsayılan (dokunmatikte ilk aile) görünsün.
+    this.#uygula();
   }
 
   #goster(anahtar: StringKey): void {
@@ -254,14 +275,15 @@ class RolSeridi {
 
   #gizle(): void {
     if (this.#sabitIndex >= 0) return;
-    for (const y of this.#satirlar.values()) y.setVisible(false);
+    this.#uygula(); // imleç çıktı: varsayılana dön (fare modunda hiçbiri)
   }
 
-  /** `?` seçimini uygular — tek satır görünür, hepsi aynı y'de. */
+  /** `?` seçimini (yoksa varsayılanı) uygular — tek satır görünür, hepsi aynı y'de. */
   #uygula(): void {
+    const hedef = this.#sabitIndex >= 0 ? this.#sabitIndex : this.#varsayilanIndex;
     let i = 0;
     for (const y of this.#satirlar.values()) {
-      y.setVisible(i === this.#sabitIndex);
+      y.setVisible(i === hedef);
       i++;
     }
   }
@@ -427,7 +449,7 @@ export class BuildMenu {
     // Dört aile: üç kule + kışla (§4). Kışla ayrı tip olduğu için ayrı
     // buton — `TOWERS` dizisine sokmak `TowerDef` sözleşmesini bozardı.
     const toplam = TOWERS.length + 1;
-    const roller = new RolSeridi(this.#scene, kap, toplam);
+    const roller = new RolSeridi(this.#scene, kap, toplam, this.#scene.sys.game.device.input.touch);
 
     TOWERS.forEach((def, i) => {
       const bx = (i - (toplam - 1) / 2) * BUTON_ARA;
