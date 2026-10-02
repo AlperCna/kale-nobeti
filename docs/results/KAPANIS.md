@@ -1,4 +1,4 @@
-# Kapanış — proje durumu (`M167` → `M174`, 2026-10-02)
+# Kapanış — proje durumu (`M167` → `M177`, 2026-10-02)
 
 Sahip projeyi kapattı: *"her şeyi tamamlayalım, bitirelim; baştan sona
 kontrol et."* Bu dosya o kontrolün sonucu ve geri dönülürse ilk okunacak
@@ -16,7 +16,7 @@ Phaser 3.90 + TypeScript (strict) + Vite.
 | Kule ailesi | 4 (Okçu · Top · Büyü · Kışla), her biri iki T3 dalıyla |
 | Aktif yetenek | 2 (Meteor · Takviye), seviyelenebilir |
 | Düşman türü | 11; yedi yetenek türü (yenilenme · bölünme · şifa · yeraltı · susturma · ikinci evre · çağırma) — son üçü harita 4-6'nın bossunda |
-| Zorluk | 3 (Kolay'da yalnız bitirme ★ olarak kaydedilir) |
+| Zorluk | 3 — Kolay ×0,60 · Normal ×0,80 · Zor ×1,00 (tasarlanan eğri), hepsi 20 can; Kolay'da yalnız bitirme ★ |
 | Dil | Türkçe + İngilizce, eşitlik derleyicide bağlı |
 | Başarım | 17 |
 
@@ -24,7 +24,7 @@ Phaser 3.90 + TypeScript (strict) + Vite.
 
 | | |
 |---|---|
-| Kapı (`typecheck · test · guard · build`) | yeşil — **1220 test** (73 dosya), **27/27 bekçi** |
+| Kapı (`typecheck · test · guard · build`) | yeşil — **1228 test** (74 dosya), **27/27 bekçi** |
 | İlk indirme | **0,83 MB** (hedef ~1,5 MB, Poki sınırı 8 MB) |
 | Toplam paket | 5,83 MB (müzik ve harita 2-6 arka planları tembel) |
 | Açık tasarım sorusu (`plan/OPEN-QUESTIONS.md`) | **0** |
@@ -86,6 +86,17 @@ veriyi okuyor.
 `E6b` beşinci kez koşturuldu: toplam dinleyici **34**, beş yeniden
 başlatmada sabit (`TEST-STRATEGY`).
 
+## Sahibin kararı: sektör standardı (`M175`-`M177`)
+
+Sahip açık kalan iki kararı (zorluk, sonsuz mod) ve "düzeltilmesi
+gerekenleri" sektör standardına göre vermeyi bıraktı:
+
+| | Karar |
+|---|---|
+| `M175` | **Zorluk merdiveni bir basamak kaydı.** Tasarlanan eğri (×1,00) artık **Zor**; Normal ×0,80, Kolay ×0,60, üçü de 20 can. Ölçüm: referans tahta Normal'de `0·0·2·2·5·8`, Zor'da `0·2·9·13·14·17` kaybediyor, yani Zor ustalıkla geçilebilir — eski Zor (12 can) 4-6'yı referans tahta için bile geçilemez yapıyordu. Oyuncu gibi oynanınca ×0,80'de 4-6. haritalar 12/11/15 canla kazanılmıştı. Bütün denge testleri ×1,00'de ölçtüğü için artık Zor'u sınıyor. |
+| `M176` | **Sonsuz moda devam gerçek oldu** (Bloons TD'nin *Freeplay*'i): kazanılan tahta (kuleler, altın, can, yetenek seviyeleri) 11. dalgadan sürüyor. Anlık hâl kalıcı kayda değil bellekte tutuluyor — kazanıp çıkan oyuncunun menüsünde istemediği bir "Devam et" çıkmıyor. |
+| `M177` | **HUD kartı, arkasından geçen düşmanda saydamlaşıyor** (0,5). Üç haritanın girişi kartın altından geçiyordu; yol yerinde kaldı. |
+
 ## Bilerek bırakılanlar
 
 Hiçbiri oynanışı bozmuyor. Geri dönülürse sıra bu:
@@ -109,21 +120,13 @@ Hiçbiri oynanışı bozmuyor. Geri dönülürse sıra bu:
    bu bir insan oyuncunun yerini tutmuyor; E19 açık işaretli kaldı.
 7. **Yayın yok** — sahibin kararı. Mağaza paketi işi başlatılıp
    bırakılmıştı (`M9`); portal kabul şartlarından E17 açık.
-8. **Normal'de geç haritalar çok dar** (`M171`, gözlem — karar sahibinde).
-   Denge testi referans tahtanın can kaybını `0 · 0 · 9 · 14 · 15 · 18`
-   olarak bağlıyor: en iyi oyunla harita 5 beş, harita 6 iki canla
-   geçiliyor. Oyuncu gibi oynanınca harita 3, 4 ve 5 Normal'de ilk
-   denemede kaybedildi; harita 5, dalga 6'da tamamen T3 olan bir tahtayla
-   da son dalgada 17 can kaybetti. Kolay hepsini rahat geçiriyor ve
-   kilitleri açıyor. Bir web portalının kısa oturumlu oyuncusu için
-   Normal'in eğrisi fazla dik olabilir; değiştirmek dengeyi baştan
-   türetmek demek, bu yüzden dokunulmadı.
-9. **Sonsuz mod tahtayı sürdürmüyor.** Kazanınca başlatılan sonsuz tur da
-   1. dalgadan başlıyor (`M173` yalnız düğmenin adını düzeltti). Tahtayı
-   11. dalgaya taşıyan gerçek bir "devam" yeni bir özellik.
-10. **Üç haritanın girişi HUD kartının altından geçiyor** (harita 1, 3, 4 —
-    `HudScene` başlık notunda bilinçli istisna). Kül Ovası'nda yolun ilk
-    ~220 px'i kartın arkasında; düşman kartın kenarından çıkıyor.
+8. ~~Normal'de geç haritalar çok dar~~ — **`M175`'te çözüldü** (yukarıda).
+9. ~~Sonsuz mod tahtayı sürdürmüyor~~ — **`M176`'da çözüldü**.
+10. ~~Üç haritanın girişi HUD kartının altından geçiyor~~ — yol yerinde,
+    kart artık saydamlaşıyor (**`M177`**).
+11. **Yıldız eşikleri yerinde bırakıldı:** ★★★ kusursuz (20/20), ★★ ≥ 15.
+    Kingdom Rush ★★★'ü 18'de veriyor; burada kusursuzluk bilinçli bir
+    tasarım ve yeni Normal'de (×0,80) ulaşılabilir hâle geldi.
 
 ## Kalıcı karar: hazırlık sahayı dondurur
 
