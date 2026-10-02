@@ -409,6 +409,31 @@ describe('sonsuz mod — WaveManager listeyi bitirince durmuyor', () => {
     expect(wm.upcomingWave?.groups.length).toBeGreaterThan(0);
   });
 
+  /**
+   * **`M176` — sonsuz moda devam (Freeplay).** Kazanılan kampanya turu
+   * tahtasıyla sürüyor: `GameScene` geri yüklemeyi listenin **sonuna**
+   * (`waves.length`) yapıyor. Kaynak varsa bu sıradaki **üretilen** dalga
+   * olmalı — listeye geri sarmamalı, `done`'a düşmemeli.
+   */
+  it('listenin SONUNA geri yükleme sonsuz dalgadan sürüyor (M176)', () => {
+    const { wm } = kur(TEK, 20, KISA_YOL, kaynak);
+    wm.turdanGeriYukle(TEK.length);
+    expect(wm.phase).toBe('prep');
+    expect(wm.isEndless).toBe(true);
+    expect(wm.waveNumber).toBe(TEK.length + 1);
+    expect(wm.upcomingWave?.index).toBe(TEK.length + 1);
+    dalgayiBitir(wm);
+    expect(wm.phase, 'devam eden tur bitmiyor').toBe('prep');
+    expect(wm.waveNumber).toBe(TEK.length + 2);
+  });
+
+  it('kaynak YOKSA listenin sonuna geri yükleme son dalgaya kenetleniyor', () => {
+    const { wm } = kur(TEK, 8);
+    wm.turdanGeriYukle(TEK.length);
+    expect(wm.waveNumber).toBe(TEK.length);
+    expect(wm.isEndless).toBe(false);
+  });
+
   it('`upcomingWave` ÖNBELLEKLİ — telgraf ile doğan dalga aynı nesne', () => {
     const { wm } = kur(TEK, 20, KISA_YOL, kaynak);
     dalgayiBitir(wm);

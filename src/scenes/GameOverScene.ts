@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { t } from '../util/i18n';
 import { kayitYildizi } from '../systems/SaveSystem';
+import { SONSUZ_DEVAM_ANAHTARI } from '../systems/RunSave';
 import { getSettings } from '../systems/Settings';
 import { DIFFICULTY } from '../data/difficulty';
 import { LocalStore } from '../util/storage';
@@ -270,12 +271,12 @@ export class GameOverScene extends Phaser.Scene {
     const birincilEylem = this.#butonlariKur(width / 2, butonUst, {
       kaybetti: !won,
       sonrakiVar,
-      // `M8-T06` — sonsuz el **sonsuz olarak** tekrar başlıyor; normal
-      // elde "Sonsuz mod" ayrı bir buton — **yeni** bir tur (`M172`).
+      // `M8-T06` — sonsuz el **sonsuz olarak** tekrar başlıyor; kazanılan
+      // normal elde "Sonsuz moda devam" **aynı tahtayla** sürüyor (`M176`).
       sonsuzEl: this.#data.endless === true,
       haritayaGec: (hedefMapId: string) =>
         this.#haritayaGec(hedefMapId, this.#data.endless === true),
-      sonsuzaGec: (hedefMapId: string) => this.#haritayaGec(hedefMapId, true),
+      sonsuzaGec: (hedefMapId: string) => this.#sonsuzaDevam(hedefMapId),
       anaMenuyeDon: () => this.#anaMenuyeDon(),
       mapId,
       sonrakiId,
@@ -360,9 +361,12 @@ export class GameOverScene extends Phaser.Scene {
     // **Birincil değil:** ilk kez kazanan oyuncunun doğal yolu sıradaki
     // harita; sonsuz mod bir sapma, bir dayatma değil.
     const sonsuzTeklifi = (): void => {
-      if (!d.sonsuzEl && !d.kaybetti && d.mapId !== undefined) {
-        // `M172` — `endlessStart`: yeni bir sonsuz tur (bkz. `strings.ts`).
-        this.#buton(x, sonraki(), 240, 56, t('endlessStart'), false, () => d.sonsuzaGec(d.mapId!));
+      // `M176` — yalnız bu harita için tahtanın anlık hâli varsa: kazanılan
+      // turun kendisi sürüyor (`RunSave.SONSUZ_DEVAM_ANAHTARI`). Yeni bir
+      // sonsuz tur seviye seçimdeki "Sonsuz mod" düğmesinde.
+      const anlik = this.registry.get(SONSUZ_DEVAM_ANAHTARI) as { mapId?: string } | null | undefined;
+      if (!d.sonsuzEl && !d.kaybetti && d.mapId !== undefined && anlik?.mapId === d.mapId) {
+        this.#buton(x, sonraki(), 240, 56, t('endlessContinue'), false, () => d.sonsuzaGec(d.mapId!));
       }
     };
 
@@ -428,6 +432,18 @@ export class GameOverScene extends Phaser.Scene {
     this.scene.stop('Hud');
     this.scene.stop('Game');
     this.scene.start('Game', { mapId, endless });
+    this.scene.launch('Hud');
+  }
+
+  /**
+   * **Sonsuz moda devam — `M176`.** Kazanılan turun tahtası `GameScene`'e
+   * bellekten geçiyor (`init` tüketiyor); dalga listesi bittiği için
+   * sıradaki dalga ilk üretilen sonsuz dalga.
+   */
+  #sonsuzaDevam(mapId: string): void {
+    this.scene.stop('Hud');
+    this.scene.stop('Game');
+    this.scene.start('Game', { mapId, sonsuzDevam: true });
     this.scene.launch('Hud');
   }
 

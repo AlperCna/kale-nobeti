@@ -38,7 +38,7 @@ import { AbilitySystem } from '../systems/AbilitySystem';
 import { ScreenShake } from '../fx/ScreenShake';
 import { HitStop } from '../fx/HitStop';
 import { Settings, getSettings, SAVE_FAILED_REGISTRY_KEY } from '../systems/Settings';
-import { RunSave, RUN_VERSION } from '../systems/RunSave';
+import { RunSave, RUN_VERSION, SONSUZ_DEVAM_ANAHTARI } from '../systems/RunSave';
 import type { RunData, SpotKaydi } from '../systems/RunSave';
 import { gosterKayitUyarisi } from '../fx/SaveWarning';
 import { KISLA, barracksTierAt, BLOCK, SOLDIER_SPEED } from '../data/barracks';
@@ -329,10 +329,10 @@ export class GameScene extends Phaser.Scene {
    * Seviye seçim ekranı `{ mapId }` gönderiyor; yoksa harita 1.
    * `M8-T06`: oyun sonu ekranı `{ endless: true }` ile yeniden başlatıyor.
    */
-  init(data?: { mapId?: string; endless?: boolean; devam?: boolean }): void {
+  init(data?: { mapId?: string; endless?: boolean; devam?: boolean; sonsuzDevam?: boolean }): void {
     this.#map = (data?.mapId !== undefined ? getMap(data.mapId) : undefined) ?? MAP_1;
     this.#waveList = wavesFor(this.#map.id);
-    this.#endless = data?.endless === true;
+    this.#endless = data?.endless === true || data?.sonsuzDevam === true;
     // `M10-T02` — kayıtlı tur YALNIZ açıkça istendiğinde yükleniyor.
     // "Kayıt varsa otomatik yükle" demek, menüden yeni bir tur başlatan
     // oyuncuyu eski turuna düşürürdü.
@@ -341,6 +341,14 @@ export class GameScene extends Phaser.Scene {
       const kayit = turKaydi().oku();
       // Harita kimliği eşleşmiyorsa kayıt bu tura ait değil — yok say.
       if (kayit !== null && kayit.mapId === this.#map.id) this.#devamTuru = kayit;
+    }
+    // `M176` — sonsuz moda devam: kazanılan turun tahtası bellekte
+    // (`SONSUZ_DEVAM_ANAHTARI`). **Her başlangıçta tüketiliyor** — başka
+    // bir yoldan (Tekrar dene, Sonraki harita) açılan tura sızmasın.
+    const anlik = this.registry.get(SONSUZ_DEVAM_ANAHTARI) as RunData | null | undefined;
+    this.registry.set(SONSUZ_DEVAM_ANAHTARI, null);
+    if (data?.sonsuzDevam === true && anlik != null && anlik.mapId === this.#map.id) {
+      this.#devamTuru = anlik;
     }
   }
 
@@ -1052,6 +1060,18 @@ export class GameScene extends Phaser.Scene {
     if (this.#endless || waves.isEndless) return;
     // Kaybedilmiş ya da bitmiş tur kaydedilmiyor.
     if (eco.lives <= 0 || waves.isComplete) return;
+    const veri = this.#turVerisi(sonrakiWaveIndex);
+    if (veri !== null) turKaydi().yaz(veri);
+  }
+
+  /**
+   * Turun kayda geçen hâli — `#turuKaydet` ile sonsuz moda devamın ortak
+   * kurucusu (`M176`). **Yazmıyor**; koşul denetimi çağıranın.
+   */
+  #turVerisi(sonrakiWaveIndex: number): RunData | null {
+    const eco = this.#eco;
+    const waves = this.#waves;
+    if (eco === undefined || waves === undefined) return null;
     /**
      * **`M168` — artıklar artık kayda GİRİYOR.**
      *
@@ -1086,7 +1106,7 @@ export class GameScene extends Phaser.Scene {
       });
     }
 
-    turKaydi().yaz({
+    return {
       version: RUN_VERSION,
       mapId: this.#map.id,
       difficulty: this.settings.state.difficulty,
@@ -1105,7 +1125,29 @@ export class GameScene extends Phaser.Scene {
       abilityLevels: this.abilities.seviyeKaydi(),
       artiklar: waves.artiklar(),
       stats: { ...this.#runStats?.data },
-    });
+    };
+  }
+
+  /**
+   * **Sonsuz moda devam için tahtanın anlık hâli — `M176`.**
+   *
+   * Yalnız **kazanılmış bir kampanya turunda** dolu: dalga listesi bitti,
+   * can var, tur sonsuz değil. `HudScene` kazanma anında çağırıp oyunun
+   * bellek içi kayıt defterine koyuyor (`RunSave.SONSUZ_DEVAM_ANAHTARI`).
+   * `waveIndex` listenin uzunluğu — sıradaki dalga ilk üretilen dalga
+   * (`WaveManager.test.ts` bağlıyor).
+   *
+   * Buraya kadar kazanma ekranındaki "Sonsuz moda devam" turu sürdürmüyor,
+   * haritayı 1. dalgadan baştan başlatıyordu (`M173` yalnız adını
+   * düzeltmişti). Sektörün karşılığı (Bloons TD'nin *Freeplay*'i):
+   * kazandıktan sonra **aynı tahtayla** devam.
+   */
+  sonsuzDevamAnligi(): RunData | null {
+    const eco = this.#eco;
+    const waves = this.#waves;
+    if (this.#endless || eco === undefined || waves === undefined) return null;
+    if (!waves.isComplete || eco.lives <= 0) return null;
+    return this.#turVerisi(this.#waveList.length);
   }
 
   /** Tur bitti — kayıt siliniyor. `HudScene`/`GameOverScene` çağırıyor. */
