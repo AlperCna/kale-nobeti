@@ -143,9 +143,8 @@ Hiçbiri oynanışı bozmuyor. Geri dönülürse sıra bu:
    hazır; karar, lisans teyidi, hesaplar ve yükleme
    [`docs/YAYIN.md`](../YAYIN.md)'de adım adım. Portal kabul şartlarından
    E17 (düşük uçlu cihaz) açık. **Lisans:** sanat, ses ve müzik yapay zekâ
-   üretimi — ticari hak üretim anındaki plana bağlı. Müzik Suno'nun ücretli
-   planında üretildi (sahip teyit etti, 2026-10-03); ses efektleri ve
-   görseller için teyit bekleniyor.
+   üretimi; sahip **hepsinin ticari kullanıma uygun** olduğunu teyit etti
+   (2026-10-03 — müzik Suno'nun ücretli planında). Lisans yayın engeli değil.
 8. ~~Normal'de geç haritalar çok dar~~ — **`M175`'te çözüldü** (yukarıda).
 9. ~~Sonsuz mod tahtayı sürdürmüyor~~ — **`M176`'da çözüldü**.
 10. ~~Üç haritanın girişi HUD kartının altından geçiyor~~ — yol yerinde,
