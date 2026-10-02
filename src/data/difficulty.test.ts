@@ -77,9 +77,19 @@ describe('DIFFICULTY — M8-T11 (S80)', () => {
     expect(isDifficulty('imkansiz')).toBe(false);
   });
 
-  it('Normal hiçbir şeyi değiştirmiyor — bugünkü denge Normal’dir', () => {
-    expect(DIFFICULTY.normal.hpScale).toBe(1);
-    expect(DIFFICULTY.normal.startLives).toBe(BALANCE.startLives);
+  /**
+   * **`M175` — tasarlanan denge artık ZOR'dur.** Bu test eskiden
+   * "Normal hiçbir şeyi değiştirmiyor" diyordu. Merdiven bir basamak
+   * kaydı (gerekçe ve ölçüm `difficulty.ts` başlığında): denge testlerinin
+   * hepsi ×1,00'de ölçüyor, yani artık Zor'u sınıyor.
+   */
+  it('Zor tasarlanan dengedir — HP ×1, can 20; Normal ve Kolay onun ölçeklenmiş hâli', () => {
+    expect(DIFFICULTY.zor.hpScale).toBe(1);
+    expect(DIFFICULTY.zor.startLives).toBe(BALANCE.startLives);
+    expect(DIFFICULTY.normal.hpScale).toBeLessThan(1);
+    expect(DIFFICULTY.kolay.hpScale).toBeLessThan(DIFFICULTY.normal.hpScale);
+    // Üçü de aynı canla başlıyor: fark yalnız düşmanın canında.
+    for (const d of Object.values(DIFFICULTY)) expect(d.startLives).toBe(BALANCE.startLives);
   });
 
   it('**Zor HP’ye DOKUNMUYOR** — hiçbir düşman öldürülemez olmuyor', () => {
@@ -123,11 +133,14 @@ describe('DIFFICULTY — M8-T11 (S80)', () => {
     expect(enKotu).toBeGreaterThan(normal);
   });
 
-  it('Zor: can 12 — haritalar 1-3 referans tahtayla HÂLÂ geçiliyor', () => {
-    expect(DIFFICULTY.zor.startLives).toBe(12);
-    const ogrenmeYayi = MAPS.slice(0, 3);
-    for (const m of ogrenmeYayi) {
-      expect(canKaybi(m, 1), m.id).toBeLessThan(DIFFICULTY.zor.startLives);
+  /**
+   * **`M175` — Zor ustalıkla GEÇİLEBİLİR.** Eski hâli (12 can) 4-6.
+   * haritalarda referans tahtanın bile geçemeyeceği bir seviyeydi
+   * (13 · 14 · 17 ≥ 12). Sektör standardında zor seviye imkânsız değil.
+   */
+  it('Zor: referans tahta HER haritayı geçiyor', () => {
+    for (const m of MAPS) {
+      expect(canKaybi(m, DIFFICULTY.zor.hpScale), m.id).toBeLessThan(DIFFICULTY.zor.startLives);
     }
   });
 
@@ -182,15 +195,51 @@ describe('DIFFICULTY — M8-T11 (S80)', () => {
    * Zor'da geçilebilir) yukarıdaki testte **aynen duruyor**, yani
    * kuralın iki ucu da hâlâ bağlı.
    */
-  it('Zor: FİNAL referans tahtadan daha iyisini istiyor (S87 → M149)', () => {
-    expect(DIFFICULTY.zor.startLives).toBe(12);
+  /**
+   * `M149`'un iddiasının `M175` hâli: "Zor'da iyi oynamak gerekir" artık
+   * **finalin payının dar** olmasıyla bağlı — referans tahta finalde
+   * canının yarısından fazlasını bırakıyor. Eskiden "final referansı
+   * yeniyor" (≥ 12 can kaybı, 12 canla) diye bağlıydı.
+   */
+  it('Zor: FİNAL dar payla geçiliyor — referans canının yarısından fazlasını kaybediyor', () => {
     const final = MAPS[MAPS.length - 1]!;
-    expect(canKaybi(final, 1), final.id).toBeGreaterThanOrEqual(DIFFICULTY.zor.startLives);
+    expect(canKaybi(final, DIFFICULTY.zor.hpScale), final.id).toBeGreaterThan(
+      DIFFICULTY.zor.startLives / 2,
+    );
   });
 
-  it('Kolay: BEŞ harita da bol payla geçiliyor', () => {
+  /**
+   * **`M175` — Normal ortalama oyuncu içindir.** Oyuncu gibi oynanırken
+   * ×0,80'de 4-6. haritalar 12 · 11 · 15 canla kazanıldı; ×1,00'de 3, 4
+   * ve 5 ilk denemede kaybedildi. Referans tahta Normal'de hiçbir haritada
+   * canının yarısını bırakmamalı — insan oyuncu ondan kötü oynuyor.
+   */
+  it('Normal: her harita bol payla geçiliyor (referans can kaybı ≤ 10)', () => {
     for (const m of MAPS) {
-      expect(canKaybi(m, DIFFICULTY.kolay.hpScale), m.id).toBeLessThanOrEqual(10);
+      expect(canKaybi(m, DIFFICULTY.normal.hpScale), m.id).toBeLessThanOrEqual(10);
+    }
+  });
+
+  /**
+   * Zorluk haritadan haritaya **artmalı** — en çok oynanan seviyede.
+   * `M120` bu eğriyi ×0,80'de (o zamanki Kolay) artan yaptı; `M175`'ten
+   * beri o eğri Normal'in kendisi. ×0,70 ve ×0,75'te eğri artan değil
+   * (0·0·2·0·0·5 · 0·0·2·0·2·5), Normal'in ×0,80 olmasının bir sebebi de bu.
+   */
+  it('Normal rampası AZALMIYOR ve final bir şey istiyor', () => {
+    const kayip = MAPS.map((m) => canKaybi(m, DIFFICULTY.normal.hpScale));
+    for (let i = 1; i < kayip.length; i++) {
+      expect(kayip[i]!, `harita ${i + 1}: ${kayip.join(' → ')}`).toBeGreaterThanOrEqual(
+        kayip[i - 1]!,
+      );
+    }
+    expect(kayip[0]).toBe(0);
+    expect(kayip[kayip.length - 1]!).toBeGreaterThan(0);
+  });
+
+  it('Kolay: bütün haritalar neredeyse bedava (referans can kaybı ≤ 3)', () => {
+    for (const m of MAPS) {
+      expect(canKaybi(m, DIFFICULTY.kolay.hpScale), m.id).toBeLessThanOrEqual(3);
     }
   });
 
@@ -209,7 +258,8 @@ describe('DIFFICULTY — M8-T11 (S80)', () => {
    * (haritaların çoğunda sıfır, sızan da neredeyse hep **Trol**), yani
    * Kolay'da kesin artış istemek gürültüye sağlama koymak olurdu.
    *
-   * Ölçülen: `0 · 0 · 2 · 4 · 5 · 8`.
+   * Ölçülen (`M120`, Kolay ×0,80): `0 · 0 · 2 · 4 · 5 · 8`.
+   * `M175`: Kolay ×0,60 → `0 · 0 · 0 · 0 · 0 · 2`.
    */
   it('Kolay rampası da AZALMIYOR — zorluk seviyeleri arası şekil korunuyor', () => {
     const kayip = MAPS.map((m) => canKaybi(m, DIFFICULTY.kolay.hpScale));

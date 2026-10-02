@@ -594,17 +594,17 @@ function kadroTablosu() {
 }
 
 function rampaTablosu() {
-  const seviye = (ad) => D.zorluk.seviyeler.find((z) => z.ad === ad);
-  const normal = seviye('normal');
-  const kolay = seviye('kolay');
+  // `M175` — sütun başlıkları VERİDEN: burada "Normal = Zor" ve
+  // "Kolay (×0,80)" elle yazılıydı; zorluk merdiveni kayınca ikisi de
+  // yalan söyleyecekti. Sıra en zordan kolaya.
+  const seviyeler = [...D.zorluk.seviyeler].sort((a, b) => b.hpScale - a.hpScale);
   return tablo(
-    ['Harita', 'HP çarpanı', 'Altın çarpanı', 'Normal = Zor', 'Kolay (×0,80)'],
+    ['Harita', 'HP çarpanı', 'Altın çarpanı', ...seviyeler.map((z) => `${z.ad} (×${n(z.hpScale)})`)],
     D.haritalar.map((m, i) => [
       HARITA_ADI[m.id],
       n(m.hpMultiplier),
       n(m.goldMultiplier),
-      String(normal?.canKaybi?.[i] ?? '—'),
-      String(kolay?.canKaybi?.[i] ?? '—'),
+      ...seviyeler.map((z) => String(z.canKaybi?.[i] ?? '—')),
     ]),
   );
 }
@@ -922,11 +922,13 @@ function olustur() {
   y('---', '', '## 11b. Zorluk seviyeleri', '');
   y(`Kaynak: \`src/data/difficulty.ts\` (S80). Varsayılan **${HARITA_ADI_YOK(D.zorluk.varsayilan)}**.`, '');
   y(
-    '**Zor HP’ye dokunmuyor, canı kısıyor.** Ölçüm: HP çarpanı ×1,10’da',
-    'harita 1’in bossu referans tahtanın Kısıt A tavanını aşıyordu (%101),',
-    'yani öğretici harita **geçilemez** hâle geliyordu. Can sayısı Kısıt A’ya,',
-    'referans tahtaya, tavana ve boss türetmesine hiç girmiyor — hiçbir düşmanı',
-    'öldürülemez yapmadan hata payını daraltıyor.',
+    '**`M175` — Zor tasarlanan dengedir.** Üç seviye de 20 canla başlıyor;',
+    'fark düşmanın canında. Zor ×1,00 (bütün denge testlerinin ölçtüğü eğri),',
+    'Normal ve Kolay onun ölçeklenmiş hâli. Zor HP’yi **yükseltmiyor**:',
+    '×1,10’da Kısıt A’nın %15 payı tükeniyor. Eskiden Zor 12 canla başlıyordu',
+    've 4-6. haritaları referans tahta bile geçemiyordu; oyun oyuncu gibi',
+    'oynanınca Normal’in (×1,00) de fazla dar olduğu görüldü — gerekçe',
+    've ölçüm `difficulty.ts` başlığında.',
     '',
   );
   y(

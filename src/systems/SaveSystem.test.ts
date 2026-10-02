@@ -157,17 +157,18 @@ describe('TIER 1 kural 10 — gizli sekme', () => {
  * (`15 / 20 = 0,75`). Kural hep "canının dörtte üçünü koru"ydu.
  */
 describe('starsFor — başlangıç canına ORANLI (M26)', () => {
-  const ZOR = DIFFICULTY.zor.startLives;
+  // `M175`'e kadar Zor 12 canla başlıyordu; bugün üç seviye de 20. Oransal
+  // eşik her taban için doğru kalmalı — 12 artık açık bir örnek taban.
+  const ZOR = 12;
   const NORMAL_CAN = DIFFICULTY.normal.startLives;
 
-  it('Zor: kusursuz koşu ★★★ — eskiden ★ veriyordu', () => {
-    expect(ZOR).toBe(12); // varsayımın kilidi
+  it('20 olmayan taban (12): kusursuz koşu ★★★ — eskiden ★ veriyordu', () => {
     expect(starsFor(ZOR, true, ZOR)).toBe(3);
     // Eski mutlak eşikle aynı koşu:
     expect(ZOR >= STAR_THRESHOLDS.three).toBe(false);
   });
 
-  it('Zor: dörtte üçünü koruyan ★★ (ceil(12 × 0,75) = 9)', () => {
+  it('12 can tabanı: dörtte üçünü koruyan ★★ (ceil(12 × 0,75) = 9)', () => {
     expect(Math.ceil(ZOR * STAR_TWO_RATIO)).toBe(9);
     expect(starsFor(9, true, ZOR)).toBe(2);
     expect(starsFor(8, true, ZOR)).toBe(1);

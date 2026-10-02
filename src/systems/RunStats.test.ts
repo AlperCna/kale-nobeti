@@ -55,9 +55,12 @@ describe('RunStats — M8-T03', () => {
    * `startGold` aynı sebeple üç alan yukarıda zaten kurucu
    * parametresiydi; bu test iki tabanı da bağlıyor.
    */
-  it('BAŞLANGIÇ CANI tabandan geliyor — Zor 12 canla doğru sayıyor (M157)', () => {
-    const { bus, stats } = kur(DIFFICULTY.zor.startLives);
-    expect(DIFFICULTY.zor.startLives, 'taban değişirse test de değişsin').toBe(12);
+  it('BAŞLANGIÇ CANI tabandan geliyor — 20 olmayan bir tabanla doğru sayıyor (M157)', () => {
+    // `M175`'e kadar Zor 12 canla başlıyordu ve bu test onu kullanıyordu.
+    // Bugün üç seviye de 20 canla başlıyor; iddia (taban **enjekte**
+    // ediliyor, tahmin edilmiyor) her taban için geçerli kalmalı.
+    const KISA_TABAN = 12;
+    const { bus, stats } = kur(KISA_TABAN);
     bus.emit('life:lost', { remaining: 11 });
     expect(stats.data.livesLost, 'bir can kaybedildi').toBe(1);
     bus.emit('life:lost', { remaining: 1 }); // boss sızdı
