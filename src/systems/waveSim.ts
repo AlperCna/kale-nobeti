@@ -21,6 +21,7 @@
  */
 
 import type { EnemyDef, EnemyId, Mover, SpawnableEnemy, Targetable } from '../types/enemy';
+import type { PathProgress } from '../types/path';
 import type { MapDef } from '../types/map';
 import type { ProjectileState } from '../types/projectile';
 import type { ReferenceBoard } from '../types/board';
@@ -236,6 +237,14 @@ class SimEnemy implements SpawnableEnemy, Poolable, Targetable {
 
   reachedEnd(): boolean {
     return this.mover !== null && this.mover.reachedEnd(this);
+  }
+
+  /** `SpawnableEnemy.yolaKoy` — `M169`. Simülasyon tur kaydı yüklemiyor. */
+  yolaKoy(ilerleme: PathProgress): void {
+    if (this.mover === null) return;
+    this.progress = { ...ilerleme };
+    this.mover.step(this, 0);
+    this.#konumla();
   }
 
   resetForPool(): void {

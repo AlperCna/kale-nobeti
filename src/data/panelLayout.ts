@@ -106,6 +106,58 @@ const EKRAN_H = 720;
 /** Kenar payı — HUD'un geri kalanıyla aynı. */
 const PAY = 12;
 
+/**
+ * **Yetenek bloğu** — sol alt köşedeki iki yetenek düğmesi ve üstlerindeki
+ * yükseltme fişleri. `AbilityButtons` ve `HudScene` buradan okuyor (`M169`).
+ *
+ * Sol panel bu bloğun üstünde bitmek zorunda ve bunu elle yazılmış bir
+ * sayıyla biliyordu: `622`, yetenek düğmelerinin üst kenarı. `M99`
+ * düğmelerin **üstüne** yükseltme fişlerini ekledi ve sayı güncellenmedi.
+ * Taş Köprü'de oynanırken görüldü: sağdaki bir kule seçilince panelin
+ * alt satırları fişlerin altına giriyordu; HUD `Game`'in üstünde olduğu
+ * için fişler panelin ikinci düşman satırını örtüyor ve o simgeleri
+ * **tıklanamaz** yapıyordu. Fişler tahta dolunca çıkıyor, yani tam da
+ * geç oyunda. İkinci kopya `maps.test.ts` `KALICI_HUD`'daydı ve o da
+ * 12 px kaymıştı (578-622 diyordu, gerçek 566-610).
+ */
+export const YETENEK_BLOGU = {
+  /** İlk düğmenin merkezi. */
+  x: 20 + 40,
+  y: EKRAN_H - 20 - 46,
+  /** Düğme kenarı (kare) ve iki düğme arası boşluk. */
+  btn: 64,
+  ara: 14,
+  /** Yükseltme fişinin kenarı — dokunmatik alt sınırı (44). */
+  yukseltBtn: 44,
+  /** Fiş ile düğme arasındaki boşluk. */
+  yukseltAra: 12,
+} as const;
+
+/**
+ * Yetenek bloğunun **tamamı** — düğmeler, alt etiketleri ve üstlerindeki
+ * fişler. Yapı menüsü bu kutuya girmiyor (`BuildMenu`, `M169`).
+ */
+export const YETENEK_KUTUSU = {
+  x0: YETENEK_BLOGU.x - YETENEK_BLOGU.btn / 2,
+  y0: YETENEK_BLOGU.y - YETENEK_BLOGU.btn / 2 - YETENEK_BLOGU.yukseltAra - YETENEK_BLOGU.yukseltBtn,
+  x1: YETENEK_BLOGU.x + YETENEK_BLOGU.btn + YETENEK_BLOGU.ara + YETENEK_BLOGU.btn / 2,
+  y1: EKRAN_H,
+} as const;
+
+/** Yükseltme fişinin merkezinin düğme merkezine göre dikey yeri. */
+export const YUKSELT_DY = -(YETENEK_BLOGU.btn / 2 + YETENEK_BLOGU.yukseltBtn / 2 + YETENEK_BLOGU.yukseltAra);
+
+/**
+ * Fişlerin kapladığı kutu — iki fişi birlikte örten dikdörtgen. Görünür
+ * olduğunda turun sonuna kadar duruyor, yani kalıcı HUD sayılıyor.
+ */
+export const YUKSELT_KUTUSU = {
+  x0: YETENEK_BLOGU.x - YETENEK_BLOGU.yukseltBtn / 2,
+  y0: YETENEK_BLOGU.y + YUKSELT_DY - YETENEK_BLOGU.yukseltBtn / 2,
+  x1: YETENEK_BLOGU.x + (YETENEK_BLOGU.btn + YETENEK_BLOGU.ara) + YETENEK_BLOGU.yukseltBtn / 2,
+  y1: YETENEK_BLOGU.y + YUKSELT_DY + YETENEK_BLOGU.yukseltBtn / 2,
+} as const;
+
 /** Kule **solda** ise panel buraya. */
 export const PANEL_SAG = {
   x: EKRAN_W - PAY - PANEL_W,
@@ -115,12 +167,15 @@ export const PANEL_SAG = {
 /**
  * Kule **sağda** ise panel buraya.
  *
- * Yetenek düğmelerinin (`28,622 – 170,707`) **üstünde** duruyor: alt
- * kenarı 622'den `PAY` kadar yukarıda bitiyor.
+ * Yetenek bloğunun — yükseltme fişleri dahil — **üstünde** duruyor: alt
+ * kenarı fişlerin üst kenarından (`YUKSELT_KUTUSU.y0`, 566) `PAY` kadar
+ * yukarıda bitiyor. En geniş panelde (iki ikon satırı) üst kenar 190;
+ * hazırlıktaki dalga telgrafının bandı 155-189 (`HudScene` `MARGIN + 152`,
+ * bant `ICON + 12`), yani kesişmiyor — oyunda ölçüldü.
  */
 export const PANEL_SOL = {
   x: PAY,
-  y: 622 - PAY - PANEL_H,
+  y: YUKSELT_KUTUSU.y0 - PAY - PANEL_H,
 } as const;
 
 /** Ekranın orta ekseni — panelin hangi yana kaçacağını bu belirliyor. */
@@ -147,7 +202,7 @@ export function panelKonumu(
   yukseklik: number = PANEL_H,
 ): { readonly x: number; readonly y: number } {
   return spotX > PANEL_ESIK
-    ? { x: PANEL_SOL.x, y: 622 - PAY - yukseklik }
+    ? { x: PANEL_SOL.x, y: YUKSELT_KUTUSU.y0 - PAY - yukseklik }
     : { x: PANEL_SAG.x, y: EKRAN_H - PAY - yukseklik };
 }
 
@@ -169,15 +224,22 @@ export function panelKonumu(
 export const ERKEN_BASLAT = { x: EKRAN_W / 2, y: 82, w: 180, h: 52 } as const;
 
 /**
+ * Erken başlatmanın **risk satırı** (*"N sahada"*) — düğme merkezinin
+ * `dy` altında. `M169`'dan beri bir parşömen zemini var (`w` × `h`):
+ * Taş Köprü'nün üst kolu tam bu yükseklikten geçiyor ve 16 px zincifre
+ * kahverengi yolun üstünde güçlükle okunuyordu (oyunda görüldü).
+ */
+export const RISK_SATIRI = { dy: 46, w: 104, h: 24 } as const;
+
+/**
  * Menülerin **girmediği** üst-orta kutu: düğmenin kendisi, üstündeki
- * geri sayım ve altındaki risk satırı (düğme merkezinin `46` px altında,
- * ~18 px yüksek — `HudScene.#createEarlyStartButton`).
+ * geri sayım ve altındaki risk satırı ile zemini (`RISK_SATIRI`).
  */
 export const UST_ORTA_HUD = {
   x0: ERKEN_BASLAT.x - ERKEN_BASLAT.w / 2,
   y0: 0,
   x1: ERKEN_BASLAT.x + ERKEN_BASLAT.w / 2,
-  y1: ERKEN_BASLAT.y + 46 + 12,
+  y1: ERKEN_BASLAT.y + RISK_SATIRI.dy + RISK_SATIRI.h / 2,
 } as const;
 
 /**

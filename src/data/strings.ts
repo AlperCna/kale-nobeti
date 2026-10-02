@@ -279,8 +279,17 @@ const TR = {
   /** `M28` — `howTo6` ile aynı sebep: takasın iki yakası da yazıyor. */
   hintEarlyStart:
     'Erken başlat: kalan süre altına döner. Ama sahada bekleyenler yürümeye başlar ve yeni dalga üstlerine gelir.',
-  /** `Y09` — S69'un ölçtüğü mekanik: toplanma noktası sürükleme. */
-  hintDragRally: 'Bayrağı sürükle',
+  /**
+   * `Y09` — S69'un ölçtüğü mekanik: toplanma noktası sürükleme.
+   *
+   * **`M168` — yarısını anlatıyordu.** `M8-T12` dokunmatik için
+   * sürüklemesiz yolu ekledi (kışla seçiliyken menzildeki bir yere
+   * dokunmak bayrağı oraya taşıyor), çünkü 44 px'lik bayrağı parmakla
+   * yakalamak telefonda en kırılgan jest — ve portal trafiği ağırlıklı
+   * dokunmatik. Metin yine yalnız sürüklemeyi öğretiyordu; oyunda
+   * sınandı, dokunma çalışıyor.
+   */
+  hintDragRally: 'Bayrağı sürükle ya da kışlayı seçip yola dokun',
 
   /**
    * `Y03` Adım 3 — dil seçimi. Dil **adları çevrilmiyor**: her dil kendi
@@ -381,7 +390,7 @@ const TR = {
   roleOkcu: 'Tek hedef, hızlı, ucuz. Zırha karşı zayıf.',
   roleTop: 'Alan hasarı, yavaş. Kalabalığın cevabı. Uçana vurmaz.',
   roleBuyu: 'Zırh delen. Büyü dirençli düşmanlara zayıf.',
-  roleKisla: 'Asker çıkarır, yolu tıkar. Bayrağı sürükleyerek konumlandır.',
+  roleKisla: 'Asker çıkarır, yolu tıkar. Bayrağı sürükle ya da yola dokun.',
   /** "?" düğmesi — dokunmatikte imleç yok, roller böyle açılıyor. */
   infoToggle: '?',
 
@@ -616,7 +625,7 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     hintBuild: 'Tap a gold circle to build your first tower.',
     hintEarlyStart:
       'Start early: leftover time turns to gold. But those waiting on the field start moving, and the next wave arrives on top of them.',
-    hintDragRally: 'Drag the flag',
+    hintDragRally: 'Drag the flag, or select the barracks and tap the path',
     language: 'Language',
     langTr: 'Türkçe',
     langEn: 'English',
@@ -662,7 +671,7 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     roleOkcu: 'Single target, fast, cheap. Weak against armor.',
     roleTop: 'Splash damage, slow. The answer to crowds. Cannot hit flyers.',
     roleBuyu: 'Pierces armor. Weak against magic-resistant enemies.',
-    roleKisla: 'Spawns soldiers that block the path. Drag the flag to position them.',
+    roleKisla: 'Spawns soldiers that block the path. Drag the flag or tap the path.',
     infoToggle: '?',
     enemyTunelci: 'Tunneler',
     statBurrow: 'burrows',

@@ -145,7 +145,17 @@ export class TowerInfoPanel {
     this.#scene = scene;
     this.#roster = roster;
     this.#toplamYol = Math.max(1, toplamYol);
-    this.#kap = scene.add.container(x, y).setVisible(false);
+    // `M168` — derinlik. Panel `setDepth` hiç çağırmıyordu ve `GameScene`
+    // onu düşmanlardan, mermilerden ve hasar sayılarından ÖNCE kuruyor;
+    // aynı derinlikte çizim sırası eklenme sırası. Oyunda görüldü: Taş
+    // Köprü'de sağdaki bir kule seçilince panel sola, döngü yolunun
+    // üstüne açılıyor ve yürüyen düşmanlar ile "154" gibi hasar sayıları
+    // panelin ÜSTÜNDE çiziliyordu — "Atış/sn" ve "Menzil" satırları
+    // okunmuyordu. `BuildMenu` aynı kusuru (`MENU_DERINLIK`, oyuncu geri
+    // bildirimi 2026-09-14) yaşamış ve düzeltmişti; panel atlanmıştı.
+    // Menünün (150) hemen altı: ikisi üst üste gelirse etkileşimli olan
+    // üstte kalsın. Parçacık (50) ve can kaybı perdesi (60) altta.
+    this.#kap = scene.add.container(x, y).setVisible(false).setDepth(140);
 
     // `M134` — boy kadrodan türüyor: kaç ikon satırı varsa o kadar.
     this.#yukseklik = panelYuksekligi(Math.ceil(roster.length / PANEL_IKON_SUTUN));

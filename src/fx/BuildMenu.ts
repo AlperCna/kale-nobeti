@@ -6,11 +6,12 @@ import type { Tower } from '../entities/Tower';
 import type { Soldier } from '../entities/Soldier';
 import type { MapDef } from '../types/map';
 import type { Vec2 } from '../types/common';
+import type { Kutu } from '../util/math';
 import type { TargetMode, TierIndex, TowerDef } from '../types/tower';
 import { TOWERS, TARGET_MODES, tierAt, maliyet } from '../data/towers';
 import { KISLA, barracksTierAt } from '../data/barracks';
 import { FRAME_CARTOUCHE } from '../data/spriteFrames';
-import { UST_ORTA_HUD } from '../data/panelLayout';
+import { UST_ORTA_HUD, YETENEK_KUTUSU } from '../data/panelLayout';
 import { measureCoverage } from '../util/coverage';
 import { dalOzeti, kislaOzeti } from '../util/dalOzeti';
 import { t } from '../util/i18n';
@@ -319,6 +320,8 @@ export class BuildMenu {
   readonly #settings: Settings;
 
   #menu?: Phaser.GameObjects.Container;
+  /** `#menu`'nün yerleştiği kutu — `acikMenuKutusu` (`M169`). */
+  #menuKutusu: Kutu = { x0: 0, y0: 0, x1: 0, y1: 0 };
   /** Seçili kule/kışlanın üstündeki altın kartuş (P02) — yalnız menü açıkken. */
   #cartouche?: Phaser.GameObjects.Image;
   #selectedSpot = -1;
@@ -722,6 +725,19 @@ export class BuildMenu {
     for (const f of this.#satSifirlayicilar) f();
   }
 
+  /**
+   * Açık menünün ekrandaki kutusu; menü kapalıyken `null` — `M169`.
+   *
+   * HUD'un dalga telgrafı bununla kesiştiği sürece gizleniyor
+   * (`HudScene`). Telgraf `Hud` sahnesinde, yani menünün **üstünde**
+   * çiziliyor ve ikonlarının 44×44 dokunma hedefleri menünün tıklamalarını
+   * yutuyordu. Menüyü banttan kaçırmak yetmiyor: bant dalganın tür
+   * sayısıyla uzuyor (kampanyada 6, sonsuzda 9 tür — 694 px'e kadar).
+   */
+  get acikMenuKutusu(): Kutu | null {
+    return this.#menu === undefined ? null : this.#menuKutusu;
+  }
+
   closeMenu(): void {
     this.#satSifirlayicilar.length = 0;
     this.#fiyatBoyayicilar.length = 0;
@@ -1023,6 +1039,9 @@ export class BuildMenu {
     // sağa kaydır: harita 1 nokta 1 (300,65) aşağı çevrilince kartın
     // üstüne düşüyordu. Sabitler `HudScene`'in yerleşimini yansıtıyor —
     // orası değişirse burası da değişmeli (yorumla bağlı, kodla değil).
+    // **`M169`:** telgraf bandı bu kutunun sağ kenarında bitmiyor (tür
+    // sayısıyla 694 px'e kadar uzuyor); kutunun dışında kalan kısmıyla
+    // çakışmada telgraf kendini gizliyor (`acikMenuKutusu`).
     if (y + panelUst < HUD_ALANI.alt && istenenX + panelSol < HUD_ALANI.sag) {
       istenenX = Math.min(HUD_ALANI.sag - panelSol, maxX);
     }
@@ -1046,7 +1065,26 @@ export class BuildMenu {
         : alta;
     }
 
+    // `M169` — sol alttaki yetenek bloğu (`YETENEK_KUTUSU`, yükseltme
+    // fişleri dahil). Taş Köprü'nün gövde noktasında (60,285) menü noktanın
+    // altına çevriliyor ve alt kenarı fişlere giriyordu; `Hud` üstte, yani
+    // 396 altınlık bir satın alma düğmesi menünün kenarına biniyordu.
+    // Kartla aynı hamle: sağa kaydır. Noktanın üstüne itmek kartuşu
+    // örterdi (menü noktanın altında, arada `MENU_NOKTA_BOSLUK` var).
+    if (
+      sonY + panelAlt > YETENEK_KUTUSU.y0 - MENU_KENAR_PAY &&
+      istenenX + panelSol < YETENEK_KUTUSU.x1 + MENU_KENAR_PAY
+    ) {
+      istenenX = Math.min(YETENEK_KUTUSU.x1 + MENU_KENAR_PAY - panelSol, maxX);
+    }
+
     kap.setPosition(istenenX, sonY);
+    this.#menuKutusu = {
+      x0: istenenX + panelSol,
+      y0: sonY + panelUst,
+      x1: istenenX + panelSag,
+      y1: sonY + panelAlt,
+    };
   }
 
   /** Seçili kule/kışlanın üstüne altın kartuş (P02) — `closeMenu` kaldırıyor. */

@@ -4,6 +4,7 @@ import type { EnemyDef, EnemyId } from '../types/enemy';
 import { NUMBER_FONT_KEY } from './numberFont';
 import { enemyFrameKey } from '../data/spriteFrames';
 import { enemySummary } from './enemyLabel';
+import { kutularKesisiyor, type Kutu } from '../util/math';
 
 
 /**
@@ -29,6 +30,8 @@ export class WaveTelegraph {
   /** `M8-T02` — ikon başına özet satırı; aynı anda en çok biri görünür. */
   readonly #ozetler: Phaser.GameObjects.Text[] = [];
   #gosterilenDalga = -1;
+  /** Bandın dokunma hedefleri dahil kapladığı alan — `menuyleKesisiyorsaGizle`. */
+  #kutu: Kutu = { x0: 0, y0: 0, x1: 0, y1: 0 };
 
   /**
    * @param cozumle Düşman kimliğini **haritaya göre** tanıma çeviren
@@ -74,8 +77,12 @@ export class WaveTelegraph {
     for (const g of wave.groups) adet.set(g.enemy, (adet.get(g.enemy) ?? 0) + g.count);
 
     // M8-T01 — kendi bandı: telgraf artık HUD kartının DIŞINDA, altında
-    // kendi satırında (5 tipe kadar 370 px; kart 216 px'ti, sığmıyordu ve
-    // dışarı taşıyordu — oyuncu geri bildirimi turunun yan gözlemi).
+    // kendi satırında (kart 216 px'ti, sığmıyordu ve dışarı taşıyordu —
+    // oyuncu geri bildirimi turunun yan gözlemi). Bant tür sayısıyla
+    // uzuyor: `n · 74 + 8` px. Burada "5 tipe kadar 370 px" yazıyordu;
+    // `M169`'da ölçüldü — kampanyada bir dalgada en çok **6** tür (Sisli
+    // Bataklık, 452 px), sonsuz modda dalga 11-200 arasında **9** (674 px).
+    // Menüyle çakışmayı `menuyleKesisiyorsaGizle` çözüyor.
     const bant = this.#scene.add
       .rectangle(-BANT_PAY, 0, adet.size * SPACING + BANT_PAY, ICON + 12, INK, 0.55)
       .setOrigin(0, 0.5);
@@ -144,6 +151,31 @@ export class WaveTelegraph {
       i++;
     }
 
+    // Dokunma hedefleri dahil kapladığı alan (`M169`).
+    this.#kutu = {
+      x0: this.#kap.x - HEDEF / 2,
+      y0: this.#kap.y - HEDEF / 2,
+      x1: this.#kap.x + adet.size * SPACING,
+      y1: this.#kap.y + HEDEF / 2,
+    };
     this.#kap.setVisible(true);
+  }
+
+  /**
+   * Açık bir yapı menüsüyle kesişiyorsa **bu kare** gizlen — `M169`.
+   *
+   * `show`'dan sonra her karede çağrılıyor: `show` görünürlüğü geri
+   * açıyor, bu çağrı gerekiyorsa kapatıyor; çizim ikisinden sonra olduğu
+   * için titreme yok. Bant yeniden kurulmuyor (`Text` yeniden üretmek
+   * doku demek — TIER 1 k.7), yalnız görünürlük değişiyor.
+   *
+   * Taş Köprü'de oynanırken görüldü: gövdedeki alt noktanın menüsü yukarı
+   * açılıyor ve telgrafın dördüncü ikonu menünün sol üst köşesine
+   * biniyordu. `Hud` üstte olduğu için ikonun dokunma hedefi oradaki
+   * düğmeyi örtüyordu.
+   */
+  menuyleKesisiyorsaGizle(menu: Kutu | null): void {
+    if (menu === null || !this.#kap.visible) return;
+    if (kutularKesisiyor(this.#kutu, menu)) this.#kap.setVisible(false);
   }
 }

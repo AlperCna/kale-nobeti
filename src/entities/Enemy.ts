@@ -243,6 +243,23 @@ export class Enemy extends Phaser.GameObjects.Sprite implements Poolable, EnemyS
     this.setTint(HIT_FLASH_COLOR);
   }
 
+  /** `SpawnableEnemy.yolaKoy` — `M169`. */
+  yolaKoy(ilerleme: PathProgress): void {
+    if (this.mover === null) return;
+    this.progress = {
+      segmentIndex: ilerleme.segmentIndex,
+      tInSegment: ilerleme.tInSegment,
+      remainingDistance: ilerleme.remainingDistance,
+    };
+    // Sıfır mesafe: yer değişmiyor, `pathFraction` yeni ilerlemeden
+    // yeniden hesaplanıyor (yeraltı penceresi buna bakıyor).
+    this.mover.step(this, 0);
+    this.syncPosition();
+    // `spawn` ile aynı sebep: ara-değerleme geçmişi doğuş noktasında
+    // kaldıysa çizim her karede oraya geri çekiliyor.
+    konumIsinla(this);
+  }
+
   /** Hedeflemenin (`first`/`last`) bakacağı sayı. M2'de kullanılacak. */
   get remainingDistance(): number {
     return this.progress.remainingDistance;

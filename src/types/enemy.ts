@@ -284,6 +284,19 @@ export interface SpawnableEnemy extends EnemyState {
   spawn(mover: Mover, def: EnemyDef, hpMultiplier: number): void;
   step(scaledDelta: number): void;
   reachedEnd(): boolean;
+  /**
+   * `spawn`'dan sonra düşmanı yolda **verilen noktaya ışınlar** — `M169`,
+   * tur kaydının artıklarını geri koymak için.
+   *
+   * İlerlemeyi yazıp `pathFraction`'ı ve görüntü konumunu yeniden
+   * hesaplıyor; görüntüsü olan uygulayıcı ara-değerleme geçmişini de
+   * siliyor. Arayüzde, çünkü o geçmiş entity'nin: `M168` ilk sürümü
+   * `progress`'i dışarıdan yazıp `step(0)` çağırıyordu — mantık doğruydu,
+   * ama `Enemy`'nin çizim konumu bir sonraki karede doğuş noktasına geri
+   * çekiliyordu (`util/araDeger` `gercegeDon`). Oyunda ölçüldü: 12 artık
+   * kayıtla birebir aynı yerdeydi ve **hiçbiri ekranda değildi**.
+   */
+  yolaKoy(ilerleme: PathProgress): void;
 }
 
 /**

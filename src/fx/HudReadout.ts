@@ -93,7 +93,11 @@ export class HudReadout {
       this.#sonLives = s.lives;
     }
     if (s.waveNumber !== this.#sonWave) {
-      this.#wave.setText(s.endless ? String(s.waveNumber) : `${s.waveNumber}.${s.totalWaves}`);
+      // `M169` — ayraç `/`. `M3`'ten beri `.` yazıyordu: greybox fontunda
+      // `/` glifi yoktu. `M6`'nın nihai fontu onu getirdi (`prep-assets`
+      // glif listesi), ama bu satır güncellenmedi ve oyuncu "3/10" yerine
+      // ondalık sayı gibi okunan "3.10" gördü.
+      this.#wave.setText(s.endless ? String(s.waveNumber) : `${s.waveNumber}/${s.totalWaves}`);
       this.#sonWave = s.waveNumber;
     }
 

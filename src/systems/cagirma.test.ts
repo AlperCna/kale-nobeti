@@ -59,6 +59,9 @@ class SahteDusman implements AbilityEnemy, Poolable {
   reachedEnd(): boolean {
     return false;
   }
+  yolaKoy(ilerleme: PathProgress): void {
+    this.progress = { ...ilerleme };
+  }
   resetForPool(): void {
     resetEnemyState(this);
     this.mover = null;

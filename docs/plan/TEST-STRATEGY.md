@@ -194,7 +194,7 @@ Bu liste yazıldı ki sonradan "neden sahne testi yok" sorulmasın.
 | E4 | Font düşüşü | `FontFace.prototype.load`'u reddet/askıda bırak | 2 sn içinde sistem serif'e düşüp devam ediyor | M0 · **koşturuldu `M164`** |
 | E5 | Alt klasör servisi | `dist`'i iç içe bir alt yoldan sun | Beyaz ekran yok (`base:'./'`) | M0 · **koşturuldu `M166`** |
 | E6 | Havuz sızıntısı | 10 dalga oyna, **bütün** havuz sayaçlarını izle | Sabit kalıyor, saha boşalınca sıfır | M1 · **koşturuldu `M165`** |
-| E6b | **Dinleyici sızıntısı** | Sahneyi N kez yeniden başlat, `devHooks.shutdownListeners()` izle | **Sabit kalıyor** | M1 · **koşturuldu ×4** (`M95` · `M115` · `M136` · `M161`) |
+| E6b | **Dinleyici sızıntısı** | Sahneyi N kez yeniden başlat, `devHooks.shutdownListeners()` izle | **Sabit kalıyor** | M1 · **koşturuldu ×5** (`M95` · `M115` · `M136` · `M161` · `M169`) |
 | E7 | Kapsama ölçümü | Geliştirme göstergesini oku | Ortalama ve `L` raporlanıyor | M1 · **görüldü** (her geliştirme ekran görüntüsünde) + `util/coverage.test` |
 | E8 | Karşı-oyun | §5 tablosundaki 7 senaryoyu dene | Her tehdidin cevabı işliyor | M4 · **parçalı, otomatik** (aşağıda) |
 | E9 | Uçan hattı | Hazırlık aşamasına bak | Kesikli altın hat görünüyor, ≥3 nokta kesiyor | M4 · **koşturuldu `M164`** (sayı: `maps.test` ≥ %40) |
@@ -282,6 +282,23 @@ Dağılım: `barracks:placed` 4 · `enemy:killed` 3 · `tower:placed` 3 ·
 altındaki cümle doğru biçimde **33** diyor. Toplam yanlış değildi,
 *sayan liste* eksikti — `CLAUDE.md` TIER 2'nin birinci yüzeyi. Yukarıdaki
 dağılım on dokuzun hepsini taşıyor.
+
+### E6b — `M169`'da beşinci kez; toplam **34** ve sabit
+
+`M168` yapı menüsüne bir `gold:changed` dinleyicisi ekledi (fiyatlı
+butonlar altın değişince yeniden boyanıyor — `BuildMenu` kurucusu). Yani
+"toplam 33" bilerek bir artmalıydı; artmasaydı dinleyici kaydedilmiyor,
+iki artsaydı sızıyor demekti. `Game` (Kül Ovası) **beş kez** yeniden
+başlatıldı, on dokuz olay sayıldı:
+
+| tur | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|
+| toplam dinleyici | 34 | 34 | 34 | 34 | 34 |
+| `gold:changed` | 3 | 3 | 3 | 3 | 3 |
+| `shutdown` | 12 | 12 | 12 | 12 | 12 |
+
+Dağılımın geri kalanı `M161` ile birebir aynı. Bundan sonraki ölçümün
+bakacağı sayı: **toplam 34**.
 
 ### E13 ve E14 — `M162`'de İLK KEZ koşturuldu
 

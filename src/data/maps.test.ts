@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { MAP_1, MAP_2, MAP_3, MAP_4, MAP_5, MAP_6, MAPS, COVERAGE_REFERENCE_RANGE } from './maps';
 import { measureCoverage, pathLength, spotsCoveringFlyerPaths } from '../util/coverage';
+import { YUKSELT_KUTUSU } from './panelLayout';
 
 describe('MAP_1 — GAME-DESIGN §9 tablosuna uygunluk', () => {
   it('§9 tablosundaki sayılar birebir', () => {
@@ -512,9 +513,12 @@ const KALICI_HUD = [
   { ad: 'yetenek', x0: 28, y0: 622, x1: 170, y1: 707 },
   // `M99` yükseltme düğmeleri — yetenek düğmelerinin **üstünde**, 44×44.
   // Yalnız alınabilirken görünüyor ama göründüğünde turun sonuna kadar
-  // duruyor — kalıcı sayılır. (60, 654) ve (138, 654) merkezli yetenek
-  // düğmelerinden 54 px yukarı: merkez y = 600.
-  { ad: 'yetenek yükseltme', x0: 38, y0: 578, x1: 160, y1: 622 },
+  // duruyor — kalıcı sayılır. **`M169` — kutu artık türetiliyor:** burada
+  // elle `38,578 – 160,622` yazıyordu ("54 px yukarı: merkez y = 600");
+  // `AbilityButtons`'ın gerçek yeri 66 px yukarı, merkez 588, kutu
+  // 566-610. Kayma 12 px'ti ve bu test fişin üstündeki 12 px'i hiç
+  // sınamıyordu.
+  { ad: 'yetenek yükseltme', ...YUKSELT_KUTUSU },
   // `M8-T12` tam ekran düğmesi. İlk yerleşimi sağ kenarın **ortasıydı**
   // ve harita 2'nin kalesinin (1220, 360) tam üstüne düşüyordu; aşağıdaki
   // "kale HUD altında kalmıyor" testi o hatayı bir daha bırakmıyor.

@@ -82,6 +82,7 @@ import type { StringKey } from '../data/strings';
 import type { TargetMode, TierIndex, TowerDef } from '../types/tower';
 import type { DamageType, EnemyDef, EnemyId, Mover } from '../types/enemy';
 import type { Vec2 } from '../types/common';
+import type { Kutu } from '../util/math';
 import type { Wave } from '../types/wave';
 
 /**
@@ -1024,8 +1025,10 @@ export class GameScene extends Phaser.Scene {
     // hazır olması gerekiyor.
     this.#turuGeriYukle();
 
-    // Dalga sınırı = kaydetme anı. `wave:ended` dalga bittiğinde ve
-    // hazırlık başlarken yayılıyor; saha o an boş.
+    // Dalga sınırı = kaydetme anı. **`M168`:** bu yorum eskiden "saha o an
+    // boş" diyordu — `M16`'dan önceki kural. `M16`'dan beri dalga kuyruk
+    // boşalınca kapanıyor ve son doğan düşman o an canlı; artıklar artık
+    // kayda **giriyor** (`#turuKaydet`).
     this.bus.on('wave:ended', ({ index }) => this.#turuKaydet(index));
   }
 
@@ -1050,17 +1053,20 @@ export class GameScene extends Phaser.Scene {
     // Kaybedilmiş ya da bitmiş tur kaydedilmiyor.
     if (eco.lives <= 0 || waves.isComplete) return;
     /**
-     * **Saha boş değilse kaydedilmiyor** (`M16` Faz 2).
+     * **`M168` — artıklar artık kayda GİRİYOR.**
      *
-     * `RunSave`'in yazılı sözleşmesi "dalga sınırında saha boş" —
-     * sahadaki düşman/mermi/asker bilerek kaydedilmiyor. Dalgalar üst
-     * üste binebildiği için o varsayım artık kendiliğinden doğru değil:
-     * artıklar yoldayken kaydedip yeniden yüklemek onları **silerdi**,
-     * yani oyuncu lehine bir sömürü olurdu. Şema büyütmek yerine kayıt
-     * bir sonraki temiz sınıra bırakılıyor; kampanyada her dalganın
-     * artığı er geç tükeniyor.
+     * Burada `M16` Faz 2'den beri *"saha boş değilse kaydedilmiyor"*
+     * vardı: artıklar yoldayken kaydedip yeniden yüklemek onları
+     * **silerdi** (oyuncu lehine sömürü), ve kayıt *"bir sonraki temiz
+     * sınıra"* bırakılmıştı. O sınır hiç gelmiyordu: bu metot yalnız
+     * `wave:ended`'de çağrılıyor ve o an son doğan düşman canlı; `M155`
+     * de hazırlıkta sahayı donduruyor, menzil dışındaki artıklar hiç
+     * ölmüyor. Oyunda ölçüldü — "Devam et" hiç çıkmıyordu.
+     *
+     * Çare notun kendisinin andığı yol: şemayı büyütmek. Artıklar yoldaki
+     * yerleri ve canlarıyla kaydediliyor (`WaveManager.artiklar`) ve
+     * aynen geri konuyor — sömürü de yok, ceza da.
      */
-    if ((this.#enemyPool?.activeCount ?? 0) > 0) return;
 
     const spots: SpotKaydi[] = [];
     for (const [spotIndex, kule] of this.#towerBySpot) {
@@ -1097,6 +1103,7 @@ export class GameScene extends Phaser.Scene {
       spots,
       abilities: this.abilities.beklemeler,
       abilityLevels: this.abilities.seviyeKaydi(),
+      artiklar: waves.artiklar(),
       stats: { ...this.#runStats?.data },
     });
   }
@@ -1164,6 +1171,13 @@ export class GameScene extends Phaser.Scene {
     // (bu sürümden önce yazılmış tur) seviyeler 1'de kalıyor.
     if (tur.abilityLevels !== undefined) this.abilities.turdanGeriYukleSeviye(tur.abilityLevels);
     this.#waves?.turdanGeriYukle(tur.waveIndex);
+    // `M168` — sınırda yolda olan artıklar aynı yere, aynı canla. Kimlik
+    // önce kadroda aranıyor (kayıt dışarıdan geliyor), sonra haritaya
+    // göre çözülüyor (`M15`/S106: varyant yetenekleri).
+    this.#waves?.artiklariGeriYukle(tur.artiklar ?? [], (id) => {
+      const taban = ENEMIES.find((e) => e.id === id);
+      return taban === undefined ? undefined : getEnemyForMap(taban.id, this.#map);
+    });
   }
 
   /**
@@ -1769,6 +1783,11 @@ export class GameScene extends Phaser.Scene {
 
   get pendingAbility(): AbilityId | null {
     return this.#pendingAbility;
+  }
+
+  /** Açık yapı menüsünün kutusu — HUD telgrafı için (`M169`). */
+  get acikMenuKutusu(): Kutu | null {
+    return this.#buildMenu?.acikMenuKutusu ?? null;
   }
 
   /**
