@@ -6,17 +6,18 @@ import { NUMBER_FONT_KEY } from './numberFont';
 import { METEOR_FRAME, TAKVIYE_FRAME } from '../data/spriteFrames';
 import type { StringKey } from '../data/strings';
 import { t } from '../util/i18n';
+import { YETENEK_BLOGU, YUKSELT_DY } from '../data/panelLayout';
 
 const GOLD = 0xd4a032;
 const INK = 0x14203a;
 
-/** Dokunmatik hedef en az 44×44 px (`CLAUDE.md` Platform). */
-const BTN = 64;
+/** Dokunmatik hedef en az 44×44 px (`CLAUDE.md` Platform). Geometri
+ * `data/panelLayout` `YETENEK_BLOGU`'nda — sol panel onun üstünde bitiyor
+ * (`M169`). */
+const BTN = YETENEK_BLOGU.btn;
 const IKON_BOYUT = 40;
 /** Yükseltme düğmesi — dokunmatik alt sınırı (44) ile aynı. */
-const YUKSELT_BTN = 44;
-/** Yükseltme düğmesinin yetenek düğmesine göre dikey yeri. */
-const YUKSELT_DY = -(BTN / 2 + YUKSELT_BTN / 2 + 12);
+const YUKSELT_BTN = YETENEK_BLOGU.yukseltBtn;
 /**
  * Seviye başının yarı genişliği ve merkezleri arası — `M100`.
  *
@@ -104,7 +105,7 @@ export class AbilityButtons {
     private readonly hareketOlcegi: () => number = () => 1,
   ) {
     ABILITIES.forEach((def, i) => {
-      const bx = x + i * (BTN + 14);
+      const bx = x + i * (BTN + YETENEK_BLOGU.ara);
       const kok = scene.add.container(bx, y);
 
       const cerceve = createParchmentButton(scene, 0, 0, BTN, BTN, 14);

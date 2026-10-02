@@ -201,3 +201,50 @@ describe('RunSave — istatistik alanı ileriye dönük esnek', () => {
     expect(new RunSave(m).oku()?.stats).toEqual({ kills: 3 });
   });
 });
+
+/**
+ * **`M168` — artıklar kayda giriyor.** `M16`'dan beri dalga sınırında
+ * yolda bir önceki dalganın artıkları var; kayıt onları yazmadığı için
+ * "saha boşken kaydet" koşulu hiç sağlanmıyor ve "Devam et" hiç
+ * çıkmıyordu. Alan isteğe bağlı: eski turlar artıksız yükleniyor.
+ */
+describe('RunSave — artıklar (M168)', () => {
+  const artik = {
+    id: 'orkSavasci',
+    giris: 1,
+    ilerleme: { segmentIndex: 2, tInSegment: 0.4, remainingDistance: 512.5 },
+    can: 63,
+    kalkan: 0,
+  };
+
+  it('artıklar gidip geliyor — konum, can, kalkan, giriş birebir', () => {
+    const kayit = new RunSave(new MemoryStore());
+    kayit.yaz(ornekTur({ artiklar: [artik, { ...artik, id: 'goblin', giris: 0, can: 12, kalkan: 30 }] }));
+    expect(kayit.oku()?.artiklar).toEqual([artik, { ...artik, id: 'goblin', giris: 0, can: 12, kalkan: 30 }]);
+  });
+
+  it('alanı olmayan eski tur artıksız yükleniyor — alan da eklenmiyor', () => {
+    const kayit = new RunSave(new MemoryStore());
+    kayit.yaz(ornekTur());
+    const okunan = kayit.oku();
+    expect(okunan).not.toBeNull();
+    expect(okunan !== null && 'artiklar' in okunan).toBe(false);
+  });
+
+  it('bozuk artık TEK BAŞINA atılıyor, tur ve diğer artıklar yaşıyor', () => {
+    const store = new MemoryStore();
+    const kayit = new RunSave(store);
+    kayit.yaz(ornekTur());
+    const ham = JSON.parse(store.get(SAVE_KEY) ?? '{}') as { run: Record<string, unknown> };
+    ham.run['artiklar'] = [
+      artik,
+      { ...artik, can: 0 }, // ölü
+      { ...artik, ilerleme: { ...artik.ilerleme, tInSegment: 1.5 } }, // oran dışı
+      { ...artik, id: '' }, // kimliksiz
+      { ...artik, giris: 0.5 }, // tam sayı değil
+      'çöp',
+    ];
+    store.set(SAVE_KEY, JSON.stringify(ham));
+    expect(kayit.oku()?.artiklar).toEqual([artik]);
+  });
+});

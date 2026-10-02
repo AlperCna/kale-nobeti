@@ -15,6 +15,7 @@ import type { Pool } from '../util/pool';
 import { BALANCE } from '../data/balance';
 import { getEnemy } from '../data/enemies';
 import type { EconomySystem } from './EconomySystem';
+import type { ArtikKaydi } from './RunSave';
 import type { EventBus } from './EventBus';
 
 const MS_TO_S = 1 / 1000;
@@ -70,6 +71,13 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
   #spawnedThisWave = 0;
   /** Sonsuz modda son üretilen dalga (bkz. `#waveAt`). */
   #uretilen?: Wave;
+  /**
+   * `M168` — her düşmanın hangi girişten doğduğu. Tur kaydı artıkları
+   * yazarken ve geri yüklerken aynı hareket hattını seçebilsin diye.
+   * Anahtar havuzlanmış nesne; yeniden kullanılınca üzerine yazılıyor,
+   * yani boyu havuz tavanını aşamıyor.
+   */
+  readonly #girisi = new Map<T, number>();
 
   constructor(
     private readonly pool: Pool<T>,
@@ -158,8 +166,10 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
    * Kaydedilmiş bir turdan dönüldü — sayacı o dalganın **hazırlığına**
    * kur (`M10-T02`).
    *
-   * Yalnız dalga sınırında çağrılıyor (tur kaydının tek yazma anı), o
-   * yüzden sahada düşman olmadığı varsayılıyor ve kuyruk temizleniyor.
+   * Yalnız dalga sınırında çağrılıyor (tur kaydının tek yazma anı) ve
+   * kuyruk temizleniyor. **`M168`:** "sahada düşman olmadığı
+   * varsayılıyor" diyordu — `M16`'dan beri yanlış; o sınırda bir önceki
+   * dalganın artıkları yolda. Onları `artiklariGeriYukle` geri koyuyor.
    * Dalga ortasında çağrılırsa kuyruktaki doğumlar kaybolur — çağıran
    * taraf bunu bilmek zorunda, bu yüzden ad "atla" değil "geri yükle".
    *
@@ -177,6 +187,64 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
     this.#kuyruk = [];
     this.#spawnedThisWave = 0;
     this.#uretilen = undefined;
+  }
+
+  /**
+   * **Yoldaki düşmanların kaydı** — `M168`, tur kaydı için.
+   *
+   * Dalga sınırında (`wave:ended`) çağrılıyor; o an sahada bir önceki
+   * dalganın artıkları var (`M16`). Konum `PathProgress`'in kendisi,
+   * yani geri yüklenen düşman **aynı noktada** duruyor.
+   */
+  artiklar(): ArtikKaydi[] {
+    const sonuc: ArtikKaydi[] = [];
+    for (const d of this.pool.activeItems()) {
+      if (!d.alive || d.def === null) continue;
+      sonuc.push({
+        id: d.def.id,
+        giris: this.#girisi.get(d) ?? 0,
+        ilerleme: {
+          segmentIndex: d.progress.segmentIndex,
+          tInSegment: d.progress.tInSegment,
+          remainingDistance: d.progress.remainingDistance,
+        },
+        can: d.hp,
+        kalkan: d.shieldLeft,
+      });
+    }
+    return sonuc;
+  }
+
+  /**
+   * Kaydedilmiş artıkları **aynı yere, aynı canla** geri koyar — `M168`.
+   *
+   * Düşman normal yoldan doğuyor (`spawn` havuz sözleşmesini ve harita
+   * çarpanını uyguluyor), sonra `yolaKoy` onu kaydedilen noktaya
+   * ışınlıyor (`M169`) ve can ile kalkan yerine konuyor.
+   * Hazırlıkta saha donuk (`M155`), yani artıklar dalga başlayana kadar
+   * oldukları yerde bekliyor — tıpkı kaydedildikleri anda olduğu gibi.
+   *
+   * `defCoz` çağıranın: düşman **haritaya göre** çözülmeli
+   * (`getEnemyForMap`, `M15`/S106). Tanınmayan kimlik atlanıyor; havuz
+   * dolarsa kalanlar atlanıyor (havuz sessizce büyümüyor, TIER 1 k.3).
+   *
+   * @returns Geri konan düşman sayısı.
+   */
+  artiklariGeriYukle(liste: readonly ArtikKaydi[], defCoz: (id: string) => EnemyDef | undefined): number {
+    let konan = 0;
+    for (const a of liste) {
+      const def = defCoz(a.id);
+      if (def === undefined) continue;
+      const dusman = this.pool.acquire();
+      if (dusman === null) break;
+      dusman.spawn(this.moverFor(def, a.giris), def, this.#hpCarpani());
+      dusman.yolaKoy(a.ilerleme);
+      dusman.hp = Math.min(a.can, dusman.maxHp);
+      dusman.shieldLeft = a.kalkan;
+      this.#girisi.set(dusman, a.giris);
+      konan++;
+    }
+    return konan;
   }
 
   /** Erken başlatma butonu bu dalgada açık mı (§6: dalga 4'ten itibaren). */
@@ -323,6 +391,7 @@ export class WaveManager<T extends SpawnableEnemy & Poolable> {
       }
       this.#kuyruk.shift();
       dusman.spawn(this.moverFor(bas.def, bas.spawnPoint), bas.def, this.#hpCarpani());
+      this.#girisi.set(dusman, bas.spawnPoint);
       this.#spawnedThisWave++;
     }
   }

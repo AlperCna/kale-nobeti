@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  kutularKesisiyor,
   distSq,
   lerp,
   segmentLength,
@@ -319,5 +320,21 @@ describe('quadraticBezier', () => {
       expect(bez.x).toBeCloseTo(duz.x, 9);
       expect(bez.y).toBeCloseTo(duz.y, 9);
     }
+  });
+});
+
+describe('kutularKesisiyor (M169)', () => {
+  const a = { x0: 0, y0: 0, x1: 10, y1: 10 };
+  it('alan paylaşan kutular kesişiyor', () => {
+    expect(kutularKesisiyor(a, { x0: 5, y0: 5, x1: 15, y1: 15 })).toBe(true);
+    expect(kutularKesisiyor(a, { x0: -5, y0: 2, x1: 20, y1: 3 })).toBe(true); // içinden geçen şerit
+  });
+  it('kenarı değmek kesişme değil', () => {
+    expect(kutularKesisiyor(a, { x0: 10, y0: 0, x1: 20, y1: 10 })).toBe(false);
+    expect(kutularKesisiyor(a, { x0: 0, y0: 10, x1: 10, y1: 20 })).toBe(false);
+  });
+  it('ayrık kutular kesişmiyor — iki eksende de', () => {
+    expect(kutularKesisiyor(a, { x0: 11, y0: 0, x1: 20, y1: 10 })).toBe(false);
+    expect(kutularKesisiyor(a, { x0: 0, y0: 11, x1: 10, y1: 20 })).toBe(false);
   });
 });

@@ -21,8 +21,27 @@
  * (yanma/yavaşlama kalan süreleri), her merminin uçuş durumunu ve asker
  * konumlarını serileştirmek demekti; hem bu işin birkaç katı hem de
  * havuzlanmış nesnelerin (TIER 1 kural 3) durumunu ikinci bir yerde
- * tutmak demek. Dalga sınırında saha **boş** ve durum bir avuç sayıya
- * iniyor.
+ * tutmak demek. Dalga sınırında durum bir avuç sayıya iniyor.
+ *
+ * **`M168` — "sınırda saha boş" artık doğru değildi ve özelliği
+ * öldürüyordu.** `M16` dalgayı **kuyruk boşalınca** kapattı: dalga
+ * sınırında bir önceki dalganın artıkları hâlâ yolda. `M16` Faz 2
+ * artıklar varken kaydetmekten vazgeçti (yeniden yükleme onları
+ * **silerdi** — oyuncu lehine sömürü) ve kaydı *"bir sonraki temiz
+ * sınıra"* bıraktı. Ama `wave:ended` son düşman doğduğu karede
+ * yayılıyor, yani o koşul **hiç** sağlanmıyordu; üstüne `M155`
+ * hazırlıkta sahayı donduruyor ve menzil dışındaki artıklar hiç
+ * ölmüyor. Oyunda ölçüldü: otuzu aşkın dalga sınırında kayda bir kez
+ * bile `run` yazılmadı, "Devam et" hiç çıkmadı.
+ *
+ * Çare `M16`'nın kendi notundaki seçenek: şemayı büyütmek. Artıklar
+ * (`artiklar`) kimlik, giriş, **yoldaki ilerleme**, can ve kalkanla
+ * kaydediliyor ve yüklenince aynı yerde, aynı canla doğuyor — hazırlık
+ * donması sayesinde o anda zaten kıpırdamıyorlar. Kural değişmiyor:
+ * yeniden yükleme ne artık siliyor (sömürü yok) ne de fazladan bir şey
+ * yüklüyor (ceza yok). Mermi, asker ve yanma/yavaşlama kalan süreleri
+ * kaydedilmiyor; bunlar dalga sınırında ya yok ya da saniyeler içinde
+ * sönüyor.
  *
  * Bedeli yazılı olsun: dalga 7'nin ortasında çıkan oyuncu dalga 7'nin
  * **başına** dönüyor, ortasına değil. Kaybedilen en çok bir dalga.
@@ -61,6 +80,27 @@ export interface SpotKaydi {
   readonly rally?: { readonly x: number; readonly y: number };
 }
 
+/**
+ * Dalga sınırında yoldaki bir düşman — `M168`.
+ *
+ * `ilerleme`, `PathProgress`'in kendisi: segment, segment içi oran ve
+ * kaleye kalan mesafe. Yükleyen taraf düşmanı normal yoldan doğurup bu
+ * üç sayıyı yerine koyuyor, yani yeniden hesap yok — aynı nokta.
+ */
+export interface ArtikKaydi {
+  /** Düşman kimliği; harita varyantı yüklerken çözülüyor. */
+  readonly id: string;
+  /** Hangi giriş (`WaveGroup.spawnPoint`) — yürüyen ve uçan ayrı hat. */
+  readonly giris: number;
+  readonly ilerleme: {
+    readonly segmentIndex: number;
+    readonly tInSegment: number;
+    readonly remainingDistance: number;
+  };
+  readonly can: number;
+  readonly kalkan: number;
+}
+
 export interface RunData {
   readonly version: number;
   readonly mapId: string;
@@ -81,6 +121,13 @@ export interface RunData {
    * turları çöpe atardı ve bedeli kazancından büyük olurdu.
    */
   readonly abilityLevels?: Readonly<Record<string, number>>;
+  /**
+   * Dalga sınırında yolda kalan düşmanlar — `M168`.
+   *
+   * **İsteğe bağlı ve `RUN_VERSION` ARTMIYOR** (`abilityLevels` ile aynı
+   * gerekçe): bu alan olmadan yazılmış tur artıksız yükleniyor.
+   */
+  readonly artiklar?: readonly ArtikKaydi[];
   /**
    * `RunStatsData`'nın kendisi değil, **şekli umursanmayan** bir kopya.
    *
@@ -170,6 +217,40 @@ function gecerliRun(v: unknown): RunData | null {
     abilityLevels = toplanan;
   }
 
+  /**
+   * `M168` — artıklar **tek tek** doğrulanıyor: bozuk bir giriş yalnız
+   * kendisini düşürüyor, turu değil (yetenekler ve istatistikle aynı
+   * desen). Alan yoksa alan da yok — gidiş-dönüş testi birebir eşleşsin.
+   */
+  let artiklar: ArtikKaydi[] | undefined;
+  if (Array.isArray(r.artiklar)) {
+    artiklar = [];
+    for (const a of r.artiklar as unknown[]) {
+      if (typeof a !== 'object' || a === null) continue;
+      const k = a as Partial<ArtikKaydi>;
+      const il = k.ilerleme as Partial<ArtikKaydi['ilerleme']> | undefined;
+      if (typeof k.id !== 'string' || k.id === '') continue;
+      if (!sayiMi(k.giris) || k.giris < 0 || !Number.isInteger(k.giris)) continue;
+      if (typeof il !== 'object' || il === null) continue;
+      if (!sayiMi(il.segmentIndex) || il.segmentIndex < 0 || !Number.isInteger(il.segmentIndex)) continue;
+      if (!sayiMi(il.tInSegment) || il.tInSegment < 0 || il.tInSegment > 1) continue;
+      if (!sayiMi(il.remainingDistance) || il.remainingDistance < 0) continue;
+      if (!sayiMi(k.can) || k.can <= 0) continue;
+      if (!sayiMi(k.kalkan) || k.kalkan < 0) continue;
+      artiklar.push({
+        id: k.id,
+        giris: k.giris,
+        ilerleme: {
+          segmentIndex: il.segmentIndex,
+          tInSegment: il.tInSegment,
+          remainingDistance: il.remainingDistance,
+        },
+        can: k.can,
+        kalkan: k.kalkan,
+      });
+    }
+  }
+
   const stats: Record<string, number | boolean> = {};
   if (typeof r.stats === 'object' && r.stats !== null) {
     for (const [ad, deger] of Object.entries(r.stats)) {
@@ -187,6 +268,7 @@ function gecerliRun(v: unknown): RunData | null {
     spots,
     abilities,
     ...(abilityLevels !== undefined ? { abilityLevels } : {}),
+    ...(artiklar !== undefined ? { artiklar } : {}),
     stats,
   };
 }

@@ -14,6 +14,10 @@ import {
   UST_ORTA_HUD,
   AYAR_DUGMESI,
   BASARIM_BANDI,
+  YETENEK_BLOGU,
+  YETENEK_KUTUSU,
+  YUKSELT_KUTUSU,
+  RISK_SATIRI,
   panelYuksekligi,
 } from './panelLayout';
 import { ENEMIES } from './enemies';
@@ -71,9 +75,23 @@ describe('Kule bilgi paneli — incelenen kuleyi ÖRTMEZ', () => {
     }
   });
 
-  it('sol yerleşim yetenek düğmelerinin ÜSTÜNDE bitiyor', () => {
-    // Yetenek şeridi `28,622 – 170,707` (`maps.test.ts` KALICI_HUD).
-    expect(PANEL_SOL.y + PANEL_H).toBeLessThanOrEqual(622);
+  it('sol yerleşim yetenek düğmelerinin ve YÜKSELTME FİŞLERİNİN üstünde bitiyor', () => {
+    // `M169` — burada `622` (düğmelerin üst kenarı) yazıyordu; `M99`'un
+    // fişleri onun da üstünde (566-610) ve panel fişlerin altına giriyordu.
+    const dugmeUst = YETENEK_BLOGU.y - YETENEK_BLOGU.btn / 2;
+    expect(YUKSELT_KUTUSU.y1).toBeLessThan(dugmeUst);
+    expect(PANEL_SOL.y + PANEL_H).toBeLessThanOrEqual(YUKSELT_KUTUSU.y0);
+    // Ve fişlerle aynı sütunda: yatayda gerçekten kesişebilirlerdi.
+    expect(PANEL_SOL.x).toBeLessThan(YUKSELT_KUTUSU.x1);
+  });
+
+  it('YETENEK_KUTUSU fişleri ve iki düğmeyi birlikte kapsıyor (M169)', () => {
+    expect(YETENEK_KUTUSU.y0).toBe(YUKSELT_KUTUSU.y0);
+    expect(YETENEK_KUTUSU.x0).toBeLessThanOrEqual(YUKSELT_KUTUSU.x0);
+    expect(YETENEK_KUTUSU.x1).toBeGreaterThanOrEqual(YUKSELT_KUTUSU.x1);
+    // `maps.test.ts` `KALICI_HUD` 'yetenek': 28,622 – 170,707.
+    expect([YETENEK_KUTUSU.x0, YETENEK_KUTUSU.x1]).toEqual([28, 170]);
+    expect(YETENEK_KUTUSU.y1).toBeGreaterThanOrEqual(707);
   });
 
   it('sağ yerleşim kalıcı HUD ile çakışmıyor — tam ekran düğmesi hariç', () => {
@@ -109,8 +127,10 @@ describe('Kule bilgi paneli — incelenen kuleyi ÖRTMEZ', () => {
         expect(yer.y, `${m.id} üst kenar`).toBeGreaterThanOrEqual(0);
         expect(yer.y + h, `${m.id} alt kenar`).toBeLessThanOrEqual(720);
       }
-      // Sol yerleşim yetenek şeridinin üstünde bitmeye devam ediyor.
-      expect(panelKonumu(1100, h).y + h, `${m.id} yetenek şeridi`).toBeLessThanOrEqual(622);
+      // Sol yerleşim yetenek bloğunun (fişler dahil) üstünde bitiyor.
+      expect(panelKonumu(1100, h).y + h, `${m.id} yetenek fişleri`).toBeLessThanOrEqual(
+        YUKSELT_KUTUSU.y0,
+      );
     }
   });
 
@@ -134,8 +154,11 @@ describe('UST_ORTA_HUD — erken başlat kutusu (M168)', () => {
     expect(UST_ORTA_HUD.y1).toBeGreaterThanOrEqual(ERKEN_BASLAT.y + ERKEN_BASLAT.h / 2);
   });
 
-  it('düğmenin altındaki risk satırını da kapsıyor (merkez + 46, ~18 px)', () => {
-    expect(UST_ORTA_HUD.y1).toBeGreaterThanOrEqual(ERKEN_BASLAT.y + 46 + 9);
+  it('düğmenin altındaki risk satırını ve zeminini de kapsıyor', () => {
+    expect(UST_ORTA_HUD.y1).toBeGreaterThanOrEqual(ERKEN_BASLAT.y + RISK_SATIRI.dy + RISK_SATIRI.h / 2);
+    // Zemin kutunun yatay sınırlarının içinde (`M169`).
+    expect(UST_ORTA_HUD.x0).toBeLessThanOrEqual(ERKEN_BASLAT.x - RISK_SATIRI.w / 2);
+    expect(UST_ORTA_HUD.x1).toBeGreaterThanOrEqual(ERKEN_BASLAT.x + RISK_SATIRI.w / 2);
   });
 
   it('hiçbir haritada yapı noktası kutunun altında değil', () => {

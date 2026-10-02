@@ -265,3 +265,19 @@ export function segmentCircleOverlapRange(
 
   return { t1, t2 };
 }
+
+/** Eksenlere hizalı kutu — sol-üst `(x0, y0)`, sağ-alt `(x1, y1)`. */
+export interface Kutu {
+  readonly x0: number;
+  readonly y0: number;
+  readonly x1: number;
+  readonly y1: number;
+}
+
+/**
+ * İki kutu **alan paylaşıyor mu** — `M169`. Kenarı değmek kesişme değil:
+ * yan yana duran iki HUD parçası çakışmış sayılmıyor.
+ */
+export function kutularKesisiyor(a: Kutu, b: Kutu): boolean {
+  return a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+}

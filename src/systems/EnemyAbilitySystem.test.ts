@@ -6,6 +6,7 @@ import { PathMover, LineMover, resetEnemyState } from './movers';
 import { Pool } from '../util/pool';
 import type { Poolable } from '../util/pool';
 import type { EnemyDef, Mover } from '../types/enemy';
+import type { PathProgress } from '../types/path';
 import type { Vec2 } from '../types/common';
 import {
   GOBLIN,
@@ -62,6 +63,12 @@ class SahteDusman implements AbilityEnemy, Poolable {
 
   reachedEnd(): boolean {
     return this.mover !== null && this.mover.reachedEnd(this);
+  }
+
+  yolaKoy(ilerleme: PathProgress): void {
+    this.progress = { ...ilerleme };
+    this.mover?.step(this, 0);
+    this.#konumla();
   }
 
   resetForPool(): void {

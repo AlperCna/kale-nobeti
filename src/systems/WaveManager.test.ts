@@ -9,6 +9,7 @@ import { PathMover, resetEnemyState } from './movers';
 import { Pool } from '../util/pool';
 import type { Poolable } from '../util/pool';
 import type { EnemyDef, Mover, SpawnableEnemy } from '../types/enemy';
+import type { PathProgress } from '../types/path';
 import type { Wave } from '../types/wave';
 import type { Vec2 } from '../types/common';
 import { MAP_1 } from '../data/maps';
@@ -50,6 +51,11 @@ class SahteDusman implements SpawnableEnemy, Poolable {
 
   step(scaledDelta: number): void {
     this.mover?.step(this, scaledDelta);
+  }
+
+  yolaKoy(ilerleme: PathProgress): void {
+    this.progress = { ...ilerleme };
+    this.mover?.step(this, 0);
   }
 
   reachedEnd(): boolean {
@@ -583,5 +589,66 @@ describe('dalga olayları 1 TABANLI (M159)', () => {
     for (let i = 0; i < 60 * 180 && biten.length === 0; i++) wm.update(1000 / 60);
     expect(biten[0], 'biten ilk dalga 1').toBe(1);
     expect(biten[0]).toBe(baslayan[0]);
+  });
+});
+
+/**
+ * **Artıklar kaydedilip aynı yere geri konuyor — `M168`.**
+ *
+ * Tur kaydı dalga sınırında yazılıyor ve o an yolda bir önceki dalganın
+ * artıkları var (`M16`). Geri yükleme onları **aynı ilerlemeyle, aynı
+ * canla** doğurmalı ve hazırlık donması (`M155`) sayesinde dalga
+ * başlayana kadar yerlerinde tutmalı.
+ */
+describe('WaveManager — artık kaydı ve geri yükleme (M168)', () => {
+  it('sınırdaki artıklar konum ve canıyla kaydediliyor, aynen geri konuyor', () => {
+    const a = kur(MAP1_WAVES, POOL_PREALLOC.enemy, UZUN_YOL);
+    a.wm.startWaveEarly();
+    const kare = 1000 / 60;
+    for (let i = 0; i < 60 * 120 && a.wm.phase !== 'prep'; i++) a.wm.update(kare);
+    const yasayan = a.pool.activeItems().filter((e) => e.alive);
+    expect(yasayan.length, 'sınırda yolda artık olmalı').toBeGreaterThan(0);
+    // Birine hasar ver: can da kaydın parçası.
+    const yarali = yasayan[0]!;
+    yarali.hp = Math.max(1, Math.floor(yarali.hp / 2));
+
+    const kayit = a.wm.artiklar();
+    expect(kayit.length).toBe(yasayan.length);
+
+    // Yeni bir oyun: aynı dalganın hazırlığına dön, artıkları geri koy.
+    const b = kur(MAP1_WAVES, POOL_PREALLOC.enemy, UZUN_YOL);
+    b.wm.turdanGeriYukle(a.wm.waveNumber - 1);
+    // Harita 1'in dalga 1'i yalnız goblin; çözücü goblini tanıyor.
+    expect(kayit.every((k) => k.id === GOBLIN.id)).toBe(true);
+    const konan = b.wm.artiklariGeriYukle(kayit, (id) => (id === GOBLIN.id ? GOBLIN : undefined));
+    expect(konan).toBe(kayit.length);
+
+    const geri = b.pool.activeItems().filter((e) => e.alive);
+    const oranlar = (l: typeof geri) => l.map((e) => e.pathFraction).sort((x, y) => x - y);
+    expect(oranlar(geri)).toEqual(oranlar(yasayan));
+    expect(geri.map((e) => e.hp).sort((x, y) => x - y)).toEqual(yasayan.map((e) => e.hp).sort((x, y) => x - y));
+
+    // Hazırlıkta donuk: kıpırdamıyorlar.
+    const once = oranlar(geri);
+    kosut(b.wm, 3);
+    expect(oranlar(geri), 'hazırlıkta donuk kalmalı').toEqual(once);
+    // Dalga başlayınca yürüyorlar.
+    b.wm.startWaveEarly();
+    kosut(b.wm, 1);
+    expect(geri.some((e, i) => e.pathFraction > (once[i] ?? 0))).toBe(true);
+  });
+
+  it('tanınmayan kimlik atlanıyor, gerisi konuyor', () => {
+    const b = kur(MAP1_WAVES, POOL_PREALLOC.enemy, UZUN_YOL);
+    const ilerleme = { segmentIndex: 0, tInSegment: 0.5, remainingDistance: 6000 };
+    const konan = b.wm.artiklariGeriYukle(
+      [
+        { id: 'yokBoyle', giris: 0, ilerleme, can: 10, kalkan: 0 },
+        { id: GOBLIN.id, giris: 0, ilerleme, can: 10, kalkan: 0 },
+      ],
+      (id) => (id === GOBLIN.id ? GOBLIN : undefined),
+    );
+    expect(konan).toBe(1);
+    expect(b.pool.activeCount).toBe(1);
   });
 });

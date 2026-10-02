@@ -4,7 +4,7 @@ import { portal } from '../systems/Portal';
 import { haritaKazanildi, haritaKaybedildi } from '../systems/olcum';
 import { starsFor } from '../systems/SaveSystem';
 import { oyunSonucu } from '../systems/oyunSonu';
-import { AYAR_DUGMESI, ERKEN_BASLAT } from '../data/panelLayout';
+import { AYAR_DUGMESI, ERKEN_BASLAT, RISK_SATIRI, YETENEK_BLOGU } from '../data/panelLayout';
 import type { SoundSystem } from '../fx/SoundSystem';
 import type { GameScene } from './GameScene';
 import type { Speed } from '../types/common';
@@ -136,6 +136,8 @@ export class HudScene extends Phaser.Scene {
    */
   #earlyRiskSayi?: Phaser.GameObjects.BitmapText;
   #earlyRiskEtiket?: Phaser.GameObjects.Text;
+  /** `M169` — risk satırının parşömen zemini (bkz. `#createEarlyStart`). */
+  #earlyRiskZemin?: Phaser.GameObjects.Container;
   #earlyLabel?: Phaser.GameObjects.Text;
   #bitti = false;
 
@@ -236,8 +238,8 @@ export class HudScene extends Phaser.Scene {
     this.#createEarlyStartButton();
     this.#abilityButtons = new AbilityButtons(
       this,
-      MARGIN + 40,
-      this.scale.height - MARGIN - 46,
+      YETENEK_BLOGU.x,
+      YETENEK_BLOGU.y,
       (id) => this.#game().armAbility(id),
       // `M99` — S117'nin gider kalemi; fiyat ve kesinti `GameScene`'de.
       (id) => {
@@ -332,6 +334,7 @@ export class HudScene extends Phaser.Scene {
       endless: game.isEndlessWave,
     });
     this.#telegraph?.show(game.upcomingWave);
+    this.#telegraph?.menuyleKesisiyorsaGizle(game.acikMenuKutusu);
     this.#abilityButtons?.update(
       (id) => game.abilities.progress(id),
       game.pendingAbility,
@@ -360,6 +363,7 @@ export class HudScene extends Phaser.Scene {
     // Risk yalnız gerçekten varken görünüyor.
     const sahada = game.enemiesOnField;
     const riskVar = erkenAcik && sahada > 0;
+    this.#earlyRiskZemin?.setVisible(riskVar);
     this.#earlyRiskSayi?.setVisible(riskVar);
     this.#earlyRiskEtiket?.setVisible(riskVar);
     if (riskVar) {
@@ -538,9 +542,16 @@ export class HudScene extends Phaser.Scene {
     // 1064 altınla başlıyor, sayı fontunun glif ilerlemesi 25 px, dört
     // hane x=28'den 128'e uzanıyor ve etiket 112'deyken "1064" "gold"un
     // üstüne biniyordu. Kart 3 hane için ölçülmüştü.
-    this.add.text(MARGIN + 116, MARGIN + 20, t('gold'), stil);
-    this.add.text(MARGIN + 116, MARGIN + 54, t('lives'), stil);
-    this.add.text(MARGIN + 116, MARGIN + 88, t('wave'), stil);
+    // **`M169` — kolon x=160.** Dalga sayacının ayracı `.`'dan `/`'a
+    // döndü (`HudReadout`) ve `/` noktadan geniş: son dalgada "10/10"
+    // 28-144'e uzanıyor, etiket 136'dayken "dalga"nın üstüne 8 px biniyordu
+    // (oyunda ölçüldü). 160'ta en geniş sayılar — "10/10" (144) ve sonsuz
+    // modda beş haneli altın (153) — açıkta kalıyor; en uzun etiket
+    // ("dalga", 38 px) 198'de bitiyor, kartın iç kenarı 208.
+    const etiketX = MARGIN + 140;
+    this.add.text(etiketX, MARGIN + 20, t('gold'), stil);
+    this.add.text(etiketX, MARGIN + 54, t('lives'), stil);
+    this.add.text(etiketX, MARGIN + 88, t('wave'), stil);
   }
 
   /**
@@ -597,10 +608,18 @@ export class HudScene extends Phaser.Scene {
     // kelime **yerinde kalıyor**, yalnız sayı sola doğru büyüyor.
     // `x - 14` / `x - 6` ikilisi çifti düğme merkezine oturtuyor
     // (ölçüldü: iki haneyle 598-683, merkez 640).
-    this.#earlyRiskSayi = this.add.bitmapText(x - 14, y + 46, NUMBER_FONT_KEY, '');
+    // **`M169` — satırın bir zemini var.** Oyunda bakıldı: Taş Köprü'nün
+    // üst kolu tam bu yükseklikten geçiyor ve 16 px zincifre, kahverengi
+    // yolun üstünde güçlükle okunuyordu — kararın *bedel* tarafı, yani
+    // okunmaması en pahalı satır. Zemin atlastan (9-slice), yeni doku
+    // yok; `Text` sayısı değişmiyor (CLAUDE.md "pay bir doku"). Ölçüleri
+    // `RISK_SATIRI`'nda; menülerin kaçtığı `UST_ORTA_HUD` onu kapsıyor.
+    const riskY = y + RISK_SATIRI.dy;
+    this.#earlyRiskZemin = createParchmentFrame(this, x, riskY, RISK_SATIRI.w, RISK_SATIRI.h, 8).setVisible(false);
+    this.#earlyRiskSayi = this.add.bitmapText(x - 14, riskY, NUMBER_FONT_KEY, '');
     this.#earlyRiskSayi.setFontSize(18).setOrigin(1, 0.5).setTint(ZINCIFRE).setVisible(false);
     this.#earlyRiskEtiket = this.add
-      .text(x - 6, y + 46, t('earlyRisk'), {
+      .text(x - 6, riskY, t('earlyRisk'), {
         fontFamily: 'Spectral, serif',
         fontSize: '16px', // Platform alt sınırı
         color: '#B03A2E',
