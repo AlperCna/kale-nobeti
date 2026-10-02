@@ -1,6 +1,7 @@
 import type { KeyValueStore } from '../util/storage';
 import { SAVE_KEY } from '../util/storage';
 import type { EventBus } from './EventBus';
+import { BALANCE } from '../data/balance';
 
 /**
  * `Y09` — öğretici / ilk oyun yönlendirmesi. Öneri (a)'nın en küçük
@@ -131,8 +132,19 @@ export class TutorialSystem {
      * ilk dalga bittiğinde, yani oyuncu kule kurup düşman görüp altın
      * kazandıktan sonra. Metnin iki yakası da ancak o an doğru
      * (gerekçe `start()` başlığında).
+     *
+     * **`M174` — ama düğme o an YOKTU.** Erken başlatma `BALANCE
+     * .earlyBonusFrom`'dan (dalga 4) itibaren açılıyor; ipucu ise ilk
+     * dalga biter bitmez, yani dalga 2 hazırlığında geliyordu. Yeni
+     * profille oynanırken görüldü: balon ekranda olmayan bir düğmeyi
+     * anlatıyor, düğme dalga 4'te belirdiğinde balon çoktan kapanmış
+     * oluyordu. Artık ipucu düğmenin **ilk açıldığı** hazırlıkta geliyor:
+     * biten dalganın ardından gelen dalga erken başlatılabiliyorsa.
+     * (`index` 1 tabanlı biten dalga, `M159`; hazırlıktaki dalga `index+1`.)
      */
-    bus.on('wave:ended', () => this.#tetikle('earlyStart'));
+    bus.on('wave:ended', ({ index }) => {
+      if (index + 1 >= BALANCE.earlyBonusFrom) this.#tetikle('earlyStart');
+    });
   }
 
   /**

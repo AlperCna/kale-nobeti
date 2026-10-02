@@ -3,6 +3,7 @@ import { TutorialSystem } from './TutorialSystem';
 import { EventBus } from './EventBus';
 import { LocalStore, MemoryStore, SAVE_KEY } from '../util/storage';
 import type { KeyValueStore } from '../util/storage';
+import { BALANCE } from '../data/balance';
 
 describe('TutorialSystem — Y09, iki ipucu (S65, S69)', () => {
   it('temiz depoda start() ilk ipucu tetikliyor', () => {
@@ -26,16 +27,21 @@ describe('TutorialSystem — Y09, iki ipucu (S65, S69)', () => {
    * yedi ipucunun hepsi zaten böyle çalışıyordu; `earlyStart` tek
    * istisnaydı.
    */
-  it('`earlyStart` sahne açılışında DEĞİL, ilk dalga bitince geliyor', () => {
+  it('`earlyStart` sahne açılışında DEĞİL, düğmenin ilk açıldığı hazırlıkta geliyor (M174)', () => {
     const bus = new EventBus();
     const gosterilen: string[] = [];
     const t = new TutorialSystem(new MemoryStore(), true, (h) => gosterilen.push(h), bus);
     t.start();
     expect(gosterilen, 'açılışta erken başlatma anlatılmamalı').toEqual(['build']);
-    bus.emit('wave:ended', { index: 1 });
+    // Düğme `BALANCE.earlyBonusFrom`'dan önce yok: ipucu da yok.
+    for (let i = 1; i < BALANCE.earlyBonusFrom - 1; i++) {
+      bus.emit('wave:ended', { index: i });
+      expect(gosterilen, `dalga ${i + 1} hazırlığında düğme yok`).toEqual(['build']);
+    }
+    bus.emit('wave:ended', { index: BALANCE.earlyBonusFrom - 1 });
     expect(gosterilen).toEqual(['build', 'earlyStart']);
     // Sonraki dalgalarda tekrar etmiyor — `#tetikle` bir kez gösteriyor.
-    bus.emit('wave:ended', { index: 2 });
+    bus.emit('wave:ended', { index: BALANCE.earlyBonusFrom });
     expect(gosterilen).toEqual(['build', 'earlyStart']);
   });
 
