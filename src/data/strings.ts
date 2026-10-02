@@ -180,7 +180,9 @@ const TR = {
   diffKolay: 'Kolay',
   diffNormal: 'Normal',
   diffZor: 'Zor',
-  diffNoStars: 'Kolay modda yıldız kaydedilmez',
+  // `M171` — "yıldız kaydedilmez" diyordu ama kazanma kilidi açsın diye
+  // ★ olarak yazılıyor (`SaveSystem.kayitYildizi`); kart ★ gösteriyordu.
+  diffNoStars: 'Kolay modda yalnız bitirme kaydedilir: ★',
   rotateDevice: 'Cihazı yatay çevirin',
   rotateHint: 'Kale Nöbeti yatay ekranda oynanır',
   fullscreen: 'Tam ekran',
@@ -587,7 +589,7 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     diffKolay: 'Easy',
     diffNormal: 'Normal',
     diffZor: 'Hard',
-    diffNoStars: 'Stars are not saved on Easy',
+    diffNoStars: 'Easy records completion only: ★',
     rotateDevice: 'Please rotate your device',
     rotateHint: 'Kale Nöbeti is played in landscape',
     fullscreen: 'Fullscreen',

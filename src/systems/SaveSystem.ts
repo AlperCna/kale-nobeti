@@ -55,6 +55,27 @@ export function starsFor(lives: number, won: boolean, startLives: number): 0 | 1
   return 1;
 }
 
+/**
+ * Bu elin **kayda geçen** yıldızı — `M171`, sonuç ekranı ile kaydın tek
+ * adresi.
+ *
+ * Kolay'da yıldız kaydedilmiyor (`DIFFICULTY.recordStars`), ama kilit
+ * zinciri kopmasın diye kazanma **bitirme** olarak yazılıyor: ★. Sonuç
+ * ekranı ise yıldızı `starsFor` ile, yani Normal eşikleriyle çiziyordu:
+ * Kolay'da 20 canla kazanan oyuncu ★★★ görüyor, haritalar ekranında ★
+ * buluyordu — ve o ekran "Kolay modda yıldız kaydedilmez" diyordu.
+ * Oynanırken görüldü: üç ekran üç ayrı şey söylüyordu.
+ */
+export function kayitYildizi(
+  lives: number,
+  won: boolean,
+  startLives: number,
+  recordStars: boolean,
+): 0 | 1 | 2 | 3 {
+  if (recordStars) return starsFor(lives, won, startLives);
+  return won && lives > 0 ? 1 : 0;
+}
+
 export interface SaveData {
   /** Şema sürümü — göç için. */
   readonly version: 1;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BALANCE } from '../data/balance';
-import { SaveSystem, starsFor, STAR_THRESHOLDS, STAR_TWO_RATIO } from './SaveSystem';
+import { SaveSystem, kayitYildizi, starsFor, STAR_THRESHOLDS, STAR_TWO_RATIO } from './SaveSystem';
 import { DIFFICULTY } from '../data/difficulty';
 import { Settings } from './Settings';
 import { MemoryStore, LocalStore, SAVE_KEY } from '../util/storage';
@@ -189,5 +189,28 @@ describe('starsFor — başlangıç canına ORANLI (M26)', () => {
   it('kaybedilen koşu ve bozuk başlangıç canı 0', () => {
     expect(starsFor(ZOR, false, ZOR)).toBe(0);
     expect(starsFor(5, true, 0)).toBe(0);
+  });
+});
+
+describe('kayitYildizi — sonuç ekranı ile kayıt aynı şeyi söylüyor (M171)', () => {
+  const bas = BALANCE.startLives;
+
+  it('Normal/Zor: starsFor ile birebir', () => {
+    for (const can of [0, 1, 10, 15, 19, 20]) {
+      expect(kayitYildizi(can, true, bas, true)).toBe(starsFor(can, true, bas));
+    }
+  });
+
+  it('Kolay: kazanma her canda ★ — 20 canla bile ★★★ değil', () => {
+    expect(kayitYildizi(20, true, bas, false)).toBe(1);
+    expect(kayitYildizi(1, true, bas, false)).toBe(1);
+    expect(kayitYildizi(5, false, bas, false)).toBe(0);
+  });
+
+  it('Kolay: GameOver\'ın yazdığı "bitirme" kaydı kayitYildizi ile aynı yıldızı bırakıyor', () => {
+    // GameOver Kolay'da `recordResult(id, 1, true, bas)` çağırıyor.
+    const s = new SaveSystem(new MemoryStore());
+    s.recordResult('x', 1, true, bas);
+    expect(s.starsOf('x')).toBe(kayitYildizi(20, true, bas, DIFFICULTY.kolay.recordStars));
   });
 });

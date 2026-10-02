@@ -24,6 +24,7 @@ import { devHooks } from '../util/devHooks';
 import { HudReadout } from '../fx/HudReadout';
 import { WaveTelegraph } from '../fx/WaveTelegraph';
 import { getEnemyForMap } from '../data/enemies';
+import { findSpotAt } from '../systems/buildSpots';
 import { AbilityButtons } from '../fx/AbilityButtons';
 import { SettingsPanel } from '../fx/SettingsPanel';
 import { BossHealthBar } from '../fx/BossHealthBar';
@@ -249,8 +250,13 @@ export class HudScene extends Phaser.Scene {
     // `getEnemy` kullanıyor ve oyuncuya dövüşmeyeceği bossu gösteriyordu
     // (harita 6: yazan "zırh 10, yetenek yok", gerçek "zırh 2, yandaş
     // çağırır"). S80'in birebir aynı hata sınıfı, bu kez arayüzde.
-    this.#telegraph = new WaveTelegraph(this, MARGIN + 8, MARGIN + 152, (id) =>
-      getEnemyForMap(id, this.#game().map),
+    this.#telegraph = new WaveTelegraph(
+      this,
+      MARGIN + 8,
+      MARGIN + 152,
+      (id) => getEnemyForMap(id, this.#game().map),
+      // `M171` — telgraf yapı noktalarına yol veriyor (`WaveTelegraph`).
+      (x, y) => findSpotAt({ x, y }, this.#game().map.buildSpots) >= 0,
     );
     // `G05` — prep geri sayımıyla aynı yatay eksende ama biraz altında;
     // ikisi zamanda hiç örtüşmüyor (biri yalnız `prep`'te, öbürü yalnız
