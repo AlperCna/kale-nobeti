@@ -124,6 +124,13 @@ const TR = {
    * artık yaptığı şeyin adını taşıyor.
    */
   endlessStart: 'Sonsuz mod',
+  /**
+   * **`M176` — kazanma ekranındaki devam gerçek oldu.** Kazanılan turun
+   * tahtası (kuleler, altın, can, yetenek seviyeleri) 11. dalgadan sonsuz
+   * modda sürüyor — Bloons TD'nin *Freeplay*'i gibi. Yeni bir sonsuz tur
+   * `endlessStart`'ın işi (seviye seçim).
+   */
+  endlessContinue: 'Sonsuz moda devam',
   endlessReached: 'Ulaşılan dalga',
   endlessBest: 'En iyi',
   endlessNewRecord: 'Yeni rekor!',
@@ -543,6 +550,7 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     mapKadimHarabe: 'Ancient Ruin',
     mapSisliBataklik: 'Misty Marsh',
     endlessStart: 'Endless',
+    endlessContinue: 'Continue in endless',
     endlessReached: 'Wave reached',
     endlessBest: 'Best',
     endlessNewRecord: 'New record!',

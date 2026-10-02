@@ -25,6 +25,7 @@ import { HudReadout } from '../fx/HudReadout';
 import { WaveTelegraph } from '../fx/WaveTelegraph';
 import { getEnemyForMap } from '../data/enemies';
 import { findSpotAt } from '../systems/buildSpots';
+import { SONSUZ_DEVAM_ANAHTARI } from '../systems/RunSave';
 import { AbilityButtons } from '../fx/AbilityButtons';
 import { SettingsPanel } from '../fx/SettingsPanel';
 import { BossHealthBar } from '../fx/BossHealthBar';
@@ -499,6 +500,9 @@ export class HudScene extends Phaser.Scene {
     // `Game` durmadan ÖNCE çağrılıyor — sahne durduktan sonra metodu
     // çağırmak ölü bir sahneye dokunmak olurdu.
     game.turKaydiniSil();
+    // `M176` — sonsuz moda devam (Freeplay): kazanılan turun tahtası
+    // bellekte bekliyor; kaybedişte ve sonsuz elde boş (`sonsuzDevamAnligi`).
+    this.registry.set(SONSUZ_DEVAM_ANAHTARI, kazandi ? game.sonsuzDevamAnligi() : null);
     this.scene.stop('Game');
     this.scene.start('GameOver', {
       won: kazandi,

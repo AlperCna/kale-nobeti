@@ -101,6 +101,20 @@ export interface ArtikKaydi {
   readonly kalkan: number;
 }
 
+/**
+ * **Sonsuz moda devam (Freeplay) — `M176`.** Kazanılan kampanya turunun
+ * tahtası bu anahtarla **oyunun bellek içi kayıt defterine** (Phaser
+ * `registry`) konuyor; kalıcı depoya DEĞİL. `HudScene` kazanma anında
+ * yazıyor, `GameOverScene` "Sonsuz moda devam"ı yalnız bu harita için
+ * anlık hâl varsa gösteriyor, `GameScene.init` okuyup tüketiyor.
+ *
+ * Kalıcı depoya yazılsaydı kazanıp sekmeyi kapatan oyuncu menüde
+ * istemediği bir "Devam et" bulurdu (sonsuz turlar bilerek kaydedilmiyor,
+ * `GameScene.#turuKaydet`). Değer bir `RunData`; `waveIndex` dalga
+ * listesinin uzunluğu, yani sıradaki dalga ilk **üretilen** dalga.
+ */
+export const SONSUZ_DEVAM_ANAHTARI = 'kn-sonsuz-devam';
+
 export interface RunData {
   readonly version: number;
   readonly mapId: string;
