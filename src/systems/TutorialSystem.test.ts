@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TutorialSystem } from './TutorialSystem';
+import { TutorialSystem, EYLEM_BEKLEYEN_IPUCLARI } from './TutorialSystem';
 import { EventBus } from './EventBus';
 import { LocalStore, MemoryStore, SAVE_KEY } from '../util/storage';
 import type { KeyValueStore } from '../util/storage';
@@ -242,5 +242,26 @@ describe('TutorialSystem — Y09, iki ipucu (S65, S69)', () => {
       const sonra = JSON.parse(depo.get(SAVE_KEY)!) as Record<string, unknown>;
       expect(sonra['progress']).toEqual({ version: 1, stars: {} }); // dokunulmadı
     });
+  });
+});
+
+/**
+ * **`M180` — eylem bekleyen ipucu.** "İlk kuleni kur" ~6 sn görünüp
+ * kayboluyordu ve hazırlığın geri kalanında yeni oyuncuya hiçbir şey
+ * söylenmiyordu. Artık ilk yapı kurulana kadar duruyor (`fx/TutorialHints`).
+ * Öteki ipuçları bir mekaniği anlatıyor, eylem istemiyor: süreli kalmalı —
+ * yoksa ekranı kalıcı balonlar doldururdu.
+ */
+describe('TutorialSystem — eylem bekleyen ipuçları (M180)', () => {
+  it('yalnız `build` bir eylem bekliyor', () => {
+    expect([...EYLEM_BEKLEYEN_IPUCLARI]).toEqual(['build']);
+  });
+
+  it('`build` sahne açılışında gösterilen ipucu — bekleyen ipucu tam o', () => {
+    const goster: string[] = [];
+    const sys = new TutorialSystem(new MemoryStore(), true, (h) => goster.push(h), new EventBus());
+    sys.start();
+    expect(goster).toEqual(['build']);
+    expect(EYLEM_BEKLEYEN_IPUCLARI.has(goster[0] as 'build')).toBe(true);
   });
 });

@@ -194,7 +194,7 @@ Bu liste yazıldı ki sonradan "neden sahne testi yok" sorulmasın.
 | E4 | Font düşüşü | `FontFace.prototype.load`'u reddet/askıda bırak | 2 sn içinde sistem serif'e düşüp devam ediyor | M0 · **koşturuldu `M164`** |
 | E5 | Alt klasör servisi | `dist`'i iç içe bir alt yoldan sun | Beyaz ekran yok (`base:'./'`) | M0 · **koşturuldu `M166`** |
 | E6 | Havuz sızıntısı | 10 dalga oyna, **bütün** havuz sayaçlarını izle | Sabit kalıyor, saha boşalınca sıfır | M1 · **koşturuldu `M165`** |
-| E6b | **Dinleyici sızıntısı** | Sahneyi N kez yeniden başlat, `devHooks.shutdownListeners()` izle | **Sabit kalıyor** | M1 · **koşturuldu ×5** (`M95` · `M115` · `M136` · `M161` · `M169`) |
+| E6b | **Dinleyici sızıntısı** | Sahneyi N kez yeniden başlat, `devHooks.shutdownListeners()` izle | **Sabit kalıyor** | M1 · **koşturuldu ×7** (`M95` · `M115` · `M136` · `M161` · `M169` · `M179` · `M180`) |
 | E7 | Kapsama ölçümü | Geliştirme göstergesini oku | Ortalama ve `L` raporlanıyor | M1 · **görüldü** (her geliştirme ekran görüntüsünde) + `util/coverage.test` |
 | E8 | Karşı-oyun | §5 tablosundaki 7 senaryoyu dene | Her tehdidin cevabı işliyor | M4 · **parçalı, otomatik** (aşağıda) |
 | E9 | Uçan hattı | Hazırlık aşamasına bak | Kesikli altın hat görünüyor, ≥3 nokta kesiyor | M4 · **koşturuldu `M164`** (sayı: `maps.test` ≥ %40) |
@@ -299,6 +299,28 @@ başlatıldı, on dokuz olay sayıldı:
 
 Dağılımın geri kalanı `M161` ile birebir aynı. Bundan sonraki ölçümün
 bakacağı sayı: **toplam 34**.
+
+### E6b — `M179`'da altıncı, `M180`'de yedinci kez; toplam **36** ve sabit
+
+`M178` yeni bir yeniden başlatma yolu getirdi: duraklatma menüsünün
+"Yeniden başla"sı artık `Hud`'u `restart` ile yeniliyor
+(`scenes/haritaGirisi.ts`). `M179` bu yolu üç kez ve oyun sonundan
+"Tekrar dene"yi bir kez koşturdu: toplam **34**, `gold:changed` 3,
+`Game` kapanış 12, `Hud` kapanış 11 — her turda aynı.
+
+`M180` öğretici balonuna iki dinleyici ekledi (`tower:placed` ve
+`barracks:placed`: "ilk kuleni kur" balonu ilk yapı kurulunca kapanıyor —
+`fx/TutorialHints`). Toplam **bilerek iki** artmalıydı. Taş Köprü, dört
+tur (ilk giriş + üç "Yeniden başla"):
+
+| tur | 1 | 2 | 3 | 4 |
+|---|---|---|---|---|
+| toplam dinleyici | 36 | 36 | 36 | 36 |
+| `tower:placed` | 4 | 4 | 4 | 4 |
+| `barracks:placed` | 5 | 5 | 5 | 5 |
+| `shutdown` | 12 | 12 | 12 | 12 |
+
+Bundan sonraki ölçümün bakacağı sayı: **toplam 36**.
 
 ### E13 ve E14 — `M162`'de İLK KEZ koşturuldu
 
