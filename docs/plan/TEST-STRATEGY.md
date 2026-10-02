@@ -205,7 +205,7 @@ Bu liste yazıldı ki sonradan "neden sahne testi yok" sorulmasın.
 | E14 | Renk körlüğü | Gri tonlamalı ekran görüntüsü | Düşman tipleri **silüetten** ayrılıyor | M6 · **koşturuldu `M162`** |
 | E15 | `prefers-reduced-motion` | Sistemde aç | Varsayılanlar düşük geliyor | M6 · **koşturuldu `M166`** |
 | E16 | **Gizli sekme** | `Storage.prototype.setItem` fırlatır yap + kaydı boşalt, `Boot`'tan başlat | Çökmüyor **ve** uyarı görünüyor | M7 · **koşturuldu `M163`, kusur buldu** |
-| E17 | Düşük uçlu cihaz | 4 GB RAM'li cihazda oyna | Akıcı (CrazyGames şartı) | M7 · **kapsam dışı** (cihaz yok; yayın istenmiyor) |
+| E17 | Düşük uçlu cihaz | 4 GB RAM'li cihazda oyna | Akıcı (CrazyGames şartı) | M7 · **sahibe bırakıldı** (`M178`: yayın artık isteniyor; cihaz burada yok — `docs/YAYIN.md` §3) |
 | E18 | Üç harita | Baştan sona oyna | Üçü de bitirilebiliyor | M7 · **altı harita, otomatik** + harita 1 elle (`M165`) |
 | E19 | Üç kişi | 3 kişiye oynat | Nerede sıkıldıkları not edildi | M7 · **kapsam dışı** (insan gerektiriyor) |
 
