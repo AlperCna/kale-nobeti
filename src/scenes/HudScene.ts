@@ -9,7 +9,9 @@ import {
   DURAKLAT_DUGMESI,
   ERKEN_BASLAT,
   HIZ_DUGMESI,
+  HUD_ORTUSME,
   KART,
+  kutusu,
   RISK_SATIRI,
   YETENEK_BLOGU,
   ZORLUK_ROZETI,
@@ -26,6 +28,7 @@ import { WaveTelegraph } from '../fx/WaveTelegraph';
 import { getEnemyForMap } from '../data/enemies';
 import { findSpotAt } from '../systems/buildSpots';
 import { SONSUZ_DEVAM_ANAHTARI } from '../systems/RunSave';
+import { alfaAdimi } from '../util/hudOrtusme';
 import { AbilityButtons } from '../fx/AbilityButtons';
 import { SettingsPanel } from '../fx/SettingsPanel';
 import { BossHealthBar } from '../fx/BossHealthBar';
@@ -42,6 +45,8 @@ const ZINCIFRE = 0xb03a2e;
 /** Dokunmatik hedef en az 44×44 px (CLAUDE.md Platform). */
 const BTN = 56;
 const MARGIN = 20;
+/** `M177` — kartın kutusu; örtüşme saydamlığı bununla sorguluyor. */
+const KART_KUTUSU = kutusu(KART);
 
 /**
  * Sağ kenardaki kalıcı düğmelerin yerleri — `M8-B01`.
@@ -66,7 +71,10 @@ const MARGIN = 20;
  * **Bilerek kabul edilen istisna:** soldaki kartuş harita 1/3/4'ün giriş
  * yolunun ilk pikselleriyle köşede kesişiyor. Orası ekranın köşesi,
  * düşman kartuşun altından değil yanından çıkıyor ve tür standardı.
- * Düzeltmek üç haritanın yolunu yeniden çizmek demekti.
+ * Düzeltmek üç haritanın yolunu yeniden çizmek demekti. **`M177`:** "ilk
+ * pikseller" iyimser bir ifadeydi — Kül Ovası'nda yolun ilk ~220 px'i
+ * kartın arkasında. Yol yerinde kaldı; düşman kartın arkasındayken kart
+ * saydamlaşıyor (`#kartOrtusmesi`, `data/panelLayout.HUD_ORTUSME`).
  */
 // `M169` — sağ üst şeridin ve kartın yeri `data/panelLayout.ts`'te: yapı
 // menüsü onlardan kaçıyor (`MENU_KACINILAN`) ve `maps.test.ts` onları
@@ -131,6 +139,14 @@ export class HudScene extends Phaser.Scene {
   /** Değişen sayılar ayrı dosyada — `HudReadout` başlığındaki gerekçe. */
   #readout?: HudReadout;
   #telegraph?: WaveTelegraph;
+  /**
+   * `M177` — kartın çerçevesi ve etiketleri; sayılar `HudReadout`'ta.
+   * Düşman kartın arkasındayken hepsi birlikte saydamlaşıyor
+   * (`data/panelLayout.HUD_ORTUSME`). `create()` diziyi ve alfayı
+   * sıfırlıyor (bekçi k.10: alan başlatıcısı bir kez, `create` her sefer).
+   */
+  readonly #kartNesneleri: { setAlpha(a: number): unknown }[] = [];
+  #kartAlfa = 1;
   #earlyBtn?: Phaser.GameObjects.Container;
   /**
    * Erken başlatma bonusunun **canlı** değeri — `M25`.
@@ -240,7 +256,9 @@ export class HudScene extends Phaser.Scene {
     // kenarlık kalınlığı + biraz boşluk kadar içeri (`MARGIN+8, MARGIN+16`)
     // kaydırılıyor; kart da üç satırı (dy 0/34/68 + 28px yükseklik) o payla
     // birlikte tutacak kadar büyütüldü.
-    createParchmentFrame(this, KART.x, KART.y, KART.w, KART.h, 16);
+    this.#kartNesneleri.length = 0;
+    this.#kartAlfa = 1;
+    this.#kartNesneleri.push(createParchmentFrame(this, KART.x, KART.y, KART.w, KART.h, 16));
     this.#createLabels();
     this.#readout = new HudReadout(this, MARGIN + 8, MARGIN + 16);
     // M8-T01 — telgraf kartın ALTINDA kendi satırında (x 28, y 172): beş
@@ -362,6 +380,7 @@ export class HudScene extends Phaser.Scene {
       totalWaves: game.totalWaves,
       endless: game.isEndlessWave,
     });
+    this.#kartOrtusmesi(game);
     this.#telegraph?.show(game.upcomingWave);
     this.#telegraph?.menuyleKesisiyorsaGizle(game.acikMenuKutusu);
     this.#abilityButtons?.update(
@@ -517,6 +536,21 @@ export class HudScene extends Phaser.Scene {
   }
 
   /**
+   * **Kart örtüşme saydamlığı — `M177`.** Üç haritanın girişi kartın
+   * altından geçiyor; düşman oradayken kart saydamlaşıyor, çıkınca geri
+   * geliyor. Geçiş sabit adımlı (kenarda titremesin); değişmeyen alfa
+   * yeniden yazılmıyor.
+   */
+  #kartOrtusmesi(game: GameScene): void {
+    const hedef = game.kutudaDusmanVar(KART_KUTUSU, HUD_ORTUSME.pay) ? HUD_ORTUSME.alfa : 1;
+    const yeni = alfaAdimi(this.#kartAlfa, hedef, HUD_ORTUSME.adim);
+    if (yeni === this.#kartAlfa) return;
+    this.#kartAlfa = yeni;
+    for (const o of this.#kartNesneleri) o.setAlpha(yeni);
+    this.#readout?.setKartAlpha(yeni);
+  }
+
+  /**
    * Ayarlar butonu — sağ üst. Duraklatma gerektirmiyor: §10'un istediği
    * ayarlar (sarsıntı, efekt, ses) oyun sürerken de değiştirilebilmeli,
    * çünkü etkileri ancak oyun akarken görülüyor.
@@ -591,9 +625,11 @@ export class HudScene extends Phaser.Scene {
     // modda beş haneli altın (153) — açıkta kalıyor; en uzun etiket
     // ("dalga", 38 px) 198'de bitiyor, kartın iç kenarı 208.
     const etiketX = MARGIN + 140;
-    this.add.text(etiketX, MARGIN + 20, t('gold'), stil);
-    this.add.text(etiketX, MARGIN + 54, t('lives'), stil);
-    this.add.text(etiketX, MARGIN + 88, t('wave'), stil);
+    this.#kartNesneleri.push(
+      this.add.text(etiketX, MARGIN + 20, t('gold'), stil),
+      this.add.text(etiketX, MARGIN + 54, t('lives'), stil),
+      this.add.text(etiketX, MARGIN + 88, t('wave'), stil),
+    );
   }
 
   /**

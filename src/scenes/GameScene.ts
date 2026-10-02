@@ -83,6 +83,7 @@ import type { TargetMode, TierIndex, TowerDef } from '../types/tower';
 import type { DamageType, EnemyDef, EnemyId, Mover } from '../types/enemy';
 import type { Vec2 } from '../types/common';
 import type { Kutu } from '../util/math';
+import { noktaKutuda } from '../util/hudOrtusme';
 import type { Wave } from '../types/wave';
 
 /**
@@ -460,6 +461,18 @@ export class GameScene extends Phaser.Scene {
    */
   get enemiesOnField(): number {
     return this.#enemyPool?.activeCount ?? 0;
+  }
+
+  /**
+   * Kutunun (payla) içinde canlı bir düşman var mı — `M177`, HUD kartının
+   * örtüşme saydamlığı için. Her karede çağrılıyor; dizi kurmuyor, havuzu
+   * dolaşıp ilk eşleşmede dönüyor.
+   */
+  kutudaDusmanVar(k: Kutu, pay: number): boolean {
+    for (const e of this.#enemyPool?.activeItems() ?? []) {
+      if (e.alive && noktaKutuda(e.x, e.y, k, pay)) return true;
+    }
+    return false;
   }
 
   /**

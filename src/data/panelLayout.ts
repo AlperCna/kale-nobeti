@@ -377,3 +377,21 @@ export const OLCULMUS_MENU_BOYLARI: readonly { readonly ad: string; readonly w: 
   { ad: 'kışla dal seçimi', w: 496, h: 167 },
   { ad: 'kışla son kademe', w: 132, h: 76 },
 ];
+
+/**
+ * **HUD örtüşme saydamlığı** — `M177`.
+ *
+ * Kart (altın/can/dalga) sol üstte 216×140 ve üç haritanın girişi onun
+ * altından geçiyor (harita 1, 3, 4 — `HudScene` başlık notunda bilinçli
+ * istisna); Kül Ovası'nda yolun ilk ~220 px'i kartın arkasında. Düşman
+ * kartın arkasındayken kart **saydamlaşıyor**, çıkınca geri geliyor —
+ * oyunlarda HUD'un oyun alanını örttüğü yerlerdeki yaygın çözüm.
+ *
+ * `alfa`: örtüşme sürerken kartın görünürlüğü — sayılar hâlâ seçilsin
+ * diye sıfır değil. Kül Ovası'nın açık kumunda büyüteçle karşılaştırıldı:
+ * 0,35'te altın sayısı kayboluyordu, **0,5**'te sayılar okunuyor ve
+ * arkadaki yol ile düşman da görünüyor. `adim`: kare başına alfa değişimi
+ * (yumuşak geçiş, kenarda titremesin). `pay`: düşman kutuya bu kadar
+ * yaklaşınca başlıyor.
+ */
+export const HUD_ORTUSME = { alfa: 0.5, adim: 0.1, pay: 12 } as const;
