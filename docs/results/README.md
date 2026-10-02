@@ -5,6 +5,9 @@ Her kilometre taşı bitince buraya bir sonuç dosyası yazılır:
 
 Biçim: [`TEMPLATE.md`](TEMPLATE.md)
 
+> **Proje kapandı (`M167`).** Geri dönülürse ilk okunacak yer
+> [`KAPANIS.md`](KAPANIS.md): kapanıştaki durum ve bilerek bırakılanlar.
+
 Taşa bağlı olmayan, **ölçülen her sayının kütüğü**:
 [`OLCUMLER.md`](OLCUMLER.md). Sonuç dosyası bir taşın hikâyesini anlatır;
 kütük ise "bu sayı nereden geldi, neye asılı, hangi test koruyor"
