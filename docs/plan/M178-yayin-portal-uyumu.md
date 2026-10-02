@@ -1,6 +1,8 @@
 # `M178` — Yayın: portal uyumu ve sahibin yol haritası
 
-> **Durum:** uygulanıyor (2026-10-03). Sahip kapanıştan sonra *"yayın
+> **Durum:** ✅ bitti (2026-10-03) — `8bf4d6e` (Faz 1), `4455c95`
+> (Faz 2), Faz 3 bu belgeyle aynı commit'te. Sahibin rehberi
+> [`docs/YAYIN.md`](../YAYIN.md). Sahip kapanıştan sonra *"yayın
 > için neler yapabiliriz, neler yapacağız"* diye sordu. `M9`'un kod
 > tarafı bitmişti; aradan `M10`-`M177` geçti ve portal belgeleri bugün
 > yeniden okundu.
@@ -104,6 +106,41 @@ tarayıcıda sahte bağdaştırıcıyla geçiş sırası ve sayaçlar.
 - `research/05` §3 düzeltilir.
 - `docs/YAYIN.md`: sahibin adım adım yayın rehberi (karar, lisans,
   hesaplar, yükleme, ilk hafta).
+
+## Uygulamada ne değişti
+
+Planın öngörmediği, uygulanırken çıkan şeyler:
+
+1. **"Yeniden başla" haritayı HUD'suz açıyordu — `M178`'den eski bir
+   kusur.** Reklam yardımcısı tarayıcıda denenirken bulundu: Phaser
+   `ScenePlugin.launch` çağıranın kendi anahtarıyla hiçbir şey yapmıyor
+   (`if (key && key !== this.key)`). Duraklatma menüsü `Hud`'un içinden
+   `launch('Hud')` diyordu. Oyuncu altın/can görmüyor, yetenek
+   kullanamıyor ve duraklatma (tuşu da düğmesi de `Hud`'da) olmadığı için
+   haritadan çıkamıyordu. `Hud` artık kendini `restart` ile yeniliyor
+   (`scenes/haritaGirisi.ts`).
+2. **Klavye reklamdan sonra elle açılıyor.** `InputPlugin.start` dokunmayı
+   sahne başlarken yeniden açıyor, `KeyboardPlugin.start` açmıyor; açılmasa
+   yeniden başlatılan haritada ESC ölürdü. Tarayıcıda ölçüldü.
+3. **Paketleyici üç hedefe genelleşti.** Portal formları da zip'in kökünde
+   `index.html` istiyor; Windows'ta klasörü sağ tıkla zip'lemek onu alt
+   klasöre koyuyor. `package:poki` / `package:crazygames` eklendi ve
+   `dist/`'teki SDK'nın hedefle eşleştiği denetleniyor (yanlış yapım
+   reddedildi — denendi).
+4. **Gerçek CrazyGames SDK'sıyla uçtan uca sınandı** (3.8.0, `local`):
+   `loadingStart` → `loadingStop` → (Yeniden başla) `Requesting midgame
+   ad` + SDK'nın deneme reklamı, oyun arkada duraklatılmış bekledi →
+   reklam kapanınca harita HUD'uyla açıldı → ilk dokunuşta `gameplay
+   start` → duraklatınca `gameplay stop`. Konsolda hata yok.
+5. **Poki SDK'sı bu makinede yüklenemiyor** (`ERR_SSL_PROTOCOL_ERROR`;
+   WebFetch de Poki alan adlarında aynı SSL hatasını veriyor). Poki yolu
+   sahte SDK'yla ve **SDK'sız açılışla** (reklam engelleyici hâli) sınandı:
+   oyun açılıyor, haritaya giriliyor, takılma yok.
+6. **Kapak başlığı tarayıcıda çizildi.** `sharp`'ın Pango'su `woff2`
+   okuyamadı ve sessizce sabit genişlikli bir yedek fonta düştü; Python'a
+   paket kurmak yerine oyunun zaten yüklediği Grenze Gotisch ile canvas'a
+   çizilip yalnız `127.0.0.1`'de dinleyen geçici bir alıcıyla diske
+   yazıldı. Yeni bağımlılık yok.
 
 ## Bilerek ertelenen
 

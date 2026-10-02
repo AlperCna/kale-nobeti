@@ -1,4 +1,4 @@
-# Kapanış — proje durumu (`M167` → `M177`, 2026-10-02)
+# Kapanış — proje durumu (`M167` → `M178`, 2026-10-03)
 
 Sahip projeyi kapattı: *"her şeyi tamamlayalım, bitirelim; baştan sona
 kontrol et."* Bu dosya o kontrolün sonucu ve geri dönülürse ilk okunacak
@@ -24,7 +24,7 @@ Phaser 3.90 + TypeScript (strict) + Vite.
 
 | | |
 |---|---|
-| Kapı (`typecheck · test · guard · build`) | yeşil — **1228 test** (74 dosya), **27/27 bekçi** |
+| Kapı (`typecheck · test · guard · build`) | yeşil — **1242 test** (74 dosya), **27/27 bekçi** |
 | İlk indirme | **0,83 MB** (hedef ~1,5 MB, Poki sınırı 8 MB) |
 | Toplam paket | 5,83 MB (müzik ve harita 2-6 arka planları tembel) |
 | Açık tasarım sorusu (`plan/OPEN-QUESTIONS.md`) | **0** |
@@ -86,6 +86,27 @@ veriyi okuyor.
 `E6b` beşinci kez koşturuldu: toplam dinleyici **34**, beş yeniden
 başlatmada sabit (`TEST-STRATEGY`).
 
+## Yayın hazırlığı (`M178`)
+
+Sahip *"yayın için neler yapabiliriz"* diye sordu. Portal belgeleri
+yeniden okundu ve kod tarafı kapandı; **sahibin adım adım rehberi
+[`docs/YAYIN.md`](../YAYIN.md)**. Bulunan ve düzeltilenler:
+
+| | |
+|---|---|
+| CrazyGames'te ilk reklamdan sonra ses **kalıcı olarak kısılıyordu** | `requestAd` `Promise` döndürmüyor, geri çağrı alıyor; `.catch` fırlıyordu. Gerileme testi eski kodla kırılıyor. |
+| Reklam yanlış yerdeydi ve oyun reklam sırasında sürüyordu | Reklam artık seviye geçişinde ve **bekleniyor**: girdi kapalı, ses kısık, oyun reklamdan sonra başlıyor; reklam 5 sn içinde başlamazsa geçiş kilitlenmiyor. |
+| Yükleme olayları yoktu | Poki `gameLoadingFinished`, CrazyGames `loadingStart`/`loadingStop`. |
+| Kendi tam ekran düğmemiz CrazyGames'te yasak | Portal yapımında çizilmiyor. |
+| **Duraklatma menüsünün "Yeniden başla"sı haritayı HUD'suz açıyordu** | Phaser `launch()` çağıranın kendi anahtarıyla no-op; oyuncu altın/can görmüyor, duraklatamıyor, haritadan çıkamıyordu. `M174`'ün oyuncu turu bu düğmeye basmamıştı. |
+| Poki/CrazyGames için paket yoktu | `npm run package:poki` · `package:crazygames`; SDK'nın hedefle eşleştiği denetleniyor. |
+| Mağaza metni bayattı (5 harita, 9 düşman, 12 başarım…) | Veriden sayılarak yeniden yazıldı; kapaklar üretildi (`yayin/kapak/`); sürüm 1.0.0. |
+| `research/05` "önce itch.io, en son Poki" diyordu | Poki'nin web münhasırlığıyla çelişiyor; öneri tersine döndü. |
+
+CrazyGames tarafı **gerçek SDK'yla** (3.8.0, yerel mod) uçtan uca
+sınandı. Poki SDK'sı bu makinenin ağından yüklenemiyor (SSL); sahte SDK'yla
+ve SDK'sız açılışla sınandı.
+
 ## Sahibin kararı: sektör standardı (`M175`-`M177`)
 
 Sahip açık kalan iki kararı (zorluk, sonsuz mod) ve "düzeltilmesi
@@ -118,8 +139,11 @@ Hiçbiri oynanışı bozmuyor. Geri dönülürse sıra bu:
 6. **İnsanla oynatılmadı** (E19) ve **düşük uçlu cihazda denenmedi** (E17).
    Oyun `M168`-`M174`'te tarayıcıda oyuncu gibi baştan sona oynandı, ama
    bu bir insan oyuncunun yerini tutmuyor; E19 açık işaretli kaldı.
-7. **Yayın yok** — sahibin kararı. Mağaza paketi işi başlatılıp
-   bırakılmıştı (`M9`); portal kabul şartlarından E17 açık.
+7. **Yayın sahibin elinde** (`M178`): kod, paketler, kapaklar ve metin
+   hazır; karar, lisans teyidi, hesaplar ve yükleme
+   [`docs/YAYIN.md`](../YAYIN.md)'de adım adım. Portal kabul şartlarından
+   E17 (düşük uçlu cihaz) açık. **Lisans:** sanat, ses ve müzik yapay zekâ
+   üretimi — ticari hak üretim anındaki plana bağlı, sahibin teyidi gerekiyor.
 8. ~~Normal'de geç haritalar çok dar~~ — **`M175`'te çözüldü** (yukarıda).
 9. ~~Sonsuz mod tahtayı sürdürmüyor~~ — **`M176`'da çözüldü**.
 10. ~~Üç haritanın girişi HUD kartının altından geçiyor~~ — yol yerinde,
@@ -142,6 +166,8 @@ kuralı kaldırmak bir hata düzeltmesi değil, dengeyi baştan türetmek demek.
 - Önce `CLAUDE.md` (kurallar), sonra bu dosya, sonra
   [`OLCUMLER.md`](OLCUMLER.md) (her sayının adresi).
 - Kapı komutu: `npm run typecheck && npm run test && npm run guard && npm run build`.
+- Yayın: [`docs/YAYIN.md`](../YAYIN.md) — paketler `npm run package:itch`
+  (önce `npm run build`) · `package:poki` · `package:crazygames`.
 - Geliştirme sunucusu `npm run dev`; yayın yapısı `npm run build` →
   `dist/`. Tarayıcıda ölçüm için geliştirme yapısında `window.__kn`
   kancaları var (`util/devHooks.ts`).
