@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { createParchmentFrame } from './ParchmentFrame';
+import { UST_ORTA_HUD } from '../data/panelLayout';
 import { DuraklatilabilirSayac, type ZamanOrtami } from '../util/duraklatilabilirSayac';
 import type { EventBus } from '../systems/EventBus';
 
@@ -58,8 +59,16 @@ const OKUMA_EN_COK_MS = 14000;
 /** Tek satırlık ipucunun yüksekliği; uzun metin (hedefleme modları, 3 satır) balonu büyütüyor. */
 const ASGARI_YUKSEKLIK = 60;
 const DIKEY_PAY = 24;
-/** Balonun üst kenarı: geri sayım (48) + erken başlat butonu (82+26=108) + 8. */
-const UST_BOSLUK = 116;
+/**
+ * Balonun üst kenarı — üst-orta HUD kutusunun hemen altı.
+ *
+ * **`M168`:** eskiden `116`'ydı: *"geri sayım (48) + erken başlat butonu
+ * (82+26=108) + 8"*. O hesap düğmenin altındaki **"N sahada" risk
+ * satırını** (düğme merkezinin 46 px altı, `M25`) hiç saymıyordu; oyunda
+ * hedefleme ipucu o satırın tam üstüne açılıp onu örtüyordu. Sayı artık
+ * elle değil, `BuildMenu`'nun da kaçtığı kutudan türüyor.
+ */
+const UST_BOSLUK = UST_ORTA_HUD.y1 + 6;
 
 /**
  * Duvar saati ortamı — `scene.time` **DEĞİL** (dosya başlığındaki gerekçe:
@@ -137,8 +146,8 @@ export class TutorialHints {
     );
     // Üst-orta, "Dalgayı başlat" butonunun (HUD, y 82±26) altında —
     // oyuncu geri bildirimi (2026-09-14): alt-ortadayken harita 3'ün iki
-    // yapı noktasını örtüyordu. Üst-orta üç haritada da boş (harita 1'in
-    // yolu y≈100'ün üstünde, balon 116'dan başlıyor).
+    // yapı noktasını örtüyordu. Üst kenar `UST_BOSLUK` — üst-orta HUD
+    // kutusunun (düğme + risk satırı) hemen altı (`M168`).
     kap.setY(UST_BOSLUK + yukseklik / 2);
 
     kap.setSize(GENISLIK, yukseklik);
