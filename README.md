@@ -1,16 +1,21 @@
 # Kale Nöbeti
 
 Fantastik ortaçağ temalı, tarayıcıda çalışan tower defense oyunu.
-Model: Kingdom Rush (sabit yol + belirli yapı noktaları).
-İlk hedef 3 haritaydı; **M8 genişlemesi** bunu artırıyor —
-şu an **5 harita × 10 dalga**, 4 kule ailesi, 2 aktif yetenek.
+Model: Kingdom Rush (sabit yol + belirli yapı noktaları). Görsel dil:
+tezhipli el yazması. Güncel kapsam (harita, dalga, kule, düşman, zorluk
+sayıları) [`CLAUDE.md`](CLAUDE.md)'nin ilk paragrafında — burada elle
+tekrarlanmıyor, çünkü buradaki kopya `M8`'den beri "5 harita" diyordu.
 
-**Durum: oynanabilir.** M0-M7 bitti (oyun uçtan uca oynanıyor: menü,
-seviye seçim, 4 harita, boss, yıldız, kayıt, ayarlar, ses). Şu an
-`docs/plan/M8-genisleme.md` yürüyor — 15 fazlık içerik + cila turu.
+**Durum: tamamlandı, sürüm 1.0.0.** Oyun baştan sona oynanabilir ve
+oyuncu gözüyle denetlendi; geliştirme kapandı
+([`docs/results/KAPANIS.md`](docs/results/KAPANIS.md)). **Yayına hazır:**
+paketler, kapaklar ve sayfa metni hazır; karar, hesaplar ve yükleme
+sahibin elinde — [`docs/YAYIN.md`](docs/YAYIN.md).
 
 Teknoloji: Phaser 3 + TypeScript (strict) + Vite. `npm run dev` ile açılır;
 kapı `npm run typecheck && npm run test && npm run guard && npm run build`.
+Paketler: `npm run package:itch` (önce `npm run build`) ·
+`npm run package:poki` · `npm run package:crazygames`.
 
 ---
 
@@ -18,10 +23,12 @@ kapı `npm run typecheck && npm run test && npm run guard && npm run build`.
 
 | Dosya | İçerik |
 |---|---|
+| [docs/results/KAPANIS.md](docs/results/KAPANIS.md) | **Önce bu** — projenin son durumu ve bilerek bırakılanlar |
+| [docs/YAYIN.md](docs/YAYIN.md) | **Yayın rehberi** — karar, hesaplar, yükleme adımları |
 | [CLAUDE.md](CLAUDE.md) | Proje kuralları — mimari, klasör yapısı, pazarlıksız kısıtlar |
 | [docs/GAME-DESIGN.md](docs/GAME-DESIGN.md) | Tasarım dokümanı — kuleler, düşmanlar, ekonomi, dalgalar, sanat yönü |
-| [docs/ROADMAP.md](docs/ROADMAP.md) | 8 kilometre taşlı yol haritası |
-| [docs/plan/](docs/plan/README.md) | **Uygulama planı** — 82 kod görevi + 6 üretim bloğu, 8 taş dosyası, veri şemaları, test stratejisi, riskler, açık sorular |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Yol haritası ve v1 sonrası karar matrisi |
+| [docs/plan/](docs/plan/README.md) | **Uygulama planı** — taş dosyaları, veri şemaları, test stratejisi, riskler, açık sorular |
 | [docs/results/](docs/results/README.md) | **Taş sonuçları** — her taş bitince yazılan ölçüm defteri |
 | [docs/plan/iyilestirme/](docs/plan/iyilestirme/README.md) | **İyileştirme dosyası** — M7 sonrası taramada bulunan 22 görsel/yapısal bulgu |
 | [docs/results/OLCUMLER.md](docs/results/OLCUMLER.md) | **Ölçüm kütüğü** — varsayılmayan, ölçülen her sayı; nereden geldiği ve hangi test onu koruduğu |

@@ -180,7 +180,12 @@ Ayrıntı: `docs/research/04-varlik-paket-boyut.md`
 - Sprite/UI: tek `atlas.png`, PNG-8, maks 2048×2048.
 - Bitmap font: PNG-8 + `.xml`.
 - Ses efektleri: **yalnız `.m4a`** (AAC). `.ogg` kopyası üretilmez.
-- Müzik: `.m4a` 96 kbps mono, ilk dalgadan sonra yüklenir.
+- Müzik: `.m4a` 96 kbps mono, **ilk indirmede değil** (`assets/lazy/`):
+  menü müziği menü göründükten sonra, oyun ve boss müziği harita açılınca
+  — ikisi de **yalnız müzik açıksa**. (Buraya "ilk dalgadan sonra
+  yüklenir" yazıyordu; oyuncu "müzik gelmiyor" deyince harita açılışına
+  alındı ve satır güncellenmedi — `M179`'da bulundu.) Geç ses efektleri
+  müzikten bağımsız, her harita açılışında (`queueGecSesler`).
 - Web fontları: Google Fonts'tan indirilip `public/assets/fonts/` altında
   **yerel** sunulur (CDN'e bağımlılık yok). Statik `woff2`, tek ağırlık.
   **`latin` ve `latin-ext` alt kümelerinin ikisi de gerekir** — Google
