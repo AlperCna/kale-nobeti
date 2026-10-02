@@ -2,9 +2,10 @@ import Phaser from 'phaser';
 import { t } from '../util/i18n';
 import { OrientationGate } from '../fx/OrientationGate';
 import { createParchmentButton, addPressFeedback } from '../fx/ParchmentFrame';
+import { TAM_EKRAN_DUGMESI } from '../data/panelLayout';
 
 const MARGIN = 20;
-const BTN = 56;
+const BTN = TAM_EKRAN_DUGMESI.w;
 
 /**
  * Oyunun **üstünde sürekli çalışan** ince katman — `M8-T12`.
@@ -98,8 +99,8 @@ export class OverlayScene extends Phaser.Scene {
   #tamEkranDugmesi(): void {
     if (!this.scale.fullscreen.available) return;
 
-    const x = 888;
-    const y = 664;
+    // `M169` — yer `data/panelLayout.ts`'te (yapı menüsü ondan kaçıyor).
+    const { x, y } = TAM_EKRAN_DUGMESI;
     const cerceve = createParchmentButton(this, x, y, BTN, BTN, 12);
     addPressFeedback(cerceve);
     this.add
@@ -123,6 +124,13 @@ export class OverlayScene extends Phaser.Scene {
         fontFamily: 'Spectral, serif',
         fontSize: '16px', // Platform: minimum 16 px
         color: '#E4D3A8',
+        // `M169` — gölge **açık** zeminde yetmiyordu: Kül Ovası'nın kumunda
+        // etiket büyüteçle bakınca bile güçlükle seçiliyordu (gölge 4 px
+        // bulanık, kenarı yumuşak). Kontur zemin ne olursa olsun harfin
+        // etrafına mürekkep çiziyor; aşağıdaki yorumun "kontrastı
+        // garantiliyor" iddiası ancak böyle doğru.
+        stroke: '#14203A',
+        strokeThickness: 4,
       })
       .setOrigin(0.5)
       // Düğmenin kendisi parşömen çerçeve içinde, **etiket değil** — o

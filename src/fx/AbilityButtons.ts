@@ -127,6 +127,11 @@ export class AbilityButtons {
           fontFamily: 'Spectral, serif',
           fontSize: '16px', // Platform: minimum 16 px
           color: '#E4D3A8',
+          // `M169` — mürekkep kontur; tam ekran etiketiyle aynı gerekçe
+          // (`OverlayScene`): açık zeminde (Kül Ovası kumu, Kar Geçidi
+          // karı) gölge tek başına okunurluğu taşımıyordu.
+          stroke: '#14203A',
+          strokeThickness: 4,
         })
         .setOrigin(0.5)
         // Düğmenin çerçevesi var, etiketin yok — doğrudan haritanın

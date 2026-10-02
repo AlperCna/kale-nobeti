@@ -4,7 +4,16 @@ import { portal } from '../systems/Portal';
 import { haritaKazanildi, haritaKaybedildi } from '../systems/olcum';
 import { starsFor } from '../systems/SaveSystem';
 import { oyunSonucu } from '../systems/oyunSonu';
-import { AYAR_DUGMESI, ERKEN_BASLAT, RISK_SATIRI, YETENEK_BLOGU } from '../data/panelLayout';
+import {
+  AYAR_DUGMESI,
+  DURAKLAT_DUGMESI,
+  ERKEN_BASLAT,
+  HIZ_DUGMESI,
+  KART,
+  RISK_SATIRI,
+  YETENEK_BLOGU,
+  ZORLUK_ROZETI,
+} from '../data/panelLayout';
 import type { SoundSystem } from '../fx/SoundSystem';
 import type { GameScene } from './GameScene';
 import type { Speed } from '../types/common';
@@ -57,7 +66,10 @@ const MARGIN = 20;
  * düşman kartuşun altından değil yanından çıkıyor ve tür standardı.
  * Düzeltmek üç haritanın yolunu yeniden çizmek demekti.
  */
-const HIZ_BTN_Y = MARGIN + BTN / 2;
+// `M169` — sağ üst şeridin ve kartın yeri `data/panelLayout.ts`'te: yapı
+// menüsü onlardan kaçıyor (`MENU_KACINILAN`) ve `maps.test.ts` onları
+// altı haritaya karşı sınıyor. Üçü de aynı sayıyı okuyor.
+const HIZ_BTN_Y = HIZ_DUGMESI.y;
 // `M168` — `data/panelLayout.ts`'ten: başarım bandı bu düğmeden kaçıyor.
 const AYAR_BTN_Y = AYAR_DUGMESI.y;
 /**
@@ -70,15 +82,15 @@ const AYAR_BTN_Y = AYAR_DUGMESI.y;
  * oturuyor. Yeri `maps.test.ts`'in `KALICI_HUD` listesinde ve altı
  * haritaya karşı sınanıyor — göze göre değil.
  */
-const DURAKLAT_BTN_X = 1020;
+const DURAKLAT_BTN_X = DURAKLAT_DUGMESI.x;
 /** Hiz düğmesiyle **aynı eksende** (48): iki düğme yan yana okunuyor. */
-const DURAKLAT_BTN_Y = HIZ_BTN_Y;
+const DURAKLAT_BTN_Y = DURAKLAT_DUGMESI.y;
 /** Dokunmatik hedef en az 44 (CLAUDE.md Platform); üst şerit 56'yı taşımıyor. */
-const DURAKLAT_BTN = 48;
+const DURAKLAT_BTN = DURAKLAT_DUGMESI.w;
 /** Zorluk rozeti: üst şeritte, hız düğmesinin solunda. Boss can çubuğu
  *  (640 merkez, 360 geniş → 460-820) ile de çakışmıyor. */
-const ZORLUK_ROZET_X = 1120;
-const ZORLUK_ROZET_Y = 42;
+const ZORLUK_ROZET_X = ZORLUK_ROZETI.x;
+const ZORLUK_ROZET_Y = ZORLUK_ROZETI.y;
 
 
 /**
@@ -199,7 +211,16 @@ export class HudScene extends Phaser.Scene {
     //
     // İkisi de M0/M4/M5/M6'da dört kez çıkan tuzağın aynısı: alan
     // başlatıcısı bir kez, `create()` her seferinde.
-    this.#paused = false;
+    //
+    // **`M169` — bayrak artık `Game`'in GERÇEK durumundan okunuyor.**
+    // Burada `false` yazıyordu ve bir yol onu yalan söyletiyordu: dil
+    // değişimi `Hud`'u `scene.restart` ile yeniden kuruyor ama `Game`'e
+    // dokunmuyor. Duraklatma menüsünden dil değiştiren oyuncunun `Game`'i
+    // duraklatılmış kalıyor, bayrak `false`'a dönüyor ve perde gizli
+    // doğuyordu: ayarları kapatınca **menüsüz, donuk bir oyun** (oyunda
+    // görüldü). Yukarıdaki kusur geri gelmiyor — yeniden başlatmada
+    // `Game` durdurulup baştan başlatılıyor, `isPaused` orada `false`.
+    this.#paused = this.scene.isPaused('Game');
     // Varsayılan 1 — yeni oyunda `GameClock` da 1×'ten başlıyor. Dil
     // değişiminden gelen yeniden kurulumda ise `Game` çalışmaya devam
     // ediyor ve saati 2×'te olabilir; o durumda gösterge yalan
@@ -217,7 +238,7 @@ export class HudScene extends Phaser.Scene {
     // kenarlık kalınlığı + biraz boşluk kadar içeri (`MARGIN+8, MARGIN+16`)
     // kaydırılıyor; kart da üç satırı (dy 0/34/68 + 28px yükseklik) o payla
     // birlikte tutacak kadar büyütüldü.
-    createParchmentFrame(this, MARGIN + 96, MARGIN + 66, 216, 140, 16);
+    createParchmentFrame(this, KART.x, KART.y, KART.w, KART.h, 16);
     this.#createLabels();
     this.#readout = new HudReadout(this, MARGIN + 8, MARGIN + 16);
     // M8-T01 — telgraf kartın ALTINDA kendi satırında (x 28, y 172): beş
@@ -297,6 +318,7 @@ export class HudScene extends Phaser.Scene {
     this.#createSettingsButton();
     this.#createPauseButton();
     this.#createPauseOverlay();
+    this.#overlay?.setVisible(this.#paused);
     this.#bindKeys();
     // Dil değişiminden geldiyse panel açık kalıyor — oyuncu tek tıkla
     // hem sonucu görüyor hem de fikrini değiştirip geri dönebiliyor.
@@ -399,7 +421,7 @@ export class HudScene extends Phaser.Scene {
     // üst şeride taşındıktan sonra da 68 kaldı, çünkü hız düğmesiyle
     // (1204'te başlıyor) arasındaki boşluğu 68 rahat bırakıyor. Her iki
     // dildeki metin (Kolay/Zor, Easy/Hard) 16 px'te sığıyor.
-    createParchmentFrame(this, x, y, 68, 34, 12);
+    createParchmentFrame(this, x, y, ZORLUK_ROZETI.w, ZORLUK_ROZETI.h, 12);
     this.add
       .text(x, y, t(anahtar), {
         fontFamily: 'Spectral, serif',
@@ -498,7 +520,17 @@ export class HudScene extends Phaser.Scene {
       .text(x, y, '⚙', { fontFamily: 'Spectral, serif', fontSize: '24px', color: '#14203A' })
       .setOrigin(0.5);
     btn.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => {
-      this.#settingsPanel?.setVisible(!(this.#settingsPanel?.visible ?? false));
+      // **`M169` — dişli oyunu duraklatıyor.** Panel haritanın ortasını
+      // örtüyor ve dişli onu oyun akarken açıyordu: dil ya da ses ayarı
+      // yapan oyuncu, arkada yürüyen dalgayı göremeden can kaybediyordu
+      // (oyunda görüldü — panel açıkken faz `running`). Artık önce
+      // duraklatma menüsü açılıyor, panel onun üstünde; × duraklatma
+      // menüsüne dönüyor ve oyuncu "Devam"a basıyor. Otomatik devam
+      // bilerek yok: duraklamadan dönüş Poki'nin reklam anı
+      // (`#togglePause`), oyuncunun "Devam"ı dışında tetiklenmemeli.
+      const acilacak = !(this.#settingsPanel?.visible ?? false);
+      if (acilacak && !this.#paused) this.#togglePause();
+      this.#settingsPanel?.setVisible(acilacak);
     });
   }
 
@@ -637,7 +669,7 @@ export class HudScene extends Phaser.Scene {
   // -------------------------------------------------------------------
 
   #createSpeedButton(): void {
-    const x = this.scale.width - MARGIN - BTN / 2;
+    const x = HIZ_DUGMESI.x;
     const y = HIZ_BTN_Y;
 
     // `G02` — diğer HUD butonlarıyla aynı parşömen çerçeve. Kare bir
