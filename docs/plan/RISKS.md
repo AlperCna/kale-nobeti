@@ -238,13 +238,18 @@ tetiklenemez."* Yani bu risk kalemi ikiye ayrılıyor:
 | Nasıl geçilir | M6 juice, `M9-T03` cila | Kod doğru çağırır |
 | Doğrulanabilir mi | Hayır | **Evet, teste bağlı** |
 
-Mekanik kısmın tamamı `systems/Portal.ts`'te ve 9 testi var
-(`Portal.test.ts`). Çift tetikleme koruması **sahnelerde değil** orada:
+Mekanik kısmın tamamı `systems/Portal.ts`'te ve teste bağlı
+(`Portal.test.ts`; sayı yazılmıyor — buradaki "9" `M178`'de 17'ydi). Çift tetikleme koruması **sahnelerde değil** orada:
 `#oyundaMi` bayrağı yinelenen çağrıyı yutuyor, yani `GameScene` hem ilk
 tıklamada hem dalga başında `start` demek isterse ikisi de doğru oluyor
-ve koruma tek yerde kalıyor. Reklam yalnız duraklamadan **çıkışta**
-meşru (Poki'nin yanlış örneği: "oyundan çıkıp seviye seçime gitmek") —
-oyun sürerken gelen `commercialBreak` da yutuluyor.
+ve koruma tek yerde kalıyor. **`M178`:** reklam **seviye geçişinde**
+(haritaya giriş, yeniden dene, sonraki harita) ve **bekleniyor** — oyun
+reklam kapanınca başlıyor, reklam boyunca girdi kapalı ve ses kısık
+(`scenes/haritaGirisi.ts`). Buraya `M9`'dan beri "reklam yalnız
+duraklamadan çıkışta meşru" yazıyordu; CrazyGames o yeri (gezinme
+düğmesi) yasaklıyor ve reklam beklenmediği için oyun video oynarken
+sürüyordu. Reklam hiç başlamazsa `REKLAM_BASLAMA_SINIRI_MS` sonra oyun
+yine başlıyor — geçiş kilitlenmiyor.
 
 **Kalan risk:** testler *bizim* sözleşme okumamızı doğruluyor, SDK'nın
 gerçek davranışını değil. Bu ancak portal yapımında (`VITE_PORTAL=poki`)

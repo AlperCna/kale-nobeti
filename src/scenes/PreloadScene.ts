@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { queueNumberFont, NUMBER_FONT_KEY } from '../fx/numberFont';
 import { ilkOturumMu, ILK_HARITA_ID } from '../systems/ilkOturum';
 import { LocalStore } from '../util/storage';
+import { portal } from '../systems/Portal';
 
 /**
  * Aşamalı yükleme.
@@ -112,6 +113,10 @@ export class PreloadScene extends Phaser.Scene {
 
   create(): void {
     this.#bar?.destroy();
+    // `M178` — ilk yükleme bitti: Poki `gameLoadingFinished` (*"so
+    // conversion to play is measured correctly"*), CrazyGames
+    // `loadingStop`. Haritaların tembel yüklemeleri sayılmıyor.
+    portal.yuklemeBitti();
     if (this.#dogrudanOyun) {
       // `LevelSelectScene`'in açılış sırasının birebir aynısı.
       // Zorluk verilmiyor: `GameScene` onu ayarlardan okuyor ve ilk

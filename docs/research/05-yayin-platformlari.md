@@ -73,6 +73,16 @@ Ve kayıt çalışmıyorsa oyuncuya söylenmeli:
 > `commercialBreak()` yalnızca duraklamadan aktif oyuna dönerken.
 > Olaylar arka arkaya veya çift tetiklenemez.
 
+> **`M178` düzeltmesi (2026-10-03):** yukarıdaki üçüncü satır eksik
+> okunmuştu. Belgenin bugünkü cümleleri: *"we recommend you implement
+> `commercialBreak()` before every `gameplayStart()`"* ve *"Player dies
+> and restarts: `gameplayStop()` > `commercialBreak()` > `gameplayStart()`"*.
+> Poki için "duraklama" her oyun arası — seviye sonu dahil; yanlış olan
+> yalnız *oyundan çıkıp seviye seçime giderken* reklam. CrazyGames ayrıca
+> gezinme düğmesinde reklamı yasaklıyor ve *"Your game should be paused
+> during a video ad"* diyor. Uygulama: reklam seviye geçişinde ve
+> bekleniyor (`docs/plan/M178-yayin-portal-uyumu.md`).
+
 Bu, sahne mimarisine oturuyor: `Game` sahnesi `create()` içinde değil,
 ilk tıklamada `gameplayStart()` çağırmalı; `GameOver`/`LevelSelect`'e geçişte
 `gameplayStop()`.
@@ -169,6 +179,14 @@ Ayrıca SDK entegre edip yayında **2 ay münhasırlık** kabul edilirse pay
 ---
 
 ## 3. Sıralama önerisi
+
+> **`M178` — bu sıra TERSİNE döndü.** Poki *"prefers to work with
+> developers on a Web Exclusive basis"*: açık web'de yalnız Poki (Steam
+> ve mobil mağazalar hariç). Aşağıdaki sırayla gidilirse oyun Poki'ye
+> başvurduğunda zaten itch.io'da ve CrazyGames'te olur ve Poki kapısı
+> büyük olasılıkla kapanır. Güncel öneri `docs/YAYIN.md`'de: **önce
+> Poki'ye başvur, yanıtı bekle; ret gelirse CrazyGames + itch.io.**
+> Aşağısı tarihsel kayıt.
 
 1. **itch.io** — kısıt yok, anında yayın. İlk geri bildirim buradan.
 2. **CrazyGames Basic Launch** — kısıtlar gevşek, hızlı giriş. Metrikler

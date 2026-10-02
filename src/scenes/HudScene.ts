@@ -28,6 +28,7 @@ import { WaveTelegraph } from '../fx/WaveTelegraph';
 import { getEnemyForMap } from '../data/enemies';
 import { findSpotAt } from '../systems/buildSpots';
 import { SONSUZ_DEVAM_ANAHTARI } from '../systems/RunSave';
+import { haritayaGir } from './haritaGirisi';
 import { alfaAdimi } from '../util/hudOrtusme';
 import { AbilityButtons } from '../fx/AbilityButtons';
 import { SettingsPanel } from '../fx/SettingsPanel';
@@ -570,8 +571,9 @@ export class HudScene extends Phaser.Scene {
       // (oyunda görüldü — panel açıkken faz `running`). Artık önce
       // duraklatma menüsü açılıyor, panel onun üstünde; × duraklatma
       // menüsüne dönüyor ve oyuncu "Devam"a basıyor. Otomatik devam
-      // bilerek yok: duraklamadan dönüş Poki'nin reklam anı
-      // (`#togglePause`), oyuncunun "Devam"ı dışında tetiklenmemeli.
+      // bilerek yok: oyunu yeniden yürütmek oyuncunun kararı (`M178`'e
+      // kadar gerekçe "duraklamadan dönüş Poki'nin reklam anı"ydı; reklam
+      // artık seviye geçişinde, `scenes/haritaGirisi.ts`).
       const acilacak = !(this.#settingsPanel?.visible ?? false);
       if (acilacak && !this.#paused) this.#togglePause();
       this.#settingsPanel?.setVisible(acilacak);
@@ -827,10 +829,9 @@ export class HudScene extends Phaser.Scene {
       // "Ana menü" bilerek silmiyor: oradan çıkmak turu bırakmak değil,
       // tam da bu özelliğin var olma sebebi olan "sonra dönerim".
       this.#game().turKaydiniSil();
-      this.scene.stop('Hud');
-      this.scene.stop('Game');
-      this.scene.start('Game', { mapId });
-      this.scene.launch('Hud');
+      // `M178` — yeniden başlatma bir seviye geçişi (Poki: *"player dies
+      // and restarts: stop > commercialBreak > start"*).
+      haritayaGir(this, { mapId }, true);
     });
     buton(t('settingsButton'), () => this.#settingsPanel?.setVisible(true));
     buton(t('backToLevels'), () => {
@@ -882,19 +883,13 @@ export class HudScene extends Phaser.Scene {
     } else {
       this.scene.resume('Game');
       /**
-       * Poki'nin tek meşru reklam anı: *"duraklamadan çıkıp oyuna
-       * dönerken"*. Oyuncu "Devam"a bastıysa devam etme niyetini
-       * göstermiş demektir — dokümanın kendi ölçütü bu.
-       *
-       * Reklam boyunca ses kısılıyor (`GAME-DESIGN.md` §12'nin son
-       * satırı, Poki şartı). `sound.mute` toplu anahtar olduğu için
-       * reklamdan önceki değer saklanıp geri konuyor — oyuncunun kendi
-       * "ses kapalı" tercihi reklam yüzünden açılmasın.
+       * **`M178` — duraklatmadan dönüşte reklam YOK.** `M9` buraya
+       * koymuştu (*"Poki'nin tek meşru reklam anı"*) ve beklemiyordu:
+       * oyun video oynarken sürüyor, düşman can götürüyordu. Belgelerin
+       * bugünkü hâli reklamı seviye geçişine koyuyor; CrazyGames gezinme
+       * düğmesinde (ve `Devam` öyle bir düğme) açıkça yasaklıyor. Reklam
+       * artık `scenes/haritaGirisi.ts`'te, beklenerek.
        */
-      const oncekiMute = this.sound.mute;
-      portal.commercialBreak((kisik) => {
-        this.sound.mute = kisik ? true : oncekiMute;
-      });
       portal.gameplayStart();
     }
     game.bus.emit('game:paused', { paused: this.#paused });

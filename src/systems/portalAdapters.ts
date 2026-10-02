@@ -23,15 +23,34 @@
  * TIER 1 kural 11: Phaser yok. `window`'a dokunuyor ama bu tarayıcı
  * küreseli, Phaser değil; testler bu dosyayı içe aktarmıyor.
  */
-import type { PortalAdapter } from './Portal';
+import type { PortalAdapter, ReklamOlaylari } from './Portal';
 
 /** SDK globallerinin bizim kullandığımız yüzeyi — `any` yok (kural 5). */
 interface PokiGlobal {
   init?: () => Promise<void>;
   gameplayStart: () => void;
   gameplayStop: () => void;
+  /** `beforeAd` yalnız reklam **gerçekten** gösterilecekse çağrılıyor. */
   commercialBreak: (beforeAd?: () => void) => Promise<void>;
+  /** *"so conversion to play is measured correctly"* — `M178`. */
+  gameLoadingFinished?: () => void;
   measure?: (kategori: string, ne: string, eylem: string) => void;
+}
+
+/**
+ * CrazyGames v3 reklam geri çağrıları (`sdk/video-ads`).
+ *
+ * **`requestAd` `Promise` DÖNDÜRMÜYOR** — `M178`'e kadar burada
+ * `(tur) => Promise<void>` yazıyordu ve bağdaştırıcı `.catch` çağırıyordu:
+ * `undefined.catch` fırlıyor, ses o satırdan önce kısılmış olduğu için
+ * ilk reklamdan sonra oyun **kalıcı olarak sessiz** kalıyordu.
+ * `adError` bekleme süresi dolmamışken (`adCooldown`), dolu reklam yokken
+ * (`unfilled`) ve engelleyicide (`adblock`) de geliyor.
+ */
+interface CrazyReklamGeriCagrilari {
+  adStarted: () => void;
+  adFinished: () => void;
+  adError: (hata: unknown) => void;
 }
 
 interface CrazyGlobal {
@@ -40,10 +59,11 @@ interface CrazyGlobal {
     game: {
       gameplayStart: () => void;
       gameplayStop: () => void;
-      /** v3'te reklam çağrısı ayrı bir ad alanında. */
-      [k: string]: unknown;
+      /** `sdk/game`: *Required* — `M178`. */
+      loadingStart?: () => void;
+      loadingStop?: () => void;
     };
-    ad?: { requestAd: (tur: string) => Promise<void> };
+    ad?: { requestAd: (tur: 'midgame', geri: CrazyReklamGeriCagrilari) => void };
   };
 }
 
@@ -112,15 +132,23 @@ export function pokiAdapter(): PortalAdapter | null {
     ad: 'poki',
     gameplayStart: () => kapi(() => sdk.gameplayStart()),
     gameplayStop: () => kapi(() => sdk.gameplayStop()),
-    commercialBreak: (sesiKis) => {
+    commercialBreak: (olay) => {
       kapi(() => {
-        sesiKis(true);
-        void sdk
-          .commercialBreak()
-          .catch(() => {})
-          .finally(() => sesiKis(false));
+        let bekle: Promise<void>;
+        try {
+          bekle = sdk.commercialBreak(() => olay.basladi());
+        } catch {
+          olay.bitti();
+          return;
+        }
+        // Reddedilse de bitiyor: oyun reklama bağlanamaz.
+        void bekle.then(
+          () => olay.bitti(),
+          () => olay.bitti(),
+        );
       });
     },
+    yuklemeBitti: () => kapi(() => sdk.gameLoadingFinished?.()),
     // `sdk.poki.com/game-events` — `start`/`complete`/`fail` özel anlamlı.
     measure: (k, n, e) => sdk.measure?.(k, n, e),
   };
@@ -143,22 +171,29 @@ export function crazyAdapter(): PortalAdapter | null {
     ad: 'crazygames',
     gameplayStart: () => kapi(() => cg.SDK.game.gameplayStart()),
     gameplayStop: () => kapi(() => cg.SDK.game.gameplayStop()),
-    commercialBreak: (sesiKis) => {
-      kapi(() => {
-        const reklam = cg.SDK.ad;
-        if (reklam === undefined) {
-          sesiKis(true);
-          sesiKis(false);
-          return;
-        }
-        sesiKis(true);
-        void reklam
-          .requestAd('midgame')
-          .catch(() => {})
-          .finally(() => sesiKis(false));
-      });
+    commercialBreak: (olay) => {
+      kapi(() => crazyReklam(cg, olay));
     },
+    yuklemeBasladi: () => kapi(() => cg.SDK.game.loadingStart?.()),
+    yuklemeBitti: () => kapi(() => cg.SDK.game.loadingStop?.()),
   };
+}
+
+function crazyReklam(cg: CrazyGlobal, olay: ReklamOlaylari): void {
+  const reklam = cg.SDK.ad;
+  if (reklam === undefined) {
+    olay.bitti();
+    return;
+  }
+  try {
+    reklam.requestAd('midgame', {
+      adStarted: () => olay.basladi(),
+      adFinished: () => olay.bitti(),
+      adError: () => olay.bitti(),
+    });
+  } catch {
+    olay.bitti();
+  }
 }
 
 /**

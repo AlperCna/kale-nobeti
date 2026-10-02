@@ -13,6 +13,7 @@ import { DIFFICULTY } from '../data/difficulty';
 import type { Difficulty } from '../data/difficulty';
 import { FRAME_STAR, FRAME_STAR_EMPTY } from '../data/spriteFrames';
 import type { StringKey } from '../data/strings';
+import { haritayaGir } from './haritaGirisi';
 
 const INK = 0x14203a;
 const GOLD = 0xd4a032;
@@ -286,8 +287,7 @@ export class LevelSelectScene extends Phaser.Scene {
         return;
       }
       kart.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => {
-        this.scene.start('Game', { mapId: m.id });
-        this.scene.launch('Hud');
+        haritayaGir(this, { mapId: m.id });
       });
 
       /**
@@ -314,8 +314,7 @@ export class LevelSelectScene extends Phaser.Scene {
           Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN,
           (_p: unknown, _lx: number, _ly: number, olay: Phaser.Types.Input.EventData) => {
             olay.stopPropagation();
-            this.scene.start('Game', { mapId: m.id, endless: true });
-            this.scene.launch('Hud');
+            haritayaGir(this, { mapId: m.id, endless: true });
           },
         );
         this.add
