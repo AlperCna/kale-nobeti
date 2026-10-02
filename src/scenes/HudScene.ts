@@ -783,7 +783,23 @@ export class HudScene extends Phaser.Scene {
   #createPauseOverlay(): void {
     const { width, height } = this.scale;
 
-    const perde = this.add.rectangle(0, 0, width, height, INK, 0.72).setOrigin(0);
+    /**
+     * **`M181` — perde tıklamayı YUTUYOR.** Bütün HUD düğmelerinden sonra
+     * çiziliyor, yani onları karartıyordu — ama etkileşimsiz olduğu için
+     * karartılmış düğmeler arkadan **çalışmaya devam ediyordu**. Tarayıcıda
+     * üretildi: duraklatılmışken üst ortaya dokunmak "Dalgayı başlat"a
+     * basıp dalgayı başlatıyordu (hazırlık → koşu); hız düğmesi de 1×→2×
+     * oluyordu. Oyuncu düşünmek için duraklatıp kalan hazırlık süresini
+     * farkında olmadan harcıyordu.
+     *
+     * Perdenin üstündekiler çalışmaya devam ediyor: menünün kendi
+     * düğmeleri (bu kabın içinde, perdeden sonra) ve ayarlar paneli
+     * (derinlik 200). ESC/boşluk klavyeden geliyor, etkilenmiyor.
+     */
+    const perde = this.add
+      .rectangle(0, 0, width, height, INK, 0.72)
+      .setOrigin(0)
+      .setInteractive();
     const yazi = this.add
       .text(width / 2, height / 2 - 150, t('paused'), {
         fontFamily: '"Grenze Gotisch", serif',

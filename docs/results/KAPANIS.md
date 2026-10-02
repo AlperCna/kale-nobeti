@@ -125,6 +125,20 @@ ve SDK'sız açılışla sınandı.
   kalenin açık taşında okunmuyordu (yalnız gölge); `M169`'un mürekkep
   konturu eklendi.
 
+**`M181` — açılır katmanlardan tıklama sızıyordu:**
+- **Ayarlar panelinin boş bir yerine dokunmak altındaki düğmeye basıyordu.**
+  Oyun içinde panel duraklatma menüsünün üstünde açıldığı için bu
+  **"Yeniden başla"ya** denk geliyordu: tarayıcıda üretildi, kurulu kule
+  gitti ve harita baştan başladı. Ana menüde de "Play"e basıyordu. Panelin
+  zemini artık tıklamayı yutuyor (ve tam opak; arkadaki yazılar
+  sızıyordu).
+- **Duraklatma perdesi arkasındaki düğmeler çalışıyordu.** Duraklatılmışken
+  üst ortaya dokunmak "Dalgayı başlat"a basıp dalgayı başlatıyor, hız
+  düğmesi değişiyordu. Perde artık tıklamayı yutuyor; menünün kendi
+  düğmeleri, ayarlar paneli ve ESC/boşluk çalışıyor.
+- İngilizce tarama: menü, ayarlar, nasıl oynanır, başarımlar, kazanma
+  ekranı — taşan ya da ekran dışına çıkan yazı yok (ölçülerek).
+
 **`M179`:** müziği kapatan oyuncu yükseltme, boss girişi, zafer ve yenilgi
 seslerini hiç duymuyordu — dört dosya yalnız müzik açıkken yükleniyordu.
 Tarayıcıda üretildi ve düzeltildi (`PreloadScene.queueGecSesler`); müzik
