@@ -117,6 +117,13 @@ ve SDK'sız açılışla sınandı.
   "altın daireye dokun" derken. Yeri artık noktalardan ve HUD'dan kaçıyor
   (`util/ipucuYerlesimi`, altı haritaya karşı test).
 - JavaScript kapalıyken çıkan uyarı yalnız Türkçeydi; iki dilli.
+- **Telefonda** (640×360, dokunmatik emülasyonu) yapı menüsünün rol
+  şeridi `?`e basılana kadar **boş** bir bant olarak kalıyordu (imleç
+  yok); dokunmatikte artık ilk ailenin rolü varsayılan, `?` sıradakine
+  geçiyor. Masaüstünde davranış aynı.
+- Menüde alt başlık ve "Devam et"in altındaki kayıt satırı telefonda
+  kalenin açık taşında okunmuyordu (yalnız gölge); `M169`'un mürekkep
+  konturu eklendi.
 
 **`M179`:** müziği kapatan oyuncu yükseltme, boss girişi, zafer ve yenilgi
 seslerini hiç duymuyordu — dört dosya yalnız müzik açıkken yükleniyordu.

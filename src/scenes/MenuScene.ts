@@ -199,6 +199,11 @@ export class MenuScene extends Phaser.Scene {
         fontFamily: 'Spectral, serif',
         fontSize: '22px',
         color: '#E4D3A8',
+        // `M180` — kontur da: telefonda (640×360) gölge tek başına kalenin
+        // açık taşında yetmiyordu; `M169`'un tam ekran/yetenek etiketleri
+        // kararı burada uygulanmamıştı.
+        stroke: '#14203A',
+        strokeThickness: 4,
       })
       .setOrigin(0.5)
       // Menü arka planı burada **sabit değil**: kalenin sancağı ve
@@ -246,6 +251,10 @@ export class MenuScene extends Phaser.Scene {
             fontFamily: 'Spectral, serif',
             fontSize: '16px', // Platform: minimum 16 px
             color: '#E4D3A8',
+            // `M180` — telefonda (640×360) kalenin açık duvarında gölge
+            // tek başına okunmuyordu; `M169`'un kontur kararı.
+            stroke: '#14203A',
+            strokeThickness: 4,
           },
         )
         .setOrigin(0.5)
