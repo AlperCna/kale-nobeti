@@ -550,17 +550,19 @@ Doğum penceresi `SPAWN_K = 24` (saniye × düşman). **Uydurulmadı,
 
 Kaynak: `src/data/difficulty.ts` (S80). Varsayılan **normal**.
 
-**Zor HP’ye dokunmuyor, canı kısıyor.** Ölçüm: HP çarpanı ×1,10’da
-harita 1’in bossu referans tahtanın Kısıt A tavanını aşıyordu (%101),
-yani öğretici harita **geçilemez** hâle geliyordu. Can sayısı Kısıt A’ya,
-referans tahtaya, tavana ve boss türetmesine hiç girmiyor — hiçbir düşmanı
-öldürülemez yapmadan hata payını daraltıyor.
+**`M175` — Zor tasarlanan dengedir.** Üç seviye de 20 canla başlıyor;
+fark düşmanın canında. Zor ×1,00 (bütün denge testlerinin ölçtüğü eğri),
+Normal ve Kolay onun ölçeklenmiş hâli. Zor HP’yi **yükseltmiyor**:
+×1,10’da Kısıt A’nın %15 payı tükeniyor. Eskiden Zor 12 canla başlıyordu
+ve 4-6. haritaları referans tahta bile geçemiyordu; oyun oyuncu gibi
+oynanınca Normal’in (×1,00) de fazla dar olduğu görüldü — gerekçe
+ve ölçüm `difficulty.ts` başlığında.
 
 | Seviye | HP çarpanı | Başlangıç canı | Yıldız | 1 | 2 | 3 | 4 | 5 | 6 |
 |---|---|---|---|---|---|---|---|---|---|
-| kolay | ×0,8 | 20 | **kaydedilmiyor** | 0 / 20 ✓ | 0 / 20 ✓ | 2 / 20 ✓ | 2 / 20 ✓ | 5 / 20 ✓ | 8 / 20 ✓ |
-| normal | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 2 / 20 ✓ | 9 / 20 ✓ | 13 / 20 ✓ | 14 / 20 ✓ | 17 / 20 ✓ |
-| zor | ×1 | 12 | kaydediliyor | 0 / 12 ✓ | 2 / 12 ✓ | 9 / 12 ✓ | 13 / 12 ✗ | 14 / 12 ✗ | 17 / 12 ✗ |
+| kolay | ×0,6 | 20 | **kaydedilmiyor** | 0 / 20 ✓ | 0 / 20 ✓ | 0 / 20 ✓ | 0 / 20 ✓ | 0 / 20 ✓ | 2 / 20 ✓ |
+| normal | ×0,8 | 20 | kaydediliyor | 0 / 20 ✓ | 0 / 20 ✓ | 2 / 20 ✓ | 2 / 20 ✓ | 5 / 20 ✓ | 8 / 20 ✓ |
+| zor | ×1 | 20 | kaydediliyor | 0 / 20 ✓ | 2 / 20 ✓ | 9 / 20 ✓ | 13 / 20 ✓ | 14 / 20 ✓ | 17 / 20 ✓ |
 
 Hücreler: referans tahtanın kaybettiği can / o seviyenin canı.
 

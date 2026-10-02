@@ -362,7 +362,8 @@ function kosturDalgalar(
   stepMs = SABIT_ADIM_MS,
   /**
    * Zorluk seviyesinin **doğum anındaki** ek HP çarpanı
-   * (`DIFFICULTY[x].hpScale`). Varsayılan 1 — Normal ve Zor.
+   * (`DIFFICULTY[x].hpScale`). Varsayılan 1 — Zor, yani tasarlanan
+   * eğri (`M175`'e kadar Normal ve Zor; Normal bugün ×0,80).
    *
    * **S92 — ölçüm körlüğünün dördüncüsü, bu kez `waveSim`'de değil
    * onu ÇAĞIRANDA.** Kolay'ı ölçmenin yolu `MapDef.hpMultiplier`'ı

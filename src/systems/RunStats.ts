@@ -59,7 +59,8 @@ export class RunStats {
    * enjekte etmek**: `startGold` üç alan yukarıda tam olarak bu sebeple
    * zaten kurucu parametresi. `DIFFICULTY.zor.startLives` **12** olduğu
    * için tahmin ilk can kaybında `20 − 11 = 9` diyordu; Zor'da bir can
-   * kaybeden oyuncu dokuz kaybetmiş sayılıyordu.
+   * kaybeden oyuncu dokuz kaybetmiş sayılıyordu. (`M175`'ten beri üç
+   * seviye de 20 canla başlıyor; enjeksiyon her taban için doğru kalıyor.)
    */
   readonly #baslangicCan: number;
   #peakWave = 0;

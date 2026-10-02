@@ -1058,16 +1058,23 @@ düzeltildi:
   > Aşağıdaki değerler ölçülerek yenilendi. **Zor sütunu kaldırıldı:** Zor
   > yalnız başlangıç canını değiştiriyor (`hpScale` 1,0), yani can kaybı
   > Normal ile **birebir aynı** — ayrı sütun olması yanıltıcıydı.
+  >
+  > **`M175` — merdiven bir basamak kaydı.** Tasarlanan eğri (×1,00) artık
+  > **Zor**; Normal ×0,80, Kolay ×0,60, üçü de 20 can. Oyun oyuncu gibi
+  > oynanınca ×1,00'de harita 3-5 ilk denemede kaybedildi, eski Zor (12
+  > can) ise 4-6'da referans tahta için bile geçilemezdi. Sütunlar artık
+  > seviye başına ve başlıkları veriden üretiliyor. Gerekçe ve ölçüm
+  > `src/data/difficulty.ts` başlığında.
 
 <!-- ÜRETİLEN:rampa -->
-| Harita | HP çarpanı | Altın çarpanı | Normal = Zor | Kolay (×0,80) |
-|---|---|---|---|---|
-| 1 · Değirmen Geçidi | 1 | 1 | 0 | 0 |
-| 2 · Taş Köprü | 1,6 | 2,2 | 2 | 0 |
-| 3 · Kül Ovası | 2,8 | 3,8 | 9 | 2 |
-| 4 · Kar Geçidi | 7,35 | 7,8 | 13 | 2 |
-| 5 · Kadim Harabe | 10,05 | 10,2 | 14 | 5 |
-| 6 · Sisli Bataklık | 8,5 | 11 | 17 | 8 |
+| Harita | HP çarpanı | Altın çarpanı | zor (×1) | normal (×0,8) | kolay (×0,6) |
+|---|---|---|---|---|---|
+| 1 · Değirmen Geçidi | 1 | 1 | 0 | 0 | 0 |
+| 2 · Taş Köprü | 1,6 | 2,2 | 2 | 0 | 0 |
+| 3 · Kül Ovası | 2,8 | 3,8 | 9 | 2 | 0 |
+| 4 · Kar Geçidi | 7,35 | 7,8 | 13 | 2 | 0 |
+| 5 · Kadim Harabe | 10,05 | 10,2 | 14 | 5 | 0 |
+| 6 · Sisli Bataklık | 8,5 | 11 | 17 | 8 | 2 |
 <!-- /ÜRETİLEN:rampa -->
 
   **`M139` — tahtayı ZAYIFLATAN her kolun payı ölçüldü.** Rampanın üst
@@ -1170,6 +1177,10 @@ Yeni sayı uydurulmadı; oran tablonun kendi eşiklerinden türedi:
 `15 / 20 = 0,75`. Kural hep *"canının dörtte üçünü koru"*ydu, yalnız
 20 cana gömülü yazılmıştı. Normal'in davranışı **birebir aynı**
 (20 → ★★★, 15 → ★★); değişen yalnız Zor: 12 → ★★★, ≥9 → ★★.
+
+*`M175`: Zor artık 20 canla başlıyor, yani üç seviyede de eşikler 20 /
+15. Oransal kural yerinde duruyor — gelecekte farklı canla başlayan bir
+seviye eklenirse doğru sayacak (`SaveSystem.test.ts` 12 canlık örnekle bağlı).*
 
 ### Kapsanan yol — asıl denge kolu
 
