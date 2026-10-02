@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { t } from '../util/i18n';
-import { SaveSystem, kayitYildizi } from '../systems/SaveSystem';
+import { kayitYildizi } from '../systems/SaveSystem';
 import { getSettings } from '../systems/Settings';
 import { DIFFICULTY } from '../data/difficulty';
 import { LocalStore } from '../util/storage';
@@ -10,9 +10,9 @@ import { MAPS } from '../data/maps';
 import { FRAME_STAR, FRAME_STAR_EMPTY } from '../data/spriteFrames';
 import { EndlessRecords } from '../systems/EndlessRecords';
 import { AchievementSystem } from '../systems/AchievementSystem';
+import { elSonuKaydet } from '../systems/elSonu';
 import { AchievementToast } from '../fx/AchievementToast';
 import type { RunStatsData } from '../systems/RunStats';
-import type { RunEndContext } from '../systems/AchievementSystem';
 
 const INK = 0x14203a;
 /** Yıldız bandının zemini — bkz. yıldız bloğundaki gerekçe. */
@@ -75,36 +75,27 @@ export class GameOverScene extends Phaser.Scene {
       this.#rekor = kayit.bestOf(this.#data.mapId);
     }
 
-    // `M8-T07` — el sonu başarımları. `init`'te değerlendiriliyor ki
-    // yukarıdaki `recordResult` çağrısından **sonra** olsun: "bütün
-    // haritalar" ve "bütün yıldızlar" bu elin sonucunu da saymalı.
-    this.#acilanBasarimlar = new AchievementSystem(new LocalStore()).checkRunEnd(
-      this.#elOzeti(),
+    // **Sonuç ve başarımlar — `systems/elSonu`, `M171`.** Burada iki ayrı
+    // blok vardı ve başarımlar sonuçtan ÖNCE değerlendiriliyordu: son
+    // haritayı bitiren oyuncuya "Sefer Tamam" açılmıyordu. Sıra artık saf
+    // fonksiyonda ve sınanıyor. `recordResult` yıldızı **düşürmüyor**: kötü
+    // bir tekrar kazanılmış ★★★'ü silmiyor; Kolay'da kayıt yıldızsız bir
+    // "bitirdi" (`M8-T11`). `M26` — eşikler o **koşunun** başlangıç canına
+    // göre (Zor 12 canla başlıyor).
+    const zorluk = getSettings(this).state.difficulty;
+    this.#acilanBasarimlar = elSonuKaydet(
+      new LocalStore(),
+      MAPS.map((m) => m.id),
+      {
+        mapId: this.#data.mapId,
+        won: this.#data.won,
+        lives: this.#data.lives,
+        startLives: this.#baslangicCan(),
+        recordStars: DIFFICULTY[zorluk].recordStars,
+        sold: this.#data.stats?.soldAny ?? false,
+        endlessWave: this.#data.endless === true ? (this.#data.stats?.peakWave ?? 0) : 0,
+      },
     );
-
-    // **Sonuç burada kaydediliyor** — `init` her sahne başlatmasında
-    // koşuyor, yani tekrar oynanan her el kaydediliyor. `recordResult`
-    // yıldızı **düşürmüyor**: kötü bir tekrar kazanılmış ★★★'ü silmiyor.
-    if (this.#data.mapId !== undefined) {
-      // `M8-T11` — Kolay'da yıldız **kaydedilmiyor** (karar `difficulty.ts`
-      // içinde yazılı: `SaveSystem` yıldızı düşürmüyor, yani Kolay'da
-      // alınan ★★★ sonsuza kadar kalırdı). Harita kilidi yine açılıyor:
-      // `isUnlocked` bitirmeye bakıyor ve Kolay da bir bitirme.
-      const zorluk = getSettings(this).state.difficulty;
-      const save = new SaveSystem(new LocalStore());
-      // `M26` — eşikler o **koşunun** başlangıç canına göre. Zor 12 canla
-      // başlıyor; mutlak 20/15 eşikleriyle kusursuz bir Zor koşusu bile
-      // ★ alıyordu.
-      const baslangicCan = this.#baslangicCan();
-      if (DIFFICULTY[zorluk].recordStars) {
-        save.recordResult(this.#data.mapId, this.#data.lives, this.#data.won, baslangicCan);
-      } else if (this.#data.won) {
-        // Yıldızsız "bitirdi" kaydı: 1 can ile bitmiş gibi — §9 tablosunda
-        // ★ eşiği. Kilit zincirinin kopmaması için gerekli en küçük kayıt.
-        // Ekranda gösterilen de bu (`#yildiz` → `kayitYildizi`, `M171`).
-        save.recordResult(this.#data.mapId, 1, true, baslangicCan);
-      }
-    }
   }
 
   create(): void {
@@ -311,34 +302,6 @@ export class GameOverScene extends Phaser.Scene {
       dev.gameOver = () => ({ won, lives, stars: won ? this.#yildiz(lives) : 0 });
       dev.achievements = () => new AchievementSystem(new LocalStore()).unlocked;
     }
-  }
-
-  /**
-   * `AchievementSystem`'in el sonu bağlamı.
-   *
-   * `SaveSystem` **bu el kaydedildikten sonra** okunuyor (yukarıdaki
-   * `recordResult` çağrısı `init`'in başında) — yoksa son haritayı
-   * bitiren el "bütün haritalar" başarımını bir el geç açardı.
-   */
-  #elOzeti(): RunEndContext {
-    const save = new SaveSystem(new LocalStore());
-    const ids = MAPS.map((m) => m.id);
-    return {
-      won: this.#data.won,
-      lives: this.#data.lives,
-      // `M34` — sabit 20 geçiliyordu ve `flawless` başarımı
-      // `lives >= startLives` istiyor: Zor 12 canla başladığı için
-      // kusursuz bir Zor koşusunda bile 12 >= 20 yanlıştı, yani
-      // **"Kusursuz" Zor'da imkânsızdı**. `M26`'nın kusurunun,
-      // `M26`'nın ulaşamadığı ikinci kopyası.
-      startLives: this.#baslangicCan(),
-      sold: this.#data.stats?.soldAny ?? false,
-      mapsCompleted: ids.filter((id) => save.isCompleted(id)).length,
-      mapCount: ids.length,
-      stars: save.totalStars(),
-      maxStars: ids.length * 3,
-      endlessWave: this.#data.endless === true ? (this.#data.stats?.peakWave ?? 0) : 0,
-    };
   }
 
   /** `GAME-DESIGN.md` §9 yıldız tablosu. */
