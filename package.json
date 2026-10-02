@@ -11,6 +11,8 @@
     "build:crazygames": "node scripts/build-portal.mjs crazygames",
     "preview": "vite preview",
     "package:itch": "node scripts/package-itch.mjs",
+    "package:poki": "npm run build:poki && node scripts/package-itch.mjs poki",
+    "package:crazygames": "npm run build:crazygames && node scripts/package-itch.mjs crazygames",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "guard": "node scripts/guard-rules.mjs",

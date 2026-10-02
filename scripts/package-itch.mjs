@@ -10,6 +10,14 @@
 // (deflate + ZIP64 olmayan basit merkezi dizin). Oyun ~5 MB, 200'den az
 // dosya; ZIP64'e gerek yok ve `archiver` gibi bir paket getirmek
 // `CLAUDE.md`'nin "harici bağımlılık eklemeden önce sor" kuralına takılır.
+//
+// **`M178` — üç hedef:** `node scripts/package-itch.mjs [itch|poki|crazygames]`
+// (varsayılan `itch`). Portal yükleme formları da zip'in kökünde
+// `index.html` istiyor; Windows'ta `dist/` klasörünü sağ tıkla zip'lemek
+// onu bir alt klasöre koyuyor. Paketleyici `dist/`'teki SDK betiğinin
+// hedefle **eşleştiğini** doğruluyor: Poki zip'ine CrazyGames yapımı
+// (ya da tersi) girerse oyun portalda olaysız ve reklamsız açılırdı.
+// `package:poki` / `package:crazygames` önce kendi yapımını koşturuyor.
 
 import { readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -22,10 +30,25 @@ const deflate = promisify(deflateRaw);
 
 const ROOT = process.cwd();
 const DIST = path.join(ROOT, 'dist');
-const CIKTI = path.join(ROOT, 'kale-nobeti-itch.zip');
-
-/** itch.io'nun HTML oyun yükleme sınırı. */
-const ITCH_SINIR_MB = 1000;
+/**
+ * Hedef başına sınırlar. itch.io: HTML yükleme 1000 MB. CrazyGames
+ * (`requirements/technical`): toplam 250 MB, 1500 dosya. Poki'nin bağlayıcı
+ * sınırı ilk indirme (8 MB) — onu `report-size.mjs` her yapımda ölçüyor.
+ */
+const HEDEFLER = {
+  itch: { sinirMb: 1000, dosyaSiniri: Infinity },
+  poki: { sinirMb: Infinity, dosyaSiniri: Infinity },
+  crazygames: { sinirMb: 250, dosyaSiniri: 1500 },
+};
+const HEDEF = process.argv[2] ?? 'itch';
+if (!(HEDEF in HEDEFLER)) {
+  console.error(`[package] hedef itch | poki | crazygames olmalı, gelen: ${HEDEF}`);
+  process.exit(1);
+}
+const { sinirMb, dosyaSiniri } = HEDEFLER[HEDEF];
+const ZIP_ADI = `kale-nobeti-${HEDEF}.zip`;
+const CIKTI = path.join(ROOT, ZIP_ADI);
+const ETIKET = `[package-${HEDEF}]`;
 
 async function dosyalariTopla(dizin, kok = dizin) {
   const girisler = await readdir(dizin, { withFileTypes: true });
@@ -97,11 +120,11 @@ function son(girisSayisi, merkezBoyut, merkezOffset) {
 
 async function main() {
   if (!existsSync(DIST)) {
-    console.error('[package-itch] dist/ yok — önce `npm run build`.');
+    console.error(`${ETIKET} dist/ yok — önce yapımı koştur.`);
     process.exit(1);
   }
   if (!existsSync(path.join(DIST, 'index.html'))) {
-    console.error('[package-itch] dist/index.html yok — yapı eksik.');
+    console.error(`${ETIKET} dist/index.html yok — yapı eksik.`);
     process.exit(1);
   }
 
@@ -120,7 +143,16 @@ async function main() {
   // beklerdi.
   const indexHtml = await readFile(path.join(DIST, 'index.html'), 'utf8');
   const portalBetigi = /<script[^>]+src="https:\/\/[^"]*(poki|crazygames)[^"]*"/i.exec(indexHtml);
-  if (portalBetigi !== null) {
+  const yapim = portalBetigi === null ? 'itch' : portalBetigi[1].toLowerCase();
+  if (HEDEF !== 'itch' && yapim !== HEDEF) {
+    console.error(
+      `${ETIKET} dist/ bir '${yapim}' yapımı, hedef '${HEDEF}'.
+` +
+        `              \`npm run package:${HEDEF}\` kendi yapımını koşturuyor.`,
+    );
+    process.exit(1);
+  }
+  if (HEDEF === 'itch' && portalBetigi !== null) {
     console.error(
       `[package-itch] dist/ bir PORTAL yapımı (${portalBetigi[1]}) — itch.io sürümü SDK'sız olmalı.
 ` +
@@ -165,16 +197,20 @@ async function main() {
 
   const { size } = await stat(CIKTI);
   const mb = size / (1024 * 1024);
-  console.log('[package-itch]');
+  console.log(ETIKET);
   console.log(`  ${dosyalar.length} dosya · ham ${(hamToplam / 1048576).toFixed(2)} MB`);
-  console.log(`  kale-nobeti-itch.zip  ${mb.toFixed(2)} MB`);
+  console.log(`  ${ZIP_ADI}  ${mb.toFixed(2)} MB`);
   console.log(`  ilk giriş: ${dosyalar[0].zipYolu}`);
   if (dosyalar[0].zipYolu !== 'index.html') {
-    console.error('  HATA: zip kökünde index.html yok — itch sayfası boş açılır.');
+    console.error('  HATA: zip kökünde index.html yok — oyun sayfası boş açılır.');
     process.exit(1);
   }
-  if (mb > ITCH_SINIR_MB) {
-    console.error(`  HATA: itch.io sınırı ${ITCH_SINIR_MB} MB.`);
+  if (mb > sinirMb) {
+    console.error(`  HATA: ${HEDEF} sınırı ${sinirMb} MB.`);
+    process.exit(1);
+  }
+  if (dosyalar.length > dosyaSiniri) {
+    console.error(`  HATA: ${HEDEF} dosya sınırı ${dosyaSiniri}.`);
     process.exit(1);
   }
   console.log('  ✓ kökte index.html, sınır içinde.');
