@@ -969,6 +969,11 @@ export class GameScene extends Phaser.Scene {
 
     this.sound.stopByKey('music_menu');
 
+    // `M179` — geç ses efektleri müzikten AYRI ve koşulsuz
+    // (`PreloadScene.queueGecSesler` başlığı: müziği kapalı oyuncu
+    // yükseltme, boss girişi, zafer ve yenilgi seslerini hiç duymuyordu).
+    PreloadScene.queueGecSesler(this);
+
     if (this.settings.musicScale > 0) {
       const cal = (): void => {
         this.sound.play('music_game', {
@@ -993,9 +998,10 @@ export class GameScene extends Phaser.Scene {
           if (this.scene.isActive()) cal();
         });
         PreloadScene.queueBackground(this);
-        this.load.start();
       }
     }
+    // Tek başlatma: kuyruğa ses efekti ya da müzik girdiyse.
+    if (this.load.list.size > 0) this.load.start();
 
     // `once`, `on` DEĞİL. Phaser kaynağı (Systems.js):
     //   - `shutdown()` yalnız SHUTDOWN yayar, dinleyicileri KALDIRMAZ

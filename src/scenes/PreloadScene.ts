@@ -32,8 +32,8 @@ const BAR_H = 12;
  *
  * `SFX_GEC` oyunun ilk dakikasında **hiç** çalmıyor — `boss_intro` dalga
  * 10'da, `victory`/`defeat` harita bitince, `tower_upgrade` ilk
- * yükseltmede. Dosyaları `assets/lazy/sfx/` altında ve ilk dalga bitince
- * yükleniyorlar (müzikle aynı aşama). `report-size.mjs`'in "ilk indirme"
+ * yükseltmede. Dosyaları `assets/lazy/sfx/` altında ve harita açılınca
+ * yükleniyorlar (`queueGecSesler`). `report-size.mjs`'in "ilk indirme"
  * hesabı `assets/lazy/` klasörünü hariç tuttuğu için ölçüm kendiliğinden
  * doğru çıkıyor.
  *
@@ -289,8 +289,8 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   // ---------------------------------------------------------------------
-  // Aşama 3 — arka plan. Müzik.
-  // İlk dalga bittikten sonra çağrılır (GAME-DESIGN §12).
+  // Aşama 3 — arka plan: oyun ve boss müziği. Harita açılınca, YALNIZ
+  // müzik açıksa (`GameScene`). Geç ses efektleri ayrı: `queueGecSesler`.
   // ---------------------------------------------------------------------
   static queueBackground(scene: Phaser.Scene): void {
     // `lazy/` altında — `report-size.mjs`'in "ilk indirme" hariç tutma
@@ -306,7 +306,22 @@ export class PreloadScene extends Phaser.Scene {
     if (!scene.cache.audio.exists('boss_music')) {
       scene.load.audio('boss_music', 'assets/lazy/boss_music.m4a');
     }
-    // `M8-T14` — geç sesler de bu aşamada (ilk dalga bitince).
+  }
+
+  /**
+   * `M8-T14` — geç ses efektleri (yükseltme, boss girişi, zafer, yenilgi).
+   *
+   * **`M179`: `queueBackground`'tan ayrıldı.** Oradaydılar ve
+   * `queueBackground` yalnız **müzik açıkken** çağrılıyor (`GameScene`,
+   * `Y04`'ün "müziği kapalı oyuncuya dosyayı indirme" kazancı). Sonuç:
+   * müziği kapatan oyuncu bu dört sesi **hiç** duymuyordu — `SoundSystem`
+   * eksik anahtarı sessizce atlıyor, hata bile çıkmıyordu. Tarayıcıda
+   * üretildi: müzik kapalı, harita açık, dördü de `cache.audio`'da yok.
+   * Ses efekti tercihine bağlanmadı: ayar oyun içinde değişebiliyor ve
+   * dört küçük dosya için koşullu yükleme kurmanın değeri yok
+   * (`queueMenuSfx` ile aynı gerekçe).
+   */
+  static queueGecSesler(scene: Phaser.Scene): void {
     for (const ad of SFX_GEC) {
       if (!scene.cache.audio.exists(ad)) {
         scene.load.audio(ad, `assets/lazy/sfx/${ad}.m4a`);

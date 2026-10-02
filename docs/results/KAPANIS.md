@@ -107,6 +107,11 @@ CrazyGames tarafı **gerçek SDK'yla** (3.8.0, yerel mod) uçtan uca
 sınandı. Poki SDK'sı bu makinenin ağından yüklenemiyor (SSL); sahte SDK'yla
 ve SDK'sız açılışla sınandı.
 
+**`M179`:** müziği kapatan oyuncu yükseltme, boss girişi, zafer ve yenilgi
+seslerini hiç duymuyordu — dört dosya yalnız müzik açıkken yükleniyordu.
+Tarayıcıda üretildi ve düzeltildi (`PreloadScene.queueGecSesler`); müzik
+hâlâ yalnız açıkken iniyor.
+
 ## Sahibin kararı: sektör standardı (`M175`-`M177`)
 
 Sahip açık kalan iki kararı (zorluk, sonsuz mod) ve "düzeltilmesi

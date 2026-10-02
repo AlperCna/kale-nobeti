@@ -910,7 +910,7 @@ ifade sezgiseli ve her biri **kasıtlı bozmayla** doğrulandı.
 |---|---|
 | 1 | k.8  ham delta yalnız GameClock/GameScene |
 | 2 | k.5  any kullanılmıyor |
-| 3 | M0   PreloadScene 4 aşama (8) |
+| 3 | M0   PreloadScene 4 aşama (9) |
 | 4 | k.7  setText yalnız Text üretmeyen dosyada |
 | 5 | k.11 saf mantıkta runtime Phaser yok |
 | 6 | test src/ altında test dosyası (74) |
