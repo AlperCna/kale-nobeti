@@ -235,7 +235,16 @@ describe('Ekonomi karşılanabilirliği — M3-T10', () => {
     );
   });
 
-  it('DENGE BULGUSU: 8 nokta dalga 6\'da doluyor, §6 "4-5" diyor', () => {
+  /**
+   * **`M166` — başlık iddiasıyla ayrışmıştı.** Başlık *"dalga 6'da
+   * doluyor"* diyordu, doğrulama `7` istiyordu; test yeşildi çünkü yalnız
+   * doğrulama ölçülüyor. Başlık ölçülen sayıya çekildi. Aşağıdaki "M4'te
+   * yeniden ölçülecek" sözü de fiilen tutuldu: kadro tamamlandı ve sayı
+   * 7'de kaldı. Diğer haritalar (`M166` ölçümü): Taş Köprü dalga 3,
+   * harita 3-6 dalga 4 — yani §6'nın "4-5" hedefi harita 2-6'da tutuyor,
+   * yalnız öğretici harita geride.
+   */
+  it('DENGE BULGUSU: harita 1\'de 8 nokta dalga 7\'de doluyor, §6 "4-5" diyor', () => {
     // Bu bir test başarısızlığı değil, **ölçüm**. §6: "8 yapı noktası
     // dalga 4-5'te dolmalı ki oyuncunun yükseltmekten başka seçeneği
     // kalmasın."
@@ -252,7 +261,8 @@ describe('Ekonomi karşılanabilirliği — M3-T10', () => {
     expect(doluDalga).toBe(7);
   });
 
-  it('DENGE BULGUSU: toplam gelir 1614, §6 "~1850" diyor', () => {
+  // `M166` — başlık 1614 diyordu, doğrulama 1602 istiyor; başlık ölçüme çekildi.
+  it('DENGE BULGUSU: toplam gelir 1602, §6 "~1850" diyor', () => {
     // %13 düşük. Aynı sebep: eksik kadro. M4'te yeniden ölçülecek (S34).
     const toplam = cumulativeGold(MAP_1, MAP1_WAVES, 10);
     expect(toplam).toBe(1602);

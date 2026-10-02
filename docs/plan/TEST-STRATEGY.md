@@ -188,26 +188,26 @@ Bu liste yazıldı ki sonradan "neden sahne testi yok" sorulmasın.
 
 | # | Test | Adım | Beklenen | İlk yapılan taş |
 |---|---|---|---|---|
-| E1 | Duraklatma | ESC, sonra boşluk | İkisi de duraklatıp devam ettiriyor; Hud yanıt veriyor | M0 |
-| E2 | 2× hız | Butona bas | Test nesnesi **gözle** iki kat hızlanıyor | M0 |
-| E3 | Letterbox girdisi | Pencereyi yarıya küçült, butona tıkla | Tıklama ıskalamıyor | M0 |
+| E1 | Duraklatma | ESC, sonra boşluk | İkisi de duraklatıp devam ettiriyor; Hud yanıt veriyor | M0 · **koşturuldu `M166`** |
+| E2 | 2× hız | Butona bas | Test nesnesi **gözle** iki kat hızlanıyor | M0 · **koşturuldu `M166`** |
+| E3 | Letterbox girdisi | Pencereyi yarıya küçült, butona tıkla | Tıklama ıskalamıyor | M0 · **koşturuldu `M166`** |
 | E4 | Font düşüşü | `FontFace.prototype.load`'u reddet/askıda bırak | 2 sn içinde sistem serif'e düşüp devam ediyor | M0 · **koşturuldu `M164`** |
-| E5 | Alt klasör servisi | `npx serve dist -l 5000`, alt yoldan aç | Beyaz ekran yok (`base:'./'`) | M0 |
+| E5 | Alt klasör servisi | `dist`'i iç içe bir alt yoldan sun | Beyaz ekran yok (`base:'./'`) | M0 · **koşturuldu `M166`** |
 | E6 | Havuz sızıntısı | 10 dalga oyna, **bütün** havuz sayaçlarını izle | Sabit kalıyor, saha boşalınca sıfır | M1 · **koşturuldu `M165`** |
-| E6b | **Dinleyici sızıntısı** | Sahneyi N kez yeniden başlat, `devHooks.shutdownListeners()` izle | **Sabit kalıyor** | M1 |
-| E7 | Kapsama ölçümü | Geliştirme göstergesini oku | Ortalama ve `L` raporlanıyor | M1 |
-| E8 | Karşı-oyun | §5 tablosundaki 7 senaryoyu dene | Her tehdidin cevabı işliyor | M4 |
-| E9 | Uçan hattı | Hazırlık aşamasına bak | Kesikli altın hat görünüyor, ≥3 nokta kesiyor | M4 · **koşturuldu `M164`** (hat evet, sayı gözle) |
-| E10 | Kışla 9 kuralı | Her kural için senaryo | Hepsi §4.4'teki gibi | M5 |
-| E11 | Kışla sinerjisi | İki kışlayı aynı noktaya topla | Grup dövüşü çalışıyor | M5 |
+| E6b | **Dinleyici sızıntısı** | Sahneyi N kez yeniden başlat, `devHooks.shutdownListeners()` izle | **Sabit kalıyor** | M1 · **koşturuldu ×4** (`M95` · `M115` · `M136` · `M161`) |
+| E7 | Kapsama ölçümü | Geliştirme göstergesini oku | Ortalama ve `L` raporlanıyor | M1 · **görüldü** (her geliştirme ekran görüntüsünde) + `util/coverage.test` |
+| E8 | Karşı-oyun | §5 tablosundaki 7 senaryoyu dene | Her tehdidin cevabı işliyor | M4 · **parçalı, otomatik** (aşağıda) |
+| E9 | Uçan hattı | Hazırlık aşamasına bak | Kesikli altın hat görünüyor, ≥3 nokta kesiyor | M4 · **koşturuldu `M164`** (sayı: `maps.test` ≥ %40) |
+| E10 | Kışla 9 kuralı | Her kural için senaryo | Hepsi §4.4'teki gibi | M5 · **otomatik**: `BarracksSystem.test` |
+| E11 | Kışla sinerjisi | İki kışlayı aynı noktaya topla | Grup dövüşü çalışıyor | M5 · **otomatik**: `BarracksScenario.test` |
 | E12 | Efektsiz okunurluk | Ses ve efektleri kapat | Oyun **hâlâ okunur** | M6 · **koşturuldu `M164`** |
 | E13 | 640×360 okunurluk | **640×360'a indirgeyip** büyüt (DPR tuzağı, aşağıda) | Tüm yazı okunur, motifler kaybolmuyor | M6 · **koşturuldu `M162`** |
 | E14 | Renk körlüğü | Gri tonlamalı ekran görüntüsü | Düşman tipleri **silüetten** ayrılıyor | M6 · **koşturuldu `M162`** |
-| E15 | `prefers-reduced-motion` | Sistemde aç | Varsayılanlar düşük geliyor | M6 |
+| E15 | `prefers-reduced-motion` | Sistemde aç | Varsayılanlar düşük geliyor | M6 · **koşturuldu `M166`** |
 | E16 | **Gizli sekme** | `Storage.prototype.setItem` fırlatır yap + kaydı boşalt, `Boot`'tan başlat | Çökmüyor **ve** uyarı görünüyor | M7 · **koşturuldu `M163`, kusur buldu** |
-| E17 | Düşük uçlu cihaz | 4 GB RAM'li cihazda oyna | Akıcı (CrazyGames şartı) | M7 |
-| E18 | Üç harita | Baştan sona oyna | Üçü de bitirilebiliyor | M7 |
-| E19 | Üç kişi | 3 kişiye oynat | Nerede sıkıldıkları not edildi | M7 |
+| E17 | Düşük uçlu cihaz | 4 GB RAM'li cihazda oyna | Akıcı (CrazyGames şartı) | M7 · **kapsam dışı** (cihaz yok; yayın istenmiyor) |
+| E18 | Üç harita | Baştan sona oyna | Üçü de bitirilebiliyor | M7 · **altı harita, otomatik** + harita 1 elle (`M165`) |
+| E19 | Üç kişi | 3 kişiye oynat | Nerede sıkıldıkları not edildi | M7 · **kapsam dışı** (insan gerektiriyor) |
 
 E16 ve E17 **portal kabul şartı** — atlanırsa yayın reddedilir
 (`research/05` §1, §2).
@@ -380,10 +380,12 @@ değil — "low" kapatmıyor, seyreltiyor). Kayıp bilgi yok.
 **E9 — uçan hattı.** Değirmen Geçidi'nin uçanları dalga 6'da; o dalganın
 hazırlığında `flyerHintOn()` **true** ve ekranda **kesikli altın hat**
 haritayı çapraz kesiyor — kahverengi yer yolundan açıkça ayrı.
-*Kısmen ölçüldü:* hattın "≥3 yapı noktası kesiyor" şartı **gözle**
-doğrulandı, sayıyla değil; hat birkaç noktanın menziline giriyor.
-Sayısal sağlama istenirse `flyerPaths` ile `buildSpots` arasındaki
-mesafe `util/coverage.ts` tarzında hesaplanabilir.
+*Sayısal kısım zaten bağlıymış (`M166`'da fark edildi):* `M164` bu
+satırda "≥3 nokta şartı gözle doğrulandı, sayıyla değil" yazmıştı. Oysa
+`data/maps.test.ts` her harita için **"uçan hattını gören nokta oranı
+≥ %40"** sağlamasını yıllardır koşturuyor — harita 1'in 8 noktası için
+bu en az 4 nokta, yani E9'un "≥3" şartından sıkı. Gözle bakılan görsel
+taraftı; sayı testte.
 
 ### E6 — `M165`'te İLK KEZ koşturuldu (ikizi dört kez koşmuştu)
 
@@ -408,6 +410,76 @@ havuzlar** izlendi.
 
 Yani havuza dönen nesne gerçekten dönüyor ve sayaçlar turdan tura
 birikmiyor.
+
+### Kapanış turu — `M166`: kalan sağlamaların hepsi bir sonuca bağlandı
+
+Bu turdan sonra tabloda **sonuçsuz satır yok**: her biri ya koşturuldu,
+ya otomatik bir teste bağlandığı gösterildi, ya da neden kapsam dışı
+olduğu yazıldı.
+
+**E1 — duraklatma: geçti.** `window`'a sentetik `KeyboardEvent` ile ESC,
+sonra boşluk. ESC sonrası `paused = true`; duraklamanın bir saniyesinde
+**oyun karesi +0, HUD karesi +72** (HUD'un duraklatmada çalışmaya devam
+etmesi tasarım gereği — devam düğmesi orada). Boşlukla `paused = false`,
+oyun kareleri yeniden artıyor. *Yöntem notu:* tarayıcı panelinin tuş
+aracı Phaser'a ulaşmıyor, ama `window.dispatchEvent(new KeyboardEvent(…))`
+ulaşıyor — Phaser `isTrusted`'a bakmıyor.
+
+**E2 — hız: geçti, ve k.8 sözleşmesi de.** Hız düğmesiyle 1× → 2×.
+`GameClock.setScale` kuralın istediği **üç** Phaser özelliğini birden
+güncelliyor: `tweens.timeScale` 2 · `time.timeScale` 2 ·
+`anims.globalTimeScale` 2.
+
+**E3 — letterbox girdisi: geçti.** Pencere 1100×760 (16:9 değil): tuval
+1100×619, üstten **70 px** kayık, üst ve alt bant var. Küçük hedef
+seçildi ("Başarımlar", "Oyna" değil) ve tıklama `Achievements` sahnesini
+açtı — giriş eşlemesi bandı hesaba katıyor.
+
+**E5 — alt klasör servisi: geçti, ve yayın yapısı uçtan uca kontrol
+edildi.** `dist` iç içe bir yoldan (`/portal/oyunlar/kale-nobeti/`)
+statik sunucuyla sunuldu. Beyaz ekran yok, oyun açıldı ve etkileşimli
+(kurulum menüsü açılıyor). Ağ dökümünde **31 isteğin hepsi 200** ve
+hepsi alt yolun içinde — kökten `/assets/...` isteyen tek bir mutlak yol
+yok (`base: './'` tutuyor). Tembel yükleme çalışıyor (`lazy/` müzik ve
+efektleri oyun başladıktan sonra iniyor). Platform kuralları da
+doğrulandı: **konsol çıktısı sıfır**, `window.__game` ve `window.__kn`
+**tanımsız**, geliştirme kapsama katmanı (nokta başına sayılar, `ort:`
+satırı) **yok**.
+
+**E15 — `prefers-reduced-motion`: geçti.** `matchMedia` azaltılmış
+hareket diyecek şekilde değiştirildi, ayar kaydı boşaltıldı ve `Boot`'tan
+başlatıldı: varsayılanlar `effects: 'low'`, `screenShake: false`.
+
+**E7 — kapsama göstergesi:** bu oturumdaki her geliştirme ekran
+görüntüsünde `ort: … px · L: … px · menzil: …` satırı ve nokta başına
+sayılar görünüyor; hesabın kendisi `util/coverage.test`'te.
+
+**E8 — karşı-oyun: parçalı, otomatik.** §5 tablosunun yedi satırı tek
+bir senaryo olarak koşturulmadı; satırlar ayrı testlerde:
+"Trol → kışla ile tut" `BarracksScenario.test` (kışla sayısıyla monoton
+zaman kazancı, iki Paladin/Haydutlar Trol'ü öldürüyor) · "Şaman →
+`last`" `hedefModu.test` · yeteneklerin telgrafta yazılması
+`enemyLabel.test` · zırh ve direnç `combat.test`/`towers.test`.
+**Kalan boşluk dürüstçe:** yedi satırın hepsini tek tabloda bağlayan bir
+test yok.
+
+**E10 — kışla 9 kuralı: otomatik.** `BarracksSystem.test`'in başlığı
+*"§4.4'teki 9 engelleme kuralının her biri için ayrı"* diyor; 57 test.
+
+**E11 — kışla sinerjisi: otomatik.** `BarracksScenario.test` birden çok
+kışlanın birlikte çalışmasını ölçüyor: kışla sayısı arttıkça kazanılan
+zaman **monoton artıyor**, tek kışla yetmezken iki Paladin ya da iki
+Haydutlar Trol'ü öldürüyor, üç T2 kışla %238 zaman kazandırıyor.
+
+**E18 — haritalar bitirilebilir mi: otomatik, altı harita.** Satır üç
+harita varken yazıldı. `kisitB.test` *"her harita GEÇİLEBİLİR — kaybedilen
+can 20'nin altında"* altı haritanın altısını bağlıyor; harita 1 ayrıca
+`M165`'te elle baştan sona oynandı ve kazanıldı.
+
+**E17, E19 — kapsam dışı, gerekçeli.** E17 dört gigabaytlık bir cihaz
+istiyor ve bir **portal kabul şartı** — sahip yayın istemiyor. E19 üç
+insan istiyor. İkisi de bu ortamda yapılamaz; yapılmış gibi
+işaretlenmedi.
 
 ### E6 ve E6b neden ikiz
 

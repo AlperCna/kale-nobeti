@@ -194,19 +194,53 @@ test edildi.
 
 Otomatik testlerin yakalayamadıkları — bunlar elle oynanarak kontrol edilir:
 
-- [ ] Her harita ilk denemede zor ama ikinci-üçüncü denemede geçilebiliyor mu?
-- [ ] Tek bir kule tipiyle spam yaparak geçilebiliyor mu? (Geçilebiliyorsa
-      o kule aşırı güçlü veya yapı noktası sayısı fazla.)
-- [ ] **8 yapı noktası dalga 4-5'te doluyor mu?** (Dolmuyorsa yükseltme
-      mekaniği hiç yaşanmıyor demektir — ekonomi düşük.)
-- [ ] **Tier 3 harita 1'de görülüyor mu?** (Görülmüyorsa tasarımın en ilginç
-      kısmı görünmez kalıyor.)
-- [ ] Hiç kullanılmayan kule dalı var mı? Varsa rolü belirsiz demektir.
-- [ ] Boss dalgası, önceki dalgadan belirgin şekilde farklı mı hissettiriyor?
-- [ ] Harpi dalgası hem yapılabilir hem tehditkâr mı? (Uçan hattı yeterli
-      sayıda yapı noktasından geçiyor mu — `flyerPaths` kabul kriteri.)
-- [ ] Nefes dalgaları (4, 7) gerçekten nefes aldırıyor mu?
-- [ ] 3 kişiye oynattın mı ve nerede sıkıldıklarını not aldın mı?
+> **`M166` — liste kapanışta cevaplandı.** Maddeler `M7`'de yazıldı ve
+> yüz elli kilometre taşı boyunca işaretsiz kaldı; çoğunun cevabı başka
+> bir taşta **ölçülmüştü** ama buraya hiç dönülmemişti. Her madde artık ya
+> bir ölçüme ya da bir teste bağlı; ölçülemeyen öznel kısım öyle yazıldı.
+
+- [x] **Her harita ilk denemede zor ama ikinci-üçüncü denemede geçilebiliyor
+      mu?** *Ölçülebilir kısmı evet:* referans tahta altı haritanın altısını
+      da geçiyor ve kaybedilen can rampası harita harita artıyor
+      (`kisitB.test` — "her harita GEÇİLEBİLİR", "zorluk MONOTON").
+      *"İlk denemede zor" hissi öznel* — insanla oynatmadan (E19)
+      cevaplanamaz.
+- [x] **Tek bir kule tipiyle spam yaparak geçilebiliyor mu?** *Evet, ve
+      bilerek:* hiçbir aile ölü değil — üç ailenin de en kötü haritası 20
+      canın altında. Ama hiçbir aile karışık tahtadan **her haritada** iyi
+      değil, ve hiçbiri haritaların yarısından fazlasında onu geçmiyor
+      (`aileDengesi.test`). Yani tek aile *yetiyor* ama *en iyisi değil*.
+- [x] **8 yapı noktası dalga 4-5'te doluyor mu?** *Harita 2-6'da evet,
+      harita 1'de hayır* (`M166` ölçümü, referans tahta): Değirmen Geçidi
+      **dalga 7** · Taş Köprü 3 · Kül Ovası, Kar Geçidi, Kadim Harabe,
+      Sisli Bataklık **4**. Öğretici harita bilerek yavaş; yükseltme
+      orada geç başlıyor.
+- [x] **Tier 3 harita 1'de görülüyor mu?** *Hayır* (`M166` ölçümü):
+      referans tahta Değirmen Geçidi'nde **T2'nin üstüne çıkmıyor**. T3 ilk
+      kez Taş Köprü'de dalga 9'da, Kül Ovası'nda 7, Kar Geçidi'nde 5,
+      harita 5-6'da dalga 2'de görülüyor. Referans oyuncu muhafazakâr
+      (erken başlatmıyor), yani gerçek bir oyuncu harita 1'de T3'e
+      yetişebilir — ama tasarımın istediği *garanti* yok. **Açık bir
+      tasarım notu olarak bırakıldı**, denge değiştirilmedi.
+- [x] **Hiç kullanılmayan kule dalı var mı?** *Hayır:* altı dalın hepsi
+      en az bir senaryo kazanıyor (`dalKimligi.test`).
+- [x] **Boss dalgası belirgin şekilde farklı mı?** *Ölçülebilir kısmı
+      evet:* son üç dalga haritanın can hasarının yarısından fazlasını
+      taşıyor ve final hiçbir haritada bedelsiz değil (`kisitB.test`
+      "doruk sonda", `M153`); harita 4-6'nın bossunun kendi verb'ü var
+      (susturma · ikinci evre · çağırma), ayrı müziği ve can çubuğu var.
+      *His* öznel.
+- [x] **Harpi dalgası hem yapılabilir hem tehditkâr mı?** *Kabul kriteri
+      bağlı:* her haritada yapı noktalarının **en az %40**'ı uçan hattını
+      görüyor (`maps.test`). Görsel taraf E9'da koşturuldu (`M164`).
+- [x] **Nefes dalgaları (4, 7) gerçekten nefes aldırıyor mu?** *Bütçede
+      evet, sahada çoğunlukla:* bütçe ×0,85 (`waves.test`) ve hazırlık
+      sahayı donduruyor (`M155` kuralı), yani kuyruk nefes boyunca kaleye
+      yaklaşmıyor. *Bilinen istisna:* Kar Geçidi'nde ağır dalga 6'nın
+      taşması dalga 7'yi can kaybettiren bir dalgaya çeviriyor (`M152`:
+      "örtüşme varken nefes dalgası nefes olmuyor").
+- [ ] **3 kişiye oynattın mı?** *Hayır.* İnsan gerektiriyor (E19); bu
+      ortamda yapılamaz ve yapılmış gibi işaretlenmedi.
 
 ---
 
