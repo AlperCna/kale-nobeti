@@ -76,9 +76,27 @@ export class SettingsPanel {
     const h = scene.scale.height;
     this.#kok = scene.add.container(w / 2, h / 2).setDepth(200).setVisible(false);
 
+    /**
+     * **`M181` — zemin tıklamayı YUTUYOR.** Etkileşimsizdi: panelin boş bir
+     * yerine (satırların arası, kenar) dokunmak tıklamayı **altındaki**
+     * düğmeye geçiriyordu. Ana menüde bu "Play"e basıp seviye seçime
+     * atıyordu; oyun içinde panel duraklatma menüsünün üstünde açıldığı
+     * için **"Yeniden başla"ya basıp haritayı sıfırlıyordu** — tarayıcıda
+     * üretildi: kurulu kule gitti, tur baştan başladı. Telefonda boş yere
+     * dokunmak kolay; oyuncu farkında olmadan ilerlemesini kaybediyordu.
+     *
+     * Phaser'ın `topOnly` girdisi en üstteki etkileşimli nesneyi seçiyor:
+     * zemin panelin düğmelerinin altında, menünün düğmelerinin üstünde.
+     * Panel gizliyken zemin tıklamaya hiç girmiyor (`InputManager`
+     * görünmez nesneyi ve görünmez kapsayıcının çocuklarını atlıyor).
+     *
+     * Opaklık da 0,96 → 1: arkadaki menü yazıları (başlık, "Play")
+     * satırların arasından hayalet gibi sızıyordu.
+     */
     const arka = scene.add
-      .rectangle(0, 0, GENISLIK, YUKSEKLIK, INK, 0.96)
-      .setStrokeStyle(3, GOLD);
+      .rectangle(0, 0, GENISLIK, YUKSEKLIK, INK, 1)
+      .setStrokeStyle(3, GOLD)
+      .setInteractive();
     const baslik = scene.add
       .text(0, BASLIK_Y, t('settingsTitle'), {
         fontFamily: '"Grenze Gotisch", serif',
