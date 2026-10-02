@@ -112,12 +112,16 @@ const TR = {
   mapKarGecidi: 'Kar Geçidi',
   mapKadimHarabe: 'Kadim Harabe',
   mapSisliBataklik: 'Sisli Bataklık',
-  endlessMode: 'Sonsuz moda devam',
   /**
-   * `M107` — seviye seçimdeki kısa eylem etiketi. `endlessMode`
-   * (“Sonsuz moda devam”) oradaki 140 px'lik düğmeye sığmıyor ve
-   * “devam” kelimesi de yanlış: kazanma ekranında **aynı turu**
-   * sürdürüyor, burada **yeni** bir sonsuz tur başlıyor.
+   * Sonsuz modu başlatan düğme — seviye seçimde ve kazanma ekranında.
+   *
+   * **`M172` — kazanma ekranındaki "Sonsuz moda devam" kaldırıldı.**
+   * `M107` burada *"kazanma ekranında aynı turu sürdürüyor, seviye seçimde
+   * yeni bir tur başlıyor"* diye yazmıştı; ikisi de **yeni** tur
+   * başlatıyordu (`M8-T06`'dan beri `#haritayaGec(id, true)`: dalga 1,
+   * başlangıç altını, boş tahta). Oyunda görüldü: kazanıp "devam"a basan
+   * oyuncu tahtasını kaybedip 1. dalgaya dönüyordu — bir hata gibi. Düğme
+   * artık yaptığı şeyin adını taşıyor.
    */
   endlessStart: 'Sonsuz mod',
   endlessReached: 'Ulaşılan dalga',
@@ -538,7 +542,6 @@ export const STRINGS: Record<Locale, Record<StringKey, string>> = {
     mapKarGecidi: 'Snow Pass',
     mapKadimHarabe: 'Ancient Ruin',
     mapSisliBataklik: 'Misty Marsh',
-    endlessMode: 'Continue endless',
     endlessStart: 'Endless',
     endlessReached: 'Wave reached',
     endlessBest: 'Best',

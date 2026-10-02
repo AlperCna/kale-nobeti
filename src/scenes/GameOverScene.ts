@@ -271,7 +271,7 @@ export class GameOverScene extends Phaser.Scene {
       kaybetti: !won,
       sonrakiVar,
       // `M8-T06` — sonsuz el **sonsuz olarak** tekrar başlıyor; normal
-      // elde "Sonsuz moda devam" ayrı bir buton.
+      // elde "Sonsuz mod" ayrı bir buton — **yeni** bir tur (`M172`).
       sonsuzEl: this.#data.endless === true,
       haritayaGec: (hedefMapId: string) =>
         this.#haritayaGec(hedefMapId, this.#data.endless === true),
@@ -361,7 +361,8 @@ export class GameOverScene extends Phaser.Scene {
     // harita; sonsuz mod bir sapma, bir dayatma değil.
     const sonsuzTeklifi = (): void => {
       if (!d.sonsuzEl && !d.kaybetti && d.mapId !== undefined) {
-        this.#buton(x, sonraki(), 240, 56, t('endlessMode'), false, () => d.sonsuzaGec(d.mapId!));
+        // `M172` — `endlessStart`: yeni bir sonsuz tur (bkz. `strings.ts`).
+        this.#buton(x, sonraki(), 240, 56, t('endlessStart'), false, () => d.sonsuzaGec(d.mapId!));
       }
     };
 
