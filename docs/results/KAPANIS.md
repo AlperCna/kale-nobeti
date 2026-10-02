@@ -24,7 +24,7 @@ Phaser 3.90 + TypeScript (strict) + Vite.
 
 | | |
 |---|---|
-| Kapı (`typecheck · test · guard · build`) | yeşil — **1242 test** (74 dosya), **27/27 bekçi** |
+| Kapı (`typecheck · test · guard · build`) | yeşil — **1259 test** (75 dosya), **27/27 bekçi** |
 | İlk indirme | **0,83 MB** (hedef ~1,5 MB, Poki sınırı 8 MB) |
 | Toplam paket | 5,83 MB (müzik ve harita 2-6 arka planları tembel) |
 | Açık tasarım sorusu (`plan/OPEN-QUESTIONS.md`) | **0** |
@@ -106,6 +106,17 @@ yeniden okundu ve kod tarafı kapandı; **sahibin adım adım rehberi
 CrazyGames tarafı **gerçek SDK'yla** (3.8.0, yerel mod) uçtan uca
 sınandı. Poki SDK'sı bu makinenin ağından yüklenemiyor (SSL); sahte SDK'yla
 ve SDK'sız açılışla sınandı.
+
+**`M180` — yeni bir oyuncunun gözüyle (yayın yapısı, sıfır kayıt,
+İngilizce):** üç kusur bulundu ve düzeltildi.
+- "Tap a gold circle to build your first tower" ~6 sn görünüp
+  kayboluyordu; hazırlığın geri kalanında ekranda hiçbir yönlendirme
+  yoktu. Artık **ilk yapı kurulana kadar** duruyor (dokununca da kapanıyor).
+- Öğretici balonu sabit bir yerde açılıyordu ve **altı haritanın neredeyse
+  hepsinde bir yapı noktasını örtüyordu** — Değirmen Geçidi'nde tam
+  "altın daireye dokun" derken. Yeri artık noktalardan ve HUD'dan kaçıyor
+  (`util/ipucuYerlesimi`, altı haritaya karşı test).
+- JavaScript kapalıyken çıkan uyarı yalnız Türkçeydi; iki dilli.
 
 **`M179`:** müziği kapatan oyuncu yükseltme, boss girişi, zafer ve yenilgi
 seslerini hiç duymuyordu — dört dosya yalnız müzik açıkken yükleniyordu.

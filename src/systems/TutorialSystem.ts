@@ -56,6 +56,23 @@ const HINT_IDS: readonly HintId[] = [
   'abilityUpgrade',
 ];
 
+/**
+ * **Oyuncunun bir EYLEMİNİ bekleyen ipuçları — `M180`.** Bunların balonu
+ * süreyle değil, eylem yapılınca kapanıyor (`fx/TutorialHints`).
+ *
+ * `build` yalnız harita açılırken bir kez ve ~6 sn görünüp kayboluyordu;
+ * hazırlığın kalan ~14 saniyesinde ekranda hiçbir yönlendirme kalmıyordu
+ * ve yapı noktaları durağan altın daireler. Yayın sürümünde, sıfır
+ * kayıtla açılan bir İngilizce oyuncu gözüyle bakılınca görüldü. Türün
+ * alışkanlığı (Kingdom Rush'ın ilk kuleye kadar duran işareti) ilk eylem
+ * yapılana kadar yönlendirmeyi ekranda tutmak; Poki'nin ilk testi de
+ * oyuncunun ilk dakikasını ölçüyor.
+ *
+ * Öteki ipuçları bir **mekaniği anlatıyor**, eylem istemiyor — süreli
+ * kalıyorlar.
+ */
+export const EYLEM_BEKLEYEN_IPUCLARI: ReadonlySet<HintId> = new Set<HintId>(['build']);
+
 function gecerliHint(deger: unknown): deger is HintId {
   return typeof deger === 'string' && (HINT_IDS as readonly string[]).includes(deger);
 }

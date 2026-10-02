@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { createParchmentFrame } from './ParchmentFrame';
-import { UST_ORTA_HUD } from '../data/panelLayout';
+import { IPUCU_BALONU, MENU_KACINILAN, MENU_YERLESIM } from '../data/panelLayout';
+import { ipucuYerlesimi } from '../util/ipucuYerlesimi';
+import type { Vec2 } from '../types/common';
 import { DuraklatilabilirSayac, type ZamanOrtami } from '../util/duraklatilabilirSayac';
 import type { EventBus } from '../systems/EventBus';
 
@@ -44,7 +46,7 @@ import type { EventBus } from '../systems/EventBus';
  * `util/duraklatilabilirSayac.ts` ve `game:paused` olayını dinliyor.
  */
 
-const GENISLIK = 480;
+const GENISLIK = IPUCU_BALONU.w;
 /**
  * Okunma süresi — **duvar saati**, oyun saati değil.
  *
@@ -57,8 +59,8 @@ const OKUMA_KARAKTER_MS = 40;
 const OKUMA_EN_AZ_MS = 6000;
 const OKUMA_EN_COK_MS = 14000;
 /** Tek satırlık ipucunun yüksekliği; uzun metin (hedefleme modları, 3 satır) balonu büyütüyor. */
-const ASGARI_YUKSEKLIK = 60;
-const DIKEY_PAY = 24;
+const ASGARI_YUKSEKLIK = IPUCU_BALONU.asgariH;
+const DIKEY_PAY = IPUCU_BALONU.dikeyPay;
 /**
  * Balonun üst kenarı — üst-orta HUD kutusunun hemen altı.
  *
@@ -68,7 +70,7 @@ const DIKEY_PAY = 24;
  * hedefleme ipucu o satırın tam üstüne açılıp onu örtüyordu. Sayı artık
  * elle değil, `BuildMenu`'nun da kaçtığı kutudan türüyor.
  */
-const UST_BOSLUK = UST_ORTA_HUD.y1 + 6;
+const UST_BOSLUK = IPUCU_BALONU.ustY;
 
 /**
  * Duvar saati ortamı — `scene.time` **DEĞİL** (dosya başlığındaki gerekçe:
@@ -98,17 +100,38 @@ export class TutorialHints {
   };
 
   /**
+   * Açık balon bir eylem mi bekliyor — `M180`
+   * (`TutorialSystem.EYLEM_BEKLEYEN_IPUCLARI`). Öyleyse süre sayacı
+   * kurulmuyor; balon eylem yapılınca ya da oyuncu dokununca kapanıyor.
+   */
+  #eylemBekliyor = false;
+  /** Kule ya da kışla kuruldu — bekleyen "ilk kuleni kur" balonu kapanıyor. */
+  readonly #yapiDinleyici = (): void => {
+    if (this.#eylemBekliyor) this.#kapat();
+  };
+
+  /**
    * @param bus Verilirse balon `game:paused` olayını dinliyor. `M104`'e
    *   kadar o olayın **hiçbir dinleyicisi yoktu** — HUD yayıyor,
    *   kimse duymuyordu.
    */
-  constructor(scene: Phaser.Scene, bus?: EventBus) {
+  /** Haritanın yapı noktaları — balon onları örtmüyor (`M180`). */
+  readonly #noktalar: readonly Vec2[];
+
+  constructor(scene: Phaser.Scene, bus?: EventBus, noktalar: readonly Vec2[] = []) {
     this.#scene = scene;
     this.#bus = bus;
+    this.#noktalar = noktalar;
     bus?.on('game:paused', this.#duraklatDinleyici);
+    bus?.on('tower:placed', this.#yapiDinleyici);
+    bus?.on('barracks:placed', this.#yapiDinleyici);
   }
 
-  show(text: string): void {
+  /**
+   * @param eylemBekliyor `true` ise balon süreyle kapanmıyor; ilk kule ya
+   *   da kışla kurulunca (ya da dokununca) kapanıyor — `M180`.
+   */
+  show(text: string, eylemBekliyor = false): void {
     this.#kapat();
 
     const { width } = this.#scene.scale;
@@ -148,7 +171,25 @@ export class TutorialHints {
     // oyuncu geri bildirimi (2026-09-14): alt-ortadayken harita 3'ün iki
     // yapı noktasını örtüyordu. Üst kenar `UST_BOSLUK` — üst-orta HUD
     // kutusunun (düğme + risk satırı) hemen altı (`M168`).
-    kap.setY(UST_BOSLUK + yukseklik / 2);
+    //
+    // `M180` — tercih edilen yer bu; haritanın bir yapı noktasını ya da
+    // bir HUD kutusunu örtüyorsa en yakın boş yere kayıyor
+    // (`util/ipucuYerlesimi`). Değirmen Geçidi'nde "ilk kuleni kur" balonu
+    // (480, 213) noktasını örtüyordu.
+    const yer = ipucuYerlesimi({
+      genislik: GENISLIK,
+      yukseklik,
+      x: width / 2,
+      ustY: UST_BOSLUK,
+      ekranW: width,
+      ekranH: this.#scene.scale.height,
+      kenarPay: MENU_YERLESIM.kenarPay,
+      noktalar: this.#noktalar,
+      kartusYari: MENU_YERLESIM.kartusYari,
+      kacinilan: MENU_KACINILAN.map((k) => k.kutu),
+      adim: IPUCU_BALONU.adim,
+    });
+    kap.setPosition(yer.x, yer.y);
 
     kap.setSize(GENISLIK, yukseklik);
     kap.setInteractive(
@@ -165,6 +206,11 @@ export class TutorialHints {
 
     this.#kok = kap;
 
+    if (eylemBekliyor) {
+      this.#eylemBekliyor = true;
+      return;
+    }
+
     // Duvar saati: `scene.time` 2×/3× hızda ölçekleniyor ve balonun
     // okunma süresi oyun hızına bağlı olmamalı (dosyanın başlık notu).
     const sure = Math.min(
@@ -177,10 +223,13 @@ export class TutorialHints {
   /** Sahne kapanışında çağrılıyor — bekleyen sayaç ölü nesneye ateşlemesin. */
   destroy(): void {
     this.#bus?.off('game:paused', this.#duraklatDinleyici);
+    this.#bus?.off('tower:placed', this.#yapiDinleyici);
+    this.#bus?.off('barracks:placed', this.#yapiDinleyici);
     this.#kapat();
   }
 
   #kapat(): void {
+    this.#eylemBekliyor = false;
     this.#sayac.iptal();
     this.#kok?.destroy(true);
     this.#kok = undefined;

@@ -74,7 +74,7 @@ import { MAP1_WAVES, wavesFor } from '../data/waves';
 import { devHooks } from '../util/devHooks';
 import { t } from '../util/i18n';
 import { LocalStore } from '../util/storage';
-import { TutorialSystem } from '../systems/TutorialSystem';
+import { TutorialSystem, EYLEM_BEKLEYEN_IPUCLARI } from '../systems/TutorialSystem';
 import { RunStats } from '../systems/RunStats';
 import type { HintId } from '../systems/TutorialSystem';
 import { TutorialHints } from '../fx/TutorialHints';
@@ -716,7 +716,7 @@ export class GameScene extends Phaser.Scene {
     // `Y09` — öğretici. `SaveData`'nın (`progress`) versiyonuna dokunmuyor,
     // aynı anahtarın kendi `tutorial` alanını kullanıyor (bkz.
     // `TutorialSystem`'in başlık yorumu).
-    this.#tutorialHints = new TutorialHints(this, this.bus);
+    this.#tutorialHints = new TutorialHints(this, this.bus, this.#map.buildSpots);
     this.#tutorial = new TutorialSystem(
       new LocalStore(),
       this.settings.state.hints,
@@ -727,6 +727,8 @@ export class GameScene extends Phaser.Scene {
           hint === 'abilityUpgrade'
             ? yetenekIpucuMetni((id) => this.abilities.seviye(id))
             : t(HINT_TEXT_KEY[hint]),
+          // `M180` — "ilk kuleni kur" ilk yapı kurulana kadar ekranda.
+          EYLEM_BEKLEYEN_IPUCLARI.has(hint),
         ),
       this.bus,
     );

@@ -361,6 +361,27 @@ export const MENU_YERLESIM = {
 } as const;
 
 /**
+ * Öğretici balonu (`fx/TutorialHints`, `util/ipucuYerlesimi`) — `M180`'de
+ * buraya taşındı ki yerleşim kuralı Phaser'sız sınanabilsin.
+ *
+ * `ustY` — üst-orta HUD kutusunun altı, yapı menüsüyle **aynı payla**
+ * (`kenarPay`). `M168`'den beri `+ 6`'ydı; yerleşim kuralı kaçınılan
+ * kutuları `kenarPay` ile şişirdiği için o yer kendi kuralına göre
+ * geçersiz sayılırdı. Balon 10 px aşağıda.
+ *
+ * `adim` — yerleşim taraması. **Ölçülmedi:** kaydırmanın gözle seçilmeyecek
+ * kadar ince olduğu bir değer; altı haritanın hepsinde geçerli yer
+ * bulunduğu `ipucuYerlesimi.test.ts`'te bağlı.
+ */
+export const IPUCU_BALONU = {
+  w: 480,
+  ustY: UST_ORTA_HUD.y1 + MENU_YERLESIM.kenarPay,
+  asgariH: 60,
+  dikeyPay: 24,
+  adim: 8,
+} as const;
+
+/**
  * Menülerin oyunda **ölçülmüş** dış boyları — `M169`, Kül Ovası, TR.
  *
  * Düğme genişlikleri sabit (`BuildMenu` `Y03` ölçüleri), yani boy dilden
