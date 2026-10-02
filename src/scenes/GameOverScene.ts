@@ -82,7 +82,7 @@ export class GameOverScene extends Phaser.Scene {
     // fonksiyonda ve sınanıyor. `recordResult` yıldızı **düşürmüyor**: kötü
     // bir tekrar kazanılmış ★★★'ü silmiyor; Kolay'da kayıt yıldızsız bir
     // "bitirdi" (`M8-T11`). `M26` — eşikler o **koşunun** başlangıç canına
-    // göre (Zor 12 canla başlıyor).
+    // göre (`M175`'e kadar Zor 12 canla başlıyordu; bugün üçü de 20).
     const zorluk = getSettings(this).state.difficulty;
     this.#acilanBasarimlar = elSonuKaydet(
       new LocalStore(),

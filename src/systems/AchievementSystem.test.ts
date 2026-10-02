@@ -180,7 +180,8 @@ describe('AchievementSystem — el sonu', () => {
 
   it('kusursuz ZOR’da da kazanılabiliyor — eşik mutlak değil, turun kendi canı (M34)', () => {
     const { sys } = kur();
-    // Zor 12 canla başlıyor. Kusursuz bir Zor koşusu: 12/12.
+    // `M175`'e kadar Zor 12 canla başlıyordu; bugün 20. Oran her taban
+    // için doğru kalmalı — kusursuz bir 12 canlık koşu: 12/12.
     sys.checkRunEnd({ ...BOS_EL, won: true, lives: 12, startLives: 12 });
     expect(sys.has('flawless')).toBe(true);
   });
