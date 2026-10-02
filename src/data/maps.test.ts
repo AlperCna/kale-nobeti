@@ -1,7 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import { MAP_1, MAP_2, MAP_3, MAP_4, MAP_5, MAP_6, MAPS, COVERAGE_REFERENCE_RANGE } from './maps';
 import { measureCoverage, pathLength, spotsCoveringFlyerPaths } from '../util/coverage';
-import { YUKSELT_KUTUSU } from './panelLayout';
+import {
+  AYAR_DUGMESI,
+  DURAKLAT_DUGMESI,
+  HIZ_DUGMESI,
+  KART,
+  TAM_EKRAN_KUTUSU,
+  YUKSELT_KUTUSU,
+  ZORLUK_ROZETI,
+  kutusu,
+} from './panelLayout';
 
 describe('MAP_1 — GAME-DESIGN §9 tablosuna uygunluk', () => {
   it('§9 tablosundaki sayılar birebir', () => {
@@ -496,20 +505,24 @@ describe('Harita 5 - M8-T05', () => {
  * onlar yalnız hazırlık sayacı boyunca duruyor ve bir yapı noktasını
  * kalıcı olarak gizlemiyorlar.
  */
+// **`M169` — kutular `data/panelLayout.ts`'ten türüyor.** Bu liste elle
+// kopyalanmış sayılardı ve `HudScene`'deki asıllarıyla ancak yorumla
+// bağlıydı; yükseltme fişinin kutusu bu yüzden 12 px kaymıştı. Aynı veri
+// artık yapı menüsünün kaçınma listesini de (`MENU_KACINILAN`) besliyor.
 const KALICI_HUD = [
-  { ad: 'kartuş', x0: 8, y0: 16, x1: 224, y1: 156 },
+  { ad: 'kartuş', ...kutusu(KART) },
   // `M8-B01`: ayar düğmesi harita 3'ün sağ girişinin (y=120) üstündeydi.
   // İkisi **ayrı** kutu, çünkü aradaki boşluktan o yol geçiyor — tek
   // kutuda birleştirilirse aşağıdaki yol testi kendi çözümünü kusur sanar.
-  { ad: 'hız', x0: 1204, y0: 20, x1: 1260, y1: 76 },
-  { ad: 'ayar', x0: 1204, y0: 152, x1: 1260, y1: 208 },
+  { ad: 'hız', ...kutusu(HIZ_DUGMESI) },
+  { ad: 'ayar', ...kutusu(AYAR_DUGMESI) },
   // Zorluk rozeti yalnız Kolay/Zor'da çiziliyor ama çizildiğinde bütün
   // oyun boyunca duruyor — kalıcı sayılır. `M8-B01`'de sağ kenardan üst
   // şeride alındı; sağ kenarda üç cebin üçü de düğmelerle doluydu.
-  { ad: 'zorluk rozeti', x0: 1086, y0: 25, x1: 1154, y1: 59 },
+  { ad: 'zorluk rozeti', ...kutusu(ZORLUK_ROZETI) },
   // `M87` duraklatma düğmesi — dokunmatikte duraklatma menüsünün tek kapısı.
   // Sağ kenarda yer yok (üç cep de dolu), üst şeritte rozetin solunda.
-  { ad: 'duraklat', x0: 996, y0: 24, x1: 1044, y1: 72 },
+  { ad: 'duraklat', ...kutusu(DURAKLAT_DUGMESI) },
   { ad: 'yetenek', x0: 28, y0: 622, x1: 170, y1: 707 },
   // `M99` yükseltme düğmeleri — yetenek düğmelerinin **üstünde**, 44×44.
   // Yalnız alınabilirken görünüyor ama göründüğünde turun sonuna kadar
@@ -524,7 +537,7 @@ const KALICI_HUD = [
   // "kale HUD altında kalmıyor" testi o hatayı bir daha bırakmıyor.
   // `M8-B01` onu ölçülmüş en geniş boşluğa aldı (alt şerit, 45 px pay);
   // kutu etiketi de kapsıyor, çünkü etiket de haritayı örtüyor.
-  { ad: 'tam ekran', x0: 848, y0: 636, x1: 928, y1: 714 },
+  { ad: 'tam ekran', ...TAM_EKRAN_KUTUSU },
 ];
 
 /** Yapı noktası dairesinin yarıçapı (`MapRenderer` SPOT_RADIUS). */

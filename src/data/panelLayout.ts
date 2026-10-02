@@ -1,3 +1,5 @@
+import type { Kutu } from '../util/math';
+
 /**
  * Kule bilgi panelinin ölçüsü ve iki yerleşimi.
  *
@@ -264,3 +266,114 @@ export const BASARIM_BANDI = {
   sagBosluk: 16,
   y: AYAR_DUGMESI.y + AYAR_DUGMESI.h / 2 + 12 + 76 / 2,
 } as const;
+
+/**
+ * Merkez + boyla tarif edilen bir HUD öğesinin kutusu.
+ */
+export function kutusu(d: { readonly x: number; readonly y: number; readonly w: number; readonly h: number }): Kutu {
+  return { x0: d.x - d.w / 2, y0: d.y - d.h / 2, x1: d.x + d.w / 2, y1: d.y + d.h / 2 };
+}
+
+/*
+ * ## Kalıcı HUD öğeleri — `M169`, TEK ADRES
+ *
+ * Bu öğelerin yeri üç yerde ayrı ayrı yazılıydı: `HudScene`'in sabitleri,
+ * `maps.test.ts`'in `KALICI_HUD` listesi (elle kopyalanmış kutular) ve
+ * `BuildMenu`'nun kaçınma kuralları (yalnız ikisi: kart ve üst-orta).
+ * Sonuç bu projenin en bilinen kusur sınıfı oldu: Kül Ovası'nın sağ kol
+ * noktasında (1055,195) yapı menüsü üst-sağ şeridin altına açılıyordu —
+ * duraklat düğmesi "Büyü 100"ün, hız düğmesi "?"nin tam üstündeydi ve
+ * `Hud` üstte olduğu için **Büyü'ye basan oyuncu oyunu duraklatıyordu**
+ * (oyunda görüldü). Artık üçü de buradan okuyor.
+ */
+
+/** Altın/can/dalga kartı (`HudScene`): 8-224 × 16-156. */
+export const KART = { x: 20 + 96, y: 20 + 66, w: 216, h: 140 } as const;
+
+/** Hız düğmesi — sağ üst köşe. */
+export const HIZ_DUGMESI = { x: EKRAN_W - 20 - 56 / 2, y: 20 + 56 / 2, w: 56, h: 56 } as const;
+
+/**
+ * Duraklatma düğmesi — `M87`. Üst şeritte, zorluk rozetinin solunda;
+ * sağ kenardaki üç cep dolu (`HudScene` başlık notu). 48: üst şerit
+ * 56'yı taşımıyor, Platform alt sınırı 44.
+ */
+export const DURAKLAT_DUGMESI = { x: 1020, y: HIZ_DUGMESI.y, w: 48, h: 48 } as const;
+
+/** Zorluk rozeti — yalnız Kolay/Zor'da çiziliyor, çizilince tur boyu duruyor. */
+export const ZORLUK_ROZETI = { x: 1120, y: 42, w: 68, h: 34 } as const;
+
+/** Tam ekran düğmesi (`OverlayScene`) — alt şerit, ölçülmüş en geniş boşluk. */
+export const TAM_EKRAN_DUGMESI = { x: 888, y: 664, w: 56, h: 56 } as const;
+
+/**
+ * Tam ekran düğmesi **etiketiyle birlikte** — etiket de haritayı örtüyor.
+ * 80 px: "Tam ekran" / "Fullscreen"in ikisini de kapsıyor.
+ */
+export const TAM_EKRAN_KUTUSU = {
+  x0: TAM_EKRAN_DUGMESI.x - 40,
+  y0: TAM_EKRAN_DUGMESI.y - TAM_EKRAN_DUGMESI.h / 2,
+  x1: TAM_EKRAN_DUGMESI.x + 40,
+  y1: TAM_EKRAN_DUGMESI.y + TAM_EKRAN_DUGMESI.h / 2 + 22,
+} as const;
+
+/**
+ * **Yapı menüsünün girmediği kutular** — `BuildMenu`, `M169`.
+ *
+ * `Hud` sahnesi `Game`'in üstünde koşuyor: menü bu kutulardan birine
+ * girerse HUD öğesi menünün düğmesini hem örtüyor hem tıklamasını
+ * yutuyor. Liste **sayan liste** — yeni bir kalıcı HUD öğesi buraya
+ * yazılmazsa menü ondan kaçmaz; `menuYerlesimi.test.ts` altı haritanın
+ * bütün noktalarını bu listeye karşı sınıyor.
+ *
+ * Dalga telgrafı listede yok: bandı tür sayısıyla 694 px'e uzuyor ve
+ * menüyle kesiştiğinde kendini gizliyor (`WaveTelegraph`).
+ */
+export const MENU_KACINILAN: readonly { readonly ad: string; readonly kutu: Kutu }[] = [
+  { ad: 'kart', kutu: kutusu(KART) },
+  { ad: 'üst-orta', kutu: UST_ORTA_HUD },
+  {
+    ad: 'üst-sağ şerit',
+    kutu: {
+      x0: DURAKLAT_DUGMESI.x - DURAKLAT_DUGMESI.w / 2,
+      y0: Math.min(kutusu(HIZ_DUGMESI).y0, kutusu(DURAKLAT_DUGMESI).y0, kutusu(ZORLUK_ROZETI).y0),
+      x1: HIZ_DUGMESI.x + HIZ_DUGMESI.w / 2,
+      y1: Math.max(kutusu(HIZ_DUGMESI).y1, kutusu(DURAKLAT_DUGMESI).y1, kutusu(ZORLUK_ROZETI).y1),
+    },
+  },
+  { ad: 'ayar', kutu: kutusu(AYAR_DUGMESI) },
+  { ad: 'yetenek', kutu: YETENEK_KUTUSU },
+  { ad: 'tam ekran', kutu: TAM_EKRAN_KUTUSU },
+];
+
+/**
+ * Yapı menüsünün yerleşim payları (`BuildMenu`, `util/menuYerlesimi`).
+ *
+ * `kartusYari` — seçili noktanın altın kartuşu `64 + 16` px (kule
+ * görseli + çerçeve); menü onu örtmüyor. `noktaBosluk` kartuşun yarısı
+ * + 8: eskiden menü `spot.y - 56`'ya konuyor ve hedefleme satırı
+ * noktanın tam üstüne düşüyordu (`M8`).
+ */
+export const MENU_YERLESIM = {
+  kenarPay: 16,
+  kartusYari: (64 + 16) / 2,
+  noktaBosluk: (64 + 16) / 2 + 8,
+} as const;
+
+/**
+ * Menülerin oyunda **ölçülmüş** dış boyları — `M169`, Kül Ovası, TR.
+ *
+ * Düğme genişlikleri sabit (`BuildMenu` `Y03` ölçüleri), yani boy dilden
+ * bağımsız; yalnız dal özetleri `wordWrap` ile sarılabiliyor. Ölçüm:
+ * menü açıkken `GameScene.acikMenuKutusu`. Yeni bir menü türü ya da
+ * satır eklenirse burası yeniden ölçülür — `menuYerlesimi.test.ts`
+ * bütün noktaları bu boylarla sınıyor.
+ */
+export const OLCULMUS_MENU_BOYLARI: readonly { readonly ad: string; readonly w: number; readonly h: number }[] = [
+  { ad: 'yapı', w: 491, h: 111 },
+  { ad: 'kule (yükselt/sat/hedefleme)', w: 348, h: 151 },
+  { ad: 'kule dal seçimi', w: 496, h: 241 },
+  { ad: 'kışla', w: 236, h: 76 },
+  { ad: 'kışla dal seçimi', w: 496, h: 167 },
+  { ad: 'kışla son kademe', w: 132, h: 76 },
+];

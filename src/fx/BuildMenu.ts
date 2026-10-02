@@ -11,7 +11,8 @@ import type { TargetMode, TierIndex, TowerDef } from '../types/tower';
 import { TOWERS, TARGET_MODES, tierAt, maliyet } from '../data/towers';
 import { KISLA, barracksTierAt } from '../data/barracks';
 import { FRAME_CARTOUCHE } from '../data/spriteFrames';
-import { UST_ORTA_HUD, YETENEK_KUTUSU } from '../data/panelLayout';
+import { MENU_KACINILAN, MENU_YERLESIM } from '../data/panelLayout';
+import { menuYerlesimi } from '../util/menuYerlesimi';
 import { measureCoverage } from '../util/coverage';
 import { dalOzeti, kislaOzeti } from '../util/dalOzeti';
 import { t } from '../util/i18n';
@@ -56,7 +57,8 @@ import type { TowerInfoPanel } from './TowerInfoPanel';
 const HEDEFLEME_SECILMEMIS_ALFA = 0.55;
 const MENU_PANEL_PAY = 16;
 const MENU_PANEL_CORNER = 16;
-const MENU_KENAR_PAY = 16;
+/** `MENU_KACINILAN`'ın yalnız kutuları — her açılışta yeniden dizilmesin. */
+const MENU_KACINILAN_KUTULARI = MENU_KACINILAN.map((k) => k.kutu);
 /**
  * Menü her zaman kartuşun ve kule/düşman sprite'larının ÜSTÜNDE.
  * Oyuncu geri bildirimi (2026-09-14): altın kartuş "Strong" butonunu
@@ -65,8 +67,6 @@ const MENU_KENAR_PAY = 16;
  * kalmalı.
  */
 const MENU_DERINLIK = 150;
-/** HUD'un sol üst alanı (kart + telgraf satırı) + `MENU_KENAR_PAY` — bkz. `#menuArkalikEkleVeKonumla`. */
-const HUD_ALANI = { sag: 224 + 16, alt: 190 + 16 } as const;
 
 /**
  * Menü buton ölçüleri — `Y03` Adım 3'te ölçülerek ayarlandı.
@@ -123,15 +123,11 @@ const VERMILION = 0xb03a2e;
  * `realMs`'i ile aynı gerekçe.)
  */
 const SAT_ONAY_EN_AZ_MS = 300;
-/** P03 brifi — kule/kışla gövdesi oyun içi gösterim boyutu (`Tower.ts`/`GameScene.ts` ile aynı). */
-const TOWER_DISPLAY_SIZE = 64;
 /**
- * Menü panelinin alt kenarı ile yapı noktasının merkezi arasındaki
- * boşluk: kartuşun yarısı (`(TOWER_DISPLAY_SIZE + 16) / 2`) + 8 px.
- * Eskiden menü `spot.y - 56`'ya konuyor ve hedefleme satırı (+52)
- * tam noktanın üstüne düşüyordu.
+ * Seçili noktanın altın kartuşu — kule gövdesi (64, P03) + çerçeve.
+ * Menü yerleşimi aynı boyu `MENU_YERLESIM.kartusYari`'dan okuyor.
  */
-const MENU_NOKTA_BOSLUK = (TOWER_DISPLAY_SIZE + 16) / 2 + 8;
+const KARTUS_BOYU = MENU_YERLESIM.kartusYari * 2;
 
 
 
@@ -1011,80 +1007,29 @@ export class BuildMenu {
     // Kenetleme **panelin** kenarına göre, buton sınırına göre DEĞİL —
     // panel butonlardan `MENU_PANEL_PAY` daha geniş (dolgu payı), o payı
     // hesaba katmazsa panel ekranın kenarından `MENU_PANEL_PAY` kadar
-    // taşabiliyordu (canlı testte yakalandı: sağ kenardaki bir noktada
-    // panelin sağı tam ekran genişliğine denk geliyordu, `MENU_KENAR_PAY`
-    // payı hiç görünmüyordu).
-    const panelSol = merkezX - genislik / 2;
-    const panelSag = merkezX + genislik / 2;
-    const panelUst = merkezY - yukseklik / 2;
-    const panelAlt = merkezY + yukseklik / 2;
-
-    const minX = MENU_KENAR_PAY - panelSol;
-    const maxX = this.#scene.scale.width - MENU_KENAR_PAY - panelSag;
-    const minY = MENU_KENAR_PAY - panelUst;
-    const maxY = this.#scene.scale.height - MENU_KENAR_PAY - panelAlt;
-
-    // Panelin ALT kenarı noktanın üstünde biter — hedefleme satırı da
-    // dahil hiçbir buton kartuşun/kulenin üstüne düşmez. Üste sığmıyorsa
-    // (ekranın üst kenarındaki noktalar) aynı boşlukla noktanın ALTINA
-    // çevriliyor; kenetlemeyle noktanın üstüne bastırmak eski hatayı
-    // geri getirirdi.
-    let istenenY = spot.y - MENU_NOKTA_BOSLUK - panelAlt;
-    if (istenenY < minY) istenenY = spot.y + MENU_NOKTA_BOSLUK - panelUst;
-
-    let istenenX = Phaser.Math.Clamp(spot.x, minX, maxX);
-    const y = Phaser.Math.Clamp(istenenY, minY, maxY);
-    // M8-T01 — HUD kartı ve dalga telgrafı sol üstte (`HudScene`: kart
-    // 8..224 × 8..136, telgraf satırı 172±17). Menü o dikdörtgene giriyorsa
-    // sağa kaydır: harita 1 nokta 1 (300,65) aşağı çevrilince kartın
-    // üstüne düşüyordu. Sabitler `HudScene`'in yerleşimini yansıtıyor —
-    // orası değişirse burası da değişmeli (yorumla bağlı, kodla değil).
-    // **`M169`:** telgraf bandı bu kutunun sağ kenarında bitmiyor (tür
-    // sayısıyla 694 px'e kadar uzuyor); kutunun dışında kalan kısmıyla
-    // çakışmada telgraf kendini gizliyor (`acikMenuKutusu`).
-    if (y + panelUst < HUD_ALANI.alt && istenenX + panelSol < HUD_ALANI.sag) {
-      istenenX = Math.min(HUD_ALANI.sag - panelSol, maxX);
-    }
-
-    // `M168` — üst-ortadaki "Dalgayı başlat" kutusu (`UST_ORTA_HUD`).
-    // `Hud` sahnesi `Game`'in üstünde: menü o kutuya girerse hazırlık
-    // fazında düğme menünün "↑ yükselt" ve "Sat" butonlarını hem örtüyor
-    // hem tıklamalarını yutuyordu. Önce noktanın ALTINA çevirmek denenir
-    // (yukarıdaki üst kenar kuralıyla aynı hamle); o da kutuya giriyorsa
-    // panel kutunun hemen altına itilir.
-    const kutuyaGiriyor = (py: number): boolean =>
-      py + panelUst < UST_ORTA_HUD.y1 &&
-      py + panelAlt > UST_ORTA_HUD.y0 &&
-      istenenX + panelSag > UST_ORTA_HUD.x0 &&
-      istenenX + panelSol < UST_ORTA_HUD.x1;
-    let sonY = y;
-    if (kutuyaGiriyor(sonY)) {
-      const alta = Phaser.Math.Clamp(spot.y + MENU_NOKTA_BOSLUK - panelUst, minY, maxY);
-      sonY = kutuyaGiriyor(alta)
-        ? Phaser.Math.Clamp(UST_ORTA_HUD.y1 + MENU_KENAR_PAY - panelUst, minY, maxY)
-        : alta;
-    }
-
-    // `M169` — sol alttaki yetenek bloğu (`YETENEK_KUTUSU`, yükseltme
-    // fişleri dahil). Taş Köprü'nün gövde noktasında (60,285) menü noktanın
-    // altına çevriliyor ve alt kenarı fişlere giriyordu; `Hud` üstte, yani
-    // 396 altınlık bir satın alma düğmesi menünün kenarına biniyordu.
-    // Kartla aynı hamle: sağa kaydır. Noktanın üstüne itmek kartuşu
-    // örterdi (menü noktanın altında, arada `MENU_NOKTA_BOSLUK` var).
-    if (
-      sonY + panelAlt > YETENEK_KUTUSU.y0 - MENU_KENAR_PAY &&
-      istenenX + panelSol < YETENEK_KUTUSU.x1 + MENU_KENAR_PAY
-    ) {
-      istenenX = Math.min(YETENEK_KUTUSU.x1 + MENU_KENAR_PAY - panelSol, maxX);
-    }
-
-    kap.setPosition(istenenX, sonY);
-    this.#menuKutusu = {
-      x0: istenenX + panelSol,
-      y0: sonY + panelUst,
-      x1: istenenX + panelSag,
-      y1: sonY + panelAlt,
-    };
+    // taşabiliyordu (canlı testte yakalandı).
+    //
+    // **`M169` — yerin hesabı `util/menuYerlesimi`'nde.** Burada üç ayrı
+    // kaçınma kuralı vardı (kart `M8-T01`, üst-orta kutu `M168`, yetenek
+    // bloğu `M169`) ve dördüncü çakışma yine oyunda bulundu: Kül Ovası'nın
+    // sağ kol noktasında menü duraklat/hız düğmelerinin altına açılıyordu.
+    // Hesap artık saf ve altı haritanın bütün noktalarına karşı sınanıyor;
+    // kaçınılan kutuların listesi `data/panelLayout` `MENU_KACINILAN`.
+    const yer = menuYerlesimi({
+      nokta: spot,
+      olcu: {
+        sol: merkezX - genislik / 2,
+        sag: merkezX + genislik / 2,
+        ust: merkezY - yukseklik / 2,
+        alt: merkezY + yukseklik / 2,
+      },
+      ekranW: this.#scene.scale.width,
+      ekranH: this.#scene.scale.height,
+      ...MENU_YERLESIM,
+      kacinilan: MENU_KACINILAN_KUTULARI,
+    });
+    kap.setPosition(yer.x, yer.y);
+    this.#menuKutusu = yer.kutu;
   }
 
   /** Seçili kule/kışlanın üstüne altın kartuş (P02) — `closeMenu` kaldırıyor. */
@@ -1092,6 +1037,6 @@ export class BuildMenu {
     this.#cartouche?.destroy();
     this.#cartouche = this.#scene.add
       .image(spot.x, spot.y, 'atlas', FRAME_CARTOUCHE)
-      .setDisplaySize(TOWER_DISPLAY_SIZE + 16, TOWER_DISPLAY_SIZE + 16);
+      .setDisplaySize(KARTUS_BOYU, KARTUS_BOYU);
   }
 }

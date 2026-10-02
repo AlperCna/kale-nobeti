@@ -18,6 +18,13 @@ import {
   YETENEK_KUTUSU,
   YUKSELT_KUTUSU,
   RISK_SATIRI,
+  KART,
+  HIZ_DUGMESI,
+  DURAKLAT_DUGMESI,
+  ZORLUK_ROZETI,
+  TAM_EKRAN_KUTUSU,
+  MENU_KACINILAN,
+  kutusu,
   panelYuksekligi,
 } from './panelLayout';
 import { ENEMIES } from './enemies';
@@ -193,5 +200,37 @@ describe('BASARIM_BANDI — ayar düğmesiyle çakışmıyor (M168)', () => {
   it('bant ekranın içinde ve kule bilgi panelinin üstünde bitiyor', () => {
     expect(bant.x0).toBeGreaterThanOrEqual(0);
     expect(bant.y1).toBeLessThanOrEqual(PANEL_SAG.y);
+  });
+});
+
+describe('Kalıcı HUD öğeleri — eski elle yazılmış kutularla birebir (M169)', () => {
+  // `maps.test.ts` `KALICI_HUD` bu sayıları elle taşıyordu; veri buraya
+  // taşınırken hiçbir öğenin yeri değişmedi. Değişirse bu test kırılır ve
+  // `HudScene` ile harita testleri birlikte yeniden düşünülür.
+  it('kart, hız, ayar, rozet, duraklat, tam ekran — eski koordinatlar', () => {
+    expect(kutusu(KART)).toEqual({ x0: 8, y0: 16, x1: 224, y1: 156 });
+    expect(kutusu(HIZ_DUGMESI)).toEqual({ x0: 1204, y0: 20, x1: 1260, y1: 76 });
+    expect(kutusu(AYAR_DUGMESI)).toEqual({ x0: 1204, y0: 152, x1: 1260, y1: 208 });
+    expect(kutusu(ZORLUK_ROZETI)).toEqual({ x0: 1086, y0: 25, x1: 1154, y1: 59 });
+    expect(kutusu(DURAKLAT_DUGMESI)).toEqual({ x0: 996, y0: 24, x1: 1044, y1: 72 });
+    expect(TAM_EKRAN_KUTUSU).toEqual({ x0: 848, y0: 636, x1: 928, y1: 714 });
+  });
+
+  it('MENU_KACINILAN her kalıcı HUD öğesini kapsıyor', () => {
+    const kapsiyor = (dis: { x0: number; y0: number; x1: number; y1: number }, ic: typeof dis) =>
+      dis.x0 <= ic.x0 && dis.y0 <= ic.y0 && dis.x1 >= ic.x1 && dis.y1 >= ic.y1;
+    const ogeler = [
+      kutusu(KART),
+      kutusu(HIZ_DUGMESI),
+      kutusu(AYAR_DUGMESI),
+      kutusu(ZORLUK_ROZETI),
+      kutusu(DURAKLAT_DUGMESI),
+      TAM_EKRAN_KUTUSU,
+      YUKSELT_KUTUSU,
+      UST_ORTA_HUD,
+    ];
+    for (const o of ogeler) {
+      expect(MENU_KACINILAN.some((k) => kapsiyor(k.kutu, o)), JSON.stringify(o)).toBe(true);
+    }
   });
 });
