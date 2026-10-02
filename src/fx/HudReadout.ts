@@ -82,6 +82,16 @@ export class HudReadout {
    * bedava değil: her `setText` glif dizilimini yeniden kuruyor. Geri sayım
    * saniyeye yuvarlandığı için saniyede bir kez değişiyor, her karede değil.
    */
+  /**
+   * Kartın üç sayısı (altın · can · dalga) — `M177`, örtüşme saydamlığı.
+   * Geri sayım kartta değil, üst ortada; ona dokunulmuyor.
+   */
+  setKartAlpha(a: number): void {
+    this.#gold.setAlpha(a);
+    this.#lives.setAlpha(a);
+    this.#wave.setAlpha(a);
+  }
+
   update(s: HudState): void {
     const gosterilen = this.#goldSay(s.gold);
     if (gosterilen !== this.#sonGold) {
