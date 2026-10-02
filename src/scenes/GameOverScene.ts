@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { t } from '../util/i18n';
-import { SaveSystem, starsFor } from '../systems/SaveSystem';
+import { SaveSystem, kayitYildizi } from '../systems/SaveSystem';
 import { getSettings } from '../systems/Settings';
 import { DIFFICULTY } from '../data/difficulty';
 import { LocalStore } from '../util/storage';
@@ -101,7 +101,7 @@ export class GameOverScene extends Phaser.Scene {
       } else if (this.#data.won) {
         // Yıldızsız "bitirdi" kaydı: 1 can ile bitmiş gibi — §9 tablosunda
         // ★ eşiği. Kilit zincirinin kopmaması için gerekli en küçük kayıt.
-        // Yıldızsız "bitirdi" kaydı — ★ eşiği her başlangıç canında 1.
+        // Ekranda gösterilen de bu (`#yildiz` → `kayitYildizi`, `M171`).
         save.recordResult(this.#data.mapId, 1, true, baslangicCan);
       }
     }
@@ -362,7 +362,9 @@ export class GameOverScene extends Phaser.Scene {
 
   #yildiz(lives: number): number {
     // Eşikler tek adreste: `SaveSystem.starsFor` (§9). Burada kopya yok.
-    return starsFor(lives, this.#data.won, this.#baslangicCan());
+    // `M171` — ekranda **kayda geçen** yıldız: Kolay'da bitirme (★).
+    const zorluk = getSettings(this).state.difficulty;
+    return kayitYildizi(lives, this.#data.won, this.#baslangicCan(), DIFFICULTY[zorluk].recordStars);
   }
 
   /**

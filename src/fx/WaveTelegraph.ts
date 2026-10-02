@@ -47,6 +47,12 @@ export class WaveTelegraph {
     x: number,
     y: number,
     private readonly cozumle: (id: EnemyId) => EnemyDef | undefined,
+    /**
+     * Ekran noktası bir yapı noktasının üstünde mi — `M171`. Öyleyse
+     * telgrafın dokunma hedefi **isabet vermiyor**, tıklama alttaki
+     * `Game`'e geçiyor (bkz. `#hedefYolVer`).
+     */
+    private readonly noktaUstunde: (x: number, y: number) => boolean = () => false,
   ) {
     this.#scene = scene;
     this.#kap = scene.add.container(x, y).setVisible(false);
@@ -124,7 +130,11 @@ export class WaveTelegraph {
          */
         const hedef = this.#scene.add
           .rectangle(bx, 0, HEDEF, HEDEF, 0x000000, 0)
-          .setInteractive({ useHandCursor: true });
+          .setInteractive({
+            hitArea: new Phaser.Geom.Rectangle(0, 0, HEDEF, HEDEF),
+            hitAreaCallback: this.#hedefYolVer,
+            useHandCursor: true,
+          });
         this.#kap.add(hedef);
         const goster = (): void => {
           for (const o of this.#ozetler) o.setVisible(false);
@@ -160,6 +170,26 @@ export class WaveTelegraph {
     };
     this.#kap.setVisible(true);
   }
+
+  /**
+   * **Telgraf yapı noktalarına yol veriyor** — `M171`.
+   *
+   * Hedefler 44×44 (Platform alt sınırı) ve bant `y = 150-194`'te; bu
+   * banda yarıçapı 24 olan **yedi** yapı noktası giriyor — beş haritada
+   * (Değirmen Geçidi 0 · Taş Köprü 2 · Kül Ovası 0, 1 · Kar Geçidi 0, 10 ·
+   * Kadim Harabe 1; dalganın tür sayısıyla ölçüldü). Telgraf yalnız
+   * hazırlıkta görünüyor, yani tam **kule kurulan** anda: `Hud` üstte
+   * olduğu için o noktalara basan oyuncu menü yerine düşman özetini
+   * açıyordu. Kadim Harabe'de oynanırken görüldü — nokta hiç açılmadı.
+   *
+   * İşaretçi bir yapı noktasının üstündeyse hedef isabet vermiyor; ikonun
+   * geri kalanı özeti açmaya devam ediyor.
+   */
+  readonly #hedefYolVer = (alan: Phaser.Geom.Rectangle, x: number, y: number): boolean => {
+    if (!Phaser.Geom.Rectangle.Contains(alan, x, y)) return false;
+    const p = this.#scene.input.activePointer;
+    return !this.noktaUstunde(p.x, p.y);
+  };
 
   /**
    * Açık bir yapı menüsüyle kesişiyorsa **bu kare** gizlen — `M169`.
