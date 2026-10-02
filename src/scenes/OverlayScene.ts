@@ -98,6 +98,10 @@ export class OverlayScene extends Phaser.Scene {
    */
   #tamEkranDugmesi(): void {
     if (!this.scale.fullscreen.available) return;
+    // `M178` — portal yapımında YOK. CrazyGames: *"Custom in-game
+    // fullscreen buttons are prohibited"*; Poki tam ekranı oyun oyun
+    // kendisi açıyor. Düğme itch.io'nun gömülü çerçevesi için var.
+    if (import.meta.env.VITE_PORTAL) return;
 
     // `M169` — yer `data/panelLayout.ts`'te (yapı menüsü ondan kaçıyor).
     const { x, y } = TAM_EKRAN_DUGMESI;

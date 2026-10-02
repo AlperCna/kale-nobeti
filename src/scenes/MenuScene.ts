@@ -10,6 +10,7 @@ import { MUSIC_BASE_VOLUME } from '../data/audio';
 import { RunSave } from '../systems/RunSave';
 import { LocalStore } from '../util/storage';
 import { haritaAdi } from '../data/mapNames';
+import { haritayaGir } from './haritaGirisi';
 
 /**
  * Dokunmatik hedef en az 44×44 px (CLAUDE.md Platform, 1280×720 ölçeğinde).
@@ -224,8 +225,7 @@ export class MenuScene extends Phaser.Scene {
     const tur = new RunSave(new LocalStore()).oku();
     if (tur !== null) {
       this.#createMenuButton(ikincilUst, t('continueRun'), () => {
-        this.scene.start('Game', { mapId: tur.mapId, devam: true });
-        this.scene.launch('Hud');
+        haritayaGir(this, { mapId: tur.mapId, devam: true });
       });
       /**
        * Harita ve dalga **butonun içinde değil altında**.

@@ -99,6 +99,8 @@ const config: Phaser.Types.Core.GameConfig = {
  */
 const portalAdapter = portalSec();
 if (portalAdapter !== null) portal.kur(portalAdapter);
+// `M178` — CrazyGames `loadingStart` (*Required*); bitişi `PreloadScene`.
+portal.yuklemeBasladi();
 
 const game = new Phaser.Game(config);
 

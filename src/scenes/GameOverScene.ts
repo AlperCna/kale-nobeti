@@ -14,6 +14,7 @@ import { AchievementSystem } from '../systems/AchievementSystem';
 import { elSonuKaydet } from '../systems/elSonu';
 import { AchievementToast } from '../fx/AchievementToast';
 import type { RunStatsData } from '../systems/RunStats';
+import { haritayaGir } from './haritaGirisi';
 
 const INK = 0x14203a;
 /** Yıldız bandının zemini — bkz. yıldız bloğundaki gerekçe. */
@@ -429,10 +430,8 @@ export class GameOverScene extends Phaser.Scene {
    * altını ve kuleleri kalırdı — görevin "bitmedi sayılır eğer" maddesi.
    */
   #haritayaGec(mapId: string, endless = false): void {
-    this.scene.stop('Hud');
-    this.scene.stop('Game');
-    this.scene.start('Game', { mapId, endless });
-    this.scene.launch('Hud');
+    // `M178` — seviye geçişi: portal reklamı burada, oyun reklamdan sonra.
+    haritayaGir(this, { mapId, endless }, true);
   }
 
   /**
@@ -441,10 +440,7 @@ export class GameOverScene extends Phaser.Scene {
    * sıradaki dalga ilk üretilen sonsuz dalga.
    */
   #sonsuzaDevam(mapId: string): void {
-    this.scene.stop('Hud');
-    this.scene.stop('Game');
-    this.scene.start('Game', { mapId, sonsuzDevam: true });
-    this.scene.launch('Hud');
+    haritayaGir(this, { mapId, sonsuzDevam: true }, true);
   }
 
   #anaMenuyeDon(): void {
