@@ -69,15 +69,15 @@ cevap **sizin hesabınızın üretim tarihindeki planında**.
 
 | Varlık | Araç | Kontrol |
 |---|---|---|
-| Müzik (2 parça) | Suno / Udio | Üretildiği gün ücretli plan var mıydı? |
+| Müzik (2 parça; boss müziği oyun müziğinden türetildi) | Suno | ✅ **Ücretli planda üretildi** — sahip teyit etti (2026-10-03) |
 | Ses efektleri (12) | ElevenLabs | Aynı soru |
 | Görseller (harita, kule, düşman, menü) | ? — belgelerde araç adı yok | Hangi araç, hangi plan? |
 | Fontlar (Grenze Gotisch, Spectral, Inter Tight) | Google Fonts | SIL OFL — ticari kullanım serbest ✓ |
 
 **Ücretsiz planda üretildiyse** üç yol var: ücretli planda yeniden üretmek,
 CC0 lisanslı bir kütüphaneden (Freesound, OpenGameArt) karşılığını bulmak ya
-da o varlığı çıkarmak. Müzik oyunun işleyişi için gerekli değil; çıkarılması
-en ucuz olan o. Hangisini seçerseniz kod tarafını ben yaparım.
+da o varlığı çıkarmak. Hangisini seçerseniz kod tarafını ben yaparım. Açık
+kalan iki satır: ses efektleri ve görseller.
 
 **itch.io** proje ayarlarında yapay zekâ açıklaması istiyor: "evet" (grafik,
 ses, müzik) diye dürüstçe işaretleyin.
