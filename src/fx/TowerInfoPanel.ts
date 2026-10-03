@@ -160,7 +160,15 @@ export class TowerInfoPanel {
     // `M134` — boy kadrodan türüyor: kaç ikon satırı varsa o kadar.
     this.#yukseklik = panelYuksekligi(Math.ceil(roster.length / PANEL_IKON_SUTUN));
     const h = this.#yukseklik;
-    const arka = scene.add.rectangle(0, 0, W, h, INK, 0.9).setOrigin(0);
+    // `M182` — zemin tıklamayı TUTUYOR: panelin boş bir yerine dokunmak
+    // haritaya düşüp seçimi (menü + bu panel) kapatıyordu.
+    const arka = scene.add.rectangle(0, 0, W, h, INK, 0.9).setOrigin(0).setInteractive();
+    arka.on(
+      Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN,
+      (_p: unknown, _x: number, _y: number, olay: Phaser.Types.Input.EventData) => {
+        olay.stopPropagation();
+      },
+    );
     const cerceve = createParchmentFrame(scene, W / 2, h / 2, W, h, 16, true);
     this.#kap.add([arka, cerceve]);
 
@@ -263,7 +271,18 @@ export class TowerInfoPanel {
       // `M112` — dokunmatikte imleç yok: “seçili düşmana karşı DPS”
       // satırı yalnız fareyle değişiyordu. `WaveTelegraph`'ın aynı kusuru,
       // aynı turda, aynı çözüm.
-      hedef.on(Phaser.Input.Events.POINTER_DOWN, sec);
+      //
+      // **`M182` — bu çözüm hiç çalışmıyordu.** Dokunuş tıklamayı
+      // durdurmuyordu; haritaya da düşüyor ve `GameScene` seçimi
+      // kapatıyordu — panel, güncellenen satır görünemeden gidiyordu.
+      // Tarayıcıda üretildi (simgeye dokun → menü + panel kapandı).
+      hedef.on(
+        Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN,
+        (_p: unknown, _x: number, _y: number, olay: Phaser.Types.Input.EventData) => {
+          olay.stopPropagation();
+          sec();
+        },
+      );
       this.#ikonlar.push(halka);
       this.#kap.add([hedef, halka, ikon]);
     });

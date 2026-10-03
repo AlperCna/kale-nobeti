@@ -139,6 +139,19 @@ ve SDK'sız açılışla sınandı.
 - İngilizce tarama: menü, ayarlar, nasıl oynanır, başarımlar, kazanma
   ekranı — taşan ya da ekran dışına çıkan yazı yok (ölçülerek).
 
+**`M182` — aynı sınıf, harita sahnesinde:**
+- **Telefonda bilgi panelinin düşman simgeleri hiç çalışmıyordu.** `M112`
+  simgeye dokunmayı "seçili düşmana DPS" için eklemişti, ama dokunuş
+  tıklamayı durdurmuyor, haritaya düşüp kule menüsünü ve paneli
+  kapatıyordu — güncellenen satır hiç görünmüyordu. Artık panel açık
+  kalıyor ve sayı değişiyor (ölçüldü: zırh 0 → 8,80 · zırh 2 → 6,60 ·
+  zırh 8 → 1,32).
+- Yapı/kule/kışla menüsünün ve bilgi panelinin **boş yerine dokunmak**
+  seçimi kapatıyordu (telefonda açıklamayı okurken parmak değince). Zemin
+  artık tıklamayı tutuyor; dışarı dokunmak yine kapatıyor.
+- Sekme değiştirme denetlendi: saat bir karede en çok 7 adım koşturuyor,
+  dönüşte düşmanlar ileri sıçramıyor.
+
 **`M179`:** müziği kapatan oyuncu yükseltme, boss girişi, zafer ve yenilgi
 seslerini hiç duymuyordu — dört dosya yalnız müzik açıkken yükleniyordu.
 Tarayıcıda üretildi ve düzeltildi (`PreloadScene.queueGecSesler`); müzik
