@@ -1024,6 +1024,26 @@ export class BuildMenu {
       yukseklik,
       MENU_PANEL_CORNER,
     );
+    /**
+     * **`M182` — panelin içine dokunmak menüyü KAPATMIYOR.** Zemin
+     * etkileşimsizdi: düğmeler tıklamayı `stopPropagation` ile tutuyordu
+     * ama aralarındaki boşluk ve rol şeridi tutmuyordu; tıklama haritaya
+     * düşüyor ve `GameScene` menüyü kapatıyordu. Telefonda açıklamayı
+     * okurken parmak değen oyuncu menüyü kaybediyordu. Açılır pencerenin
+     * alışılmış kuralı: içine dokunmak kapatmaz, dışına dokunmak kapatır
+     * (`M181`'in ayarlar paneli kararıyla aynı aile). Panel `addAt(…, 0)`
+     * ile en altta, yani düğmeler önce isabet alıyor.
+     */
+    panel.setInteractive(
+      new Phaser.Geom.Rectangle(-genislik / 2, -yukseklik / 2, genislik, yukseklik),
+      Phaser.Geom.Rectangle.Contains,
+    );
+    panel.on(
+      Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN,
+      (_p: unknown, _x: number, _y: number, olay: Phaser.Types.Input.EventData) => {
+        olay.stopPropagation();
+      },
+    );
     kap.addAt(panel, 0);
 
     // Kenetleme **panelin** kenarına göre, buton sınırına göre DEĞİL —
