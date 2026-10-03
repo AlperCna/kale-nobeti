@@ -139,6 +139,14 @@ ve SDK'sız açılışla sınandı.
 - İngilizce tarama: menü, ayarlar, nasıl oynanır, başarımlar, kazanma
   ekranı — taşan ya da ekran dışına çıkan yazı yok (ölçülerek).
 
+**`M184` — uzun oturumda bellek ölçüldü:** harita 12 kez art arda
+yeniden başlatıldı. Doku sayısı (301), sahne nesneleri ve JS belleği
+(43–78 MB arası çöp toplayıcı salınımı) **sabit**. Tek sızıntı müzikteydi:
+döngüdeki müzik haritadan çıkarken yalnız **durduruluyor** (`stopByKey`),
+silinmiyordu; her harita açılışında durmuş bir `music_game` kopyası daha
+birikiyordu (12 turda 11). `removeByKey` ile düzeldi: ses sayısı her turda
+13, menü ↔ harita gidiş gelişinde hep tek müzik kopyası.
+
 **`M183` — zayıf cihaz için çizim maliyeti ölçüldü ve 3,4 kat düştü:**
 CrazyGames 4 GB'lık Chromebook'ta akıcı olmayan oyunu kapatıyor; cihaz
 yok, ama en ağır an ölçülebildi (Taş Köprü, tam tahta, ~50 düşman, 3
