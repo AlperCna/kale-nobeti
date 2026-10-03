@@ -58,6 +58,9 @@ const GOLD = 0xd4a032; // Altın varak
 const INK = 0x14203a;
 const CASTLE_SIZE = 56;
 
+/** Durağan haritanın (yol · yapı noktaları · kale) dokusu — `M183`. */
+const HARITA_DOKUSU = 'kn-harita';
+
 export class MapRenderer {
   readonly #scene: Phaser.Scene;
   readonly #map: MapDef;
@@ -115,6 +118,34 @@ export class MapRenderer {
     g.fillRect(c.x - CASTLE_SIZE / 2, c.y - CASTLE_SIZE / 2, CASTLE_SIZE, CASTLE_SIZE);
     g.lineStyle(4, GOLD, 1);
     g.strokeRect(c.x - CASTLE_SIZE / 2, c.y - CASTLE_SIZE / 2, CASTLE_SIZE, CASTLE_SIZE);
+
+    /**
+     * **`M183` — durağan harita bir kez dokuya çiziliyor.** Yol, yapı
+     * noktaları ve kale hiç değişmiyor ama `Graphics` olarak kaldıkça
+     * Phaser 669 komutu **her karede** yeniden işliyordu (yol köşelerindeki
+     * ve yapı noktalarındaki daireleri her karede yeniden üçgenliyordu).
+     * Ölçüldü (Taş Köprü, tam tahta, 51 düşman, RTX 3060 dizüstü): kalan
+     * 2,6 ms'lik çizimin **1,84 ms'i** buydu. Zayıf bir Chromebook bunun
+     * birkaç katı.
+     *
+     * Bedeli: oynanış karesinde bir doku daha (CLAUDE.md "Varlık
+     * formatları" — 15 → 16, sınırın içinde). Tek anahtar, harita başına
+     * değil: aynı anda tek harita çiziliyor, altı harita için altı
+     * 1280×720 tuval tutmanın anlamı yok. Phaser var olan tuvalin üstüne
+     * **silmeden** çiziyor; önce temizleniyor, yoksa iki haritanın yolu
+     * üst üste binerdi.
+     *
+     * Görüntü listesindeki yeri aynı: resim `g`'nin hemen ardından ekleniyor
+     * ve `g` yok ediliyor — `flyerGfx`/`hoverGfx` yine yolun altında.
+     */
+    const dokular = this.#scene.textures;
+    if (dokular.exists(HARITA_DOKUSU)) {
+      const eski = dokular.get(HARITA_DOKUSU);
+      if (eski instanceof Phaser.Textures.CanvasTexture) eski.clear();
+    }
+    g.generateTexture(HARITA_DOKUSU, this.#scene.scale.width, this.#scene.scale.height);
+    this.#scene.add.image(0, 0, HARITA_DOKUSU).setOrigin(0);
+    g.destroy();
 
     this.#drawCoverageOverlay();
   }
@@ -265,11 +296,30 @@ export class MapRenderer {
   ): void {
     const parca = 24;
     const adim = (Math.PI * 2) / parca;
+    /**
+     * **`M183` — tek yol, düz parçalar.** Eskiden on iki kesiğin her biri
+     * ayrı bir `beginPath`/`arc`/`strokePath`'ti ve Phaser her yayı her
+     * karede ~26 noktaya bölüyordu. `EnemyStatus` Şaman'ın iyileştirme
+     * menzilini her karede bu çemberle (iki kat: kontur + renk) çiziyor;
+     * ölçüldü (RTX 3060 dizüstü): **Şaman başına ~1 ms çizim**, 3 Şaman
+     * 2,97 ms. Zayıf bir Chromebook bunun birkaç katı — CrazyGames'in
+     * "4 GB'lık cihazda akıcı" şartı.
+     *
+     * Her kesik artık iki düz parça (uç · orta · uç): yarıçap 90'da yaydan
+     * sapma 0,2 px'in altında, gözle seçilmiyor. `moveTo` her kesiği ayrı
+     * bir alt yol yapıyor, yani kesikler birbirine bağlanmıyor; on ikisi
+     * tek `strokePath`'te.
+     */
     g.lineStyle(kalinlik, renk, 1);
+    g.beginPath();
     for (let k = 0; k < parca; k += 2) {
-      g.beginPath();
-      g.arc(c.x, c.y, r, k * adim, (k + 1) * adim);
-      g.strokePath();
+      const a0 = k * adim;
+      const a1 = a0 + adim / 2;
+      const a2 = a0 + adim;
+      g.moveTo(c.x + Math.cos(a0) * r, c.y + Math.sin(a0) * r);
+      g.lineTo(c.x + Math.cos(a1) * r, c.y + Math.sin(a1) * r);
+      g.lineTo(c.x + Math.cos(a2) * r, c.y + Math.sin(a2) * r);
     }
+    g.strokePath();
   }
 }
