@@ -969,7 +969,8 @@ export class GameScene extends Phaser.Scene {
     // `systems/olcum.ts`'te; burası yalnız "ne zaman" diyor.
     haritaBasladi(portal, this.#map.id, this.settings.state.difficulty);
 
-    this.sound.stopByKey('music_menu');
+    // `M184` — `removeByKey`, `stopByKey` DEĞİL (gerekçe kapanıştaki notta).
+    this.sound.removeByKey('music_menu');
 
     // `M179` — geç ses efektleri müzikten AYRI ve koşulsuz
     // (`PreloadScene.queueGecSesler` başlığı: müziği kapalı oyuncu
@@ -1027,8 +1028,16 @@ export class GameScene extends Phaser.Scene {
       this.bus.clear();
       // M6-T11 — `Game`den çıkarken oyun müziği susuyor; `Menu` kendi
       // müziğini kendi başlatıyor (`MenuScene.create()`).
-      this.sound.stopByKey('music_game');
-      this.sound.stopByKey('boss_music');
+      //
+      // **`M184` — durdurmak yetmiyor, SİLİNİYOR.** `sound.play` her
+      // çağrıda yeni bir ses yaratıyor; tek seferlik sesi Phaser bitince
+      // kendisi siliyor ama döngüdeki müzik hiç "bitmediği" için
+      // `stopByKey` onu yalnız susturup `SoundManager`'da bırakıyordu.
+      // Ölçüldü: harita her açılışta durmuş bir `music_game` kopyası daha
+      // (12 yeniden başlatmada 11 durmuş kopya) — uzun oturumda sınırsız
+      // büyüyen bir liste. `removeByKey` susturup yok ediyor.
+      this.sound.removeByKey('music_game');
+      this.sound.removeByKey('boss_music');
       // Ses efekti örnekleri `SoundManager`'da (oyun geneli) yaşıyor —
       // sahneyle birlikte gitmiyor, elle bırakılıyor.
       this.#soundSystem?.destroy();
@@ -1440,7 +1449,7 @@ export class GameScene extends Phaser.Scene {
   #bossMuzigi(): void {
     if (!this.cache.audio.exists('boss_music')) return;
     if (this.settings.musicScale <= 0) return;
-    this.sound.stopByKey('music_game');
+    this.sound.removeByKey('music_game'); // `M184` — bkz. kapanış notu
     this.sound.play('boss_music', {
       loop: true,
       volume: MUSIC_BASE_VOLUME * this.settings.musicScale,
