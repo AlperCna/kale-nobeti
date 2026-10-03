@@ -195,6 +195,8 @@ Ayrıntı: `docs/research/04-varlik-paket-boyut.md`
   `FontFace` yüzleri `unicodeRange` ile ayrı ayrı kaydedilir
   (bkz. `src/scenes/BootScene.ts`).
 - Toplam doku sayısı ≤ 16 (Phaser multi-texture batching sınırı).
+  **`M183`: bu bir hedefti ve oynanış karesinde TUTMUYOR — ama bağlayıcı
+  da değil, ölçüldü.** Ayrıntı bu maddenin sonunda.
   **`M95`'te ölçüldü ve cümle netleşti:** sayılan şey *bir karede çizilen
   ayrı doku* — `textures.getTextureKeys().length` DEĞİL. O sayaç bugün
   **379** diyor ve kural ihlal ediliyormuş gibi görünüyor; neredeyse
@@ -206,9 +208,10 @@ Ayrıntı: `docs/research/04-varlik-paket-boyut.md`
   - **Yüklü** resim dokusu — menü + seviye seçim + bir harita gezildikten
     sonra ölçülen **11**: `atlas` · `menu-bg` · `sayilar` (bitmap font) ·
     `bg-<harita>` (ziyaret edilen her harita için bir tane) · `card-*`
-    (altı harita küçük resmi) · `kn-parcacik` (çalışma zamanında üretilen).
-  - **Oyun karesinde çizilen** — **4**: `atlas` · o haritanın `bg-*`'ı ·
-    `sayilar` · `kn-parcacik`. Batching sınırını ilgilendiren bu.
+    (altı harita küçük resmi) · `kn-parcacik` (çalışma zamanında üretilen)
+    · `kn-harita` (`M183`, durağan yol/nokta/kale; tek anahtar) → **12**.
+  - **Oyun karesinde çizilen** resim — **5** (`M183` ölçümü): `atlas` · o
+    haritanın `bg-*`'ı · `kn-harita` · `sayilar` · `kn-parcacik`.
     `menu-bg` ve `card-*` yüklü ama sahneleri durmuş, çizilmiyorlar.
   Buraya `M95`'ten beri tek bir *"gerçek resim dokusu **7**"* yazıyordu ve
   hangisini saydığı belirsizdi; `card-*` altısı listede hiç yoktu.
@@ -224,9 +227,8 @@ Ayrıntı: `docs/research/04-varlik-paket-boyut.md`
      (dalga 4) itibaren var (+2).
   Ölçülen liste (Zor, dalga 6 hazırlığı): `Zor · altın · can · dalga ·
   Dalgayı başlat · sahada · Meteor · Takviye · ⚙` + Overlay `⛶ · Tam ekran`.
-  Yani oynanış karesi **4 resim + 11 metin = 15** ve sınır **aşılmıyor** —
-  ama pay **bir** doku, eski cümlenin ima ettiği rahatlık kadar değil.
-  Yeni bir kalıcı `Text` eklemek bu payı bitirir.
+  Buraya *"oynanış karesi 4 resim + 11 metin = 15, sınır aşılmıyor"*
+  yazıyordu — **yanlıştı**, aşağıdaki `M183` notuna bakın.
   **Duraklatınca sınır AŞILIYOR ve bu sorun değil** (`M160`, ölçüldü):
   duraklatma menüsü altı `Text` daha ekliyor — Normal'de dalga 1'de
   ölçülen **14** (`altın·can·dalga·Meteor·Takviye·⚙` + `Duraklatıldı·
@@ -240,6 +242,20 @@ Ayrıntı: `docs/research/04-varlik-paket-boyut.md`
   tek bir kareye bakarak ölçülemez — koşullu metinler (rozet, erken
   başlat, duraklatma menüsü) ayrı ayrı aranmalı. `M95` tam bunu yaptı ve
   sayı altmış beş kilometre taşı boyunca eksik kaldı.
+  **`M183` — üçüncü ve asıl tuzak: TileSprite.** Phaser 3.90'da her
+  `TileSprite` **kendi tuval dokusunu** yaratıyor (`TileSprite.js`:
+  `textures.addCanvas(UUID(), …)`) ve onunla çiziliyor. Parşömen
+  çerçevelerin kenarları TileSprite (`fx/ParchmentFrame`): oynanış
+  karesinde **HUD'da 72, Overlay'de 9** — `M95`/`M160` sayımı bunları
+  hiç saymamıştı. Ölçülen oynanış karesi (Taş Köprü, Normal, dalga 1):
+  **5 resim + 8 metin + 81 TileSprite ≈ 95 ayrı doku**. Yani ≤ 16 hiçbir
+  zaman tutmadı. **Ama bağlayıcı değil:** aynı karede ölçülen çizim
+  maliyeti HUD **0,6 ms**, bütün kare (tam tahta, ~50 düşman, 3 Şaman)
+  ortalama **1,7 ms** — 16,7 ms'lik bütçenin onda biri. Asıl çizim
+  maliyeti doku sayısı değil **her karede yeniden üçgenlenen `Graphics`**
+  idi (`M183`: Şaman menzil çemberleri ve durağan harita; 5,8 → 1,7 ms).
+  Doku sayısı bir gün ölçülebilir bir bedele dönerse çare parşömen
+  kenarlarını `NineSlice`'a (atlası doğrudan kullanır) çevirmek.
 
 ## Klasör yapısı
 

@@ -139,6 +139,23 @@ ve SDK'sız açılışla sınandı.
 - İngilizce tarama: menü, ayarlar, nasıl oynanır, başarımlar, kazanma
   ekranı — taşan ya da ekran dışına çıkan yazı yok (ölçülerek).
 
+**`M183` — zayıf cihaz için çizim maliyeti ölçüldü ve 3,4 kat düştü:**
+CrazyGames 4 GB'lık Chromebook'ta akıcı olmayan oyunu kapatıyor; cihaz
+yok, ama en ağır an ölçülebildi (Taş Köprü, tam tahta, ~50 düşman, 3
+Şaman, RTX 3060 dizüstü). Oyun mantığı ucuzdu (3×'te kare başına 0,4 ms);
+maliyet **çizimdeydi** ve iki `Graphics` nesnesi her karede yeniden
+üçgenleniyordu:
+- Şaman'ın iyileştirme menzili (kesikli çember, her karede ~600 parça):
+  **Şaman başına ~1 ms**. Kesikler tek yolda düz parçalar oldu (görüntü
+  aynı): 2,97 → 0,10 ms. Kule menzili ve kışla çemberi de aynı fonksiyon.
+- Durağan harita (yol, noktalar, kale — 669 komut): kalan çizimin %70'i.
+  Bir kez dokuya çiziliyor: 1,84 ms → ~0.
+- Sonuç: çizim 5,8 → **1,7 ms**; bütün kare ortalama 1,7 ms (bütçenin onda
+  biri). 5 kat yavaş bir cihazda bile 60 fps payı var.
+- Ölçerken CLAUDE.md'nin doku sayımının yanlış olduğu çıktı (parşömen
+  kenarlarının TileSprite'ları sayılmamış; gerçek ~95, "15" değil) —
+  düzeltildi; bağlayıcı olmadığı da ölçüldü.
+
 **`M182` — aynı sınıf, harita sahnesinde:**
 - **Telefonda bilgi panelinin düşman simgeleri hiç çalışmıyordu.** `M112`
   simgeye dokunmayı "seçili düşmana DPS" için eklemişti, ama dokunuş
@@ -189,6 +206,8 @@ Hiçbiri oynanışı bozmuyor. Geri dönülürse sıra bu:
 6. **İnsanla oynatılmadı** (E19) ve **düşük uçlu cihazda denenmedi** (E17).
    Oyun `M168`-`M174`'te tarayıcıda oyuncu gibi baştan sona oynandı, ama
    bu bir insan oyuncunun yerini tutmuyor; E19 açık işaretli kaldı.
+   **`M183`:** E17 için cihaz yok ama pay ölçüldü — en ağır karede bütün
+   iş 1,7 ms (bütçe 16,7); zayıf cihazda kalan risk düşük.
 7. **Yayın sahibin elinde** (`M178`): kod, paketler, kapaklar ve metin
    hazır; karar, lisans teyidi, hesaplar ve yükleme
    [`docs/YAYIN.md`](../YAYIN.md)'de adım adım. Portal kabul şartlarından
